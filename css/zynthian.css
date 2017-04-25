@@ -1,0 +1,573 @@
+/* Zynthian */
+/* MPBTC */
+/*
+@dark: #000;
+@light: #fff;
+@primary: #50B000;
+@secundary: #50B000;
+@bill_text1: #C07000;
+@bill_text2: #10B000;
+@grey: #606060;
+*/
+/*
+@dark: #006020;
+@light: #fff;
+@primary: lighten(@dark,20%);
+@secundary: #900040;
+@bill_text1: #C07000;
+@bill_text2: #00C000;
+@grey: #808080;
+*/
+/*
+@primary: #35A49C;
+@secundary: #79CDC0;
+*/
+/*---------------------------------------------------
+    LESS Elements 0.9
+  ---------------------------------------------------
+    A set of useful LESS mixins
+    More info at: http://lesselements.com
+  ---------------------------------------------------*/
+/*
+  Bootstrap Carousel Fade Transition (for Bootstrap 3.3.x)
+  CSS from:       http://codepen.io/transportedman/pen/NPWRGq
+  and:            http://stackoverflow.com/questions/18548731/bootstrap-3-carousel-fading-to-new-slide-instead-of-sliding-to-new-slide
+  Inspired from:  http://codepen.io/Rowno/pen/Afykb 
+*/
+.carousel-fade .carousel-inner .item {
+  opacity: 0;
+  transition-property: opacity;
+}
+.carousel-fade .carousel-inner .active {
+  opacity: 1;
+}
+.carousel-fade .carousel-inner .active.left,
+.carousel-fade .carousel-inner .active.right {
+  left: 0;
+  opacity: 0;
+  z-index: 1;
+}
+.carousel-fade .carousel-inner .next.left,
+.carousel-fade .carousel-inner .prev.right {
+  opacity: 1;
+}
+.carousel-fade .carousel-control {
+  z-index: 2;
+}
+/*
+  WHAT IS NEW IN 3.3: "Added transforms to improve carousel performance in modern browsers."
+  Need to override the 3.3 new styles for modern browsers & apply opacity
+*/
+@media all and (transform-3d), (-webkit-transform-3d) {
+  .carousel-fade .carousel-inner > .item.next,
+  .carousel-fade .carousel-inner > .item.active.right {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  .carousel-fade .carousel-inner > .item.prev,
+  .carousel-fade .carousel-inner > .item.active.left {
+    opacity: 0;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+  .carousel-fade .carousel-inner > .item.next.left,
+  .carousel-fade .carousel-inner > .item.prev.right,
+  .carousel-fade .carousel-inner > .item.active {
+    opacity: 1;
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+  }
+}
+.carousel-inner > .item {
+  -webkit-transition: all 2s ease-in-out left ease-out;
+  -moz-transition: all 2s ease-in-out left ease-out;
+  -o-transition: all 2s ease-in-out left ease-out;
+  transition: all 2s ease-in-out left ease-out;
+}
+@media all and (transform-3d), (-webkit-transform-3d) {
+  .carousel-inner > .item {
+    transition: transform 2s ease-in-out;
+  }
+}
+html,
+body {
+  height: 100%;
+  background-color: #ffffff;
+}
+h3 {
+  margin-top: 1em;
+}
+.mar-top60 {
+  margin-top: 60px;
+}
+.mar-top80 {
+  margin-top: 80px;
+}
+.mar-top160 {
+  margin-top: 160px;
+}
+.mar-bot60 {
+  margin-bottom: 60px;
+}
+.mar-bot80 {
+  margin-bottom: 80px;
+}
+.mar-bot160 {
+  margin-bottom: 160px;
+}
+.pad-top60 {
+  padding-top: 60px;
+}
+.pad-top80 {
+  padding-top: 80px;
+}
+.pad-top160 {
+  padding-top: 160px;
+}
+.pad-bot60 {
+  padding-bottom: 60px;
+}
+.pad-bot80 {
+  padding-bottom: 80px;
+}
+.pad-bot160 {
+  padding-bottom: 160px;
+}
+.hide {
+  display: none;
+}
+.light {
+  font-weight: normal !important;
+}
+.xsr-only {
+  display: none;
+}
+header#header {
+  position: absolute;
+  z-index: 100;
+  background-color: transparent;
+}
+header#header .navbar-brand img {
+  height: 50px;
+}
+header#header ul.navbar-nav li a {
+  padding-left: 3em;
+}
+header#header ul.navbar-nav .dropdown a.dropdown-toggle:focus,
+header#header ul.navbar-nav .dropdown a.dropdown-toggle:active {
+  background-color: transparent;
+  color: #ffffff;
+}
+header#header ul.navbar-nav .dropdown .dropdown-menu {
+  position: relative;
+  background-color: #404040;
+  color: #ffffff;
+  opacity: 0.8;
+}
+header#header ul.navbar-nav .dropdown .dropdown-menu li {
+  color: #ffffff;
+}
+header#header ul.navbar-nav .dropdown .dropdown-menu li a {
+  margin-left: 0px;
+  padding-left: 1em;
+  font-size: 120%;
+  color: #ffffff;
+}
+header#header ul.navbar-nav .dropdown .dropdown-menu li a:hover {
+  color: #50b000;
+  background-color: #606060;
+}
+section#section-home {
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  background-color: transparent;
+}
+/* Declare heights because of positioning of img element */
+section#section-home #carousel-home {
+  height: 100%;
+}
+section#section-home #carousel-home .carousel-inner {
+  height: 100%;
+  background-color: #000;
+}
+/* Since positioning the image, we need to help out the caption */
+section#section-home #carousel-home .carousel-caption {
+  /*z-index: 10;*/
+  bottom: 25%;
+}
+section#section-home #carousel-home .item {
+  height: 800px;
+  max-height: 1080px;
+  background-color: #000000;
+  text-align: center;
+}
+section#section-home #carousel-home .zynthian_top_slider_01 {
+  background: url('../img/photos/zynthian_top_slider_01.jpg') no-repeat center center;
+  background-size: cover;
+}
+section#section-home #carousel-home .zynthian_top_slider_02 {
+  background: url('../img/photos/zynthian_top_slider_02.jpg') no-repeat center center;
+  background-size: cover;
+}
+section#section-home #carousel-home .zynthian_top_slider_03 {
+  background: url('../img/photos/zynthian_top_slider_03.jpg') no-repeat center center;
+  background-size: cover;
+}
+section#section-home #carousel-home .zynthian_top_slider_04 {
+  background: url('../img/photos/zynthian_top_slider_04.jpg') no-repeat center center;
+  background-size: cover;
+}
+section#section-home h2 {
+  margin-bottom: 1.5em;
+  font-size: 250%;
+  font-weight: 400;
+  opacity: 0.9;
+}
+section#section-home p {
+  margin-bottom: 2em;
+  font-size: 170%;
+  font-weight: 400;
+  opacity: 0.9;
+  -moz-text-outline: 2px 2px #000000;
+  -webkit-text-outline: 2px 2px #000000;
+  text-outline: 2px 2px #000000;
+}
+section#section-home i {
+  opacity: 0.9;
+}
+section#section-home a,
+section#section-home a:visited {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+section#section-home a:hover,
+section#section-home a:active {
+  color: #FFFFFF;
+  text-decoration: none;
+}
+section#section-home .btn-video {
+  font-size: 70%;
+  /*background-color: @primary;
+	transition: all 0.3s ease 0s;*/
+}
+section#section-home .Xbtn-video:hover {
+  background-color: #ffffff;
+  color: #50b000;
+}
+section#section-home .btn-circle {
+  width: 1.2em;
+  height: 1.2em;
+  margin-top: 1em;
+  padding: 0em;
+  /*padding-top: -1.5em;*/
+  line-height: 1.2em;
+  border: 2px solid #ffffff;
+  border-radius: 0.6em;
+  font-size: 3em;
+  color: #ffffff;
+  background: transparent;
+  opacity: 0.8;
+  -webkit-transition: background 0.3s ease-in-out;
+  -moz-transition: background 0.3s ease-in-out;
+  transition: background 0.3s ease-in-out;
+}
+section#section-home .btn-circle:hover,
+section#section-home .btn-circle:focus {
+  outline: none;
+  color: #50b000;
+  border-color: #50b000;
+  background: rgba(80, 176, 0, 0.1);
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+section#section-home .btn-circle i.animated {
+  -webkit-transition-property: -webkit-transform;
+  -webkit-transition-duration: 1s;
+  -moz-transition-property: -moz-transform;
+  -moz-transition-duration: 1s;
+}
+section#section-home .btn-circle:hover i.animated {
+  -webkit-animation-name: pulse;
+  -moz-animation-name: pulse;
+  -webkit-animation-duration: 1.5s;
+  -moz-animation-duration: 1.5s;
+  -webkit-animation-iteration-count: infinite;
+  -moz-animation-iteration-count: infinite;
+  -webkit-animation-timing-function: linear;
+  -moz-animation-timing-function: linear;
+}
+@-webkit-keyframes pulse {
+  0 {
+    margin-bottom: 2em;
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+  50% {
+    -webkit-transform: scale(1.2);
+    transform: scale(1.2);
+  }
+  100% {
+    -webkit-transform: scale(1);
+    transform: scale(1);
+  }
+}
+@-moz-keyframes pulse {
+  0 {
+    -moz-transform: scale(1);
+    transform: scale(1);
+  }
+  50% {
+    -moz-transform: scale(1.2);
+    transform: scale(1.2);
+  }
+  100% {
+    -moz-transform: scale(1);
+    transform: scale(1);
+  }
+}
+section#spacer-phrase1 {
+  background: url("../img/photos/zynthian_parallax_07.jpg") no-repeat center center;
+  background-size: cover;
+}
+section#spacer-boxes {
+  background: url("../img/photos/zynthian_side_bg_trans.jpg") no-repeat center center;
+  background-size: contain;
+}
+section#spacer-devel {
+  background: url("../img/photos/zynthian_parallax_11.jpg") no-repeat center center;
+  background-size: cover;
+}
+section#spacer-end {
+  background: url("../img/photos/zynthian_parallax_04.jpg") no-repeat center center;
+  background-size: cover;
+}
+section.bg_logo_z {
+  background: url("../img/logo/zynthian_logo_z_big_tenue.png") no-repeat center center;
+  background-size: contain;
+}
+section.bg_logo_wave {
+  background: url("../img/logo/zynthian_logo_square_big_tenue.png") no-repeat center center;
+  background-size: cover;
+}
+.modal {
+  color: #606060;
+  background-color: #000000;
+}
+.modal-header,
+.modal-footer {
+  color: #ffffff;
+  background-color: #606060;
+}
+.modal-body {
+  color: #ffffff;
+  background-color: #000000;
+}
+.modal h4 {
+  text-transform: none;
+  color: #ffffff;
+}
+.modal p {
+  margin-top: 12px;
+  margin-bottom: 0px;
+  font-size: 100%;
+  color: #ffffff;
+}
+.content-section p {
+  line-height: 1.3em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  font-size: 120%;
+  color: #303030;
+}
+.content-section ul,
+ol {
+  margin-left: 1.2em;
+  padding-left: 0;
+}
+.content-section li {
+  /*	font-size: 18px;*/
+  line-height: 1.3em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
+  color: #303030 !important;
+}
+.content-section li li {
+  line-height: 0.8em;
+}
+.content-section li a {
+  color: #7d7d7d;
+}
+.content-section li a:hover {
+  color: #50b000;
+}
+.testimonial h5 {
+  font-family: 'Lato', sans-serif;
+  font-weight: 500;
+  opacity: 0.7;
+  -moz-text-outline: 2px 2px #000000;
+  -webkit-text-outline: 2px 2px #000000;
+  text-outline: 2px 2px #000000;
+  background-color: #000000;
+}
+section#section-concept p {
+  text-align: center;
+}
+section#section-features {
+  background-color: #ffffff;
+}
+section#section-team {
+  padding-right: 15px;
+  padding-left: 15px;
+  background-color: #e0e2e0;
+}
+section#section-team .member-photo img {
+  margin-top: 20px;
+  width: 200px;
+  height: 200px;
+}
+section#section-timeline {
+  background-color: #e0e2e0;
+}
+.cd-timeline::before {
+  background-color: #50b000;
+}
+.cd-timeline-content h2 {
+  font-size: 120%;
+}
+.cd-timeline-content p,
+.cd-timeline-content .cd-date {
+  font-size: 100%;
+}
+.cd-timeline-img .fa {
+  display: block;
+  color: #ffffff;
+  text-align: center;
+  line-height: 40px;
+  font-size: 18px;
+}
+.cd-read-more {
+  display: block;
+}
+@media only screen and (min-width: 1170px) {
+  .cd-timeline-img .fa {
+    line-height: 60px;
+    font-size: 24px;
+  }
+}
+section#section-contact {
+  padding-right: 15px;
+  padding-left: 15px;
+  background-color: #f0f2f0;
+}
+section#section-contact .alert,
+section#section-contact .help-block,
+section#section-contact .help-inline {
+  /*display: none;*/
+}
+.form-control-feedback {
+  /*
+	color: @light;
+	background-color: @primary;
+	border-color: @primary;
+*/
+  border-radius: 0px 8px 8px 0px;
+}
+.input-zynthian {
+  font-weight: 400;
+  border-radius: 8px !important;
+  -webkit-transition: all 0.3s ease-in-out;
+  -moz-transition: all 0.3s ease-in-out;
+  transition: all 0.3s ease-in-out;
+}
+.input-zynthian:hover,
+.input-zynthian:active,
+.input-zynthian:focus {
+  /*
+	outline: 0 !important;
+	color: @dark;
+	background-color: @primary;
+*/
+}
+textarea.input-zynthian {
+  min-height: 12em;
+}
+.input-zynthian::-input-placeholder {
+  color: #606060 !important;
+}
+.input-zynthian::-webkit-input-placeholder {
+  color: #606060 !important;
+}
+.input-zynthian::-moz-placeholder {
+  color: #606060 !important;
+}
+.input-zynthian::-ms-input-placeholder {
+  color: #606060;
+}
+@media (max-width: 991px) {
+  .navbar-header {
+    float: none;
+  }
+  .navbar-toggle {
+    display: block;
+  }
+  .navbar-collapse {
+    border-top: 1px solid transparent;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  }
+  .navbar-collapse.collapse {
+    display: none!important;
+  }
+  .navbar-nav {
+    float: none!important;
+    margin: 7.5px -15px;
+    opacity: 0.8;
+  }
+  .navbar-nav > li {
+    float: none;
+    background-color: #606060;
+    margin-bottom: 2px;
+  }
+  .navbar-nav > li > a {
+    padding-top: 10px;
+    padding-bottom: 10px;
+  }
+  .navbar-collapse.collapse .navbar .navbar-nav > .active > a {
+    padding-top: 12px;
+    padding-bottom: 12px;
+  }
+  .navbar-collapse.collapse .nav > li > a:hover {
+    color: #50b000;
+    background-color: #535353;
+  }
+  .navbar-text {
+    float: none;
+    margin: 15px 0;
+  }
+  /* since 3.1.0 */
+  .navbar-collapse.collapse.in {
+    display: block!important;
+  }
+  .collapsing {
+    overflow: hidden!important;
+  }
+}
+@media (max-width: 767px) {
+  section#section-home #carousel-home .item {
+    height: 620px;
+  }
+  section#section-home h2 {
+    margin-bottom: 1.5em;
+    font-size: 170%;
+  }
+  section#section-home p {
+    margin-bottom: 1.5em;
+    font-size: 140%;
+  }
+  section#spacer-boxes {
+    background: url("../img/photos/zynthian_side_bg_trans.jpg") no-repeat right center;
+    background-size: cover;
+  }
+}

@@ -1,0 +1,40 @@
+
+<h2>{{ escape(title) }}</h2>
+
+<form method="post">
+{% for varname in config %}
+	<label>{{ escape(config[varname]['title']) }}:</label><br>
+	{% if config[varname]['type']=='text' %}
+	<input name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}">
+	{% elif config[varname]['type']=='select' %}
+	<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
+	{% for option in config[varname]['options'] %}
+		<option value="{{ escape(option) }}" 
+			{% if config[varname]['value']==option %}selected=1{% end %}
+			{% if 'presets' in config[varname] %}
+				{% for fn,preset in list(config[varname]['presets'][option].items()) %}
+					data-{{ escape(fn) }}="{{ escape(preset) }}"
+				{% end %}
+			{% end %}
+			>{{ escape(option) }}
+		</option>
+	{% end %}
+	</select>
+	{% end %}
+	<br><br>
+{% end %}
+	<br>
+	<input type="submit" value="Save" class="btn btn-lg btn-theme">
+</form>
+
+<script>
+function set_presets(sel) {
+	$.each($(sel.form).serializeArray(), function(i, field) {
+		var v=$(sel).find("option[value='"+$(sel).val()+"']").attr('data-'+field.name);
+		if (v!=null) {
+			$(sel.form).find("[name="+field.name+"]").val(v)
+			console.log(field.name+' => '+v)
+		}
+	});
+}
+</script>

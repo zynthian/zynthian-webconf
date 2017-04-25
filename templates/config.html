@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]><html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]><html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!--><html class="no-js"> <!--<![endif]-->
+<head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>Zynthian Configuration</title>
+	<meta name="description" content="Zynthian Configuration Web Tool">
+
+	<!-- For IE 9 and below. ICO should be 32x32 pixels in size -->
+	<!--[if IE]><link rel="shortcut icon" href="/img/favicon.ico"><![endif]-->
+	<!-- Touch Icons - iOS and Android 2.1+ 180x180 pixels in size. --> 
+	<link rel="apple-touch-icon-precomposed" href="/img/favicon_180.png">
+	<!-- Firefox, Chrome, Safari, IE 11+ and Opera. 196x196 pixels in size. -->
+	<link rel="icon" href="/img/favicon_196.png">
+
+	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
+	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+
+	<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
+	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,300,700,900">
+
+
+	<link rel="stylesheet" href="/css/style.css">
+	<link rel="stylesheet" href="/css/default.css">
+	<link rel="stylesheet" href="/css/zynthian.css">
+
+	<!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+	<!--[if lt IE 9]>
+		<script src="//oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
+		<script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
+	<![endif]-->
+</head>
+ 
+<body>
+	<!-- header -->
+	<header id="header">
+		<div class="navbar navbar-fixed-top" role="navigation" data-0="line-height:77px; height:77px; background-color:rgba(0,0,0,0);" data-300="line-height:50px; height:50px; background-color:rgba(0,0,0,0.8);">
+			<div class="container">
+				<div class="navbar-header">
+					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+						<span class="fa fa-bars color-white"></span>
+					</button>
+					<h1>
+						<a class="navbar-brand" href="/api/audio" title="Inicio">
+							<img src="/img/logo/zynthian_logo_black_trans_320.png" data-0="height:64px;" data-300="height:50px;">
+						</a>
+					</h1>
+				</div>
+				<div class="navbar-collapse collapse">
+					<ul class="nav navbar-nav" data-0="margin-top:12px;" data-300="margin-top:0px;">
+						<li {% if request.uri=="/api/audio" %}class="active"{% end %}><a href="/api/audio">Audio</a></li>
+						<li {% if request.uri=="/api/display" %}class="active"{% end %}><a href="/api/display">Display</a></li>
+						<li {% if request.uri=="/api/wiring" %}class="active"{% end %}><a href="/api/wiring">Wiring</a></li>
+						<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
+							<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">User Interface <span class="caret"></span></a>
+							<ul class="dropdown-menu">
+								<li {% if request.uri=="/api/ui-colors" %}class="active"{% end %}><a href="/api/ui-colors">Colors</a></li>
+								<li {% if request.uri=="/api/ui-fonts" %}class="active"{% end %}><a href="/api/ui-fonts">Fonts</a></li>
+							</ul>
+						</li>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</header>
+
+	<section id="section-config" class="content-section container pad-top80 pad-bot80 clearfix bg_logo_wave">
+		<div class="row">
+			<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
+				{% module Template("config_block.html", config=config, title=title) %}
+			</div>
+		</div>
+	</section>
+
+	<!-- JS libraries -->
+	<script src="/bower_components/jquery/dist/jquery.js"></script>
+	<script src="/bower_components/modernizr/modernizr.js"></script>
+	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+
+</body>
+
+</html>

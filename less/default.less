@@ -1,0 +1,81 @@
+
+@import "variables.less";
+
+a {
+	color: @primary;
+}
+a:hover {
+	color: lighten(@primary,5%);
+}
+
+/* menu */
+
+h1 a.navbar-brand {
+	color: @primary;
+}
+
+.nav > li > a:hover {
+	color: lighten(@secundary,5%);
+}
+
+.navbar .navbar-nav > .active > a {
+	color: lighten(@secundary,5%);
+}
+
+.navbar .navbar-nav > .active > a {
+	color: @primary;
+}
+
+/* flexslider */
+.flex-control-paging li a {
+	background: @primary;
+}
+
+.flex-direction-nav a:hover{
+	background-color: @primary;
+}
+
+.testimonial span.author a {
+	color: @secundary;
+}
+
+/* --- icon box hover --- */
+.hi-icon-effect-5 .hi-icon {
+	color: @primary;
+	box-shadow: 0 0 0 4px @primary;
+}
+.no-touch .hi-icon-effect-5 .hi-icon:hover {
+	background: @primary;
+	box-shadow: 0 0 0 8px @secundary;
+}
+
+/* btn */
+.btn-theme {
+	background-color: @secundary;
+	color: @light;
+}
+.btn-theme:hover,.btn-theme:focus,.btn-theme:active{
+	background-color: darken(@secundary,5%);
+	color: @light;
+}
+.btn-cta,.btn-cta.btn-lg {
+	background-color: @primary;
+	border-color: darken(@primary,10%);
+	color: @light;
+}
+
+.btn-cta:focus,.btn-cta:active {
+	border-color: darken(@primary,5%);
+  color: @light;
+}
+
+/* footer */
+.social-circle li a {
+	background:@primary;
+}
+
+a.scrollup{
+	background:@primary;
+}
+
+
