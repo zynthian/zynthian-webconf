@@ -353,13 +353,32 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		self.get()
 
 #------------------------------------------------------------------------------
-# UI Colors Configuration
+# UI Configuration
 #------------------------------------------------------------------------------
 
-class UIColorConfigHandler(ZynthianConfigHandler):
+class UIConfigHandler(ZynthianConfigHandler):
+
+	font_families=[
+		"Audiowide",
+		"Helvetica",
+		"Economica",
+		"Orbitron",
+		"Abel"
+	]
 
 	def get(self):
 		config=OrderedDict([
+			['ZYNTHIAN_UI_FONT_FAMILY', {
+				'type': 'select',
+				'title': 'Family',
+				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
+				'options': self.font_families
+			}],
+			['ZYNTHIAN_UI_FONT_SIZE', {
+				'type': 'text',
+				'title': 'Size',
+				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
+			}],
 			['ZYNTHIAN_UI_COLOR_BG', {
 				'type': 'text',
 				'title': 'Background',
@@ -384,58 +403,12 @@ class UIColorConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", config=config, title="UI Colors")
+			self.render("config.html", config=config, title="User Interface")
 
 	def post(self):
 		self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.get()
 
-#------------------------------------------------------------------------------
-# UI Fonts Configuration
-#------------------------------------------------------------------------------
-
-class UIFontConfigHandler(ZynthianConfigHandler):
-
-	font_families=[
-		"Audiowide",
-		"Helvetica",
-		"Economica",
-		"Orbitron",
-		"Abel"
-	]
-
-	def get(self):
-		config=OrderedDict([
-			['ZYNTHIAN_UI_FONT_FAMILY', {
-				'type': 'select',
-				'title': 'Family',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
-				'options': self.font_families
-			}],
-			['ZYNTHIAN_UI_FONT_TOPBAR_SIZE', {
-				'type': 'text',
-				'title': 'Topbar Size',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_TOPBAR_SIZE')
-			}],
-			['ZYNTHIAN_UI_FONT_LISTBOX_SIZE', {
-				'type': 'text',
-				'title': 'Listbox Size',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_LISTBOX_SIZE')
-			}],
-			['ZYNTHIAN_UI_FONT_CTRL_TITLE_MAXSIZE', {
-				'type': 'text',
-				'title': 'Controller Title Size',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_CTRL_TITLE_MAXSIZE')
-			}]
-		])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", config=config, title="UI Fonts")
-
-	def post(self):
-		self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.get()
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
@@ -454,13 +427,12 @@ def make_app():
 		(r"/api/audio$", AudioConfigHandler),
 		(r"/api/display$", DisplayConfigHandler),
 		(r"/api/wiring$", WiringConfigHandler),
-		(r"/api/ui-colors$", UIColorConfigHandler),
-		(r"/api/ui-fonts$", UIFontConfigHandler)
+		(r"/api/ui$", UIConfigHandler),
 	], template_path="templates")
 
 if __name__ == "__main__":
 	app = make_app()
-	app.listen(8080)
+	app.listen(80)
 	tornado.ioloop.IOLoop.current().start()
 
 #------------------------------------------------------------------------------
