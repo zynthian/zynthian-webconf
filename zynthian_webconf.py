@@ -89,40 +89,40 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	soundcard_presets=OrderedDict([
 		['HifiBerry DAC+', { 
-			'SOUNDCARD_DTOVERLAY': 'hifiberry-dacplus'
+			'SOUNDCARD_CONFIG': 'hifiberry-dacplus'
 		}],
 		['HifiBerry DAC', { 
-			'SOUNDCARD_DTOVERLAY':'hifiberry-dac'
+			'SOUNDCARD_CONFIG':'hifiberry-dac'
 		}],
 		['HifiBerry Digi', { 
-			'SOUNDCARD_DTOVERLAY':'hifiberry-digi'
+			'SOUNDCARD_CONFIG':'hifiberry-digi'
 		}],
 		['HifiBerry Amp', { 
-			'SOUNDCARD_DTOVERLAY': 'hifiberry-amp'
+			'SOUNDCARD_CONFIG': 'hifiberry-amp'
 		}],
 		['AudioInjector', { 
-			'SOUNDCARD_DTOVERLAY': 'audioinjector-wm8731-audio'
+			'SOUNDCARD_CONFIG': 'audioinjector-wm8731-audio'
 		}],
 		['IQAudio DAC', { 
-			'SOUNDCARD_DTOVERLAY': 'iqaudio-dac'
+			'SOUNDCARD_CONFIG': 'iqaudio-dac'
 		}],
 		['IQAudio DAC+', { 
-			'SOUNDCARD_DTOVERLAY': 'iqaudio-dacplus'
+			'SOUNDCARD_CONFIG': 'iqaudio-dacplus'
 		}],
 		['IQAudio Digi', { 
-			'SOUNDCARD_DTOVERLAY': 'iqaudio-digi-wm8804-audio'
+			'SOUNDCARD_CONFIG': 'iqaudio-digi-wm8804-audio'
 		}],
 		['PiSound', { 
-			'SOUNDCARD_DTOVERLAY': 'pisound'
+			'SOUNDCARD_CONFIG': 'pisound'
 		}],
 		['JustBoom DAC', { 
-			'SOUNDCARD_DTOVERLAY': 'justboom-dac'
+			'SOUNDCARD_CONFIG': 'justboom-dac'
 		}],
 		['JustBoom Digi', { 
-			'SOUNDCARD_DTOVERLAY': 'justboom-digi'
+			'SOUNDCARD_CONFIG': 'justboom-digi'
 		}],
 		['USB device', { 
-			'SOUNDCARD_DTOVERLAY': ''
+			'SOUNDCARD_CONFIG': ''
 		}]
 	])
 
@@ -135,10 +135,10 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'options': list(self.soundcard_presets.keys()),
 				'presets': self.soundcard_presets
 			}],
-			['SOUNDCARD_DTOVERLAY', {
-				'type': 'text',
+			['SOUNDCARD_CONFIG', {
+				'type': 'textarea',
 				'title': 'Overlay',
-				'value': os.environ.get('SOUNDCARD_DTOVERLAY'),
+				'value': os.environ.get('SOUNDCARD_CONFIG'),
 				'advanced': True
 			}],
 			['JACKD_OPTIONS', {
@@ -165,43 +165,55 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 
 	display_presets=OrderedDict([
 		['PiTFT 2.8 Resistive', {
-			'DISPLAY_DTOVERLAY': 'pitft28-resistive,rotate=90,speed=32000000,fps=20',
+			'DISPLAY_CONFIG': 'pitft28-resistive,rotate=90,speed=32000000,fps=20',
 			'DISPLAY_WIDTH': '320',
 			'DISPLAY_HEIGHT': '240',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['PiTFT 2.8 Capacitive', {
-			'DISPLAY_DTOVERLAY': 'pitft28-capacitive,rotate=90,speed=32000000,fps=20',
+			'DISPLAY_CONFIG': 'pitft28-capacitive,rotate=90,speed=32000000,fps=20',
 			'DISPLAY_WIDTH': '320',
 			'DISPLAY_HEIGHT': '240',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['PiTFT 3.5 Resistive', {
-			'DISPLAY_DTOVERLAY': 'pitft35-resistive,rotate=90,speed=32000000,fps=20',
+			'DISPLAY_CONFIG': 'pitft35-resistive,rotate=90,speed=32000000,fps=20',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['PiScreen 3.5 (v1)', {
-			'DISPLAY_DTOVERLAY': 'piscreen,speed=16000000,rotate=90',
+			'DISPLAY_CONFIG': 'piscreen,speed=16000000,rotate=90',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['PiScreen 3.5 (v2)', {
-			'DISPLAY_DTOVERLAY': 'piscreen2r',
+			'DISPLAY_CONFIG': 'piscreen2r',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['RPi-Display 2.8', {
-			'DISPLAY_DTOVERLAY': 'rpi-display,speed=32000000,rotate=270',
+			'DISPLAY_CONFIG': 'rpi-display,speed=32000000,rotate=270',
 			'DISPLAY_WIDTH': '320',
 			'DISPLAY_HEIGHT': '240',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
-		['HDMI display', {
-			'DISPLAY_DTOVERLAY': '',
+		['WaveShare 5 HDMI', {
+			'DISPLAY_CONFIG': '',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['WaveShare 7 HDMI', {
+			'DISPLAY_CONFIG': '',
+			'DISPLAY_WIDTH': '1024',
+			'DISPLAY_HEIGHT': '600',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['HDMI Generic display', {
+			'DISPLAY_CONFIG': '',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
 			'FRAMEBUFFER': '/dev/fb0'
@@ -217,10 +229,10 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'options': list(self.display_presets.keys()),
 				'presets': self.display_presets
 			}],
-			['DISPLAY_DTOVERLAY', {
-				'type': 'text',
+			['DISPLAY_CONFIG', {
+				'type': 'textarea',
 				'title': 'Overlay',
-				'value': os.environ.get('DISPLAY_DTOVERLAY'),
+				'value': os.environ.get('DISPLAY_CONFIG'),
 				'advanced': True
 			}],
 			['DISPLAY_WIDTH', {

@@ -6,6 +6,8 @@
 	<label>{{ escape(config[varname]['title']) }}:</label><br>
 	{% if config[varname]['type']=='text' %}
 	<input name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}">
+	{% if config[varname]['type']=='textarea' %}
+	<textarea name="{{ escape(varname) }}">{{ escape(config[varname]['value']) }}</textarea>
 	{% elif config[varname]['type']=='select' %}
 	<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
 	{% for option in config[varname]['options'] %}
