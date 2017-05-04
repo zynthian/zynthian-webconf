@@ -23,7 +23,7 @@
 @secundary: #79CDC0;
 */
 
-input, select {
+input, select, textarea {
 	width: 100%;
 }
 
