@@ -58,6 +58,8 @@
 						<li {% if request.uri=="/api/display" %}class="active"{% end %}><a href="/api/display">Display</a></li>
 						<li {% if request.uri=="/api/wiring" %}class="active"{% end %}><a href="/api/wiring">Wiring</a></li>
 						<li {% if request.uri=="/api/ui" %}class="active"{% end %}><a href="/api/ui">User Interface</a></li>
+						<li {% if request.uri=="/api/system" %}class="active"{% end %}><a href="/api/system">System</a></li>
+						<li {% if request.uri=="/api/reboot" %}class="active"{% end %}><a href="/api/reboot">Reboot</a></li>
 						<!--
 						<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
 							<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">User Interface <span class="caret"></span></a>
@@ -76,7 +78,7 @@
 	<section id="section-config" class="content-section container pad-top80 pad-bot80 clearfix bg_logo_wave">
 		<div class="row">
 			<div class="col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1">
-				{% module Template("config_block.html", config=config, title=title) %}
+				{% module Template(body, config=config, title=title, errors=errors) %}
 			</div>
 		</div>
 	</section>

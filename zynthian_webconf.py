@@ -128,7 +128,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
-	def get(self):
+	def get(self, errors=None):
 		config=OrderedDict([
 			['SOUNDCARD_NAME', {
 				'type': 'select',
@@ -153,11 +153,11 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", config=config, title="Audio")
+			self.render("config.html", body="config_block.html", config=config, title="Audio", errors=errors)
 
 	def post(self):
-		self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.get()
+		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.get(errors)
 
 #------------------------------------------------------------------------------
 # Display Configuration
@@ -252,7 +252,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 	
-	def get(self):
+	def get(self, errors=None):
 		config=OrderedDict([
 			['DISPLAY_NAME', {
 				'type': 'select',
@@ -289,11 +289,11 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", config=config, title="Display")
+			self.render("config.html", body="config_block.html", config=config, title="Display", errors=errors)
 
 	def post(self):
-		self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.get()
+		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.get(errors)
 
 #------------------------------------------------------------------------------
 # Wiring Configuration
@@ -359,7 +359,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
-	def get(self):
+	def get(self, errors=None):
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
 				'type': 'select',
@@ -390,11 +390,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", config=config, title="Wiring")
+			self.render("config.html", body="config_block.html", config=config, title="Wiring", errors=errors)
 
 	def post(self):
-		self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.get()
+		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		errors=self.get()
 
 #------------------------------------------------------------------------------
 # UI Configuration
@@ -410,7 +410,7 @@ class UIConfigHandler(ZynthianConfigHandler):
 		"Abel"
 	]
 
-	def get(self):
+	def get(self, errors=None):
 		config=OrderedDict([
 			['ZYNTHIAN_UI_FONT_FAMILY', {
 				'type': 'select',
@@ -447,12 +447,72 @@ class UIConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", config=config, title="User Interface")
+			self.render("config.html", body="config_block.html", config=config, title="User Interface", errors=errors)
 
 	def post(self):
-		self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.get()
+		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.get(errors)
 
+
+#------------------------------------------------------------------------------
+# System Menu
+#------------------------------------------------------------------------------
+
+class SystemConfigHandler(ZynthianConfigHandler):
+
+	def get(self, errors=None):
+		#Get Hostname
+		with open("/etc/hostname") as f:
+			hostname=f.readline()
+
+		config=OrderedDict([
+			['HOSTNAME', {
+				'type': 'text',
+				'title': 'Hostname',
+				'value': hostname
+			}],
+			['PASSWORD', {
+				'type': 'password',
+				'title': 'Password',
+				'value': '*'
+			}],
+			['REPEAT_PASSWORD', {
+				'type': 'password',
+				'title': 'Repeat password',
+				'value': '*'
+			}]
+		])
+		if self.genjson:
+			self.write(config)
+		else:
+			self.render("config.html", body="config_block.html", config=config, title="System", errors=errors)
+
+	def post(self):
+		errors=self.update_system_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.get(errors)
+
+	def update_system_config(self, config):
+		#Update Hostname
+		with open("/etc/hostname",'w') as f:
+			f.write(config['HOSTNAME'][0])
+		#Update Password
+		if len(config['PASSWORD'][0])<6:
+			return { 'PASSWORD': "Password must have at least 6 characters" }
+		if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
+			return { 'REPEAT_PASSWORD': "Passwords does not match!" }
+		check_output("echo root:%s | chpasswd" % config['PASSWORD'][0], shell=True)
+
+#------------------------------------------------------------------------------
+# Reboot Hadler
+#------------------------------------------------------------------------------
+
+class RebootHandler(ZynthianConfigHandler):
+	def get(self):
+		if self.genjson:
+			self.write("REBOOT")
+		else:
+			self.render("config.html", body="reboot_block.html", config=None, title="Reboot", errors=None)
+		check_output("reboot", shell=True)
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
@@ -472,6 +532,8 @@ def make_app():
 		(r"/api/display$", DisplayConfigHandler),
 		(r"/api/wiring$", WiringConfigHandler),
 		(r"/api/ui$", UIConfigHandler),
+		(r"/api/system$", SystemConfigHandler),
+		(r"/api/reboot$", RebootHandler),
 	], template_path="templates")
 
 if __name__ == "__main__":
