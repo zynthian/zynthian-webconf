@@ -4,7 +4,9 @@
 <br>
 <br>
 <br>
-<b>Re-starting system...</b><br>
+<img src="/img/loading.gif">
+<b>Re-starting system...</b>
+<br>
 <br>
 <br>
 <br>
@@ -12,7 +14,8 @@
 <br>
 
 <script>
-function check_system_online() {
-	//TODO
-}
+	window.setTimeout(function(){window.location.href='/'},10000);
 </script>
+<noscript>
+	<meta http-equiv="refresh" content="10; url=/" />
+</noscript>

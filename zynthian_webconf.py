@@ -558,7 +558,7 @@ class RebootHandler(ZynthianConfigHandler):
 			self.write("REBOOT")
 		else:
 			self.render("config.html", body="reboot_block.html", config=None, title="Reboot", errors=None)
-		check_output("reboot", shell=True)
+		check_output("(sleep 1 & reboot)&", shell=True)
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
