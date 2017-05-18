@@ -13,7 +13,7 @@
 
 	<!-- For IE 9 and below. ICO should be 32x32 pixels in size -->
 	<!--[if IE]><link rel="shortcut icon" href="/img/favicon.ico"><![endif]-->
-	<!-- Touch Icons - iOS and Android 2.1+ 180x180 pixels in size. --> 
+	<!-- Touch Icons - iOS and Android 2.1+ 180x180 pixels in size. -->
 	<link rel="apple-touch-icon-precomposed" href="/img/favicon_180.png">
 	<!-- Firefox, Chrome, Safari, IE 11+ and Opera. 196x196 pixels in size. -->
 	<link rel="icon" href="/img/favicon_196.png">
@@ -36,7 +36,7 @@
 		<script src="//oss.maxcdn.com/libs/respond.js/1.4.2/respond.min.js"></script>
 	<![endif]-->
 </head>
- 
+
 <body>
 	<!-- header -->
 	<header id="header">
@@ -59,6 +59,7 @@
 						<li {% if request.uri=="/api/wiring" %}class="active"{% end %}><a href="/api/wiring">Wiring</a></li>
 						<li {% if request.uri=="/api/ui" %}class="active"{% end %}><a href="/api/ui">User Interface</a></li>
 						<li {% if request.uri=="/api/system" %}class="active"{% end %}><a href="/api/system">System</a></li>
+						<li {% if request.uri=="/api/wifi" %}class="active"{% end %}><a href="/api/wifi">Wifi</a></li>
 						<li {% if request.uri=="/api/reboot" %}class="active"{% end %}><a href="/api/reboot">Reboot</a></li>
 						<!--
 						<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">

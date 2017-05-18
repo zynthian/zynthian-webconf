@@ -9,11 +9,11 @@
 	{% elif config[varname]['type']=='password' %}
 	<input name="{{ escape(varname) }}" type="password">
 	{% elif config[varname]['type']=='textarea' %}
-	<textarea name="{{ escape(varname) }}">{{ escape(config[varname]['value'].replace("\\n","\n")) }}</textarea>
+	<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
 	{% elif config[varname]['type']=='select' %}
 	<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
 	{% for option in config[varname]['options'] %}
-		<option value="{{ escape(option) }}" 
+		<option value="{{ escape(option) }}"
 			{% if config[varname]['value']==option %}selected=1{% end %}
 			{% if 'presets' in config[varname] %}
 				{% for fn,preset in list(config[varname]['presets'][option].items()) %}
