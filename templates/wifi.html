@@ -1,0 +1,31 @@
+
+<h2>{{ escape(title) }}</h2>
+
+<form method="post">
+	<ul class="nav nav-tabs" role="tablist">
+		{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
+	  <li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
+		{% end %}
+		<li ><a href="#wpa_supplicant" role="tab" data-toggle="tab">{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['title'] }}</a></li>
+
+	</ul>
+
+	<div class="tab-content">
+	  {% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
+		<div class="tab-pane {% if network['idx']==0 %}active{% end %}" id="{{ network['ssid'] }}">
+				<label>Passphrase:</label><br />
+				<input name="ZYNTHIAN_WIFI_PSK_{{ network['ssid'] }}" value="{{ escape(network['psk']) }}" /><br />
+				<label>Priority:</label><br />
+				<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" /><br />
+		</div>
+		{% end %}
+	  <div class="tab-pane" id="wpa_supplicant">
+			<textarea name="ZYNTHIAN_WIFI_WPA_SUPPLICANT" cols="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['cols'] }}" rows="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['rows'] }}">
+				{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['value'].replace("\\n","\n") }}
+			</textarea>
+
+		</div>
+	</div>
+	<br>
+	<input type="submit" value="Save" class="btn btn-lg btn-theme">
+</form>
