@@ -62,6 +62,9 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		fieldNames = ["ZYNTHIAN_WIFI_PRIORITY"]
 		wpa_supplicant_data = self.applyUpdatedFields(wpa_supplicant_data, fieldNames)
 
+		newSSID =  self.get_argument('ZYNTHIAN_WIFI_NEW_SSID')
+		if newSSID: wpa_supplicant_data = self.addNewNetwork(wpa_supplicant_data, newSSID)
+
 		fo = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
 		fo.write(wpa_supplicant_data)
 		fo.flush()
@@ -87,23 +90,30 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.IGNORECASE | re.MULTILINE | re.DOTALL )
 		iterator = p.finditer(previous_supplicant_data)
 		for m in iterator:
-			print(m.group(1) + '-' + m.group(2))
-			newPassword =  self.get_argument('ZYNTHIAN_WIFI_PSK_' + m.group(1))
-			if not newPassword: newPassword = m.group(2)
+			action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
+			if action and action == 'REMOVE_' + m.group(1):
+				print('Removing network')
+				pRemove =  re.compile('(.*)network={.*?ssid=\\"' + m.group(1) + '\\".*?}(.*)', re.IGNORECASE | re.MULTILINE | re.DOTALL )
+				wpa_supplicant_data = pRemove.sub(r'\1\2', wpa_supplicant_data)
+			else:
+				newPassword =  self.get_argument('ZYNTHIAN_WIFI_PSK_' + m.group(1))
+				if not newPassword: newPassword = m.group(2)
 
-			pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.IGNORECASE | re.MULTILINE | re.DOTALL )
-			wpa_supplicant_data = pReplacePasswordVeil.sub('ssid="' + m.group(1) + r'"\1"' + newPassword + '"', wpa_supplicant_data)
+				pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.IGNORECASE | re.MULTILINE | re.DOTALL )
+				wpa_supplicant_data = pReplacePasswordVeil.sub('ssid="' + m.group(1) + r'"\1"' + newPassword + '"', wpa_supplicant_data)
 
-			for fieldName in fieldNames:
-				fieldUpdated =  self.get_argument(fieldName + '_' + m.group(1) + '_UPDATED')
-				if fieldUpdated:
-					fieldValue =  self.get_argument(fieldName + '_' + m.group(1))
-					print(self.fieldMap[fieldName])
-					print(fieldValue)
-					regexp = 'ssid=\\"' + m.group(1) + '\\"(?P<pre>.*?' + self.fieldMap[fieldName] + '=)\\S+(?P<post>.*\\})'
-					print(regexp)
-					pReplacement = re.compile(regexp, re.IGNORECASE | re.MULTILINE | re.DOTALL )
-					wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
+				for fieldName in fieldNames:
+					fieldUpdated =  self.get_argument(fieldName + '_' + m.group(1) + '_UPDATED')
+					if fieldUpdated:
+						fieldValue =  self.get_argument(fieldName + '_' + m.group(1))
+						regexp = 'ssid=\\"' + m.group(1) + '\\"(?P<pre>.*?' + self.fieldMap[fieldName] + '=)\\S+(?P<post>.*\\})'
+						pReplacement = re.compile(regexp, re.IGNORECASE | re.MULTILINE | re.DOTALL )
+						wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
 
+		return wpa_supplicant_data
 
+	def addNewNetwork(self, wpa_supplicant_data, newSSID):
+		wpa_supplicant_data += '\nnetwork={\n\tssid="'
+		wpa_supplicant_data += newSSID
+		wpa_supplicant_data += '"\n\tscan_ssid=1\n\tkey_mgmt=WPA-PSK\n\tpsk=""\n\tpriority=10\n}'
 		return wpa_supplicant_data

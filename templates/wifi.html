@@ -2,12 +2,42 @@
 <h2>{{ escape(title) }}</h2>
 
 <form method="post">
+	<script type="text/javascript">
+		$(document).ready(function(){
+			$(".btn-new-network").click(function(){
+				$("#newNetworkModal").modal('show');
+			});
+		});
+	</script>
+
+	<!-- Button HTML (to Trigger Modal) -->
+     <a href="#" class="btn btn-lg btn-primar btn-new-network">Add network</a>
+
+     <!-- Modal HTML -->
+     <div id="newNetworkModal" class="modal fade">
+         <div class="modal-dialog">
+             <div class="modal-content">
+                 <div class="modal-header">
+                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                     <h4 class="modal-title">Add network</h4>
+                 </div>
+                 <div class="modal-body">
+									 	<label>SSID:</label><br />
+									 	<input name="ZYNTHIAN_WIFI_NEW_SSID" />
+                 </div>
+                 <div class="modal-footer">
+									 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />
+                 </div>
+             </div>
+         </div>
+     </div>
+
+
 	<ul class="nav nav-tabs" role="tablist">
 		{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
 	  <li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
 		{% end %}
 		<li ><a href="#wpa_supplicant" role="tab" data-toggle="tab">{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['title'] }}</a></li>
-
 	</ul>
 
 	<div class="tab-content">
@@ -18,15 +48,16 @@
 				<label>Priority:</label><br />
 				<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" onchange="document.getElementById('ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED').value='1';" />
 				<input type="hidden" id="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" /><br /><br />
+				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');">Remove Network</button><br />
+
 		</div>
 		{% end %}
 	  <div class="tab-pane" id="wpa_supplicant">
 			<textarea name="ZYNTHIAN_WIFI_WPA_SUPPLICANT" cols="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['cols'] }}" rows="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['rows'] }}">
 				{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['value'].replace("\\n","\n") }}
 			</textarea>
-
 		</div>
 	</div>
 	<br>
-	<input type="submit" value="Save" class="btn btn-lg btn-theme">
+	<button name="ZYNTHIAN_WIFI_ACTION" value="SAVE" class="btn btn-lg btn-theme">Save</button>
 </form>
