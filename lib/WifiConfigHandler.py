@@ -73,8 +73,8 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 
 	def getSupplicantFileName(self):
 		supplicant_file_name = "/etc/wpa_supplicant/wpa_supplicant.conf"
-		if os.path.getsize(supplicant_file_name) == 0:
-			supplicant_file_name = "/zynthian/zynthian-sys/etc/wpa_supplicant/wpa_supplicant.conf"
+		#if os.path.getsize(supplicant_file_name) == 0:
+		#	supplicant_file_name = "/zynthian/zynthian-sys/etc/wpa_supplicant/wpa_supplicant.conf"
 		return supplicant_file_name
 
 	def readSupplicantData(self, supplicant_file_name):

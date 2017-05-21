@@ -38,6 +38,7 @@ from lib.SystemConfigHandler import SystemConfigHandler
 from lib.UiConfigHandler import UiConfigHandler
 from lib.WiringConfigHandler import WiringConfigHandler
 from lib.WifiConfigHandler import WifiConfigHandler
+from lib.WifiListHandler import WifiListHandler
 
 #------------------------------------------------------------------------------
 
@@ -66,6 +67,7 @@ def make_app():
 		(r"/api/wifi$", WifiConfigHandler),
 		(r"/api/system$", SystemConfigHandler),
 		(r"/api/reboot$", RebootHandler),
+		(r"/api/wifi/list$", WifiListHandler),
 	], template_path="templates")
 
 if __name__ == "__main__":
