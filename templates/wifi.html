@@ -64,8 +64,11 @@
 	<div class="tab-content">
 	  {% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
 		<div class="tab-pane {% if network['idx']==0 %}active{% end %}" id="{{ network['ssid'] }}">
-				<label>Passphrase (not revealing current password - enter new one):</label><br />
-				<input name="ZYNTHIAN_WIFI_PSK_{{ network['ssid'] }}" />
+			<label>Passphrase:</label><br />
+			  <input name="ZYNTHIAN_WIFI_PSK_{{ network['ssid'] }}" />
+ 				<span class="label label-info">This field is always empty, because no passwords will be displayed for security reasons.</span>
+ 				<span class="label label-info">If you want to change the password, enter the new passphrase.</span><br />
+
 				<label>Priority:</label><br />
 				<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" onchange="document.getElementById('ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED').value='1';" />
 				<input type="hidden" id="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" /><br /><br />
