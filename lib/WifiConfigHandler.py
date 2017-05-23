@@ -12,6 +12,9 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 
 	fieldMap = {"ZYNTHIAN_WIFI_PRIORITY": "priority"}
 
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
 	def prepare(self):
 		self.genjson=False
 		try:
@@ -20,7 +23,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		except:
 			pass
 
-
+	@tornado.web.authenticated
 	def get(self, errors=None):
 		supplicant_file_name = self.getSupplicantFileName()
 		supplicant_data = re.sub(r'psk=".*?"', 'psk="*****"',
@@ -33,7 +36,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 				'type': 'textarea',
 				'cols': 50,
 				'rows': 20,
-				'title': '/etc/wpa_supplicant/wpa_supplicant.conf',
+				'title': 'Advanced Config',
 				'value': supplicant_data
 			}]
 		])

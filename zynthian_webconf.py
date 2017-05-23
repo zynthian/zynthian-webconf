@@ -31,6 +31,7 @@ import tornado.ioloop
 import tornado.web
 from subprocess import check_output
 from collections import OrderedDict
+from lib.LoginHandler import LoginHandler
 from lib.AudioConfigHandler import AudioConfigHandler
 from lib.DisplayConfigHandler import DisplayConfigHandler
 from lib.RebootHandler import RebootHandler
@@ -51,6 +52,11 @@ logging.basicConfig(filename='webconf.log', level=logging.INFO)
 #------------------------------------------------------------------------------
 
 def make_app():
+	settings = {
+		"template_path": "templates",
+		"cookie_secret": "hsa9fKjf3Hf923hg6avJ)8fjh3mcGF12ht97834bh",
+		"login_url": "/login"
+	}
 	return tornado.web.Application([
 		(r'/$', AudioConfigHandler),
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
@@ -60,6 +66,7 @@ def make_app():
 		(r'/css/(.*)$', tornado.web.StaticFileHandler, {'path': 'css'}),
 		(r'/js/(.*)$', tornado.web.StaticFileHandler, {'path': 'js'}),
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
+		(r"/login", LoginHandler),
 		(r"/api/audio$", AudioConfigHandler),
 		(r"/api/display$", DisplayConfigHandler),
 		(r"/api/wiring$", WiringConfigHandler),
@@ -68,7 +75,7 @@ def make_app():
 		(r"/api/system$", SystemConfigHandler),
 		(r"/api/reboot$", RebootHandler),
 		(r"/api/wifi/list$", WifiListHandler),
-	], template_path="templates")
+	], **settings)
 
 if __name__ == "__main__":
 	app = make_app()

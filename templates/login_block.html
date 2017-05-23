@@ -1,0 +1,11 @@
+
+<h2>{{ escape(title) }}</h2>
+
+<form method="post">
+	<label>Password</label><br>
+	<input name="PASSWORD" type="password">
+	<br>
+	{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
+	<br>
+	<input type="submit" value="Login" class="btn btn-lg btn-theme">
+</form>
