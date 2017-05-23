@@ -1,6 +1,7 @@
 import os
 import tornado.web
 from collections import OrderedDict
+from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------

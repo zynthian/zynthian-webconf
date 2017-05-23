@@ -5,7 +5,7 @@
 	<label>Password</label><br>
 	<input name="PASSWORD" type="password">
 	<br>
-	{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
+	{% if errors and 'PASSWORD' in errors %}<div class="alert alert-danger">{{ escape(errors['PASSWORD']) }}</div>{% end %}
 	<br>
 	<input type="submit" value="Login" class="btn btn-lg btn-theme">
 </form>

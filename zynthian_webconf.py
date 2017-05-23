@@ -29,7 +29,6 @@ import sys
 import logging
 import tornado.ioloop
 import tornado.web
-from subprocess import check_output
 from collections import OrderedDict
 from lib.LoginHandler import LoginHandler
 from lib.AudioConfigHandler import AudioConfigHandler
@@ -44,8 +43,7 @@ from lib.WifiListHandler import WifiListHandler
 #------------------------------------------------------------------------------
 
 #Configure Logging
-logging.basicConfig(filename='webconf.log', level=logging.INFO)
-
+logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
