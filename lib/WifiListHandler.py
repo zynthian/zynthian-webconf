@@ -15,29 +15,38 @@ class WifiListHandler(tornado.web.RequestHandler):
         wifiList = OrderedDict()
         network = None
         ssid = None
+        encryption = False
+        quality = 0
+        signalLevel = 0
         for byteLine in check_output("iwlist wlan0 scan | grep -e ESSID -e Encryption -e Quality", shell=True).splitlines():
             line = byteLine.decode("utf-8")
             if line.find('ESSID')>=0:
                 if ssid:
-                    self.addNetwork(wifiList, ssid, network)
-                network = {'encryption':False,'quality':'','signalLevel':''}
+                    self.addNetwork(wifiList, ssid, network, encryption, quality, signalLevel)
+                network = {'encryption':False,'quality':0,'signalLevel':0}
+                encryption = False
+                quality = 0
+                signalLevel = 0
                 ssid = line.split(':')[1].replace("\"","")
             elif line.find('Encryption key:on')>=0:
-                network['encryption'] = True
+                encryption = True
             else:
-                m = re.match('.*Quality=(\\d*)/100  Signal level=(\\d*)/100.*', line, re.M | re.I)
+                m = re.match('.*Quality=(.*?)/(.*?) Signal level=(.*?(100|dBm)).*', line, re.M | re.I)
                 if m:
-                    network['quality'] = m.group(1)
-                    network['signalLevel'] = m.group(2)
+                    quality = round(int(m.group(1)) / int(m.group(2)) * 100,2)
+                    signalLevel = m.group(3)
 
         if ssid:
-            self.addNetwork(wifiList, ssid, network)
+            self.addNetwork(wifiList, ssid, network, encryption, quality, signalLevel)
 
         wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
         wifiList = OrderedDict(reversed(list(wifiList.items())))
         self.write(wifiList)
 
-    def addNetwork(self, wifiList, ssid, network):
+    def addNetwork(self, wifiList, ssid, network, encryption, quality, signalLevel):
+        network['quality'] = quality
+        network['signalLevel'] = signalLevel
+        network['encryption'] = encryption
         if ssid in wifiList:
             existingNetwork = wifiList[ssid]
             if existingNetwork:
