@@ -22,11 +22,15 @@
 @primary: #35A49C;
 @secundary: #79CDC0;
 */
-
-input, select, textarea, button {
-	width: 100%;
+input,
+select,
+textarea,
+button {
+  width: 100%;
 }
-
+.modal-header button {
+  width: auto;
+}
 a {
   color: #50b000;
 }

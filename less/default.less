@@ -1,81 +1,61 @@
 
 @import "variables.less";
 
+input, select, textarea, button {
+	width: 100%;
+}
+
+ .modal-header button {
+	 width: auto;
+ }
+
 a {
-	color: @primary;
+  color: #50b000;
 }
 a:hover {
-	color: lighten(@primary,5%);
+  color: #5cca00;
 }
-
 /* menu */
-
 h1 a.navbar-brand {
-	color: @primary;
+  color: #50b000;
 }
-
 .nav > li > a:hover {
-	color: lighten(@secundary,5%);
+  color: #5cca00;
 }
-
 .navbar .navbar-nav > .active > a {
-	color: lighten(@secundary,5%);
+  color: #5cca00;
 }
-
 .navbar .navbar-nav > .active > a {
-	color: @primary;
+  color: #50b000;
 }
-
-/* flexslider */
-.flex-control-paging li a {
-	background: @primary;
-}
-
-.flex-direction-nav a:hover{
-	background-color: @primary;
-}
-
-.testimonial span.author a {
-	color: @secundary;
-}
-
 /* --- icon box hover --- */
 .hi-icon-effect-5 .hi-icon {
-	color: @primary;
-	box-shadow: 0 0 0 4px @primary;
+  color: #50b000;
+  box-shadow: 0 0 0 4px #50b000;
 }
 .no-touch .hi-icon-effect-5 .hi-icon:hover {
-	background: @primary;
-	box-shadow: 0 0 0 8px @secundary;
+  background: #50b000;
+  box-shadow: 0 0 0 8px #50b000;
 }
-
 /* btn */
 .btn-theme {
-	background-color: @secundary;
-	color: @light;
+  background-color: #50b000;
+  color: #ffffff;
 }
-.btn-theme:hover,.btn-theme:focus,.btn-theme:active{
-	background-color: darken(@secundary,5%);
-	color: @light;
+.btn-theme:hover,
+.btn-theme:focus,
+.btn-theme:active {
+  background-color: #449700;
+  color: #ffffff;
 }
-.btn-cta,.btn-cta.btn-lg {
-	background-color: @primary;
-	border-color: darken(@primary,10%);
-	color: @light;
+.btn-cta,
+.btn-cta.btn-lg {
+  background-color: #50b000;
+  border-color: #397d00;
+  color: #ffffff;
 }
-
-.btn-cta:focus,.btn-cta:active {
-	border-color: darken(@primary,5%);
-  color: @light;
+.btn-cta:focus,
+.btn-cta:active {
+  border-color: #449700;
+  color: #ffffff;
 }
-
-/* footer */
-.social-circle li a {
-	background:@primary;
-}
-
-a.scrollup{
-	background:@primary;
-}
-
-

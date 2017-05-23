@@ -1,5 +1,7 @@
 import os
 import re
+import logging
+import base64
 import tornado.web
 from collections import OrderedDict
 
@@ -9,6 +11,8 @@ from collections import OrderedDict
 #------------------------------------------------------------------------------
 
 class WifiConfigHandler(tornado.web.RequestHandler):
+
+	passwordMask = "*****"
 
 	fieldMap = {"ZYNTHIAN_WIFI_PRIORITY": "priority"}
 
@@ -26,10 +30,10 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		supplicant_file_name = self.getSupplicantFileName()
-		supplicant_data = re.sub(r'psk=".*?"', 'psk="*****"',
+		supplicant_data = re.sub(r'psk=".*?"', 'psk="' + self.passwordMask + '"',
 			self.readSupplicantData(supplicant_file_name),
-			re.IGNORECASE | re.MULTILINE | re.DOTALL )
-		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?priority=(\d*).*?\\}.*?', re.IGNORECASE | re.MULTILINE | re.DOTALL )
+			re.I | re.M | re.S )
+		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?priority=(\d*).*?\\}.*?', re.I | re.M | re.S )
 		iterator = p.finditer(supplicant_data)
 		config=OrderedDict([
 			['ZYNTHIAN_WIFI_WPA_SUPPLICANT', {
@@ -47,6 +51,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 			networks.append({
 			    'idx': idx,
 				'ssid': m.group(1),
+				'ssid64': base64.b64encode(m.group(1).encode())[:5],
 				'psk': m.group(2),
 				'priority': m.group(3)
 			})
@@ -90,19 +95,24 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		supplicant_file_name = self.getSupplicantFileName()
 		previous_supplicant_data = self.readSupplicantData(supplicant_file_name)
 
-		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.IGNORECASE | re.MULTILINE | re.DOTALL )
+		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.I | re.M | re.S )
 		iterator = p.finditer(previous_supplicant_data)
 		for m in iterator:
 			action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
 			if action and action == 'REMOVE_' + m.group(1):
 				print('Removing network')
-				pRemove =  re.compile('(.*)network={.*?ssid=\\"' + m.group(1) + '\\".*?}(.*)', re.IGNORECASE | re.MULTILINE | re.DOTALL )
+				pRemove =  re.compile('(.*)network={.*?ssid=\\"' + m.group(1) + '\\".*?}(.*)', re.I | re.M | re.S )
 				wpa_supplicant_data = pRemove.sub(r'\1\2', wpa_supplicant_data)
 			else:
 				newPassword =  self.get_argument('ZYNTHIAN_WIFI_PSK_' + m.group(1))
+
+				mNewSupplicantData = re.match('.*ssid="' + m.group(1) + '".*?psk="(.*?)".*', wpa_supplicant_data, re.I | re.M | re.S)
+				if mNewSupplicantData:
+					if not newPassword and  not mNewSupplicantData.group(1) == self.passwordMask:
+						newPassword = mNewSupplicantData.group(1)
 				if not newPassword: newPassword = m.group(2)
 
-				pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.IGNORECASE | re.MULTILINE | re.DOTALL )
+				pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.I | re.M | re.S )
 				wpa_supplicant_data = pReplacePasswordVeil.sub('ssid="' + m.group(1) + r'"\1"' + newPassword + '"', wpa_supplicant_data)
 
 				for fieldName in fieldNames:
@@ -110,7 +120,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 					if fieldUpdated:
 						fieldValue =  self.get_argument(fieldName + '_' + m.group(1))
 						regexp = 'ssid=\\"' + m.group(1) + '\\"(?P<pre>.*?' + self.fieldMap[fieldName] + '=)\\S+(?P<post>.*\\})'
-						pReplacement = re.compile(regexp, re.IGNORECASE | re.MULTILINE | re.DOTALL )
+						pReplacement = re.compile(regexp, re.I | re.M | re.S )
 						wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
 
 		return wpa_supplicant_data
