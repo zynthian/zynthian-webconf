@@ -3,10 +3,27 @@
 
 <form method="post">
 	<script type="text/javascript">
-		$(document).ready(function(){
-			$(".btn-new-network").click(function(){
+		function wifiListLoaded( data ) {
+				if ($("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options){
+					var i;
+					for(i=$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options.length-1;i>=0;i--){
+						$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].remove(i);
+					}
+				}
+
+				for (network in data) {
+					$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").append('<option value="' + network + '">' + network + ' (' + data[network].quality + '%)' + '</option>')
+				}
+
 				$("#newNetworkModal").modal('show');
-			});
+		}
+
+		$(document).ready(function(){
+				$(".btn-new-network").click(function(){
+				    params = {};
+				    $.getJSON( '/api/wifi/list' , params, wifiListLoaded );
+
+				});
 		});
 	</script>
 
@@ -22,8 +39,12 @@
                      <h4 class="modal-title">Add network</h4>
                  </div>
                  <div class="modal-body">
-									 	<label>SSID:</label><br />
-									 	<input name="ZYNTHIAN_WIFI_NEW_SSID" />
+									  <label>SSID:</label><br />
+										<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
+											onchange="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = document.getElementById('ZYNTHIAN_WIFI_NEW_SSID_SELECT').value">
+
+										</select>
+									 	<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
                  </div>
                  <div class="modal-footer">
 									 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />

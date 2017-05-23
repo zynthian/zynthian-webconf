@@ -366,7 +366,8 @@ section.bg_logo_wave {
   background-color: #000000;
 }
 
-.modal-body input{
+.modal-body input,
+.modal-body select{
   color: #000000;
 }
 
