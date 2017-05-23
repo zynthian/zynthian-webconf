@@ -1,4 +1,5 @@
 import os
+import tornado.web
 from collections import OrderedDict
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
@@ -141,6 +142,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
 			['DISPLAY_NAME', {

@@ -1,4 +1,5 @@
 import os
+import tornado.web
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
@@ -6,6 +7,8 @@ from lib.ZynthianConfigHandler import ZynthianConfigHandler
 #------------------------------------------------------------------------------
 
 class RebootHandler(ZynthianConfigHandler):
+
+	@tornado.web.authenticated
 	def get(self):
 		if self.genjson:
 			self.write("REBOOT")

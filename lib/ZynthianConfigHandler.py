@@ -8,6 +8,9 @@ from subprocess import check_output
 
 class ZynthianConfigHandler(tornado.web.RequestHandler):
 
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
 	def prepare(self):
 		self.genjson=False
 		try:

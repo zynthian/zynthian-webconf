@@ -1,4 +1,5 @@
 import os
+import tornado.web
 from collections import OrderedDict
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
@@ -71,6 +72,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
