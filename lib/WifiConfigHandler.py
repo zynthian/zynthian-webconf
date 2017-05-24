@@ -86,42 +86,47 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		return supplicant_file_name
 
 	def readSupplicantData(self, supplicant_file_name):
-		fo = open(supplicant_file_name, "r")
-		wpa_supplicant_data = "".join(fo.readlines())
-		fo.close()
-		return wpa_supplicant_data
+		try:
+			fo = open(supplicant_file_name, "r")
+			wpa_supplicant_data = "".join(fo.readlines())
+			fo.close()
+			return wpa_supplicant_data
+		except:
+			pass
+		return ""
 
 	def applyUpdatedFields(self, wpa_supplicant_data, fieldNames):
 		supplicant_file_name = self.getSupplicantFileName()
-		previous_supplicant_data = self.readSupplicantData(supplicant_file_name)
+		if supplicant_file_name:
+			previous_supplicant_data = self.readSupplicantData(supplicant_file_name)
 
-		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.I | re.M | re.S )
-		iterator = p.finditer(previous_supplicant_data)
-		for m in iterator:
-			action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
-			if action and action == 'REMOVE_' + m.group(1):
-				print('Removing network')
-				pRemove =  re.compile('(.*)network={.*?ssid=\\"' + m.group(1) + '\\".*?}(.*)', re.I | re.M | re.S )
-				wpa_supplicant_data = pRemove.sub(r'\1\2', wpa_supplicant_data)
-			else:
-				newPassword =  self.get_argument('ZYNTHIAN_WIFI_PSK_' + m.group(1))
+			p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.I | re.M | re.S )
+			iterator = p.finditer(previous_supplicant_data)
+			for m in iterator:
+				action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
+				if action and action == 'REMOVE_' + m.group(1):
+					print('Removing network')
+					pRemove =  re.compile('(.*)network={.*?ssid=\\"' + m.group(1) + '\\".*?}(.*)', re.I | re.M | re.S )
+					wpa_supplicant_data = pRemove.sub(r'\1\2', wpa_supplicant_data)
+				else:
+					newPassword =  self.get_argument('ZYNTHIAN_WIFI_PSK_' + m.group(1))
 
-				mNewSupplicantData = re.match('.*ssid="' + m.group(1) + '".*?psk="(.*?)".*', wpa_supplicant_data, re.I | re.M | re.S)
-				if mNewSupplicantData:
-					if not newPassword and  not mNewSupplicantData.group(1) == self.passwordMask:
-						newPassword = mNewSupplicantData.group(1)
-				if not newPassword: newPassword = m.group(2)
+					mNewSupplicantData = re.match('.*ssid="' + m.group(1) + '".*?psk="(.*?)".*', wpa_supplicant_data, re.I | re.M | re.S)
+					if mNewSupplicantData:
+						if not newPassword and  not mNewSupplicantData.group(1) == self.passwordMask:
+							newPassword = mNewSupplicantData.group(1)
+					if not newPassword: newPassword = m.group(2)
 
-				pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.I | re.M | re.S )
-				wpa_supplicant_data = pReplacePasswordVeil.sub('ssid="' + m.group(1) + r'"\1"' + newPassword + '"', wpa_supplicant_data)
+					pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.I | re.M | re.S )
+					wpa_supplicant_data = pReplacePasswordVeil.sub('ssid="' + m.group(1) + r'"\1"' + newPassword + '"', wpa_supplicant_data)
 
-				for fieldName in fieldNames:
-					fieldUpdated =  self.get_argument(fieldName + '_' + m.group(1) + '_UPDATED')
-					if fieldUpdated:
-						fieldValue =  self.get_argument(fieldName + '_' + m.group(1))
-						regexp = 'ssid=\\"' + m.group(1) + '\\"(?P<pre>.*?' + self.fieldMap[fieldName] + '=)\\S+(?P<post>.*\\})'
-						pReplacement = re.compile(regexp, re.I | re.M | re.S )
-						wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
+					for fieldName in fieldNames:
+						fieldUpdated =  self.get_argument(fieldName + '_' + m.group(1) + '_UPDATED')
+						if fieldUpdated:
+							fieldValue =  self.get_argument(fieldName + '_' + m.group(1))
+							regexp = 'ssid=\\"' + m.group(1) + '\\"(?P<pre>.*?' + self.fieldMap[fieldName] + '=)\\S+(?P<post>.*\\})'
+							pReplacement = re.compile(regexp, re.I | re.M | re.S )
+							wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
 
 		return wpa_supplicant_data
 

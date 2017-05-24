@@ -4,6 +4,7 @@
 <form method="post">
 	<script type="text/javascript">
 		function wifiListLoaded( data ) {
+			if (data[0]){
 				if ($("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options){
 					var i;
 					for(i=$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options.length-1;i>=0;i--){
@@ -14,8 +15,12 @@
 				for (network in data) {
 					$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").append('<option value="' + network + '">' + network + ' (' + data[network].quality + '%)' + '</option>')
 				}
+				$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").show();
+			} else {
+				$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").hide();
+			}
 
-				$("#newNetworkModal").modal('show');
+			$("#newNetworkModal").modal('show');
 		}
 
 		$(document).ready(function(){
