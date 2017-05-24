@@ -1,5 +1,7 @@
 import os
 import tornado.web
+import logging
+import re
 from subprocess import check_output
 
 #------------------------------------------------------------------------------
@@ -38,7 +40,7 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 					value=value.replace("\r", "")
 					os.environ[varname]=value
 					lines[i]="export %s=\"%s\"\n" % (varname,value)
-					logging.info(lines[i],end='')
+					logging.info(lines[i])
 
 		# Write updated config file
 		with open(fpath,'w') as f:
