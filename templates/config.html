@@ -20,6 +20,7 @@
 
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap.min.css">
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
+	<link rel="stylesheet" href="/bower_components/bootstrap-treeview/dist/bootstrap-treeview.min.css">
 
 	<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
 	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,300,700,900">
@@ -40,6 +41,7 @@
 	<script src="/bower_components/jquery/dist/jquery.js"></script>
 	<script src="/bower_components/modernizr/modernizr.js"></script>
 	<script src="/bower_components/bootstrap/dist/js/bootstrap.min.js"></script>
+	<script src="/bower_components/bootstrap-treeview/public/js/bootstrap-treeview.js"></script>
 </head>
 
 <body>
@@ -60,22 +62,31 @@
 				<div class="navbar-collapse collapse">
 					<ul class="nav navbar-nav" data-0="margin-top:12px;" data-300="margin-top:0px;">
 					{% if current_user is not None %}
-						<li {% if request.uri=="/api/audio" %}class="active"{% end %}><a href="/api/audio">Audio</a></li>
-						<li {% if request.uri=="/api/display" %}class="active"{% end %}><a href="/api/display">Display</a></li>
-						<li {% if request.uri=="/api/wiring" %}class="active"{% end %}><a href="/api/wiring">Wiring</a></li>
-						<li {% if request.uri=="/api/ui" %}class="active"{% end %}><a href="/api/ui">User Interface</a></li>
-						<li {% if request.uri=="/api/wifi" %}class="active"{% end %}><a href="/api/wifi">Wifi</a></li>
-						<li {% if request.uri=="/api/system" %}class="active"{% end %}><a href="/api/system">System</a></li>
-						<li {% if request.uri=="/api/reboot" %}class="active"{% end %}><a href="/api/reboot">Reboot</a></li>
-						<!--
-						<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
-							<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">User Interface <span class="caret"></span></a>
-							<ul class="dropdown-menu">
-								<li {% if request.uri=="/api/ui-colors" %}class="active"{% end %}><a href="/api/ui-colors">Colors</a></li>
-								<li {% if request.uri=="/api/ui-fonts" %}class="active"{% end %}><a href="/api/ui-fonts">Fonts</a></li>
-							</ul>
-						</li>
-						-->
+
+							<li class="dropdown {% if request.uri[0:9]=="/api/lib-" %}active{% end %}">
+								<a href="#menu-lib" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Library <span class="caret"></span></a>
+								<ul class="dropdown-menu">
+									<li {% if request.uri=="/api/lib-snapshot" %}class="active"{% end %}><a href="/api/lib-snapshot">Snapshots</a></li>
+								</ul>
+							</li>
+							<li class="dropdown {% if request.uri[0:8]=="/api/hw-" %}active{% end %}">
+								<a href="#menu-hw" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Hardware <span class="caret"></span></a>
+								<ul class="dropdown-menu">
+									<li {% if request.uri=="/api/hw-audio" %}class="active"{% end %}><a href="/api/hw-audio">Audio</a></li>
+									<li {% if request.uri=="/api/hw-display" %}class="active"{% end %}><a href="/api/hw-display">Display</a></li>
+									<li {% if request.uri=="/api/hw-wiring" %}class="active"{% end %}><a href="/api/hw-wiring">Wiring</a></li>
+								</ul>
+							</li>
+							<li class="dropdown {% if request.uri[0:9]=="/api/sys-" %}active{% end %}">
+								<a href="#menu-sys" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
+								<ul class="dropdown-menu">
+									<li {% if request.uri=="/api/sys-ui" %}class="active"{% end %}><a href="/api/sys-ui">User Interface</a></li>
+									<li {% if request.uri=="/api/sys-security" %}class="active"{% end %}><a href="/api/sys-security">Security/Access</a></li>
+									<li {% if request.uri=="/api/sys-wifi" %}class="active"{% end %}><a href="/api/sys-wifi">Wifi</a></li>
+									<li {% if request.uri=="/api/sys-reboot" %}class="active"{% end %}><a href="/api/sys-reboot">Reboot</a></li>
+								</ul>
+							</li>
+
 						{% end %}
 					</ul>
 				</div>

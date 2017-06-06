@@ -30,7 +30,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		supplicant_file_name = self.getSupplicantFileName()
-		supplicant_data = re.sub(r'psk=".*?"', 'psk="' + self.passwordMask + '"',
+		supplicant_data = re.sub(r'psk=".*?"', 'psk="' + WifiConfigHandler.passwordMask + '"',
 			self.readSupplicantData(supplicant_file_name),
 			re.I | re.M | re.S )
 		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?priority=(\d*).*?\\}.*?', re.I | re.M | re.S )
@@ -113,7 +113,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 
 					mNewSupplicantData = re.match('.*ssid="' + m.group(1) + '".*?psk="(.*?)".*', wpa_supplicant_data, re.I | re.M | re.S)
 					if mNewSupplicantData:
-						if not newPassword and  not mNewSupplicantData.group(1) == self.passwordMask:
+						if not newPassword and  not mNewSupplicantData.group(1) == WifiConfigHandler.passwordMask:
 							newPassword = mNewSupplicantData.group(1)
 					if not newPassword: newPassword = m.group(2)
 

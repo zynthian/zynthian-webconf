@@ -77,7 +77,7 @@
 				<label>Priority:</label><br />
 				<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" onchange="document.getElementById('ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED').value='1';" />
 				<input type="hidden" id="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" /><br /><br />
-				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');">Remove Network</button><br />
+				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');" class="btn btn-danger">Remove Network</button><br />
 
 		</div>
 		{% end %}

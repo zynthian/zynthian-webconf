@@ -34,11 +34,12 @@ from lib.LoginHandler import LoginHandler
 from lib.AudioConfigHandler import AudioConfigHandler
 from lib.DisplayConfigHandler import DisplayConfigHandler
 from lib.RebootHandler import RebootHandler
-from lib.SystemConfigHandler import SystemConfigHandler
+from lib.SecurityConfigHandler import SecurityConfigHandler
 from lib.UiConfigHandler import UiConfigHandler
 from lib.WiringConfigHandler import WiringConfigHandler
 from lib.WifiConfigHandler import WifiConfigHandler
 from lib.WifiListHandler import WifiListHandler
+from lib.SnapshotConfigHandler import SnapshotConfigHandler
 
 #------------------------------------------------------------------------------
 
@@ -65,13 +66,14 @@ def make_app():
 		(r'/js/(.*)$', tornado.web.StaticFileHandler, {'path': 'js'}),
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
-		(r"/api/audio$", AudioConfigHandler),
-		(r"/api/display$", DisplayConfigHandler),
-		(r"/api/wiring$", WiringConfigHandler),
-		(r"/api/ui$", UiConfigHandler),
-		(r"/api/wifi$", WifiConfigHandler),
-		(r"/api/system$", SystemConfigHandler),
-		(r"/api/reboot$", RebootHandler),
+		(r"/api/hw-audio$", AudioConfigHandler),
+		(r"/api/hw-display$", DisplayConfigHandler),
+		(r"/api/hw-wiring$", WiringConfigHandler),
+		(r"/api/sys-ui$", UiConfigHandler),
+		(r"/api/sys-wifi$", WifiConfigHandler),
+		(r"/api/lib-snapshot$", SnapshotConfigHandler),
+		(r"/api/sys-security$", SecurityConfigHandler),
+		(r"/api/sys-reboot$", RebootHandler),
 		(r"/api/wifi/list$", WifiListHandler),
 	], **settings)
 

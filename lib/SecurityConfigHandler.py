@@ -8,7 +8,7 @@ from lib.ZynthianConfigHandler import ZynthianConfigHandler
 # System Menu
 #------------------------------------------------------------------------------
 
-class SystemConfigHandler(ZynthianConfigHandler):
+class SecurityConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -36,7 +36,7 @@ class SystemConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", body="config_block.html", config=config, title="System", errors=errors)
+			self.render("config.html", body="config_block.html", config=config, title="User", errors=errors)
 
 	def post(self):
 		errors=self.update_system_config(tornado.escape.recursive_unicode(self.request.arguments))

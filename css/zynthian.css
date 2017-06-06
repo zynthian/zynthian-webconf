@@ -32,7 +32,7 @@
   Bootstrap Carousel Fade Transition (for Bootstrap 3.3.x)
   CSS from:       http://codepen.io/transportedman/pen/NPWRGq
   and:            http://stackoverflow.com/questions/18548731/bootstrap-3-carousel-fading-to-new-slide-instead-of-sliding-to-new-slide
-  Inspired from:  http://codepen.io/Rowno/pen/Afykb
+  Inspired from:  http://codepen.io/Rowno/pen/Afykb 
 */
 .carousel-fade .carousel-inner .item {
   opacity: 0;
@@ -388,7 +388,6 @@ section.bg_logo_wave {
 }
 .content-section ul,
 ol {
-  margin-left: 1.2em;
   padding-left: 0;
 }
 .content-section li {
@@ -510,7 +509,7 @@ textarea.input-zynthian {
 .input-zynthian::-ms-input-placeholder {
   color: #606060;
 }
-@media (max-width: 1200px) {
+@media (max-width: 800px) {
   .navbar-header {
     float: none;
   }
@@ -574,4 +573,11 @@ textarea.input-zynthian {
     background: url("../img/photos/zynthian_side_bg_trans.jpg") no-repeat right center;
     background-size: cover;
   }
+}
+div.lib-snapshot .row {
+  padding-bottom: 10px;
+}
+div#snapshot-panel div.row div {
+  padding-left: 0px;
+  padding-right: 0px;
 }

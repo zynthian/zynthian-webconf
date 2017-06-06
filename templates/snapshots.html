@@ -1,0 +1,98 @@
+
+<h2>{{ escape(title) }}</h2>
+
+
+
+<form method="post">
+<div class="container-fluid lib-snapshot">
+  <div class="row">
+    <div class="col-md-4">
+        <div id="snapshot_tree"></div>
+        <div class="input-group">
+          <span class="input-group-addon">
+            <label>New bank</label>
+          </span>
+          <input  name="ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER" value="{{ config['ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER'] }}" class="form-control">
+
+          <span class="input-group-btn">
+            <button class="btn btn-default" name="ZYNTHIAN_SNAPSHOT_ACTION" value="NEW_BANK">
+            <span class="glyphicon glyphicon-plus" aria-hidden="true"></span></button>
+
+          </span>
+        </div>
+    </div>
+    <div id="snapshot-panel" class="col-md-8">
+        <div class="row">
+          <label>Name:</label>
+        </div>
+        <div class="row">
+          <input id="ZYNTHIAN_SNAPSHOT_NAME" name="ZYNTHIAN_SNAPSHOT_NAME" class="form-control" />
+          <input type="hidden" id="ZYNTHIAN_SNAPSHOT_FULLPATH" name="ZYNTHIAN_SNAPSHOT_FULLPATH" />
+          <input type="hidden" id="ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID" name="ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID" />
+        </div>
+        <div class="row">
+          <label>Bank/Program:</label>
+        </div>
+        <div class="row">
+          <div class="col-md-6">
+            <input type="hidden" id="ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO" name="ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO" />
+            <select id="ZYNTHIAN_SNAPSHOT_SELECTION_BANK" name="ZYNTHIAN_SNAPSHOT_SELECTION_BANK"
+              class="form-control">
+              {% for option in config['ZYNTHIAN_SNAPSHOT_BANKS'] %}
+                <option value="{{  option  }}" >{{ option }}</option>
+              {% end %}
+            </select>
+          </div>
+          <div class="col-md-6">
+            <select id="ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM" name="ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM"
+              class="form-control">
+            	{% for option in config['ZYNTHIAN_SNAPSHOT_PROGRAMS'] %}
+                <option value="{{  option  }}" >{{ option }}</option>
+              {% end %}
+            </select>
+          </div>
+        </div>
+        <div class="row">
+          <button name="ZYNTHIAN_SNAPSHOT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+        </div>
+      </div>
+  </div>
+  <div class="row">
+  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+
+  </div>
+  <div class="row">
+     <button name="ZYNTHIAN_SNAPSHOT_ACTION" value="SAVE" class="btn btn-lg btn-theme">Save</button>
+  </div>
+</div>
+
+</form>
+
+<script type="text/javascript">
+$('#snapshot-panel').hide();
+$('#zynthian-selection-customized-panel').hide();
+$('#snapshot_tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOTS'] %}'), bootstrap2: true ,
+  emptyIcon: "glyphicon glyphicon-floppy-disk",
+  expandIcon: "glyphicon glyphicon-folder-close",
+  collapseIcon: "glyphicon glyphicon-folder-open",
+  onNodeSelected: function(event, data) {
+
+      $("#ZYNTHIAN_SNAPSHOT_NAME")[0].value = data.name;
+      $("#ZYNTHIAN_SNAPSHOT_FULLPATH")[0].value = data.fullpath;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO")[0].value = data.bank;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].value = data.bank + '-' + data.bankName;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].disabled = data.nodes;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].value = data.program;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].disabled = data.nodes;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID")[0].value = data.id;
+
+
+
+      $('#snapshot-panel').show();
+    }
+  });
+  $('#snapshot_tree').treeview('selectNode',{% raw config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] %});
+
+
+
+</script>
