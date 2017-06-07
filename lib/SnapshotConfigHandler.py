@@ -16,6 +16,7 @@ from collections import OrderedDict
 class SnapshotConfigHandler(tornado.web.RequestHandler):
 	SNAPSHOT_DIRECTORY = "/zynthian/zynthian-my-data/snapshots"
 	LEADING_ZERO_BANK = 5
+	LEADING_ZERO_PROGRAM = 3
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -38,18 +39,24 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		config['ZYNTHIAN_SNAPSHOT_BANKS'] = self.getExistingBanks(snapshots, True)
 		config['ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER'] = self.calculateNextBank(self.getExistingBanks(snapshots, False))
 
-		config['ZYNTHIAN_SNAPSHOT_PROGRAMS'] = map(lambda x: str(x).zfill(3), list(range(1, 129)))
+		config['ZYNTHIAN_SNAPSHOT_PROGRAMS'] = map(lambda x: str(x).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM), list(range(1, 129)))
 		try:
 			selectedBank = 0
+			logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')))
+			logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')))
 			for snapshot in snapshots:
+				logging.info(snapshot)
 				if int(snapshot['bank'])==int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')):
 					if not selectedBank:
 						selectedBank = snapshot['id']
-					try:
-						if int(snapshot['program'])==int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')):
-							selectedBank = snapshot['id']
-					except:
-						pass
+					if snapshot['nodes']:
+						for snapshot_program in snapshot['nodes']:
+							try:
+								if int(snapshot_program['program'])==int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')):
+									selectedBank = snapshot_program['id']
+							except:
+								pass
+			logging.info(selectedBank)
 			config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID']  = selectedBank
 		except:
 			config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] = 0
@@ -97,14 +104,17 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		newFullPath = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/'
 		if os.path.isdir(fullPath):
 			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO') + '-' +  self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
+			if os.path.exists(newFullPath):
+				return "Bank exists already!"
 		else:
 			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK') + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM') + '-' + self.get_argument('ZYNTHIAN_SNAPSHOT_NAME') + '.zss'
 			newBankDirectory = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK')
-		if os.path.exists(newFullPath):
-			return "Snapshot exists already!"
-		for existingSnapshot in os.listdir(newBankDirectory):
-			if existingSnapshot.startswith(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')):
-				return "Bank and program exists already: " + existingSnapshot
+			if os.path.exists(newFullPath):
+				return "Snapshot exists already!"
+			for existingSnapshot in os.listdir(newBankDirectory):
+				existingFullPath =  newBankDirectory + '/' + existingSnapshot
+				if fullPath!=existingFullPath and existingSnapshot.startswith(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')):
+					return "Bank and program exists already: " +  self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK') + '/' + existingSnapshot
 		try:
 			os.rename(fullPath, newFullPath)
 		except OSError:
@@ -147,7 +157,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 					text = os.path.splitext(m.group(2))[0]
 					bno = bankNumber.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
 					bname = bankName
-					progno = m.group(1).zfill(3)
+					progno = m.group(1).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM)
 			snapshot = {
 				'text': f,
 				'name': text,

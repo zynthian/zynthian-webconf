@@ -40,6 +40,7 @@ from lib.WiringConfigHandler import WiringConfigHandler
 from lib.WifiConfigHandler import WifiConfigHandler
 from lib.WifiListHandler import WifiListHandler
 from lib.SnapshotConfigHandler import SnapshotConfigHandler
+from lib.MidiConfigHandler import MidiConfigHandler
 
 #------------------------------------------------------------------------------
 
@@ -71,6 +72,7 @@ def make_app():
 		(r"/api/hw-wiring$", WiringConfigHandler),
 		(r"/api/sys-ui$", UiConfigHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),
+		(r"/api/sys-midi$", MidiConfigHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),
 		(r"/api/sys-reboot$", RebootHandler),

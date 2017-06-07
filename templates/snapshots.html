@@ -28,7 +28,6 @@
         <div class="row">
           <input id="ZYNTHIAN_SNAPSHOT_NAME" name="ZYNTHIAN_SNAPSHOT_NAME" class="form-control" />
           <input type="hidden" id="ZYNTHIAN_SNAPSHOT_FULLPATH" name="ZYNTHIAN_SNAPSHOT_FULLPATH" />
-          <input type="hidden" id="ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID" name="ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID" />
         </div>
         <div class="row">
           <label>Bank/Program:</label>
@@ -84,9 +83,6 @@ $('#snapshot_tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].disabled = data.nodes;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].value = data.program;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].disabled = data.nodes;
-      $("#ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID")[0].value = data.id;
-
-
 
       $('#snapshot-panel').show();
     }
