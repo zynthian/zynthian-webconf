@@ -71,6 +71,15 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'title': 'Jackd Options',
 				'value': os.environ.get('JACKD_OPTIONS'),
 				'advanced': True
+			}],
+			['ALSA_MASTER_VOLUME', {
+				'type': 'slider',
+				'title': 'ALSA master volume',
+				'value': os.getenv('ALSA_MASTER_VOLUME', 80),
+				'min': 0,
+				'max': 100,
+				'step': 1,
+				'advanced': True
 			}]
 		])
 		if self.genjson:

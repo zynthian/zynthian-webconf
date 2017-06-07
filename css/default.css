@@ -25,7 +25,8 @@
 input,
 select,
 textarea,
-button {
+button,
+div.slider.slider-horizontal {
   width: 100%;
 }
 .modal-header button {

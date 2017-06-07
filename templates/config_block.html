@@ -24,7 +24,18 @@
 		</option>
 	{% end %}
 	</select>
-	{% end %}
+  {% elif config[varname]['type']=='slider' %}
+	<input
+			type="text"
+			name="{{ escape(varname) }}"
+			data-provide="slider"
+			data-slider-min="{{ config[varname]['min'] }}"
+			data-slider-max="{{ config[varname]['max'] }}"
+			data-slider-step="{{ config[varname]['step'] }}"
+			data-slider-value="{{ config[varname]['value'] }}"
+			data-slider-tooltip="show"
+		>
+  {% end %}
 	<br>
 	{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
 	<br>
