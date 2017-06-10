@@ -1,7 +1,10 @@
 import os
 import tornado.web
+import logging
 from collections import OrderedDict
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
+from subprocess import check_output
+from subprocess import call
 
 #------------------------------------------------------------------------------
 # Audio Configuration
@@ -75,7 +78,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			['ALSA_MASTER_VOLUME', {
 				'type': 'slider',
 				'title': 'ALSA master volume',
-				'value': os.getenv('ALSA_MASTER_VOLUME', 80),
+				'value': self.getAlsaMasterVolume(),
 				'min': 0,
 				'max': 100,
 				'step': 1,
@@ -89,4 +92,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		call("amixer -M set Master Playback " + self.get_argument('ALSA_MASTER_VOLUME') + "% unmute", shell=True)
 		self.get(errors)
+
+	def getAlsaMasterVolume(self):
+		vol = check_output("amixer -M get Master | grep 'Playback.*\\[.*\\].*' | sed 's/.*\\[\\(.*\\)%\\].*/\\1/'", shell=True)
+		return vol
