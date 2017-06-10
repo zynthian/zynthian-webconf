@@ -79,7 +79,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'min': 0,
 				'max': 100,
 				'step': 1,
-				'advanced': True
+				'advanced': False
 			}]
 		])
 		if self.genjson:
