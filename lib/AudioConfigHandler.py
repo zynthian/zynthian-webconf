@@ -11,6 +11,7 @@ from subprocess import call
 #------------------------------------------------------------------------------
 
 class AudioConfigHandler(ZynthianConfigHandler):
+	alsaMasterItem = "Digital"
 
 	soundcard_presets=OrderedDict([
 		['HifiBerry DAC+', {
@@ -92,9 +93,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		call("amixer -M set Master Playback " + self.get_argument('ALSA_MASTER_VOLUME') + "% unmute", shell=True)
+		call("amixer -M set '" + AudioConfigHandler.alsaMasterItem + "' Playback " + self.get_argument('ALSA_MASTER_VOLUME') + "% unmute", shell=True)
 		self.get(errors)
 
-	def getAlsaMasterVolume(self):
-		vol = check_output("amixer -M get Master | grep 'Playback.*\\[.*\\].*' | sed 's/.*\\[\\(.*\\)%\\].*/\\1/'", shell=True)
-		return vol
+
+ 	def getAlsaMasterVolume(self):
+        cmd = "amixer -M get '" + AudioConfigHandler.alsaMasterItem + "' | grep 'Playback.*\\[.*\\].*' | sed 's/.*\\[\\(.*\\)%\\].*/\\1/' | head -1"
+        logging.info(cmd)
+        vol = check_output(cmd, shell=True)
+        logging.info(vol)
+        return vol
