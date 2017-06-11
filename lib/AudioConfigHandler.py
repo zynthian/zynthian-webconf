@@ -52,6 +52,21 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+	soundcard_mixer_controls=OrderedDict([
+		['HifiBerry DAC+', ['Digital']],
+		['HifiBerry DAC', []],
+		['HifiBerry Digi', []],
+		['HifiBerry Amp',[]],
+		['AudioInjector', []],
+		['IQAudio DAC', []],
+		['IQAudio DAC+', []],
+		['IQAudio Digi', []],
+		['PiSound', []],
+		['JustBoom DAC', []],
+		['JustBoom Digi', []],
+		['USB device', []]
+	])
+
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
@@ -132,8 +147,14 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 
 	def addMixerControl(self, config, mixerControl, controlName, volumePercent):
-		configKey = 'ALSA_VOLUME_' + controlName.replace(' ','_')
-		mixerControl['title'] = 'ALSA volume ' + controlName
-		mixerControl['value'] = volumePercent
+		validMixer = ''
+		if os.environ.get('SOUNDCARD_NAME'):
+			validMixer = self.soundcard_mixer_controls[os.environ.get('SOUNDCARD_NAME')]
 
-		config[configKey] = mixerControl
+		realControlName = controlName.replace(' ','_')
+		if not validMixer or realControlName in validMixer:
+			configKey = 'ALSA_VOLUME_' + realControlName
+			mixerControl['title'] = 'ALSA volume ' + controlName
+			mixerControl['value'] = volumePercent
+
+			config[configKey] = mixerControl
