@@ -106,7 +106,10 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		for varname in postedConfig:
 			if varname.find('ALSA_VOLUME_')>=0:
 				mixerControl = varname[12:].replace('_',' ')
-				call("amixer -M set '" + mixerControl + "' Playback " + self.get_argument(varname) + "% unmute", shell=True)
+				try:
+					call("amixer -M set '" + mixerControl + "' Playback " + self.get_argument(varname) + "% unmute", shell=True)
+				except:
+					pass
 		self.get(errors)
 
 	def getMixerControls(self, config):
@@ -115,35 +118,38 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		playbackChannel = False
 		volumePercent = ''
 		idx = 0
-		for byteLine in check_output("amixer -M", shell=True).splitlines():
-			line = byteLine.decode("utf-8")
+		try:
+			for byteLine in check_output("amixer -M", shell=True).splitlines():
+				line = byteLine.decode("utf-8")
 
-			if line.find('Simple mixer control')>=0:
-				if controlName and playbackChannel:
-					self.addMixerControl(config, mixerControl, controlName, volumePercent)
-				mixerControl = {'type': 'slider',
-					'id': idx,
-					'title': '',
-					'value': 0,
-					'min': 0,
-					'max': 100,
-					'step': 1,
-					'advanced': False}
-				controlName = ''
-				playbackChannel = False
-				volumePercent = ''
-				idx += 1
-				m = re.match("Simple mixer control '(.*?)'.*", line, re.M | re.I)
-				if m:
-					controlName = m.group(1)
-			elif line.find('Playback channels:')>=0:
-					playbackChannel = True
-			else:
-				m = re.match(".*Playback.*\[(\d*)%\].*", line, re.M | re.I)
-				if m:
-					volumePercent = m.group(1)
-		if controlName and playbackChannel:
-			self.addMixerControl(config, mixerControl, controlName, volumePercent)
+				if line.find('Simple mixer control')>=0:
+					if controlName and playbackChannel:
+						self.addMixerControl(config, mixerControl, controlName, volumePercent)
+					mixerControl = {'type': 'slider',
+						'id': idx,
+						'title': '',
+						'value': 0,
+						'min': 0,
+						'max': 100,
+						'step': 1,
+						'advanced': False}
+					controlName = ''
+					playbackChannel = False
+					volumePercent = ''
+					idx += 1
+					m = re.match("Simple mixer control '(.*?)'.*", line, re.M | re.I)
+					if m:
+						controlName = m.group(1)
+				elif line.find('Playback channels:')>=0:
+						playbackChannel = True
+				else:
+					m = re.match(".*Playback.*\[(\d*)%\].*", line, re.M | re.I)
+					if m:
+						volumePercent = m.group(1)
+			if controlName and playbackChannel:
+				self.addMixerControl(config, mixerControl, controlName, volumePercent)
+		except:
+			pass
 
 
 	def addMixerControl(self, config, mixerControl, controlName, volumePercent):
