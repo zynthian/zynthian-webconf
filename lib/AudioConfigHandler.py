@@ -17,7 +17,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC+', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus'
 		}],
-		['HifiBerry DAC', {
+		['HifiBerry DAC+ light', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac'
 		}],
 		['HifiBerry Digi', {
