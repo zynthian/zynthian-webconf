@@ -1,5 +1,6 @@
 import os
 import tornado.web
+import logging
 from collections import OrderedDict
 from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
@@ -63,4 +64,5 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.restart_ui()
 		self.get(errors)

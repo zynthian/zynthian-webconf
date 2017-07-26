@@ -1,5 +1,7 @@
 import os
+import logging
 import tornado.web
+from subprocess import check_output
 from collections import OrderedDict
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
@@ -186,4 +188,15 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.generate_fb_splash()
+		#self.restart_ui()
+		self.redirect('/api/sys-reboot')
 		self.get(errors)
+
+
+	def generate_fb_splash(self):
+		try:
+			cmd="%s/scripts/generate_fb_splash.sh" % os.environ.get('ZYNTHIAN_SYS_DIR')
+			check_output(cmd, shell=True)
+		except Exception as e:
+			logging.error("Generating FrameBuffer Splash Screens: %s" % e)

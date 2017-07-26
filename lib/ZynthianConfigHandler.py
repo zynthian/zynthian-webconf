@@ -1,7 +1,7 @@
 import os
-import tornado.web
-import logging
 import re
+import logging
+import tornado.web
 from subprocess import check_output
 
 #------------------------------------------------------------------------------
@@ -51,3 +51,10 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 			check_output(os.environ.get('ZYNTHIAN_SYS_DIR')+"/scripts/update_zynthian_sys.sh", shell=True)
 		except Exception as e:
 			logging.error("Updating Sytem Config: %s" % e)
+
+	def restart_ui(self):
+		try:
+			check_output("systemctl daemon-reload;systemctl stop zynthian;systemctl start zynthian", shell=True)
+		except Exception as e:
+			logging.error("Restarting UI: %s" % e)
+

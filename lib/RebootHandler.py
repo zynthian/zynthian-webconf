@@ -1,8 +1,8 @@
 import os
-import tornado.web
 import logging
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+import tornado.web
 from subprocess import check_output
+from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Reboot Hadler

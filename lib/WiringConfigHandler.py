@@ -1,6 +1,8 @@
 import os
 import tornado.web
+import logging
 from collections import OrderedDict
+from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
@@ -113,4 +115,14 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.rebuild_zyncoder()
+		self.restart_ui()
 		errors=self.get()
+
+	def rebuild_zyncoder(self):
+		try:
+			cmd="cd %s/zyncoder/build;cmake ..;make" % os.environ.get('ZYNTHIAN_DIR')
+			check_output(cmd, shell=True)
+		except Exception as e:
+			logging.error("Rebuilding Zyncoder Library: %s" % e)
+

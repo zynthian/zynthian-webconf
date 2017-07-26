@@ -1,11 +1,10 @@
 import os
 import re
-import tornado.web
 import logging
+import tornado.web
 from collections import OrderedDict
+from subprocess import check_output, call
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
-from subprocess import check_output
-from subprocess import call
 
 #------------------------------------------------------------------------------
 # Audio Configuration
@@ -110,6 +109,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					call("amixer -M set '" + mixerControl + "' Playback " + self.get_argument(varname) + "% unmute", shell=True)
 				except:
 					pass
+		self.redirect('/api/sys-reboot')
 		self.get(errors)
 
 	def getMixerControls(self, config):
