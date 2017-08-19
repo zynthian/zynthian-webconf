@@ -30,53 +30,53 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
+			['ZYNTHIAN_PRESET_PRELOAD_NOTEON', {
+				'type': 'boolean',
+				'title': 'Preset preload on Note-On',
+				'value': os.getenv('ZYNTHIAN_PRESET_PRELOAD_NOTEON',"0")
+			}],
+			['ZYNTHIAN_MIDI_FINE_TUNING', {
+				'type': 'select',
+				'title': 'MIDI fine tuning (Hz)',
+				'value':  os.getenv('ZYNTHIAN_MIDI_FINE_TUNING','440'),
+				'options': map(lambda x: str(x).zfill(2), list(range(351, 450)))
+			}],
 			['ZYNTHIAN_MASTER_MIDI_CHANNEL', {
 				'type': 'select',
 				'title': 'Master MIDI channel',
 				'value': os.getenv('MIDI_MASTER_CHANNEL','16'),
 				'options': map(lambda x: str(x).zfill(2), list(range(1, 17)))
 			}],
-			['ZYNTHIAN_MIDI_FINE_TUNING', {
-				'type': 'select',
-				'title': 'MIDI Master fine tuning (Hz)',
-				'value':  os.getenv('ZYNTHIAN_MIDI_FINE_TUNING','440'),
-				'options': map(lambda x: str(x).zfill(2), list(range(351, 450)))
-			}],
 			['ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_TYPE', {
 				'type': 'select',
-				'title': 'Program change type',
+				'title': 'Master change type',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_TYPE',''),
 				'options': list(self.midi_program_change_presets.keys()),
 				'presets': self.midi_program_change_presets
 			}],
 			['ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_UP', {
 				'type': 'text',
-				'title': 'Program change up',
+				'title': 'Master Program change-up',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_UP',''),
 				'advanced': True
 			}],
 			['ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_DOWN', {
 				'type': 'text',
-				'title': 'Program change down',
+				'title': 'Master Program change-down',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_DOWN',''),
 				'advanced': True
 			}],
 			['ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_UP', {
 				'type': 'text',
-				'title': 'Bank change up',
+				'title': 'Master Bank change-up',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_UP',''),
 				'advanced': True
 			}],
 			['ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_DOWN', {
 				'type': 'text',
-				'title': 'Bank change down',
+				'title': 'Master Bank change-down',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_DOWN',''),
 				'advanced': True
-			}],
-			['ZYNTHIAN_PRESET_PRELOAD_NOTEON', {
-				'type': 'boolean',
-				'title': 'Preset preload on  Note-On',
-				'value': os.getenv('ZYNTHIAN_PRESET_PRELOAD_NOTEON',"0")
 			}]
 		])
 		if self.genjson:
