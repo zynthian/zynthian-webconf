@@ -50,6 +50,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': os.getenv('PROGRAM_CHANGE_DOWN',''),
 				'advanced': True
 			}],
+			['ZYNTHIAN_PRESET_PRELOAD_NOTEON', {
+				'type': 'boolean',
+				'title': 'Preset preload on  Note-On',
+				'value': os.getenv('ZYNTHIAN_PRESET_PRELOAD_NOTEON',"0")
+			}],
 			['MASTER_TUNING', {
 				'type': 'select',
 				'title': 'MIDI Master fine tuning (Hz)',
@@ -63,6 +68,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			self.render("config.html", body="config_block.html", config=config, title="MIDI", errors=errors)
 
 	def post(self):
+		self.request.arguments['ZYNTHIAN_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_PRESET_PRELOAD_NOTEON','0')
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.restart_ui()
 		self.get(errors)
