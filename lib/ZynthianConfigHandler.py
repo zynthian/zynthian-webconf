@@ -30,6 +30,8 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 			lines = f.readlines()
 
 		# Find and replace lines to update
+		updated=[]
+		add_row=1
 		pattern=re.compile("^export ([^\s]*?)=")
 		for i,line in enumerate(lines):
 			res=pattern.match(line)
@@ -40,7 +42,19 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 					value=value.replace("\r", "")
 					os.environ[varname]=value
 					lines[i]="export %s=\"%s\"\n" % (varname,value)
+					updated.append(varname)
 					logging.info(lines[i])
+			if line[0:17]=="# Directory Paths":
+				add_row=i-1
+
+		# Add the rest
+		vars_to_add=set(config.keys())-set(updated)
+		for varname in vars_to_add:
+			value=config[varname][0].replace("\n", "\\n")
+			value=value.replace("\r", "")
+			os.environ[varname]=value
+			lines.insert(add_row,"export %s=\"%s\"\n" % (varname,value))
+			logging.info(lines[add_row])
 
 		# Write updated config file
 		with open(fpath,'w') as f:
