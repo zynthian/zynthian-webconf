@@ -3,11 +3,14 @@
 
 <form method="post">
 {% for varname in config %}
-	<label>{{ escape(config[varname]['title']) }}:</label><br>
+	<label>{{ escape(config[varname]['title']) }}:</label>
+	{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 	{% if config[varname]['type']=='text' %}
-	<input name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}">
+	<input name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}" />
 	{% elif config[varname]['type']=='password' %}
-	<input name="{{ escape(varname) }}" type="password">
+	<input name="{{ escape(varname) }}" type="password" />
+	{% elif config[varname]['type']=='boolean' %}
+	<input name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
 	{% elif config[varname]['type']=='textarea' %}
 	<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
 	{% elif config[varname]['type']=='select' %}
@@ -34,14 +37,14 @@
 			data-slider-step="{{ config[varname]['step'] }}"
 			data-slider-value="{{ config[varname]['value'] }}"
 			data-slider-tooltip="show"
-		>
+		/>
   {% end %}
 	<br>
 	{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
 	<br>
 {% end %}
 	<br>
-	<input type="submit" value="Save" class="btn btn-lg btn-theme">
+	<input type="submit" value="Save" class="btn btn-lg btn-theme" />
 </form>
 
 <script>
