@@ -39,7 +39,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'MIDI fine tuning (Hz)',
 				'value':  os.getenv('ZYNTHIAN_MIDI_FINE_TUNING','440'),
-				'options': map(lambda x: str(x).zfill(2), list(range(351, 450)))
+				'options': map(lambda x: str(x).zfill(2), list(range(392, 492)))
 			}],
 			['ZYNTHIAN_MASTER_MIDI_CHANNEL', {
 				'type': 'select',
