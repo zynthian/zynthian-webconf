@@ -23,7 +23,12 @@
 					data-{{ escape(fn) }}="{{ escape(preset) }}"
 				{% end %}
 			{% end %}
-			>{{ escape(option) }}
+			>
+			{% if 'option_labels' in config[varname] %}
+				{{ escape(config[varname]['option_labels'][option]) }}
+			{% else %}
+				{{ escape(option) }}
+			{% end %}
 		</option>
 	{% end %}
 	</select>

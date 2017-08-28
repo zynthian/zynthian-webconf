@@ -27,6 +27,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+	program_change_mode_labels=OrderedDict([
+		['32', 'SMB'],
+		['0', 'MSB']
+	])
+
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
@@ -77,7 +82,16 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'Master Bank change-down',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_DOWN',''),
 				'advanced': True
+			}],
+			['ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_CCNUM', {
+				'type': 'select',
+				'title': 'Bank change mode',
+				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_CCNUM',''),
+				'options': list(self.program_change_mode_labels.keys()),
+				'option_labels': self.program_change_mode_labels,
+				'advanced': True
 			}]
+
 		])
 		if self.genjson:
 			self.write(config)
