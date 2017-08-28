@@ -79,7 +79,7 @@ $('#snapshot_tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
       $("#ZYNTHIAN_SNAPSHOT_NAME")[0].value = data.name;
       $("#ZYNTHIAN_SNAPSHOT_FULLPATH")[0].value = data.fullpath;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO")[0].value = data.bank;
-      $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].value = data.bank + '-' + data.bankName;
+      $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].value = data.bank + (data.bankName? '-' + data.bankName : '');
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].disabled = data.nodes;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].value = data.program;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].disabled = data.nodes;

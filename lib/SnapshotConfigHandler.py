@@ -41,8 +41,8 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		config['ZYNTHIAN_SNAPSHOT_PROGRAMS'] = map(lambda x: str(x).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM), list(range(1, 129)))
 		try:
 			selectedBank = 0
-			logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')))
-			logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')))
+			#logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')))
+			#logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')))
 			for snapshot in snapshots:
 				logging.info(snapshot)
 				if int(snapshot['bank'])==int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')):
@@ -55,7 +55,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 									selectedBank = snapshot_program['id']
 							except:
 								pass
-			logging.info(selectedBank)
+			#logging.info("selectedBank: " + str(selectedBank))
 			config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID']  = selectedBank
 		except:
 			config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] = 0
@@ -102,11 +102,16 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		fullPath = self.get_argument('ZYNTHIAN_SNAPSHOT_FULLPATH')
 		newFullPath = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/'
 		if os.path.isdir(fullPath):
-			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO') + '-' +  self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
+			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')
+			if self.get_argument('ZYNTHIAN_SNAPSHOT_NAME'):
+				 newFullPath +=  '-' +  self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
 			if os.path.exists(newFullPath):
 				return "Bank exists already!"
 		else:
-			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK') + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM') + '-' + self.get_argument('ZYNTHIAN_SNAPSHOT_NAME') + '.zss'
+			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK') + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')
+			if (self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')):
+				newFullPath += '-' + self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
+			newFullPath += '.zss'
 			newBankDirectory = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK')
 			if os.path.exists(newFullPath):
 				return "Snapshot exists already!"
@@ -125,9 +130,10 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		for snapshot in snapshots:
 			if snapshot['bank']:
 				bankName = snapshot['bank'].zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
-				if inclName:
+				if inclName and snapshot['bankName']:
 					bankName += '-' + snapshot['bankName']
 				existingBanks.append(bankName)
+		#logging.info("existingbanks: " + str(existingBanks))
 		return sorted(existingBanks)
 
 	def calculateNextBank(self, existingBanks):
@@ -142,18 +148,21 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		fileList = sorted(fileList)
 		for f in fileList:
 			fullPath = os.path.join(directory, f)
-			m = re.match('.*/(\d*)-(.*)', fullPath, re.M | re.I | re.S)
+			m = re.match('.*/(\d*)-{0,1}(.*)', fullPath, re.M | re.I | re.S)
 			bno = ''
 			bname = ''
 			text = ''
 			progno = ''
 			if m:
+				#logging.info(m.group(0) + ";" + m.group(1) + ";" + m.group(2))
 				if not bankNumber:
 					bno =  m.group(1).zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
 					bname = m.group(2)
 					text = bname
 				else:
-					text = os.path.splitext(m.group(2))[0]
+					filename_parts = os.path.splitext(m.group(2))
+					if len(filename_parts)>1 and filename_parts[1]:
+						text = filename_parts[0]
 					bno = bankNumber.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
 					bname = bankName
 					progno = m.group(1).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM)
@@ -170,5 +179,4 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 				snapshot['nodes'] = self.walkDirectory(os.path.join(directory, f), idx, bno, bname)
 				idx+=len(snapshot['nodes'])
 			snapshots.append(snapshot)
-
 		return snapshots
