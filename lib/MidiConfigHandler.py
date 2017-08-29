@@ -28,7 +28,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	])
 
 	program_change_mode_labels=OrderedDict([
-		['32', 'SMB'],
+		['32', 'LSB'],
 		['0', 'MSB']
 	])
 
@@ -52,10 +52,18 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': os.getenv('MIDI_MASTER_CHANNEL','16'),
 				'options': map(lambda x: str(x).zfill(2), list(range(1, 17)))
 			}],
-			['ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_TYPE', {
+			['ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_CCNUM', {
+				'type': 'select',
+				'title': 'Master Bank change mode',
+				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_CCNUM',''),
+				'options': list(self.program_change_mode_labels.keys()),
+				'option_labels': self.program_change_mode_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_MASTER_MIDI_CHANGE_TYPE', {
 				'type': 'select',
 				'title': 'Master change type',
-				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_PROGRAM_CHANGE_TYPE',''),
+				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_CHANGE_TYPE',''),
 				'options': list(self.midi_program_change_presets.keys()),
 				'presets': self.midi_program_change_presets
 			}],
@@ -82,16 +90,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'Master Bank change-down',
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_DOWN',''),
 				'advanced': True
-			}],
-			['ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_CCNUM', {
-				'type': 'select',
-				'title': 'Bank change mode',
-				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_CCNUM',''),
-				'options': list(self.program_change_mode_labels.keys()),
-				'option_labels': self.program_change_mode_labels,
-				'advanced': True
 			}]
-
 		])
 		if self.genjson:
 			self.write(config)
