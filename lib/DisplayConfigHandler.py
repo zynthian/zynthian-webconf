@@ -200,3 +200,5 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			check_output(cmd, shell=True)
 		except Exception as e:
 			logging.error("Generating FrameBuffer Splash Screens: %s" % e)
+	def needsReboot(self):
+		return True

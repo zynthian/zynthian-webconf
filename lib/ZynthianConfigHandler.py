@@ -72,3 +72,5 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 		except Exception as e:
 			logging.error("Restarting UI: %s" % e)
 
+	def needsReboot(self):
+		return False
