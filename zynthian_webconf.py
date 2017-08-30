@@ -41,6 +41,7 @@ from lib.WifiConfigHandler import WifiConfigHandler
 from lib.WifiListHandler import WifiListHandler
 from lib.SnapshotConfigHandler import SnapshotConfigHandler
 from lib.MidiConfigHandler import MidiConfigHandler
+from lib.SoundfontConfigHandler import SoundfontConfigHandler
 
 #------------------------------------------------------------------------------
 
@@ -68,6 +69,7 @@ def make_app():
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
+		(r"/api/lib-soundfont$", SoundfontConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),

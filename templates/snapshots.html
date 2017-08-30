@@ -7,7 +7,7 @@
 <div class="container-fluid lib-snapshot">
   <div class="row">
     <div class="col-md-4">
-        <div id="snapshot_tree"></div>
+        <div id="snapshot-tree"></div>
         <div class="input-group">
           <span class="input-group-addon">
             <label>New bank</label>
@@ -70,7 +70,7 @@
 <script type="text/javascript">
 $('#snapshot-panel').hide();
 $('#zynthian-selection-customized-panel').hide();
-$('#snapshot_tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOTS'] %}'), bootstrap2: true ,
+$('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOTS'] %}'), bootstrap2: true ,
   emptyIcon: "glyphicon glyphicon-floppy-disk",
   expandIcon: "glyphicon glyphicon-folder-close",
   collapseIcon: "glyphicon glyphicon-folder-open",
@@ -87,7 +87,7 @@ $('#snapshot_tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
       $('#snapshot-panel').show();
     }
   });
-  $('#snapshot_tree').treeview('selectNode',{% raw config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] %});
+  $('#snapshot-tree').treeview('selectNode',{% raw config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] %});
 
 
 

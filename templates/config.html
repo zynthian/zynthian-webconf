@@ -70,6 +70,7 @@
 								<a href="#menu-lib" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Library <span class="caret"></span></a>
 								<ul class="dropdown-menu">
 									<li {% if request.uri=="/api/lib-snapshot" %}class="active"{% end %}><a href="/api/lib-snapshot">Snapshots</a></li>
+									<li {% if request.uri=="/api/lib-soundfont" %}class="active"{% end %}><a href="/api/lib-soundfont">Soundfonts</a></li>
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/api/hw-" %}active{% end %}">
