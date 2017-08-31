@@ -1,0 +1,136 @@
+
+<h2>{{ escape(title) }}</h2>
+
+
+
+<form id="soundfont-form" enctype="multipart/form-data" method="post">
+<div class="container-fluid lib-soundfont">
+  <div class="row">
+    <div class="col-md-4">
+        <div id="sountfont-tree"></div>
+    </div>
+    <div id="soundfont-panel" class="col-md-8">
+      <div class="row">
+        <input type="hidden" id="ZYNTHIAN_SOUNDFONT_FULLPATH" name="ZYNTHIAN_SOUNDFONT_FULLPATH" />
+      </div>
+        <div id="soundfont-new-bank-panel">
+          <div class="row">
+            <label>Bank:</label>
+          </div>
+          <div class="row">
+            <input type="text" id="ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME" name="ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME" />
+          </div>
+          <div class="row">
+            <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="NEW" class="btn btn-lg btn-theme">New bank</button>
+          </div>
+        </div>
+
+        <div id="soundfont-bank-panel">
+
+          <div id="soundfont-bank-rename-panel">
+            <div class="row">
+              <input type="text" id="ZYNTHIAN_SOUNDFONT_BANK_NAME" name="ZYNTHIAN_SOUNDFONT_BANK_NAME" />
+            </div>
+
+            <div class="row">
+              <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <input type="hidden" id="input-soundfile-type"   />
+            <label for="input-soundfile">Upload soundfont</label>
+            <input type="file" id="input-soundfile" name="soundfontfile" />
+          </div>
+
+          <div class="row">
+            <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="SAVE" class="btn btn-lg btn-theme">SAVE</button>
+          </div>
+
+          <div class="row" id="soundfont-bank-remove-panel">
+            <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+          </div>
+
+        </div>
+
+        <div id="soundfont-file-panel">
+
+          <div id="soundfont-rename-panel">
+            <div class="row">
+              <input type="text" id="ZYNTHIAN_SOUNDFONT_NAME" name="ZYNTHIAN_SOUNDFONT_NAME" />
+            </div>
+
+            <div class="row">
+              <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+            </div>
+          </div>
+
+          <div class="row">
+            <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+          </div>
+
+        </div>
+      </div>
+  </div>
+  <div class="row">
+  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+
+  </div>
+</div>
+
+</form>
+
+<script type="text/javascript">
+$('#soundfont-panel').hide();
+$('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFONTS'] %}'), bootstrap2: true ,
+  levels: 3,
+  emptyIcon: "glyphicon glyphicon-floppy-disk",
+  expandIcon: "glyphicon glyphicon-folder-close",
+  collapseIcon: "glyphicon glyphicon-folder-open",
+  onNodeSelected: function(event, data) {
+      $('#soundfont-new-bank-panel').hide();
+      $('#soundfont-bank-panel').hide();
+      $('#soundfont-file-panel').hide();
+      $('#soundfont-bank-remove-panel').hide();
+      $('#soundfont-bank-rename-panel').hide();
+      $('#ZYNTHIAN_SOUNDFONT_NAME')[0].value='';
+      $('#ZYNTHIAN_SOUNDFONT_BANK_NAME')[0].value='';
+
+      $("#ZYNTHIAN_SOUNDFONT_FULLPATH")[0].value = data.fullpath;
+
+      if (data.nodeType == 'SOUNDFONT_TYPE'){
+          $('#soundfont-new-bank-panel').show();
+
+      } else if (data.nodeType == 'BANK'){
+          $('#soundfont-bank-panel').show();
+          $('#ZYNTHIAN_SOUNDFONT_BANK_NAME')[0].value=data.text;
+          $('#input-soundfile-type')[0].value = data.soundfontType;
+          if (data.text != 'sf2'){
+            $('#soundfont-bank-remove-panel').show();
+            $('#soundfont-bank-rename-panel').show();
+          }
+      } else if (data.nodeType == 'SOUNDFONT'){
+        $('#ZYNTHIAN_SOUNDFONT_NAME')[0].value=data.text;
+        $('#soundfont-file-panel').show();
+      }
+      $('#soundfont-panel').show();
+    }
+  });
+
+  $('#sountfont-tree').treeview('selectNode',{% raw config['ZYNTHIAN_SOUNDFONT_SELECTION_NODE_ID'] %});
+
+  $(function(){
+      $("#input-soundfile").on('change', function(event) {
+          var file = event.target.files[0];
+          var filename = $(this).val();
+          var filetype = $('#input-soundfile-type')[0].value;
+          var regex = new RegExp( '.'+filetype+'$', 'gi' );
+          if ( ! filename.match(regex)) {
+            alert('Please select a ' + filetype + ' file');
+            $("#soundfont-form")[0].reset();
+            return;
+          }
+      });
+  });
+
+</script>
