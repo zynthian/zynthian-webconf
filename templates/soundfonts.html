@@ -68,10 +68,10 @@
                   <td title="{{ escape(row['description']) }}">
                     {% if len(row['more_info'])>0 %}
                       <a href="{{ row['more_info'][0] }}" target="_blank" >
-                        {{ escape(row['name']) }}
+                        {{ row['name'] }}
                       </a>
                     {% else %}
-                      {{ escape(row['name']) }}
+                      {{ row['name'] }}
                     {% end %}
                 </td>
                   <td>
