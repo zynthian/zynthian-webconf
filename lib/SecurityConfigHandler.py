@@ -44,24 +44,28 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 		self.get(errors)
 
 	def update_system_config(self, config):
-		#Update Hostname
-		with open("/etc/hostname",'r') as f:
-			previousHostname=f.readline()
-
-		with open("/etc/hostname",'w') as f:
-			f.write(config['HOSTNAME'][0])
-
-		with open("/etc/hosts", "r+") as f:
-			contents = f.read()
-			contents.replace(previousHostname, config['HOSTNAME'][0])
-			f.seek(0)
-			f.truncate()
-			f.write(contents)
-			f.close()
-			
 		#Update Password
 		if len(config['PASSWORD'][0])<6:
 			return { 'PASSWORD': "Password must have at least 6 characters" }
 		if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
 			return { 'REPEAT_PASSWORD': "Passwords does not match!" }
 		check_output("echo root:%s | chpasswd" % config['PASSWORD'][0], shell=True)
+
+		#Update Hostname
+		newHostname = config['HOSTNAME'][0]
+		with open("/etc/hostname",'r') as f:
+			previousHostname=f.readline()
+			f.close()
+
+		with open("/etc/hostname",'w') as f:
+			f.write(newHostname)
+			f.close()
+
+		with open("/etc/hosts", "r+") as f:
+			contents = f.read()
+			contents.replace(previousHostname, newHostname)
+			contents.replace("zynthian", newHostname)
+			f.seek(0)
+			f.truncate()
+			f.write(contents)
+			f.close()
