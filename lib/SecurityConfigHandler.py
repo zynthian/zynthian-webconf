@@ -53,6 +53,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 		#Update Hostname
 		newHostname = config['HOSTNAME'][0]
+		previousHostname = ''
 		with open("/etc/hostname",'r') as f:
 			previousHostname=f.readline()
 			f.close()
@@ -63,8 +64,8 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 		with open("/etc/hosts", "r+") as f:
 			contents = f.read()
-			contents.replace(previousHostname, newHostname)
-			contents.replace("zynthian", newHostname)
+			contents = contents.replace(previousHostname, newHostname)
+			contents = contents.replace("zynthian", newHostname) # for the ppl that have already changed their hostname
 			f.seek(0)
 			f.truncate()
 			f.write(contents)
