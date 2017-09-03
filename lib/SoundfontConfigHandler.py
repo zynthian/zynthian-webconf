@@ -182,12 +182,9 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			soundfontZip.close()
 
 	def cleanupDownload(self, currentDirectory, targetDirectory):
-		logging.info("currentDirectory" + currentDirectory)
 		fileList =  os.listdir(currentDirectory)
 		for f in fileList:
-
 			sourcePath = os.path.join(currentDirectory, f)
-			logging.info("sourcePath" + sourcePath)
 
 			if os.path.isdir(sourcePath):
 				self.cleanupDownload(sourcePath, targetDirectory)

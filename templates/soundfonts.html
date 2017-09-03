@@ -57,7 +57,7 @@
             </div>
 
             <div class="row">
-              <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="SEARCH" class="btn btn-lg btn-theme">SEARCH</button>
+              <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
             </div>
 
             <div class="row">
@@ -75,7 +75,7 @@
                     {% end %}
                 </td>
                   <td>
-                    <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme" onclick="setDownloadFile('{{ escape(row['file']) }}')">+</button>
+                    <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
                   </td>
                 </tr>
             {% end %}
@@ -118,7 +118,23 @@
 
 </form>
 
+<div id="loading-div-background">
+  <div id="loading-div" class="ui-corner-all">
+    PROCESSING. PLEASE WAIT...
+  </div>
+</div>
+
 <script type="text/javascript">
+
+
+$(document).ready(function (){
+    $("#loading-div-background").hide();
+});
+
+function showProgressAnimation(){
+    $("#loading-div-background").show();
+}
+
 $('#soundfont-panel').hide();
 $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFONTS'] %}'), bootstrap2: true ,
   levels: 3,
@@ -126,6 +142,7 @@ $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFO
   expandIcon: "glyphicon glyphicon-folder-close",
   collapseIcon: "glyphicon glyphicon-folder-open",
   onNodeSelected: function(event, data) {
+      $("#loading-div-background").css({ opacity: 1.0 });
       $('#soundfont-new-bank-panel').hide();
       $('#soundfont-bank-panel').hide();
       $('#soundfont-file-panel').hide();
