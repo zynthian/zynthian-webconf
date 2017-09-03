@@ -45,8 +45,20 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 	def update_system_config(self, config):
 		#Update Hostname
+		with open("/etc/hostname",'r') as f:
+			previousHostname=f.readline()
+
 		with open("/etc/hostname",'w') as f:
 			f.write(config['HOSTNAME'][0])
+
+		with open("/etc/hosts", "r+") as f:
+			contents = f.read()
+			contents.replace(previousHostname, config['HOSTNAME'][0])
+			f.seek(0)
+			f.truncate()
+			f.write(contents)
+			f.close()
+			
 		#Update Password
 		if len(config['PASSWORD'][0])<6:
 			return { 'PASSWORD': "Password must have at least 6 characters" }
