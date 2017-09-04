@@ -89,6 +89,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'title': 'Jackd Options',
 				'value': os.environ.get('JACKD_OPTIONS'),
 				'advanced': True
+			}],
+			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
+				'type': 'text',
+				'title': 'Aubionotes Options',
+				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
+				'advanced': True
 			}]
 		])
 
@@ -164,3 +170,6 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			mixerControl['value'] = volumePercent
 
 			config[configKey] = mixerControl
+
+	def needsReboot(self):
+		return True

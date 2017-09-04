@@ -49,7 +49,11 @@
 	<br>
 {% end %}
 	<br>
+
 	<input type="submit" value="Save" class="btn btn-lg btn-theme" />
+	{% if handler.needsReboot() == True %}
+	<span class="label label-info">The zynthian will be rebooted if you save the changes.</span>
+	{% end %}
 </form>
 
 <script>
