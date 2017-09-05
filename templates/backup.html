@@ -1,0 +1,68 @@
+
+<h2>{{ escape(title) }}</h2>
+
+
+
+<form id="backup-form" enctype="multipart/form-data" method="post">
+<div class="container-fluid">
+  <div class="row">
+    <label value="Backup folders and files" />
+    <table class="table table-striped table-bordered table-condensed">
+    {% for backupFolder in config['ZYNTHIAN_BACKUP_FOLDERS'] %}
+    <tr>
+      <td>{{ escape(backupFolder)}} </td>
+    </tr>
+    {% end %}
+    </table>
+  </div>
+  <div class="row">
+    <button name="ZYNTHIAN_BACKUP_ACTION" value="BACKUP" class="btn btn-lg btn-theme">BACKUP</button>
+  </div>
+  <div class="row">
+    <label for="ZYNTHIAN_RESTORE_FILE">Restore file (zip):</label>
+    <input type="file" id="ZYNTHIAN_RESTORE_FILE" name="ZYNTHIAN_RESTORE_FILE" />
+  </div>
+  <div class="row">
+    <button name="ZYNTHIAN_BACKUP_ACTION" value="RESTORE" class="btn btn-lg btn-theme">RESTORE</button>
+  </div>
+  <div class="row">
+  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+
+  </div>
+</div>
+
+</form>
+
+<div id="loading-div-background">
+  <div id="loading-div" class="ui-corner-all">
+    PROCESSING. PLEASE WAIT...
+  </div>
+</div>
+
+<script type="text/javascript">
+
+
+$(document).ready(function (){
+    $("#loading-div-background").hide();
+});
+
+function showProgressAnimation(){
+    $("#loading-div-background").show();
+}
+
+$(function(){
+    $("#ZYNTHIAN_RESTORE_FILE").on('change', function(event) {
+        var file = event.target.files[0];
+        var filename = $(this).val();
+        var regex = new RegExp( '.zip$', 'gi' );
+        if ( ! filename.match(regex)) {
+          alert('Please select a zip file');
+          $("#backup-form")[0].reset();
+          return;
+        }
+    });
+});
+
+
+
+</script>
