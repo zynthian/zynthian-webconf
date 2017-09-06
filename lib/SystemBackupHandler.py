@@ -15,12 +15,7 @@ from collections import OrderedDict
 #------------------------------------------------------------------------------
 
 class SystemBackupHandler(tornado.web.RequestHandler):
-
-	backupFolders=[
-		"${ZYNTHIAN_SW_DIR}/mod-ui/dados/favorites.json",
-		"${ZYNTHIAN_MY_PLUGINS_DIR}",
-		"${ZYNTHIAN_MY_DATA_DIR}"
-	]
+	BACKUP_ITEMS_FILE = "/zynthian/config/backup_items.txt"
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -37,8 +32,7 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 
-
-		config['ZYNTHIAN_BACKUP_FOLDERS'] = self.backupFolders
+		config['ZYNTHIAN_BACKUP_ITEMS'] = self.getBackupItems()
 
 		if self.genjson:
 			self.write(config)
@@ -61,7 +55,8 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		f=BytesIO()
 		zf = zipfile.ZipFile(f, "w")
 
-		for backupFolder in self.backupFolders:
+
+		for backupFolder in self.getBackupItems():
 			try:
 				sourceFolder = os.path.expandvars(backupFolder)
 				logging.info("backup up: " + sourceFolder)
@@ -73,6 +68,8 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 				pass
 		zf.close()
 		self.set_header('Content-Type', 'application/zip')
+		self.set_header('Content-Disposition', 'attachment; filename=%s' % zipname)
+
 		self.write(f.getvalue())
 		f.close()
 		self.finish()
@@ -83,10 +80,24 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		logging.debug("restoring: " + restoreFile)
 
 		f=BytesIO(fileinfo['body'])
+		validRestoreItems = self.getBackupItems()
 
 		with zipfile.ZipFile(f,'r') as restoreZip:
 			for member in restoreZip.namelist():
-				logging.debug(member)
-				restoreZip.extract(member, "/")
+				if self.isValidRestoreItem(validRestoreItems, member):
+					logging.debug("restoring: " + member)
+					restoreZip.extract(member, "/")
+				else:
+					logging.warn("restore of " + member + " not permitted")
 			restoreZip.close()
 		f.close()
+
+	def getBackupItems(self):
+		with open(self.BACKUP_ITEMS_FILE) as f:
+			return f.read().splitlines()
+
+	def isValidRestoreItem(self, validRestoreItems, restoreMember):
+		for validRestoreItem in validRestoreItems:
+			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
+				return True
+		return False
