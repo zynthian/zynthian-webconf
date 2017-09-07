@@ -32,7 +32,14 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 
-		config['ZYNTHIAN_BACKUP_ITEMS'] = self.getBackupItems()
+		config['ZYNTHIAN_BACKUP_ITEMS'] = OrderedDict([])
+
+		def addBackupItem( dirname, subdirs, files ):
+			config['ZYNTHIAN_BACKUP_ITEMS'][dirname]=[]
+			for filename in files:
+				config['ZYNTHIAN_BACKUP_ITEMS'][dirname].append(filename)
+
+		self.walkBackupItems(addBackupItem)
 
 		if self.genjson:
 			self.write(config)
@@ -56,16 +63,13 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		zf = zipfile.ZipFile(f, "w")
 
 
-		for backupFolder in self.getBackupItems():
-			try:
-				sourceFolder = os.path.expandvars(backupFolder)
-				logging.info("backup up: " + sourceFolder)
-				for dirname, subdirs, files in os.walk(sourceFolder):
-					 zf.write(dirname)
-					 for filename in files:
-						 zf.write(os.path.join(dirname, filename))
-			except:
-				pass
+		def backupItems(dirname, subdirs, files):
+			zf.write(dirname)
+			for filename in files:
+				zf.write(os.path.join(dirname, filename))
+
+		self.walkBackupItems(backupItems)
+
 		zf.close()
 		self.set_header('Content-Type', 'application/zip')
 		self.set_header('Content-Disposition', 'attachment; filename=%s' % zipname)
@@ -101,3 +105,12 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
 				return True
 		return False
+
+	def walkBackupItems(self, worker):
+		for backupFolder in self.getBackupItems():
+			try:
+				sourceFolder = os.path.expandvars(backupFolder)
+				for dirname, subdirs, files in os.walk(sourceFolder):
+					worker(dirname, subdirs, files)
+			except:
+				pass

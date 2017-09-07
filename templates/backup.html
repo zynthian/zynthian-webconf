@@ -9,9 +9,11 @@
     <label>Backup items as defined in /zynthian/config/backup_items.txt</label>
     <table class="table table-striped table-bordered table-condensed">
     {% for backupItem in config['ZYNTHIAN_BACKUP_ITEMS'] %}
+    {% if config['ZYNTHIAN_BACKUP_ITEMS'][backupItem] %}
     <tr>
-      <td>{{ escape(backupItem)}} </td>
+      <td title="{% for backupItemFile in  config['ZYNTHIAN_BACKUP_ITEMS'][backupItem] %}{{ escape(backupItemFile + '\n') }}{% end %}">{{ escape(backupItem)}} </td>
     </tr>
+    {% end %}
     {% end %}
     </table>
   </div>
