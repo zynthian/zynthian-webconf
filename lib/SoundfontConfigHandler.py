@@ -107,6 +107,9 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			newName = self.get_argument('ZYNTHIAN_SOUNDFONT_BANK_NAME')
 		if self.get_argument('ZYNTHIAN_SOUNDFONT_NAME'):
 			newName = self.get_argument('ZYNTHIAN_SOUNDFONT_NAME')
+			filename_parts = os.path.splitext(newName)
+			if filename_parts[1] != "." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'):
+				newName += "." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')
 		if newName:
 			sourceFolder = self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
 			m = re.match('(.*/)(.*)', sourceFolder, re.M | re.I | re.S)
