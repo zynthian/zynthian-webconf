@@ -87,13 +87,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			['JACKD_OPTIONS', {
 				'type': 'text',
 				'title': 'Jackd Options',
-				'value': os.environ.get('JACKD_OPTIONS'),
+				'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
 				'advanced': True
 			}],
 			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
 				'type': 'text',
 				'title': 'Aubionotes Options',
-				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
+				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 				'advanced': True
 			}]
 		])

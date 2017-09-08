@@ -37,7 +37,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['PiScreen 3.5 (v2)', {
-			'DISPLAY_CONFIG': 'dtoverlay=piscreen2r',
+			'DISPLAY_CONFIG': 'dtoverlay=piscreen2r,rotate=270',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
@@ -188,17 +188,17 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.generate_fb_splash()
+		self.delete_fb_splash() # New splash-screens will be generated on next boot
 		#self.restart_ui()
 		self.redirect('/api/sys-reboot')
 		self.get(errors)
 
-
-	def generate_fb_splash(self):
+	def delete_fb_splash(self):
 		try:
-			cmd="%s/scripts/generate_fb_splash.sh" % os.environ.get('ZYNTHIAN_SYS_DIR')
+			cmd="rm -rf %s/img" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
 			check_output(cmd, shell=True)
 		except Exception as e:
-			logging.error("Generating FrameBuffer Splash Screens: %s" % e)
+			logging.error("Deleting FrameBuffer Splash Screens: %s" % e)
+
 	def needsReboot(self):
 		return True
