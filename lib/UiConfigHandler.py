@@ -54,8 +54,8 @@ class UiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_UI_ENABLE_CURSOR', {
 				'type': 'boolean',
-				'title': 'Disable cursor',
-				'value': os.environ.get('ENABLE_CURSOR', '0'),
+				'title': 'Enable cursor',
+				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
 				'advanced': True
 			}]
 		])
