@@ -51,6 +51,12 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'type': 'text',
 				'title': 'Panel Background',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG')
+			}],
+			['ZYNTHIAN_UI_ENABLE_CURSOR', {
+				'type': 'boolean',
+				'title': 'Disable cursor',
+				'value': os.environ.get('ENABLE_CURSOR', '0'),
+				'advanced': True
 			}]
 		])
 		if self.genjson:
@@ -59,6 +65,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 			self.render("config.html", body="config_block.html", config=config, title="User Interface", errors=errors)
 
 	def post(self):
+		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR','0')
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.restart_ui()
 		self.get(errors)
