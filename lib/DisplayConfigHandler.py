@@ -179,12 +179,6 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'title': 'Frambuffer',
 				'value': os.environ.get('FRAMEBUFFER'),
 				'advanced': True
-			}],
-			['DISABLE_CURSOR', {
-				'type': 'boolean',
-				'title': 'Disable cursor',
-				'value': os.environ.get('DISABLE_CURSOR', '0'),
-				'advanced': True
 			}]
 		])
 		if self.genjson:
@@ -193,7 +187,6 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			self.render("config.html", body="config_block.html", config=config, title="Display", errors=errors)
 
 	def post(self):
-		self.request.arguments['DISABLE_CURSOR'] = self.request.arguments.get('DISABLE_CURSOR','0')
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.delete_fb_splash() # New splash-screens will be generated on next boot
 		#self.restart_ui()
