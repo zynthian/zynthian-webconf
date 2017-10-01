@@ -355,6 +355,7 @@ section.bg_logo_wave {
 .modal {
   color: #606060;
   background-color: #000000;
+  overflow-y: auto;
 }
 .modal-header,
 .modal-footer {
@@ -366,7 +367,8 @@ section.bg_logo_wave {
   background-color: #000000;
 }
 .modal-body input,
-.modal-body textarea {
+.modal-body textarea,
+.modal-body select {
   color: #303030;
 }
 .modal h4 {
