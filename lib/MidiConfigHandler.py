@@ -27,7 +27,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	])
 
 	program_change_mode_labels=OrderedDict([
-		['2', 'LSB'],
+		['32', 'LSB'],
 		['0', 'MSB']
 	])
 
