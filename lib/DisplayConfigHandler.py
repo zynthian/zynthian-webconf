@@ -200,5 +200,5 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		except Exception as e:
 			logging.error("Deleting FrameBuffer Splash Screens: %s" % e)
 
-	def needsReboot(self):
+	def needs_reboot(self):
 		return True

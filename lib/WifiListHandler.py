@@ -27,7 +27,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 				line = byteLine.decode("utf-8")
 				if line.find('ESSID')>=0:
 					if ssid:
-							self.addNetwork(wifiList, ssid, network, encryption, quality, signalLevel)
+							self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
 					network = {'encryption':False,'quality':0,'signalLevel':0}
 					encryption = False
 					quality = 0
@@ -42,7 +42,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 						signalLevel = m.group(3)
 
 			if ssid:
-				self.addNetwork(wifiList, ssid, network, encryption, quality, signalLevel)
+				self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
 
 			wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
 			wifiList = OrderedDict(reversed(list(wifiList.items())))
@@ -52,7 +52,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 		self.write(wifiList)
 
 
-	def addNetwork(self, wifiList, ssid, network, encryption, quality, signalLevel):
+	def add_network(self, wifiList, ssid, network, encryption, quality, signalLevel):
 		network['quality'] = quality
 		network['signalLevel'] = signalLevel
 		network['encryption'] = encryption

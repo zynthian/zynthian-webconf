@@ -32,11 +32,11 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 
-		snapshots = self.walkDirectory(SnapshotConfigHandler.SNAPSHOT_DIRECTORY, 0, '', '')
+		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOT_DIRECTORY, 0, '', '')
 
 		config['ZYNTHIAN_SNAPSHOTS'] = json.dumps(snapshots)
-		config['ZYNTHIAN_SNAPSHOT_BANKS'] = self.getExistingBanks(snapshots, True)
-		config['ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER'] = self.calculateNextBank(self.getExistingBanks(snapshots, False))
+		config['ZYNTHIAN_SNAPSHOT_BANKS'] = self.get_existing_banks(snapshots, True)
+		config['ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER'] = self.calculate_next_bank(self.get_existing_banks(snapshots, False))
 
 		config['ZYNTHIAN_SNAPSHOT_PROGRAMS'] = map(lambda x: str(x).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM), list(range(1, 129)))
 		try:
@@ -70,24 +70,24 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		action = self.get_argument('ZYNTHIAN_SNAPSHOT_ACTION')
 		if action:
 			errors = {
-        		'NEW_BANK': lambda: self.doNewBank(),
-        		'REMOVE': lambda: self.doRemove(),
-				'SAVE': lambda: self.doSave()
+        		'NEW_BANK': lambda: self.do_new_bank(),
+        		'REMOVE': lambda: self.do_remove(),
+				'SAVE': lambda: self.do_save()
     		}[action]()
 
 		self.get(errors)
 
-	def doNewBank(self):
+	def do_new_bank(self):
 		newBank = self.get_argument('ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER')
-		snapshots = self.walkDirectory(SnapshotConfigHandler.SNAPSHOT_DIRECTORY, 0, '', '')
-		if newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) in self.getExistingBanks(snapshots, False):
+		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOT_DIRECTORY, 0, '', '')
+		if newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) in self.get_existing_banks(snapshots, False):
 			return "Bank exists already"
 		if newBank:
 			bankDirectory = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/' + newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) + '-Bank'+newBank
 			if not os.path.exists(bankDirectory):
 				os.makedirs(bankDirectory)
 
-	def doRemove(self):
+	def do_remove(self):
 		fullPath = self.get_argument('ZYNTHIAN_SNAPSHOT_FULLPATH')
 		if os.path.exists(fullPath):
 			if os.path.isdir(fullPath):
@@ -98,7 +98,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 			else:
 				os.remove(fullPath)
 
-	def doSave(self):
+	def do_save(self):
 		fullPath = self.get_argument('ZYNTHIAN_SNAPSHOT_FULLPATH')
 		newFullPath = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/'
 		if os.path.isdir(fullPath):
@@ -124,7 +124,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		except OSError:
 			return 'mv ' + fullPath + ' to ' + newFullPath + ' failed!'
 
-	def getExistingBanks(self, snapshots, inclName):
+	def get_existing_banks(self, snapshots, inclName):
 		existingBanks = []
 
 		for snapshot in snapshots:
@@ -136,13 +136,13 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 		#logging.info("existingbanks: " + str(existingBanks))
 		return sorted(existingBanks)
 
-	def calculateNextBank(self, existingBanks):
+	def calculate_next_bank(self, existingBanks):
 		for i in range(1, 65536):
 			if str(i).zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) not in existingBanks:
 				return i
 		return ''
 
-	def walkDirectory(self, directory, idx, bankNumber, bankName):
+	def walk_directory(self, directory, idx, bankNumber, bankName):
 		snapshots = []
 		fileList =  os.listdir(directory)
 		fileList = sorted(fileList)
@@ -176,7 +176,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 				'program': progno}
 			idx+=1
 			if os.path.isdir(os.path.join(directory, f)):
-				snapshot['nodes'] = self.walkDirectory(os.path.join(directory, f), idx, bno, bname)
+				snapshot['nodes'] = self.walk_directory(os.path.join(directory, f), idx, bno, bname)
 				idx+=len(snapshot['nodes'])
 			snapshots.append(snapshot)
 		return snapshots
