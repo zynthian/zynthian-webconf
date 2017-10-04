@@ -23,7 +23,7 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 
 	def update_config(self, config):
 		# Get config file content
-		fpath=os.environ.get('ZYNTHIAN_CONFIG_DIR')+"/zynthian_envars.sh"
+		fpath=os.environ.get('ZYNTHIAN_CONFIG_DIR','/zynthian/zynthian-sys/scripts')+"/zynthian_envars.sh"
 		if not os.path.isfile(fpath):
 			fpath=os.environ.get('ZYNTHIAN_SYS_DIR')+"/scripts/zynthian_envars.sh"
 		elif not os.path.isfile(fpath):
