@@ -37,7 +37,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", body="config_block.html", config=config, title="User", errors=errors)
+			self.render("config.html", body="config_block.html", config=config, title="Security/Access", errors=errors)
 
 	def post(self):
 		errors=self.update_system_config(tornado.escape.recursive_unicode(self.request.arguments))

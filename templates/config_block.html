@@ -1,52 +1,58 @@
 
+<div class="pull-right">
+	<input type="checkbox" onChange="$('.advanced-view').slideToggle(500)"/><span>Advanced view</span>
+</div>
+
 <h2>{{ escape(title) }}</h2>
 
 <form method="post">
 {% for varname in config %}
-	<label>{{ escape(config[varname]['title']) }}:</label>
-	{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
-	{% if config[varname]['type']=='text' %}
-	<input name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}" />
-	{% elif config[varname]['type']=='password' %}
-	<input name="{{ escape(varname) }}" type="password" />
-	{% elif config[varname]['type']=='boolean' %}
-	<input name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
-	{% elif config[varname]['type']=='textarea' %}
-	<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
-	{% elif config[varname]['type']=='select' %}
-	<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
-	{% for option in config[varname]['options'] %}
-		<option value="{{ escape(option) }}"
-			{% if config[varname]['value']==option %}selected=1{% end %}
-			{% if 'presets' in config[varname] %}
-				{% for fn,preset in list(config[varname]['presets'][option].items()) %}
-					data-{{ escape(fn) }}="{{ escape(preset) }}"
+	<div {% try %} {% if config[varname]['advanced'] %}class="advanced-view"{% end %} {% except %} {% end %}>
+		<label>{{ escape(config[varname]['title']) }}:</label>
+		{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
+		{% if config[varname]['type']=='text' %}
+		<input name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}" />
+		{% elif config[varname]['type']=='password' %}
+		<input name="{{ escape(varname) }}" type="password" />
+		{% elif config[varname]['type']=='boolean' %}
+		<input name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
+		{% elif config[varname]['type']=='textarea' %}
+		<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
+		{% elif config[varname]['type']=='select' %}
+		<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
+		{% for option in config[varname]['options'] %}
+			<option value="{{ escape(option) }}"
+				{% if config[varname]['value']==option %}selected=1{% end %}
+				{% if 'presets' in config[varname] %}
+					{% for fn,preset in list(config[varname]['presets'][option].items()) %}
+						data-{{ escape(fn) }}="{{ escape(preset) }}"
+					{% end %}
 				{% end %}
-			{% end %}
-			>
-			{% if 'option_labels' in config[varname] %}
-				{{ escape(config[varname]['option_labels'][option]) }}
-			{% else %}
-				{{ escape(option) }}
-			{% end %}
-		</option>
-	{% end %}
-	</select>
-  {% elif config[varname]['type']=='slider' %}
-	<input
-			type="text"
-			name="{{ escape(varname) }}"
-			data-provide="slider"
-			data-slider-min="{{ config[varname]['min'] }}"
-			data-slider-max="{{ config[varname]['max'] }}"
-			data-slider-step="{{ config[varname]['step'] }}"
-			data-slider-value="{{ config[varname]['value'] }}"
-			data-slider-tooltip="show"
-		/>
-  {% end %}
-	<br>
-	{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
-	<br>
+				>
+				{% if 'option_labels' in config[varname] %}
+					{{ escape(config[varname]['option_labels'][option]) }}
+				{% else %}
+					{{ escape(option) }}
+				{% end %}
+			</option>
+		{% end %}
+		</select>
+		{% elif config[varname]['type']=='slider' %}
+		<input
+				type="text"
+				name="{{ escape(varname) }}"
+				data-provide="slider"
+				data-slider-min="{{ config[varname]['min'] }}"
+				data-slider-max="{{ config[varname]['max'] }}"
+				data-slider-step="{{ config[varname]['step'] }}"
+				data-slider-value="{{ config[varname]['value'] }}"
+				data-slider-tooltip="show"
+			/>
+		{% end %}
+		<br>
+		{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
+		<br>
+	</div>
 {% end %}
 	<br>
 

@@ -613,3 +613,7 @@ div#loading-div {
   -moz-border-radius: 5px;
   border-radius: 5px;
 }
+div.advanced-view {
+  display: none;
+  background: #f0f0f0;
+}
