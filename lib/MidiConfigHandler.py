@@ -4,8 +4,6 @@ import logging
 from collections import OrderedDict
 from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
-import sys
-sys.path.append('/zynthian/zynthian-ui/zyngine/')
 import zynthian_midi_filter
 
 #------------------------------------------------------------------------------
@@ -59,14 +57,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'options': list(self.midi_event_options.keys()),
 				'option_labels': self.midi_event_options
 			}],
-			['FILTER_ADD_TRANSLATED_MIDI_EVENT', {
+			['FILTER_ADD_MAPPED_MIDI_EVENT', {
 				'options': list(self.midi_event_options.keys()),
 				'option_labels': self.midi_event_options
 			}],
 			['FILTER_ADD_CC_VALUE', {
 				'option_labels': self.midi_cc_labels
 			}],
-			['FILTER_ADD_TRANSLATED_CC_VALUE', {
+			['FILTER_ADD_MAPPED_CC_VALUE', {
 				'option_labels': self.midi_cc_labels
 			}]
 		])
@@ -128,14 +126,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_BANK_CHANGE_DOWN',''),
 				'advanced': True
 			}],
-			['ZYNTHIAN_MASTER_MIDI_EVENT_MAP', {
+			['ZYNTHIAN_MIDI_FILTER_RULES', {
 				'type': 'textarea',
-				'title': 'Translate midi events',
-				'value': os.getenv('ZYNTHIAN_MASTER_MIDI_EVENT_MAP',""),
+				'title': 'Midi filter rules',
+				'value': os.getenv('ZYNTHIAN_MIDI_FILTER_RULES',""),
 				'cols': 50,
 				'rows': 5,
-				'addButton': 'midi_translation_add',
-				'addPanel': 'midi_translation.html',
+				'addButton': 'midi_filter_rule_add',
+				'addPanel': 'midi_filter_rule.html',
 				'addPanelConfig': add_panel_config,
 				'advanced': True
 			}]
@@ -148,35 +146,35 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 		if 'FILTER_ADD_COMMAND' in escaped_request_arguments and 'FILTER_ADD_MIDI_EVENT' in escaped_request_arguments:
-			errors = self.calculateTranslation(escaped_request_arguments)
+			errors = self.calculate_mapping(escaped_request_arguments)
 		self.request.arguments['ZYNTHIAN_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_PRESET_PRELOAD_NOTEON','0')
 		if not errors:
 			errors=self.update_config(escaped_request_arguments)
 			self.restart_ui()
 		self.get(errors)
 
-	def calculate_translation(self, escaped_request_arguments):
+	def calculate_mapping(self, escaped_request_arguments):
 		if escaped_request_arguments['FILTER_ADD_COMMAND'][0]:
 			channels = ''
 			if 'FILTER_ADD_CHANNEL' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_CHANNEL'][0]:
 				channels =  'CH#' + ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_CHANNEL'])
-			midiEvent = ''
+			midi_event = ''
 			if 'FILTER_ADD_MIDI_EVENT' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_MIDI_EVENT'][0]:
-				midiEvent = escaped_request_arguments['FILTER_ADD_MIDI_EVENT'][0]
-			ccValue = ''
+				midi_event = escaped_request_arguments['FILTER_ADD_MIDI_EVENT'][0]
+			cc_value = ''
 			if 'FILTER_ADD_CC_VALUE' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_CC_VALUE'][0]:
-				ccValue = '#' +  ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_CC_VALUE'])
-			translatedMidiEvent = ''
-			if 'FILTER_ADD_TRANSLATED_MIDI_EVENT' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_TRANSLATED_MIDI_EVENT'][0]:
-				translatedMidiEvent = '=> ' + escaped_request_arguments['FILTER_ADD_TRANSLATED_MIDI_EVENT'][0]
-				if 'FILTER_ADD_TRANSLATED_CC_VALUE' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_TRANSLATED_CC_VALUE'][0]:
-					translatedMidiEvent += '#' +  ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_TRANSLATED_CC_VALUE'])
+				cc_value = '#' +  ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_CC_VALUE'])
+			mapped_midi_event = ''
+			if 'FILTER_ADD_MAPPED_MIDI_EVENT' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_MAPPED_MIDI_EVENT'][0]:
+				mapped_midi_event = '=> ' + escaped_request_arguments['FILTER_ADD_MAPPED_MIDI_EVENT'][0]
+				if 'FILTER_ADD_MAPPED_CC_VALUE' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_MAPPED_CC_VALUE'][0]:
+					mapped_midi_event += '#' +  ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_MAPPED_CC_VALUE'])
 
-			newLine = escaped_request_arguments['FILTER_ADD_COMMAND'][0] + ' ' + channels + ' ' + midiEvent + ' ' + ccValue + ' ' + translatedMidiEvent
+			newLine = escaped_request_arguments['FILTER_ADD_COMMAND'][0] + ' ' + channels + ' ' + midi_event + ' ' + cc_value + ' ' + mapped_midi_event
 			logging.info("new line : %s" % (newLine))
 			try:
 				MidiFilterRule(newLine)
-				escaped_request_arguments['ZYNTHIAN_MASTER_MIDI_EVENT_MAP'][0] += 	"\n" + newLine
+				escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0] += 	"\n" + newLine
 			except Exception:
 				return "ERROR parsing MIDI filter rule"
 

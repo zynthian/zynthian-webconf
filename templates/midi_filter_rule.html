@@ -1,14 +1,14 @@
-<div id="midi_translation_panel" class="modal">
+<div id="midi_filter_rule_panel" class="modal">
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title">Add new translation rule</h4>
+      <h4 class="modal-title">Add new midi filter rule</h4>
     </div>
     <div class="modal-body">
       <select id="FILTER_ADD_COMMAND" name="FILTER_ADD_COMMAND" onchange="refreshSelectionView()">
         <option value="">Select a command</option>
         <option value="IGNORE">Ignore</option>
-        <option value="TRANS">Translate</option>
+        <option value="MAP">Map</option>
       </select>
 
       <label for="FILTER_ADD_CHANNEL">for channels (no selection = all)</label>
@@ -46,12 +46,12 @@
         {% end %}
       </select>
 
-      <label id="FILTER_ADD_TRANSLATED_MIDI_EVENT_LABEL" for="FILTER_ADD_TRANSLATED_MIDI_EVENT">Translated Midi Event</label>
-      <select id="FILTER_ADD_TRANSLATED_MIDI_EVENT" multiple name="FILTER_ADD_TRANSLATED_MIDI_EVENT" onchange="refreshSelectionView()" size="5">
-        {% for option in config['FILTER_ADD_TRANSLATED_MIDI_EVENT']['options'] %}
+      <label id="FILTER_ADD_MAPPED_MIDI_EVENT_LABEL" for="FILTER_ADD_MAPPED_MIDI_EVENT">Mapped Midi Event</label>
+      <select id="FILTER_ADD_MAPPED_MIDI_EVENT" multiple name="FILTER_ADD_MAPPED_MIDI_EVENT" onchange="refreshSelectionView()" size="5">
+        {% for option in config['FILTER_ADD_MAPPED_MIDI_EVENT']['options'] %}
           <option value="{{ escape(option) }}">
-            {% if 'option_labels' in config['FILTER_ADD_TRANSLATED_MIDI_EVENT'] %}
-              {{ escape(config['FILTER_ADD_TRANSLATED_MIDI_EVENT']['option_labels'][option]) }}
+            {% if 'option_labels' in config['FILTER_ADD_MAPPED_MIDI_EVENT'] %}
+              {{ escape(config['FILTER_ADD_MAPPED_MIDI_EVENT']['option_labels'][option]) }}
             {% else %}
               {{ escape(option) }}
             {% end %}
@@ -59,12 +59,12 @@
         {% end %}
       </select>
 
-      <label id="FILTER_ADD_TRANSLATED_CC_VALUE_LABEL" for="FILTER_ADD_TRANSLATED_CC_VALUE">Translated Midi CC Number</label>
-      <select   id="FILTER_ADD_TRANSLATED_CC_VALUE" name="FILTER_ADD_TRANSLATED_CC_VALUE" onchange="" size="7">
+      <label id="FILTER_ADD_MAPPED_CC_VALUE_LABEL" for="FILTER_ADD_MAPPED_CC_VALUE">Mapped Midi CC Number</label>
+      <select   id="FILTER_ADD_MAPPED_CC_VALUE" name="FILTER_ADD_MAPPED_CC_VALUE" onchange="" size="7">
         {% for i in range(32) %}
         <option value="{{i+1}}">
-          {% if 'option_labels' in config['FILTER_ADD_TRANSLATED_CC_VALUE'] and str(i+1) in config['FILTER_ADD_TRANSLATED_CC_VALUE']['option_labels'] %}
-            {{ escape(config['FILTER_ADD_TRANSLATED_CC_VALUE']['option_labels'][str(i+1)]) }}
+          {% if 'option_labels' in config['FILTER_ADD_MAPPED_CC_VALUE'] and str(i+1) in config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'] %}
+            {{ escape(config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'][str(i+1)]) }}
           {% else %}
             {{ i+1 }}
           {% end %}
@@ -86,14 +86,14 @@ var span = document.getElementsByClassName("close")[0];
 var commandSelect = document.getElementById('FILTER_ADD_COMMAND');
 var midiEventSelect = document.getElementById('FILTER_ADD_MIDI_EVENT');
 
-var translatedMidiEventSelect = document.getElementById('FILTER_ADD_TRANSLATED_MIDI_EVENT');
-var translatedMidiEventSelectLabel = document.getElementById('FILTER_ADD_TRANSLATED_MIDI_EVENT_LABEL');
+var mappedMidiEventSelect = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT');
+var mappedMidiEventSelectLabel = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT_LABEL');
 
 var ccValueSelect = document.getElementById('FILTER_ADD_CC_VALUE');
 var ccValueSelectLabel = document.getElementById('FILTER_ADD_CC_VALUE_LABEL');
 
-var translatedCCValueSelect = document.getElementById('FILTER_ADD_TRANSLATED_CC_VALUE');
-var translatedCCValueSelectLabel = document.getElementById('FILTER_ADD_TRANSLATED_CC_VALUE_LABEL');
+var mappedCCValueSelect = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE');
+var mappedCCValueSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE_LABEL');
 
 btn.onclick = function() {
     modal.style.display = "block";
@@ -125,29 +125,29 @@ var refreshSelectionView = function(){
 
   hideCCValue = true;
   if ('TRANS' == commandSelect.value) {
-    translatedMidiEventSelect.style.display = "block";
-    translatedMidiEventSelectLabel.style.display = "block";
-    if ('CC' == translatedMidiEventSelect.value){
+    mappedMidiEventSelect.style.display = "block";
+    mappedMidiEventSelectLabel.style.display = "block";
+    if ('CC' == mappedMidiEventSelect.value){
       hideCCValue = false
     }
   } else {
-    translatedMidiEventSelect.style.display = "none";
-    translatedMidiEventSelectLabel.style.display = "none";
-    var elements = translatedMidiEventSelect.options;
+    mappedMidiEventSelect.style.display = "none";
+    mappedMidiEventSelectLabel.style.display = "none";
+    var elements = mappedMidiEventSelect.options;
     for(var i = 0; i < elements.length; i++){
       elements[i].selected = false;
     }
   }
   if (hideCCValue) {
-    translatedCCValueSelect.style.display = "none";
-    translatedCCValueSelectLabel.style.display = "none";
-    var elements = translatedCCValueSelect.options;
+    mappedCCValueSelect.style.display = "none";
+    mappedCCValueSelectLabel.style.display = "none";
+    var elements = mappedCCValueSelect.options;
     for(var i = 0; i < elements.length; i++){
       elements[i].selected = false;
     }
   } else {
-    translatedCCValueSelect.style.display = "block";
-    translatedCCValueSelectLabel.style.display = "block";
+    mappedCCValueSelect.style.display = "block";
+    mappedCCValueSelectLabel.style.display = "block";
   }
 }
 
