@@ -21,36 +21,41 @@ class UiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
-			['ZYNTHIAN_UI_FONT_FAMILY', {
-				'type': 'select',
-				'title': 'Family',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
-				'options': self.font_families
-			}],
 			['ZYNTHIAN_UI_FONT_SIZE', {
 				'type': 'text',
 				'title': 'Size',
 				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
 			}],
+			['ZYNTHIAN_UI_FONT_FAMILY', {
+				'type': 'select',
+				'title': 'Family',
+				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
+				'options': self.font_families,
+				'advanced': True
+			}],
 			['ZYNTHIAN_UI_COLOR_BG', {
 				'type': 'text',
 				'title': 'Background',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG')
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_TX', {
 				'type': 'text',
 				'title': 'Text',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX')
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_ON', {
 				'type': 'text',
 				'title': 'Light',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON')
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_PANEL_BG', {
 				'type': 'text',
 				'title': 'Panel Background',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG')
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_UI_ENABLE_CURSOR', {
 				'type': 'boolean',
