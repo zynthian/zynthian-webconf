@@ -8,7 +8,4 @@ else
 	source "$ZYNTHIAN_SYS_DIR/scripts/zynthian_envars.sh"
 fi
 
-export PYTHONPATH="${PYTHONPATH}:$ZYNTHIAN_UI_DIR"
-echo $PYTHONPATH
-
 ./zynthian_webconf.py
