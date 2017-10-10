@@ -17,6 +17,12 @@
 		{% elif config[varname]['type']=='boolean' %}
 		<input name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
 		{% elif config[varname]['type']=='textarea' %}
+		{% if 'addButton' in config[varname] %}
+		<button id="{{ config[varname]['addButton'] }}" type="button">+</button>
+		{% end %}
+		{% if 'addPanel' in config[varname] %}
+		{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
+		{% end %}
 		<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
 		{% elif config[varname]['type']=='select' %}
 		<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>

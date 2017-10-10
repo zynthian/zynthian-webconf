@@ -79,79 +79,77 @@
 </div>
 
 <script>
-var modal = document.getElementById('midi_translation_panel');
-var btn = document.getElementById('midi_translation_add');
-var span = document.getElementsByClassName("close")[0];
 
-var commandSelect = document.getElementById('FILTER_ADD_COMMAND');
-var midiEventSelect = document.getElementById('FILTER_ADD_MIDI_EVENT');
+$(document).ready(function() {
+	$('#midi_filter_rule_add').click(function(){
+		$('#midi_filter_rule_panel').show(500)
+	});
 
-var mappedMidiEventSelect = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT');
-var mappedMidiEventSelectLabel = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT_LABEL');
+	$('#midi_filter_rule_panel .close').click(function(){
+		$('#midi_filter_rule_panel').hide(500)
+	});
 
-var ccValueSelect = document.getElementById('FILTER_ADD_CC_VALUE');
-var ccValueSelectLabel = document.getElementById('FILTER_ADD_CC_VALUE_LABEL');
+	window.onclick = function(event) {
+		if (event.target == document.getElementById('midi_filter_rule_panel')) {
+			$('#midi_filter_rule_panel').hide(500)
+		}
+	}
 
-var mappedCCValueSelect = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE');
-var mappedCCValueSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE_LABEL');
+	commandSelect = document.getElementById('FILTER_ADD_COMMAND');
+	midiEventSelect = document.getElementById('FILTER_ADD_MIDI_EVENT');
 
-btn.onclick = function() {
-    modal.style.display = "block";
+	mappedMidiEventSelect = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT');
+	mappedMidiEventSelectLabel = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT_LABEL');
+
+	ccValueSelect = document.getElementById('FILTER_ADD_CC_VALUE');
+	ccValueSelectLabel = document.getElementById('FILTER_ADD_CC_VALUE_LABEL');
+
+	mappedCCValueSelect = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE');
+	mappedCCValueSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE_LABEL');
+	
+	refreshSelectionView();
+});
+
+function refreshSelectionView() {
+	if ('CC' == midiEventSelect.value){
+		ccValueSelect.style.display = "block";
+		ccValueSelectLabel.style.display = "block";
+	} else {
+		ccValueSelect.style.display = "none";
+		ccValueSelectLabel.style.display = "none";
+		var elements = ccValueSelect.options;
+
+		for(var i = 0; i < elements.length; i++){
+			elements[i].selected = false;
+		}
+	}
+
+	hideCCValue = true;
+	if ('MAP' == commandSelect.value) {
+		mappedMidiEventSelect.style.display = "block";
+		mappedMidiEventSelectLabel.style.display = "block";
+		if ('CC' == mappedMidiEventSelect.value){
+			hideCCValue = false
+		}
+	} else {
+		mappedMidiEventSelect.style.display = "none";
+		mappedMidiEventSelectLabel.style.display = "none";
+		var elements = mappedMidiEventSelect.options;
+		for(var i = 0; i < elements.length; i++){
+			elements[i].selected = false;
+		}
+	}
+	if (hideCCValue) {
+		mappedCCValueSelect.style.display = "none";
+		mappedCCValueSelectLabel.style.display = "none";
+		var elements = mappedCCValueSelect.options;
+		for(var i = 0; i < elements.length; i++){
+			elements[i].selected = false;
+		}
+	} else {
+		mappedCCValueSelect.style.display = "block";
+		mappedCCValueSelectLabel.style.display = "block";
+	}
 }
-
-span.onclick = function() {
-    modal.style.display = "none";
-}
-
-window.onclick = function(event) {
-    if (event.target == modal) {
-        modal.style.display = "none";
-    }
-}
-
-var refreshSelectionView = function(){
-  if ('CC' == midiEventSelect.value){
-    ccValueSelect.style.display = "block";
-    ccValueSelectLabel.style.display = "block";
-  } else {
-    ccValueSelect.style.display = "none";
-    ccValueSelectLabel.style.display = "none";
-    var elements = ccValueSelect.options;
-
-    for(var i = 0; i < elements.length; i++){
-      elements[i].selected = false;
-    }
-  }
-
-  hideCCValue = true;
-  if ('TRANS' == commandSelect.value) {
-    mappedMidiEventSelect.style.display = "block";
-    mappedMidiEventSelectLabel.style.display = "block";
-    if ('CC' == mappedMidiEventSelect.value){
-      hideCCValue = false
-    }
-  } else {
-    mappedMidiEventSelect.style.display = "none";
-    mappedMidiEventSelectLabel.style.display = "none";
-    var elements = mappedMidiEventSelect.options;
-    for(var i = 0; i < elements.length; i++){
-      elements[i].selected = false;
-    }
-  }
-  if (hideCCValue) {
-    mappedCCValueSelect.style.display = "none";
-    mappedCCValueSelectLabel.style.display = "none";
-    var elements = mappedCCValueSelect.options;
-    for(var i = 0; i < elements.length; i++){
-      elements[i].selected = false;
-    }
-  } else {
-    mappedCCValueSelect.style.display = "block";
-    mappedCCValueSelectLabel.style.display = "block";
-  }
-}
-
-refreshSelectionView();
-
 
 </script>
