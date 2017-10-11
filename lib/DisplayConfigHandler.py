@@ -137,7 +137,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '600',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['HDMI Generic display', {
+		['Generic HDMI display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
