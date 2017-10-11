@@ -37,7 +37,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['PiScreen 3.5 (v2)', {
-			'DISPLAY_CONFIG': 'dtoverlay=piscreen2r,rotate=270',
+			'DISPLAY_CONFIG': 'dtoverlay=piscreen2r-notouch,rotate=270\n'+
+				'dtoverlay=ads7846,speed=2000000,cs=1,penirq=17,penirq_pull=2,swapxy=1,xohms=100,pmax=255',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
@@ -141,6 +142,12 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
 			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['Custom device', {
+			'DISPLAY_CONFIG': '',
+			'DISPLAY_WIDTH': '',
+			'DISPLAY_HEIGHT': '',
+			'FRAMEBUFFER': ''
 		}]
 	])
 

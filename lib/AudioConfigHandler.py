@@ -48,6 +48,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['USB device', {
 			'SOUNDCARD_CONFIG': ''
+		}],
+		['Custom device', {
+			'SOUNDCARD_CONFIG': ''
 		}]
 	])
 
