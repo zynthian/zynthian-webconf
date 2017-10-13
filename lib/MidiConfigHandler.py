@@ -31,7 +31,7 @@ from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
-from zyngine.zynthian_midi_filter import MidiFilterRule
+from zyngine.zynthian_midi_filter import MidiFilterScript
 
 #------------------------------------------------------------------------------
 # System Menu
@@ -176,7 +176,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 		filterError = self.validate_filter_rules(escaped_request_arguments);
-		
+
 		if not filterError:
 			# remove fields that sttart with FILTER_ADD from request_args, so that they won't be passed to update_config
 			for filter_add_argument in list(escaped_request_arguments.keys()):
@@ -192,8 +192,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def validate_filter_rules(self, escaped_request_arguments):
 		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
 			newLine = escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0];
-			logging.info("new line : %s" % (newLine))
 			try:
-				mdf = MidiFilterRule(newLine, False)
+				mfs = MidiFilterScript(newLine, False)
 			except Exception as e:
 				return "ERROR parsing MIDI filter rule: " + str(e)
