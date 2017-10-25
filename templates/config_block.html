@@ -1,6 +1,6 @@
 
 <div class="pull-right">
-	<input type="checkbox" onChange="$('.advanced-view').slideToggle(500)"/><span>Advanced view</span>
+	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
 </div>
 
 <h2>{{ escape(title) }}</h2>
@@ -78,4 +78,28 @@ function set_presets(sel) {
 		}
 	});
 }
+
+function restore_advanced_view() {
+	if (Cookies.get('advanced_view')) {
+		$('input#check_advanced_view').prop("checked", true);
+		$('.advanced-view').show();
+	} else {
+		$('input#check_advanced_view').prop("checked", false);
+		$('.advanced-view').hide;
+	}
+}
+
+function onchange_check_advanced_view() {
+	if ($('input#check_advanced_view').prop("checked")==true) {
+		Cookies.set('advanced_view','1')
+		$('.advanced-view').slideDown(500);
+	} else {
+		Cookies.remove('advanced_view')
+		$('.advanced-view').slideUp(500);
+	}
+}
+
+$(document).ready(function() {
+	restore_advanced_view()
+});
 </script>
