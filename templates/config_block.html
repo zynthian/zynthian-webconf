@@ -23,7 +23,7 @@
 		{% if 'addPanel' in config[varname] %}
 		{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
 		{% end %}
-		<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
+		<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
 		{% elif config[varname]['type']=='select' %}
 		<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
 		{% for option in config[varname]['options'] %}

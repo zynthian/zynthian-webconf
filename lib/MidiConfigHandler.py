@@ -31,7 +31,7 @@ from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
-from zyngine import zynthian_midi_filter
+from zyngine.zynthian_midi_filter import MidiFilterScript
 
 #------------------------------------------------------------------------------
 # System Menu
@@ -171,41 +171,28 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			self.render("config.html", body="config_block.html", config=config, title="MIDI", errors=errors)
 
 	def post(self):
-		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-		if 'FILTER_ADD_COMMAND' in escaped_request_arguments and 'FILTER_ADD_MIDI_EVENT' in escaped_request_arguments:
-			errors = self.calculate_mapping(escaped_request_arguments)
 		self.request.arguments['ZYNTHIAN_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_PRESET_PRELOAD_NOTEON','0')
-		if not errors:
-			errors=self.update_config(escaped_request_arguments)
+		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
+
+
+		filterError = self.validate_filter_rules(escaped_request_arguments);
+
+		if not filterError:
+			# remove fields that sttart with FILTER_ADD from request_args, so that they won't be passed to update_config
+			for filter_add_argument in list(escaped_request_arguments.keys()):
+				if filter_add_argument.startswith('FILTER_ADD'):
+					del escaped_request_arguments[filter_add_argument]
+
+			errors = self.update_config(escaped_request_arguments)
 			self.restart_ui()
+		else:
+			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filterError};
 		self.get(errors)
 
-	def calculate_mapping(self, escaped_request_arguments):
-		if escaped_request_arguments['FILTER_ADD_COMMAND'][0]:
-			channels = ''
-			if 'FILTER_ADD_CHANNEL' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_CHANNEL'][0]:
-				channels =  'CH#' + ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_CHANNEL'])
-			midi_event = ''
-			if 'FILTER_ADD_MIDI_EVENT' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_MIDI_EVENT'][0]:
-				midi_event = escaped_request_arguments['FILTER_ADD_MIDI_EVENT'][0]
-			cc_value = ''
-			if 'FILTER_ADD_CC_VALUE' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_CC_VALUE'][0]:
-				cc_value = '#' +  ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_CC_VALUE'])
-			mapped_midi_event = ''
-			if 'FILTER_ADD_MAPPED_MIDI_EVENT' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_MAPPED_MIDI_EVENT'][0]:
-				mapped_midi_event = '=> ' + escaped_request_arguments['FILTER_ADD_MAPPED_MIDI_EVENT'][0]
-				if 'FILTER_ADD_MAPPED_CC_VALUE' in escaped_request_arguments and escaped_request_arguments['FILTER_ADD_MAPPED_CC_VALUE'][0]:
-					mapped_midi_event += '#' +  ','.join(str(x) for x in escaped_request_arguments['FILTER_ADD_MAPPED_CC_VALUE'])
-
-			newLine = escaped_request_arguments['FILTER_ADD_COMMAND'][0] + ' ' + channels + ' ' + midi_event + ' ' + cc_value + ' ' + mapped_midi_event
-			logging.info("new line : %s" % (newLine))
+	def validate_filter_rules(self, escaped_request_arguments):
+		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
+			newLine = escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0];
 			try:
-				MidiFilterRule(newLine)
-				escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0] += 	"\n" + newLine
-			except Exception:
-				return "ERROR parsing MIDI filter rule"
-
-		# remove fields that sttart with FILTER_ADD from request_args, so that they won't be passed to update_config
-		for filter_add_argument in list(escaped_request_arguments.keys()):
-			if filter_add_argument.startswith('FILTER_ADD'):
-				del escaped_request_arguments[filter_add_argument]
+				mfs = MidiFilterScript(newLine, False)
+			except Exception as e:
+				return "ERROR parsing MIDI filter rule: " + str(e)
