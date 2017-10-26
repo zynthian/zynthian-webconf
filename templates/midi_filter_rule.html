@@ -48,8 +48,8 @@
             {% end %}
           </select>
         </div>
-        <div class="right">
 
+        <div class="right">
           <label id="FILTER_ADD_MAPPED_CHANNEL_LABEL" for="FILTER_ADD_MAPPED_CHANNEL">to mapped channels</label>
           <select id="FILTER_ADD_MAPPED_CHANNEL" multiple name="FILTER_ADD_MAPPED_CHANNEL" onchange="refreshSelectionView()" size="5">
             {% for i in range(16) %}
@@ -162,7 +162,7 @@ function addFilterRule(){
   mapped_channel_options = $("#FILTER_ADD_MAPPED_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
   mapped_channels = '';
   if (mapped_channel_options){
-    mapped_channels =  'CH#' + mapped_channel_options;
+    mapped_channels =  'CH#' + mapped_channel_options + ' ';
   }
 
   mapped_midi_event = ''
@@ -177,7 +177,10 @@ function addFilterRule(){
   newLine = command + ' ' + channels + ' ' + midi_event + cc_value + ' ' +   mapped_midi_event
 
 
-  filterRulesTextarea.value += "\n" + newLine;
+  if (filterRulesTextarea.value) {
+    filterRulesTextarea.value += "\n"
+  }
+  filterRulesTextarea.value += newLine;
   return true;
 }
 
