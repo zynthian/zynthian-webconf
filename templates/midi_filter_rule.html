@@ -2,7 +2,7 @@
   <div class="modal-content">
     <div class="modal-header">
       <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title">Add new midi filter rule</h4>
+      <h4 class="modal-title">Add new MIDI filter rule</h4>
     </div>
     <div class="modal-body">
 
@@ -11,9 +11,9 @@
         <option value="IGNORE">Ignore</option>
         <option value="MAP">Map</option>
       </select>
-      <div class="two-rows-panel">
-        <div class="left">
-          <label for="FILTER_ADD_CHANNEL">for channels</label>
+      <div class="row">
+        <div class="col-md-6">
+          <label for="FILTER_ADD_CHANNEL">from Source Channels</label>
           <select id="FILTER_ADD_CHANNEL" multiple name="FILTER_ADD_CHANNEL" onchange="refreshSelectionView()" size="5">
             {% for i in range(16) %}
             <option value="{{i}}">{{i+1}}</option>
@@ -49,8 +49,8 @@
           </select>
         </div>
 
-        <div class="right">
-          <label id="FILTER_ADD_MAPPED_CHANNEL_LABEL" for="FILTER_ADD_MAPPED_CHANNEL">to mapped channels</label>
+        <div class="col-md-6">
+          <label id="FILTER_ADD_MAPPED_CHANNEL_LABEL" for="FILTER_ADD_MAPPED_CHANNEL">to Mapped Channels</label>
           <select id="FILTER_ADD_MAPPED_CHANNEL" multiple name="FILTER_ADD_MAPPED_CHANNEL" onchange="refreshSelectionView()" size="5">
             {% for i in range(16) %}
             <option value="{{i}}">{{i+1}}</option>
@@ -85,7 +85,7 @@
         </div>
       </div>
       <div class="modal-footer">
-          <button id="midi-filter-rule-add" class="btn btn-default" data-dismiss="modal" type="button" onclick="addFilterRule();"><span aria-hidden="true">Add</span></button>
+          <button id="midi-filter-rule-add" class="btn btn-success" data-dismiss="modal" type="button" onclick="addFilterRule();"><span aria-hidden="true">ADD</span></button>
       </div>
     </div>
   </div>

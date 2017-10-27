@@ -638,22 +638,12 @@ div#loading-div {
 
 div.advanced-view {
 	display: none;
-	background: #f0f0f0;
-}
-
-div.two-rows-panel div.right {
-	float: right;
-	width: 50%;
-}
-
-div.two-rows-panel div.left {
-	overflow: hidden;
-	float: left;
-	width: 50%;
+	background: lighten(@lightgrey,5%);
 }
 
 
-div.two-rows-panel input:disabled+label,
-div.two-rows-panel select:disabled+label option {
-	color: LightGrey;
+div#midi_filter_rule_panel input:disabled,
+div#midi_filter_rule_panel select:disabled,
+div#midi_filter_rule_panel select:disabled option {
+	background-color: @lightgrey;
 }
