@@ -1,0 +1,234 @@
+<div id="midi_filter_rule_panel" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h4 class="modal-title">Add new MIDI filter rule</h4>
+    </div>
+    <div class="modal-body">
+
+      <select id="FILTER_ADD_COMMAND" name="FILTER_ADD_COMMAND" onchange="refreshSelectionView()">
+        <option value="">Select a command</option>
+        <option value="IGNORE">Ignore</option>
+        <option value="MAP">Map</option>
+      </select>
+      <div class="row">
+        <div class="col-md-6">
+          <label for="FILTER_ADD_CHANNEL">from Source Channels</label>
+          <select id="FILTER_ADD_CHANNEL" multiple name="FILTER_ADD_CHANNEL" onchange="refreshSelectionView()" size="5">
+            {% for i in range(16) %}
+            <option value="{{i}}">{{i+1}}</option>
+            {% end %}
+          </select>
+
+          <label  for="FILTER_ADD_MIDI_EVENT">Midi Event</label>
+          <select id="FILTER_ADD_MIDI_EVENT" multiple name="FILTER_ADD_MIDI_EVENT" onchange="refreshSelectionView()" size="5">
+
+            {% for option in config['FILTER_ADD_MIDI_EVENT']['options'] %}
+              <option value="{{ escape(option) }}">
+                {% if 'option_labels' in config['FILTER_ADD_MIDI_EVENT'] %}
+                  {{ escape(config['FILTER_ADD_MIDI_EVENT']['option_labels'][option]) }}
+                {% else %}
+                  {{ escape(option) }}
+                {% end %}
+              </option>
+            {% end %}
+          </select>
+
+
+          <label id="FILTER_ADD_CC_VALUE_LABEL" for="FILTER_ADD_CC_VALUE">Midi CC Number</label>
+          <select multiple id="FILTER_ADD_CC_VALUE" name="FILTER_ADD_CC_VALUE" onchange="" size="7">
+            {% for i in range(128) %}
+            <option value="{{i}}">
+              {% if 'option_labels' in config['FILTER_ADD_CC_VALUE'] and str(i+1) in config['FILTER_ADD_CC_VALUE']['option_labels'] %}
+                {{ escape(config['FILTER_ADD_CC_VALUE']['option_labels'][str(i+1)]) }}
+              {% else %}
+                {{ i+1 }}
+              {% end %}
+            </option>
+            {% end %}
+          </select>
+        </div>
+
+        <div class="col-md-6">
+          <label id="FILTER_ADD_MAPPED_CHANNEL_LABEL" for="FILTER_ADD_MAPPED_CHANNEL">to Mapped Channels</label>
+          <select id="FILTER_ADD_MAPPED_CHANNEL" multiple name="FILTER_ADD_MAPPED_CHANNEL" onchange="refreshSelectionView()" size="5">
+            {% for i in range(16) %}
+            <option value="{{i}}">{{i+1}}</option>
+            {% end %}
+          </select>
+
+          <label id="FILTER_ADD_MAPPED_MIDI_EVENT_LABEL" for="FILTER_ADD_MAPPED_MIDI_EVENT">Mapped Midi Event</label>
+          <select id="FILTER_ADD_MAPPED_MIDI_EVENT" multiple name="FILTER_ADD_MAPPED_MIDI_EVENT" onchange="refreshSelectionView()" size="5">
+            {% for option in config['FILTER_ADD_MAPPED_MIDI_EVENT']['options'] %}
+              <option value="{{ escape(option) }}">
+                {% if 'option_labels' in config['FILTER_ADD_MAPPED_MIDI_EVENT'] %}
+                  {{ escape(config['FILTER_ADD_MAPPED_MIDI_EVENT']['option_labels'][option]) }}
+                {% else %}
+                  {{ escape(option) }}
+                {% end %}
+              </option>
+            {% end %}
+          </select>
+
+          <label id="FILTER_ADD_MAPPED_CC_VALUE_LABEL" for="FILTER_ADD_MAPPED_CC_VALUE">Mapped Midi CC Number</label>
+          <select   id="FILTER_ADD_MAPPED_CC_VALUE" name="FILTER_ADD_MAPPED_CC_VALUE" onchange="" size="7">
+            {% for i in range(128) %}
+            <option value="{{i}}">
+              {% if 'option_labels' in config['FILTER_ADD_MAPPED_CC_VALUE'] and str(i+1) in config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'] %}
+                {{ escape(config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'][str(i+1)]) }}
+              {% else %}
+                {{ i+1 }}
+              {% end %}
+            </option>
+            {% end %}
+          </select>
+        </div>
+      </div>
+      <div class="modal-footer">
+          <button id="midi-filter-rule-add" class="btn btn-success" data-dismiss="modal" type="button" onclick="addFilterRule();"><span aria-hidden="true">ADD</span></button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+$(document).ready(function() {
+	$('#midi_filter_rule_add').click(function(){
+    refreshSelectionView();
+		$('#midi_filter_rule_panel').show(500)
+	});
+
+	$('#midi_filter_rule_panel .close').click(function(){
+		$('#midi_filter_rule_panel').hide(500)
+	});
+
+	window.onclick = function(event) {
+		if (event.target == document.getElementById('midi_filter_rule_panel')) {
+			$('#midi_filter_rule_panel').hide(500);
+		}
+	}
+
+	commandSelect = document.getElementById('FILTER_ADD_COMMAND');
+  channelSelect = document.getElementById('FILTER_ADD_CHANNEL');
+	midiEventSelect = document.getElementById('FILTER_ADD_MIDI_EVENT');
+
+  mappedChannelSelect = document.getElementById('FILTER_ADD_MAPPED_CHANNEL');
+  mappedChannelSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CHANNEL_LABEL');
+
+	mappedMidiEventSelect = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT');
+	mappedMidiEventSelectLabel = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT_LABEL');
+
+	ccValueSelect = document.getElementById('FILTER_ADD_CC_VALUE');
+	ccValueSelectLabel = document.getElementById('FILTER_ADD_CC_VALUE_LABEL');
+
+	mappedCCValueSelect = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE');
+	mappedCCValueSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE_LABEL');
+
+	filterRuleAddButton = document.getElementById('midi-filter-rule-add');
+  filterRuleAddButton.onclick = function(event) {
+        if (addFilterRule()){
+      	   $('#midi_filter_rule_panel').hide(500);
+        } else {
+          alert('You didn\'t select a valid option');
+        }
+	}
+});
+
+function addFilterRule(){
+  if (!commandSelect.value) {
+    return false;
+  }
+  command = commandSelect.value;
+  filterRulesTextarea = document.getElementById('ZYNTHIAN_MIDI_FILTER_RULES') ;
+
+  channel_options = $("#FILTER_ADD_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
+  channels = '';
+  if (channel_options){
+    channels =  'CH#' + channel_options;
+  }
+
+  if (!midiEventSelect.value) {
+    return false;
+  }
+  midi_event = midiEventSelect.value;
+
+  cc_value = ''
+  cc_values_options = $("#FILTER_ADD_CC_VALUE option:selected").map(function(){ return this.value }).get().join(",");
+  if (cc_values_options){
+    cc_value =  '#' + cc_values_options;
+  }
+
+  mapped_channel_options = $("#FILTER_ADD_MAPPED_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
+  mapped_channels = '';
+  if (mapped_channel_options){
+    mapped_channels =  'CH#' + mapped_channel_options + ' ';
+  }
+
+  mapped_midi_event = ''
+  if (mappedMidiEventSelect.value){
+    mapped_midi_event = '=> ' + mapped_channels +  mappedMidiEventSelect.value
+    mapped_cc_values_options = $("#FILTER_ADD_MAPPED_CC_VALUE option:selected").map(function(){ return this.value }).get().join(",");
+    if (mapped_cc_values_options){
+      mapped_midi_event += '#' + mapped_cc_values_options;
+    }
+  }
+
+  newLine = command + ' ' + channels + ' ' + midi_event + cc_value + ' ' +   mapped_midi_event
+
+
+  if (filterRulesTextarea.value) {
+    filterRulesTextarea.value += "\n"
+  }
+  filterRulesTextarea.value += newLine;
+  return true;
+}
+
+
+function refreshSelectionView() {
+	if ('CC' == midiEventSelect.value){
+		ccValueSelect.disabled = false;
+		ccValueSelectLabel.disabled = false;
+	} else {
+		ccValueSelect.disabled = true;
+		ccValueSelectLabel.disabled = true;
+		var elements = ccValueSelect.options;
+
+		for(var i = 0; i < elements.length; i++){
+			elements[i].selected = false;
+		}
+	}
+
+	hideCCValue = true;
+	if ('MAP' == commandSelect.value) {
+    mappedChannelSelect.disabled = false;
+		mappedChannelSelectLabel.disabled = false;
+		mappedMidiEventSelect.disabled = false;
+		mappedMidiEventSelectLabel.disabled = false;
+		if ('CC' == mappedMidiEventSelect.value){
+			hideCCValue = false
+		}
+	} else {
+    mappedChannelSelect.disabled = true;
+		mappedChannelSelectLabel.disabled = true;
+		mappedMidiEventSelect.disabled = true;
+		mappedMidiEventSelectLabel.disabled = true;
+		var elements = mappedMidiEventSelect.options;
+		for(var i = 0; i < elements.length; i++){
+			elements[i].selected = false;
+		}
+	}
+	if (hideCCValue) {
+		mappedCCValueSelect.disabled = true;
+		mappedCCValueSelectLabel.disabled = true;
+		var elements = mappedCCValueSelect.options;
+		for(var i = 0; i < elements.length; i++){
+			elements[i].selected = false;
+		}
+	} else {
+		mappedCCValueSelect.disabled = false;
+		mappedCCValueSelectLabel.disabled = false;
+	}
+}
+
+</script>

@@ -1,3 +1,27 @@
+# -*- coding: utf-8 -*-
+#********************************************************************
+# ZYNTHIAN PROJECT: Zynthian Web Configurator
+#
+# SoundFont Manager Handler
+#
+# Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
+#
+#********************************************************************
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# For a full copy of the GNU General Public License see the LICENSE.txt file.
+#
+#********************************************************************
+
 import os
 import uuid
 import re
@@ -39,7 +63,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 		self.maxTreeNodeIndex = 0
-		soundfonts = self.walkDirectory(SoundfontConfigHandler.SOUNDFONTS_DIRECTORY, '', '')
+		soundfonts = self.walk_directory(SoundfontConfigHandler.SOUNDFONTS_DIRECTORY, '', '')
 
 		config['ZYNTHIAN_SOUNDFONTS'] = json.dumps(soundfonts)
 
@@ -62,17 +86,17 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		self.selectedFullPath =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
 		if action:
 			errors = {
-				'NEW': lambda: self.doNewBank(),
-				'REMOVE': lambda: self.doRemove(),
-				'SAVE': lambda: self.doSave(),
-				'RENAME': lambda: self.doRename(),
-				'SEARCH': lambda: self.doSearch(),
-				'DOWNLOAD': lambda: self.doDownload()
+				'NEW': lambda: self.do_new_bank(),
+				'REMOVE': lambda: self.do_remove(),
+				'SAVE': lambda: self.do_save(),
+				'RENAME': lambda: self.do_rename(),
+				'SEARCH': lambda: self.do_search(),
+				'DOWNLOAD': lambda: self.do_download()
 			}[action]()
 
 		self.get(errors)
 
-	def doSave(self):
+	def do_save(self):
 		fileinfo = self.request.files['soundfontfile'][0]
 		fname = fileinfo['filename']
 		newFullPath = self.selectedFullPath + "/" + fname
@@ -84,7 +108,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			pass
 		self.selectedFullPath = newFullPath;
 
-	def doRemove(self):
+	def do_remove(self):
 		path = self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
 		try:
 			if os.path.isdir(path):
@@ -94,13 +118,13 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		except:
 			pass
 
-	def doNewBank(self):
+	def do_new_bank(self):
 		if 	self.get_argument('ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME'):
 			newBank =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH') + "/" + self.get_argument('ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME')
 			os.mkdir(newBank)
 			self.selectedFullPath = newBank
 
-	def doRename(self):
+	def do_rename(self):
 		newName = ''
 
 		if 	self.get_argument('ZYNTHIAN_SOUNDFONT_BANK_NAME'):
@@ -118,7 +142,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				shutil.move(sourceFolder, destinationFolder)
 				self.selectedFullPath = destinationFolder;
 
-	def doSearch(self):
+	def do_search(self):
 		query = 'https://musical-artifacts.com/artifacts.json'
 		querySeparator = '?'
 		if self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'):
@@ -145,7 +169,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		logging.info(self.selectedFullPath)
 		#logging.debug("searchResult: " + str(self.searchResult))
 
-	def doDownload(self):
+	def do_download(self):
 		if self.get_argument('ZYNTHIAN_SOUNDFONT_DOWNLOAD_FILE'):
 			sourceFile = self.get_argument('ZYNTHIAN_SOUNDFONT_DOWNLOAD_FILE')
 			logging.debug("downloading: " + sourceFile)
@@ -158,17 +182,17 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 					deleteDownloadedFile = False
 					if destinationFile.endswith('.tar.bz2'):
 						deleteDownloadedFile = True
-						self.downloadTarBz2(destinationFile)
+						self.download_tar_bz2(destinationFile)
 					if destinationFile.endswith('.zip') or destinationFile.endswith('.7z'):
 						deleteDownloadedFile = True
-						self.downloadZip(destinationFile)
+						self.download_zip(destinationFile)
 					if deleteDownloadedFile:
 						os.remove(destinationFile)
-					self.cleanupDownload(self.selectedFullPath, self.selectedFullPath)
+					self.cleanup_download(self.selectedFullPath, self.selectedFullPath)
 
 					self.selectedFullPath = destinationFile
 
-	def downloadTarBz2(self, destinationFile):
+	def download_tar_bz2(self, destinationFile):
 		tar = tarfile.open(destinationFile, "r:bz2")
 		for member in tar.getmembers():
 			if member.isfile():
@@ -177,20 +201,20 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 					tar.extract(member, self.selectedFullPath)
 		tar.close()
 
-	def downloadZip(self, destinationFile):
+	def download_zip(self, destinationFile):
 		with zipfile.ZipFile(destinationFile,'r') as soundfontZip:
 			for member in soundfontZip.namelist():
 				if member.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):
 					soundfontZip.extract(member, self.selectedFullPath)
 			soundfontZip.close()
 
-	def cleanupDownload(self, currentDirectory, targetDirectory):
+	def cleanup_download(self, currentDirectory, targetDirectory):
 		fileList =  os.listdir(currentDirectory)
 		for f in fileList:
 			sourcePath = os.path.join(currentDirectory, f)
 
 			if os.path.isdir(sourcePath):
-				self.cleanupDownload(sourcePath, targetDirectory)
+				self.cleanup_download(sourcePath, targetDirectory)
 				shutil.rmtree(sourcePath)
 			else:
 				if not f.startswith(".") and  f.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):
@@ -198,7 +222,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 					shutil.move(sourcePath, targetPath)
 
 
-	def walkDirectory(self, directory, nodeType, soundfontType):
+	def walk_directory(self, directory, nodeType, soundfontType):
 		soundfonts = []
 		fileList =  os.listdir(directory)
 		fileList = sorted(fileList)
@@ -240,7 +264,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				'nodeType': nextNodeType}
 			self.maxTreeNodeIndex+=1
 			if os.path.isdir(os.path.join(directory, f)):
-				soundfont['nodes'] = self.walkDirectory(os.path.join(directory, f), nextNodeType, soundfontType)
+				soundfont['nodes'] = self.walk_directory(os.path.join(directory, f), nextNodeType, soundfontType)
 
 			soundfonts.append(soundfont)
 		#logging.info(soundfonts)

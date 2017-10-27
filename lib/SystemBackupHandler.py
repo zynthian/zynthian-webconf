@@ -1,3 +1,27 @@
+# -*- coding: utf-8 -*-
+#********************************************************************
+# ZYNTHIAN PROJECT: Zynthian Web Configurator
+#
+# System Backup Handler
+#
+# Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
+#
+#********************************************************************
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# For a full copy of the GNU General Public License see the LICENSE.txt file.
+#
+#********************************************************************
+
 import os
 import re
 import logging
@@ -39,7 +63,7 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 			for filename in files:
 				config['ZYNTHIAN_BACKUP_ITEMS'][dirname].append(filename)
 
-		self.walkBackupItems(addBackupItem)
+		self.walk_backup_items(addBackupItem)
 
 		if self.genjson:
 			self.write(config)
@@ -51,24 +75,24 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		action = self.get_argument('ZYNTHIAN_BACKUP_ACTION')
 		if action:
 			errors = {
-				'BACKUP': lambda: self.doBackup(),
-				'RESTORE': lambda: self.doRestore()
+				'BACKUP': lambda: self.do_backup(),
+				'RESTORE': lambda: self.do_restore()
 			}[action]()
 
 		self.get(errors)
 
-	def doBackup(self):
+	def do_backup(self):
 		zipname="zynthian_backup.zip"
 		f=BytesIO()
 		zf = zipfile.ZipFile(f, "w")
 
 
-		def backupItems(dirname, subdirs, files):
+		def backup_items(dirname, subdirs, files):
 			zf.write(dirname)
 			for filename in files:
 				zf.write(os.path.join(dirname, filename))
 
-		self.walkBackupItems(backupItems)
+		self.walk_backup_items(backup_items)
 
 		zf.close()
 		self.set_header('Content-Type', 'application/zip')
@@ -78,17 +102,17 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		f.close()
 		self.finish()
 
-	def doRestore(self):
+	def do_restore(self):
 		fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]
 		restoreFile = fileinfo['filename']
 		logging.debug("restoring: " + restoreFile)
 
 		f=BytesIO(fileinfo['body'])
-		validRestoreItems = self.getBackupItems()
+		validRestoreItems = self.get_backup_items()
 
 		with zipfile.ZipFile(f,'r') as restoreZip:
 			for member in restoreZip.namelist():
-				if self.isValidRestoreItem(validRestoreItems, member):
+				if self.is_valid_restore_item(validRestoreItems, member):
 					logging.debug("restoring: " + member)
 					restoreZip.extract(member, "/")
 				else:
@@ -96,18 +120,18 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 			restoreZip.close()
 		f.close()
 
-	def getBackupItems(self):
+	def get_backup_items(self):
 		with open(self.BACKUP_ITEMS_FILE) as f:
 			return f.read().splitlines()
 
-	def isValidRestoreItem(self, validRestoreItems, restoreMember):
+	def is_valid_restore_item(self, validRestoreItems, restoreMember):
 		for validRestoreItem in validRestoreItems:
 			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
 				return True
 		return False
 
-	def walkBackupItems(self, worker):
-		for backupFolder in self.getBackupItems():
+	def walk_backup_items(self, worker):
+		for backupFolder in self.get_backup_items():
 			try:
 				sourceFolder = os.path.expandvars(backupFolder)
 				for dirname, subdirs, files in os.walk(sourceFolder):

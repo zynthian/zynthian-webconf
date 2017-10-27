@@ -1,3 +1,27 @@
+# -*- coding: utf-8 -*-
+#********************************************************************
+# ZYNTHIAN PROJECT: Zynthian Web Configurator
+#
+# Audio Configuration Handler
+#
+# Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
+#
+#********************************************************************
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# For a full copy of the GNU General Public License see the LICENSE.txt file.
+#
+#********************************************************************
+
 import os
 import re
 import logging
@@ -101,7 +125,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			}]
 		])
 
-		self.getMixerControls(config)
+		self.get_mixer_controls(config)
 
 		if self.genjson:
 			self.write(config)
@@ -121,7 +145,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		self.redirect('/api/sys-reboot')
 		self.get(errors)
 
-	def getMixerControls(self, config):
+	def get_mixer_controls(self, config):
 		mixerControl = None
 		controlName = ''
 		playbackChannel = False
@@ -161,7 +185,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			pass
 
 
-	def addMixerControl(self, config, mixerControl, controlName, volumePercent):
+	def add_mixer_control(self, config, mixerControl, controlName, volumePercent):
 		validMixer = ''
 		if os.environ.get('SOUNDCARD_NAME'):
 			validMixer = self.soundcard_mixer_controls[os.environ.get('SOUNDCARD_NAME')]
@@ -174,5 +198,5 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 			config[configKey] = mixerControl
 
-	def needsReboot(self):
+	def needs_reboot(self):
 		return True

@@ -1,3 +1,27 @@
+# -*- coding: utf-8 -*-
+#********************************************************************
+# ZYNTHIAN PROJECT: Zynthian Web Configurator
+#
+# WIFI List Handler
+#
+# Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
+#
+#********************************************************************
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# For a full copy of the GNU General Public License see the LICENSE.txt file.
+#
+#********************************************************************
+
 import os
 import re
 import logging
@@ -27,7 +51,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 				line = byteLine.decode("utf-8")
 				if line.find('ESSID')>=0:
 					if ssid:
-							self.addNetwork(wifiList, ssid, network, encryption, quality, signalLevel)
+							self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
 					network = {'encryption':False,'quality':0,'signalLevel':0}
 					encryption = False
 					quality = 0
@@ -42,7 +66,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 						signalLevel = m.group(3)
 
 			if ssid:
-				self.addNetwork(wifiList, ssid, network, encryption, quality, signalLevel)
+				self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
 
 			wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
 			wifiList = OrderedDict(reversed(list(wifiList.items())))
@@ -52,7 +76,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 		self.write(wifiList)
 
 
-	def addNetwork(self, wifiList, ssid, network, encryption, quality, signalLevel):
+	def add_network(self, wifiList, ssid, network, encryption, quality, signalLevel):
 		network['quality'] = quality
 		network['signalLevel'] = signalLevel
 		network['encryption'] = encryption

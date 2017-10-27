@@ -1,3 +1,27 @@
+# -*- coding: utf-8 -*-
+#********************************************************************
+# ZYNTHIAN PROJECT: Zynthian Web Configurator
+#
+# WIFI Configuration Handler
+#
+# Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
+#
+#********************************************************************
+#
+# This program is free software; you can redistribute it and/or
+# modify it under the terms of the GNU General Public License as
+# published by the Free Software Foundation; either version 2 of
+# the License, or any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
+# GNU General Public License for more details.
+#
+# For a full copy of the GNU General Public License see the LICENSE.txt file.
+#
+#********************************************************************
+
 import os
 import re
 import logging
@@ -29,9 +53,9 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		supplicant_file_name = self.getSupplicantFileName()
+		supplicant_file_name = self.get_supplicant_file_name()
 		supplicant_data = re.sub(r'psk=".*?"', 'psk="' + WifiConfigHandler.passwordMask + '"',
-			self.readSupplicantData(supplicant_file_name),
+			self.read_supplicant_data(supplicant_file_name),
 			re.I | re.M | re.S )
 		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?priority=(\d*).*?\\}.*?', re.I | re.M | re.S )
 		iterator = p.finditer(supplicant_data)
@@ -68,10 +92,10 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 	def post(self):
 		wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT')
 		fieldNames = ["ZYNTHIAN_WIFI_PRIORITY"]
-		wpa_supplicant_data = self.applyUpdatedFields(wpa_supplicant_data, fieldNames)
+		wpa_supplicant_data = self.apply_updated_fields(wpa_supplicant_data, fieldNames)
 
 		newSSID =  self.get_argument('ZYNTHIAN_WIFI_NEW_SSID')
-		if newSSID: wpa_supplicant_data = self.addNewNetwork(wpa_supplicant_data, newSSID)
+		if newSSID: wpa_supplicant_data = self.add_new_network(wpa_supplicant_data, newSSID)
 
 		fo = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
 		fo.write(wpa_supplicant_data)
@@ -79,13 +103,13 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		fo.close()
 		errors=self.get()
 
-	def getSupplicantFileName(self):
+	def get_supplicant_file_name(self):
 		supplicant_file_name = "/etc/wpa_supplicant/wpa_supplicant.conf"
 		#if os.path.getsize(supplicant_file_name) == 0:
 		#	supplicant_file_name = "/zynthian/zynthian-sys/etc/wpa_supplicant/wpa_supplicant.conf"
 		return supplicant_file_name
 
-	def readSupplicantData(self, supplicant_file_name):
+	def read_supplicant_data(self, supplicant_file_name):
 		try:
 			fo = open(supplicant_file_name, "r")
 			wpa_supplicant_data = "".join(fo.readlines())
@@ -95,10 +119,10 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 			pass
 		return ""
 
-	def applyUpdatedFields(self, wpa_supplicant_data, fieldNames):
-		supplicant_file_name = self.getSupplicantFileName()
+	def apply_updated_fields(self, wpa_supplicant_data, fieldNames):
+		supplicant_file_name = self.get_supplicant_file_name()
 		if supplicant_file_name:
-			previous_supplicant_data = self.readSupplicantData(supplicant_file_name)
+			previous_supplicant_data = self.read_supplicant_data(supplicant_file_name)
 
 			p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.I | re.M | re.S )
 			iterator = p.finditer(previous_supplicant_data)
@@ -130,7 +154,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 
 		return wpa_supplicant_data
 
-	def addNewNetwork(self, wpa_supplicant_data, newSSID):
+	def add_new_network(self, wpa_supplicant_data, newSSID):
 		wpa_supplicant_data += '\nnetwork={\n\tssid="'
 		wpa_supplicant_data += newSSID
 		wpa_supplicant_data += '"\n\tscan_ssid=1\n\tkey_mgmt=WPA-PSK\n\tpsk=""\n\tpriority=10\n}'

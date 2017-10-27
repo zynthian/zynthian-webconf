@@ -355,6 +355,7 @@ section.bg_logo_wave {
 .modal {
   color: #606060;
   background-color: #000000;
+  overflow-y: auto;
 }
 .modal-header,
 .modal-footer {
@@ -366,7 +367,8 @@ section.bg_logo_wave {
   background-color: #000000;
 }
 .modal-body input,
-.modal-body textarea {
+.modal-body textarea,
+.modal-body select {
   color: #303030;
 }
 .modal h4 {
@@ -615,5 +617,10 @@ div#loading-div {
 }
 div.advanced-view {
   display: none;
-  background: #f0f0f0;
+  background: #dddddd;
+}
+div#midi_filter_rule_panel input:disabled,
+div#midi_filter_rule_panel select:disabled,
+div#midi_filter_rule_panel select:disabled option {
+  background-color: #d0d0d0;
 }

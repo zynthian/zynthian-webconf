@@ -318,6 +318,7 @@ section.bg_logo_wave {
 .modal {
 	color: @grey;
 	background-color: @dark;
+	overflow-y:auto;
 }
 
 .modal-header,
@@ -332,7 +333,8 @@ section.bg_logo_wave {
 }
 
 .modal-body input,
-.modal-body textarea
+.modal-body textarea,
+.modal-body select
 {
 	color: @darktext;
 }
@@ -636,5 +638,12 @@ div#loading-div {
 
 div.advanced-view {
 	display: none;
-	background: #f0f0f0;
+	background: lighten(@lightgrey,5%);
+}
+
+
+div#midi_filter_rule_panel input:disabled,
+div#midi_filter_rule_panel select:disabled,
+div#midi_filter_rule_panel select:disabled option {
+	background-color: @lightgrey;
 }

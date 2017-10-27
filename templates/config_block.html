@@ -1,6 +1,6 @@
 
 <div class="pull-right">
-	<input type="checkbox" onChange="$('.advanced-view').slideToggle(500)"/><span>Advanced view</span>
+	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
 </div>
 
 <h2>{{ escape(title) }}</h2>
@@ -17,7 +17,13 @@
 		{% elif config[varname]['type']=='boolean' %}
 		<input name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
 		{% elif config[varname]['type']=='textarea' %}
-		<textarea name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
+		{% if 'addButton' in config[varname] %}
+		<button id="{{ config[varname]['addButton'] }}" type="button">+</button>
+		{% end %}
+		{% if 'addPanel' in config[varname] %}
+		{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
+		{% end %}
+		<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
 		{% elif config[varname]['type']=='select' %}
 		<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
 		{% for option in config[varname]['options'] %}
@@ -57,7 +63,7 @@
 	<br>
 
 	<input type="submit" value="Save" class="btn btn-lg btn-theme" />
-	{% if handler.needsReboot() == True %}
+	{% if handler.needs_reboot() == True %}
 	<span class="label label-info">The zynthian will be rebooted if you save the changes.</span>
 	{% end %}
 </form>
@@ -72,4 +78,28 @@ function set_presets(sel) {
 		}
 	});
 }
+
+function restore_advanced_view() {
+	if (Cookies.get('advanced_view')) {
+		$('input#check_advanced_view').prop("checked", true);
+		$('.advanced-view').show();
+	} else {
+		$('input#check_advanced_view').prop("checked", false);
+		$('.advanced-view').hide;
+	}
+}
+
+function onchange_check_advanced_view() {
+	if ($('input#check_advanced_view').prop("checked")==true) {
+		Cookies.set('advanced_view','1')
+		$('.advanced-view').slideDown(500);
+	} else {
+		Cookies.remove('advanced_view')
+		$('.advanced-view').slideUp(500);
+	}
+}
+
+$(document).ready(function() {
+	restore_advanced_view()
+});
 </script>
