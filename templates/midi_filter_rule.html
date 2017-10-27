@@ -39,10 +39,10 @@
           <select multiple id="FILTER_ADD_CC_VALUE" name="FILTER_ADD_CC_VALUE" onchange="" size="7">
             {% for i in range(128) %}
             <option value="{{i}}">
-              {% if 'option_labels' in config['FILTER_ADD_CC_VALUE'] and str(i+1) in config['FILTER_ADD_CC_VALUE']['option_labels'] %}
-                {{ escape(config['FILTER_ADD_CC_VALUE']['option_labels'][str(i+1)]) }}
+              {% if 'option_labels' in config['FILTER_ADD_CC_VALUE'] and str(i) in config['FILTER_ADD_CC_VALUE']['option_labels'] %}
+                {{ escape(config['FILTER_ADD_CC_VALUE']['option_labels'][str(i)]) }}
               {% else %}
-                {{ i+1 }}
+                {{ i }}
               {% end %}
             </option>
             {% end %}
@@ -74,10 +74,10 @@
           <select   id="FILTER_ADD_MAPPED_CC_VALUE" name="FILTER_ADD_MAPPED_CC_VALUE" onchange="" size="7">
             {% for i in range(128) %}
             <option value="{{i}}">
-              {% if 'option_labels' in config['FILTER_ADD_MAPPED_CC_VALUE'] and str(i+1) in config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'] %}
-                {{ escape(config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'][str(i+1)]) }}
+              {% if 'option_labels' in config['FILTER_ADD_MAPPED_CC_VALUE'] and str(i) in config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'] %}
+                {{ escape(config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'][str(i)]) }}
               {% else %}
-                {{ i+1 }}
+                {{ i }}
               {% end %}
             </option>
             {% end %}

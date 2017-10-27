@@ -60,13 +60,60 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	])
 
 	midi_cc_labels=OrderedDict([
-		['1', '1 - Modulation Wheel'],
-		['2', '2 - Breath controller'],
-		['4', '4 - Foot Pedal'],
-		['5', '5 - Portamento Time'],
-		['6', '6 - Data Entry'],
-		['7', '7 - Volume'],
-		['10', '10 - Pan Position']
+		['0', '0 - Bank Select (MSB)'],
+		['1', '1 - Modulation Wheel (MSB)'],
+		['2', '2 - Breath controller (MSB)'],
+		['4', '4 - Foot Pedal (MSB)'],
+		['5', '5 - Portamento Time (MSB)'],
+		['6', '6 - Data Entry (MSB)'],
+		['7', '7 - Volume (MSB)'],
+		['8', '8 - Balance (MSB)'],
+		['10', '10 - Pan Position (MSB)'],
+		['11', '11 - Expression (MSB)'],
+		['12', '12 - Effect Controller 1 (MSB)'],
+		['13', '13 - Effect Controller 2 (MSB)'],
+
+		['32', '32 - Bank Select (LSB)'],
+		['33', '33 - Modulation Wheel (LSB)'],
+		['34', '34 - Breath controller (LSB)'],
+		['36', '36 - Foot Pedal (LSB)'],
+		['37', '37 - Portamento Time (LSB)'],
+		['38', '38 - Data Entry (LSB)'],
+		['39', '39 - Volume (LSB)'],
+		['40', '40 - Balance (LSB)'],
+		['42', '42 - Pan Position (LSB)'],
+		['43', '43 - Expression (LSB)'],
+		['44', '44 - Effect Controller 1 (LSB)'],
+		['45', '45 - Effect Controller 2 (LSB)'],
+
+		['64', '64 - Sustain Pedal On/Off'],
+		['65', '65 - Portamento On/Off'],
+		['66', '66 - Sostenuto On/Off'],
+		['67', '67 - Soft Pedal On/Off'],
+		['68', '68 - Legato On/Off'],
+
+		['71', '71 - VCF Resonance'],
+		['72', '72 - VCA Release'],
+		['73', '73 - Attack'],
+		['74', '74 - VCF Cutoff Freq'],
+
+		['84', '84 - Portamento Amount'],
+
+		['96', '96 - Data Increment'],
+		['97', '97 - Data Decrement'],
+		['98', '98 - NRPN number (LSB)'],
+		['99', '99 - NRPN number (MSB)'],
+		['100', '100 - RPN number (LSB)'],
+		['101', '101 - RPN number (MSB)'],
+
+		['120', '120 - All Sound Off'],
+		['121', '121 - Reset All Controllers'],
+		['122', '122 - Local On/Off Switch'],
+		['123', '123 - All Notes Off'],
+		['124', '124 - Omni Mode Off'],
+		['125', '125 - Omni Mode On'],
+		['126', '126 - Mono Mode'],
+		['127', '127 - Poly Mode']
 	])
 
 	midi_event_options=OrderedDict([
