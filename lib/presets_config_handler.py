@@ -190,7 +190,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 						existing_program_numbers.append(int(m3.group(1)))
 			logging.info(existing_program_numbers)
 
-			if  not int(m.group(1)) in existing_program_numbers:
+			if  m.group(1) and not int(m.group(1)) in existing_program_numbers:
 				current_index = int(m.group(1))
 			else:
 				current_index = 0

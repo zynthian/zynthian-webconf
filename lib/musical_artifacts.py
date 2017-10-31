@@ -51,7 +51,6 @@ class MusicalArtifacts:
 			query += querySeparator + 'tags=' + tags
 			querySeparator = "&"
 
-
 		response = requests.get(query)
 		searchResult = response.json()
 		for row in searchResult:
