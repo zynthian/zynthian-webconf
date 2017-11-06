@@ -50,13 +50,14 @@ class WifiListHandler(tornado.web.RequestHandler):
 			for byteLine in check_output("iwlist wlan0 scan | grep -e ESSID -e Encryption -e Quality", shell=True).splitlines():
 				line = byteLine.decode("utf-8")
 				if line.find('ESSID')>=0:
+					network = {'encryption':False, 'quality':0, 'signalLevel':0}
+					ssid = line.split(':')[1].replace("\"","")
 					if ssid:
 							self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
-					network = {'encryption':False,'quality':0,'signalLevel':0}
+							logging.info("Found Network: %s" % ssid)
 					encryption = False
 					quality = 0
 					signalLevel = 0
-					ssid = line.split(':')[1].replace("\"","")
 				elif line.find('Encryption key:on')>=0:
 					encryption = True
 				else:
@@ -64,9 +65,6 @@ class WifiListHandler(tornado.web.RequestHandler):
 					if m:
 						quality = round(int(m.group(1)) / int(m.group(2)) * 100,2)
 						signalLevel = m.group(3)
-
-			if ssid:
-				self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
 
 			wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
 			wifiList = OrderedDict(reversed(list(wifiList.items())))

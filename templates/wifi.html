@@ -2,62 +2,30 @@
 <h2>{{ escape(title) }}</h2>
 
 <form method="post">
-	<script type="text/javascript">
-		function wifiListLoaded( data ) {
-			if (data[0]){
-				if ($("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options){
-					var i;
-					for(i=$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options.length-1;i>=0;i--){
-						$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].remove(i);
-					}
-				}
-
-				for (network in data) {
-					$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").append('<option value="' + network + '">' + network + ' (' + data[network].quality + '%)' + '</option>')
-				}
-				$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").show();
-			} else {
-				$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").hide();
-			}
-
-			$("#newNetworkModal").modal('show');
-		}
-
-		$(document).ready(function(){
-				$(".btn-new-network").click(function(){
-				    params = {};
-				    $.getJSON( '/api/wifi/list' , params, wifiListLoaded );
-
-				});
-		});
-	</script>
-
 	<!-- Button HTML (to Trigger Modal) -->
-     <a href="#" class="btn btn-lg btn-primar btn-new-network">Add network</a>
+	<a href="#" class="btn btn-lg btn-primar btn-new-network">Add network</a>
 
-     <!-- Modal HTML -->
-     <div id="newNetworkModal" class="modal fade">
-         <div class="modal-dialog">
-             <div class="modal-content">
-                 <div class="modal-header">
-                     <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                     <h4 class="modal-title">Add network</h4>
-                 </div>
-                 <div class="modal-body">
-									  <label>SSID:</label><br />
-										<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
-											onchange="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = document.getElementById('ZYNTHIAN_WIFI_NEW_SSID_SELECT').value">
-
-										</select>
-									 	<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
-                 </div>
-                 <div class="modal-footer">
-									 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />
-                 </div>
-             </div>
-         </div>
-     </div>
-
+	<!-- Modal HTML -->
+	<div id="newNetworkModal" class="modal fade">
+			<div class="modal-dialog">
+					<div class="modal-content">
+							<div class="modal-header">
+									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+									<h4 class="modal-title">Add network</h4>
+							</div>
+							<div class="modal-body">
+								<label>SSID:</label><br />
+								<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
+									onchange="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = this.value">
+								</select>
+								<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
+							</div>
+							<div class="modal-footer">
+							 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />
+							</div>
+					</div>
+			</div>
+	</div>
 
 	<ul class="nav nav-tabs" role="tablist">
 		{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
@@ -90,3 +58,32 @@
 	<br>
 	<button name="ZYNTHIAN_WIFI_ACTION" value="SAVE" class="btn btn-lg btn-theme">Save</button>
 </form>
+
+
+<script type="text/javascript">
+function wifiListLoaded(data) {
+	var i;
+	if ($("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options) {
+		for (i=$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options.length-1;i>=0;i--) {
+			$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].remove(i);
+		}
+	}
+	i=0;
+	$.each(data, function(ssid, info) {
+			$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").append('<option value="' + ssid + '">' + ssid + ' (' + info.quality + '%)' + '</option>');
+			i++;
+	});
+	if (i>0) {
+		$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").show();
+	} else {
+		$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").hide();
+	}
+	$("#newNetworkModal").modal('show');
+}
+
+$(document).ready(function(){
+		$(".btn-new-network").click(function(){
+			$.getJSON( '/api/wifi/list' , {}, wifiListLoaded );
+		});
+});
+</script>
