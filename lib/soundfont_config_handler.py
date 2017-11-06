@@ -35,6 +35,7 @@ import zipfile
 from collections import OrderedDict
 from subprocess import check_output, call
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
+from lib.musical_artifacts import MusicalArtifacts
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -44,9 +45,10 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 	SOUNDFONTS_DIRECTORY = "/zynthian/zynthian-my-data/soundfonts"
 
 	selectedTreeNode = 0
-	selectedFullPath = '';
+	selected_full_path = '';
 	searchResult = '';
 	maxTreeNodeIndex = 0
+	musical_artifacts = MusicalArtifacts()
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -83,7 +85,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_SOUNDFONT_ACTION')
-		self.selectedFullPath =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
+		self.selected_full_path =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
 		if action:
 			errors = {
 				'NEW': lambda: self.do_new_bank(),
@@ -97,16 +99,17 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		self.get(errors)
 
 	def do_save(self):
-		fileinfo = self.request.files['soundfontfile'][0]
-		fname = fileinfo['filename']
-		newFullPath = self.selectedFullPath + "/" + fname
-		fh = open(newFullPath , 'w')
-		logging.debug("uploading " + newFullPath)
-		try:
-			fh.write(str(fileinfo['body']))
-		except:
-			pass
-		self.selectedFullPath = newFullPath;
+		if 'soundfontfile' in self.request.files:
+			fileinfo = self.request.files['soundfontfile'][0]
+			fname = fileinfo['filename']
+			newFullPath = self.selected_full_path + "/" + fname
+			fh = open(newFullPath , 'w')
+			logging.debug("uploading " + newFullPath)
+			try:
+				fh.write(str(fileinfo['body']))
+			except:
+				pass
+			self.selected_full_path = newFullPath;
 
 	def do_remove(self):
 		path = self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
@@ -122,7 +125,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		if 	self.get_argument('ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME'):
 			newBank =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH') + "/" + self.get_argument('ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME')
 			os.mkdir(newBank)
-			self.selectedFullPath = newBank
+			self.selected_full_path = newBank
 
 	def do_rename(self):
 		newName = ''
@@ -140,79 +143,35 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			if m:
 				destinationFolder = m.group(1) + newName
 				shutil.move(sourceFolder, destinationFolder)
-				self.selectedFullPath = destinationFolder;
+				self.selected_full_path = destinationFolder;
 
 	def do_search(self):
-		query = 'https://musical-artifacts.com/artifacts.json'
-		querySeparator = '?'
-		if self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'):
-			query += querySeparator + 'formats=' + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')
-			querySeparator = "&"
-		if self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'):
-			query += querySeparator + 'tags=' + self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS')
-			querySeparator = "&"
+
 
 		try:
-			response = requests.get(query)
-			self.searchResult = response.json()
-			for row in self.searchResult:
-				logging.info("row" + str(row))
-				if not "file" in row and "mirrors" in row and len(row['mirrors'])>0:
-					logging.info("taking first mirror")
-					row['file'] = row['mirrors'][0]
-				if not "file" in row:
-					row['file'] = ''
+			self.searchResult = self.musical_artifacts.search_artifacts(self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'), self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'))
 		except OSError as err:
 			logging.error(format(err))
 			return format(err)
 
-		logging.info(self.selectedFullPath)
-		#logging.debug("searchResult: " + str(self.searchResult))
 
 	def do_download(self):
 		if self.get_argument('ZYNTHIAN_SOUNDFONT_DOWNLOAD_FILE'):
 			sourceFile = self.get_argument('ZYNTHIAN_SOUNDFONT_DOWNLOAD_FILE')
 			logging.debug("downloading: " + sourceFile)
-			r = requests.get(sourceFile)
+
 			m = re.match('(.*/)(.*)', sourceFile, re.M | re.I | re.S)
 			if m:
-				destinationFile = self.selectedFullPath + "/" + m.group(2)
-				with open(destinationFile , "wb") as soundfontFile:
-					soundfontFile.write(r.content)
-					deleteDownloadedFile = False
-					if destinationFile.endswith('.tar.bz2'):
-						deleteDownloadedFile = True
-						self.download_tar_bz2(destinationFile)
-					if destinationFile.endswith('.zip') or destinationFile.endswith('.7z'):
-						deleteDownloadedFile = True
-						self.download_zip(destinationFile)
-					if deleteDownloadedFile:
-						os.remove(destinationFile)
-					self.cleanup_download(self.selectedFullPath, self.selectedFullPath)
+				destinationFile = self.selected_full_path + "/" + m.group(2)
+				downloadedFile = self.musical_artifacts.download_artifact(sourceFile, destinationFile, self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'), self.selected_full_path)
+				self.cleanup_download(self.selected_full_path, self.selected_full_path)
+				self.selected_full_path = downloadedFile
 
-					self.selectedFullPath = destinationFile
-
-	def download_tar_bz2(self, destinationFile):
-		tar = tarfile.open(destinationFile, "r:bz2")
-		for member in tar.getmembers():
-			if member.isfile():
-				if member.name.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):
-					member.name = os.path.basename(member.name)
-					tar.extract(member, self.selectedFullPath)
-		tar.close()
-
-	def download_zip(self, destinationFile):
-		with zipfile.ZipFile(destinationFile,'r') as soundfontZip:
-			for member in soundfontZip.namelist():
-				if member.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):
-					soundfontZip.extract(member, self.selectedFullPath)
-			soundfontZip.close()
 
 	def cleanup_download(self, currentDirectory, targetDirectory):
 		fileList =  os.listdir(currentDirectory)
 		for f in fileList:
 			sourcePath = os.path.join(currentDirectory, f)
-
 			if os.path.isdir(sourcePath):
 				self.cleanup_download(sourcePath, targetDirectory)
 				shutil.rmtree(sourcePath)
@@ -220,6 +179,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				if not f.startswith(".") and  f.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):
 					targetPath = os.path.join(targetDirectory, f)
 					shutil.move(sourcePath, targetPath)
+
 
 
 	def walk_directory(self, directory, nodeType, soundfontType):
@@ -251,7 +211,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 					text = m.group(1)
 
 			try:
-				if self.selectedFullPath == fullPath:
+				if self.selected_full_path == fullPath:
 					self.selectedTreeNode = self.maxTreeNodeIndex
 			except:
 				pass
