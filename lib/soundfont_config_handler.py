@@ -103,11 +103,12 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			fileinfo = self.request.files['soundfontfile'][0]
 			fname = fileinfo['filename']
 			newFullPath = self.selected_full_path + "/" + fname
-			fh = open(newFullPath , 'w')
+			fh = open(newFullPath , 'wb')
 			logging.debug("uploading " + newFullPath)
 			try:
-				fh.write(str(fileinfo['body']))
-			except:
+				fh.write(fileinfo['body'])
+			except OSError as err:
+				logging.error("Uploading " + newFullPath + " failed: " + format(str(err)) )
 				pass
 			self.selected_full_path = newFullPath;
 
@@ -146,8 +147,6 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				self.selected_full_path = destinationFolder;
 
 	def do_search(self):
-
-
 		try:
 			self.searchResult = self.musical_artifacts.search_artifacts(self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'), self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'))
 		except OSError as err:
