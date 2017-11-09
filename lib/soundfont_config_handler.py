@@ -85,7 +85,6 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_SOUNDFONT_ACTION')
-		logging.info(action)
 		self.selected_full_path =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
 		if action:
 			errors = {
