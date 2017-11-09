@@ -57,7 +57,7 @@
             </div>
 
             <div class="row">
-              <button name="ZYNTHIAN_PRESETS_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
+              <button id="ZYNTHIAN_PRESETS_ACTION_SEARCH" name="ZYNTHIAN_PRESETS_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
             </div>
 
             <div class="row">
@@ -129,6 +129,14 @@
 
 $(document).ready(function (){
     $("#loading-div-background").hide();
+
+    $('#ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
+        // Enter pressed?
+        if(e.which == 13) {
+            event.preventDefault();
+            $('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
+        }
+    });
 });
 
 function showProgressAnimation(){

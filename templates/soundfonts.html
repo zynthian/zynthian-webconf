@@ -57,7 +57,7 @@
             </div>
 
             <div class="row">
-              <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
+              <button id="ZYNTHIAN_SOUNDFONT_ACTION_SEARCH" name="ZYNTHIAN_SOUNDFONT_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
             </div>
 
             <div class="row">
@@ -129,6 +129,14 @@
 
 $(document).ready(function (){
     $("#loading-div-background").hide();
+
+    $('#ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
+        // Enter pressed?
+        if(e.which == 13) {
+            event.preventDefault();
+            $('#ZYNTHIAN_SOUNDFONT_ACTION_SEARCH').click();
+        }
+    });
 });
 
 function showProgressAnimation(){
@@ -187,7 +195,11 @@ $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFO
             return;
           }
       });
+
+
   });
+
+
 
 
 function setDownloadFile(filename){

@@ -187,7 +187,10 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 					fp = os.path.join(selected_full_path, f)
 					m3 = re.match('.*/(\d*)-{0,1}(.*)', fp, re.M | re.I | re.S)
 					if m3:
-						existing_program_numbers.append(int(m3.group(1)))
+						try:
+							existing_program_numbers.append(int(m3.group(1)))
+						except:
+							pass
 			logging.info(existing_program_numbers)
 
 			if  m.group(1) and not int(m.group(1)) in existing_program_numbers:
