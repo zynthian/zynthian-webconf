@@ -1,0 +1,97 @@
+
+<div id="upload_panel" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h4 class="modal-title">Upload</h4>
+    </div>
+    <div class="modal-body">
+			<input type="hidden" id="input-uploadfile-type"   />
+			<div id="drop-zone">
+				Drop files here...
+				<div id="click-here">
+			        or click here..
+      		<input type="file" id="input-uploadfile" name="uploadfile" multiple/>
+				</div>
+
+			</div>
+			<div id="selected_files">
+
+			</div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-lg btn-theme">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+
+$(document).ready(function() {
+	$('#upload_show').click(function(){
+		$('#upload_panel').show(500)
+	});
+
+	$('#upload_panel .close').click(function(){
+		$('#upload_panel').hide(500)
+	});
+
+	window.onclick = function(event) {
+		if (event.target == document.getElementById('upload_panel')) {
+			$('#upload_panel').hide(500);
+		}
+	}
+});
+
+$(function(){
+    $("#input-uploadfile").on('change', function(event) {
+        var filename = $(this).val();
+        var filetype = $('#input-uploadfile-type')[0].value;
+        var regex = new RegExp( '.'+filetype+'$', 'gi' );
+				validSuffix = true;
+
+				for (var i = 0, f; f = event.target.files[i]; i++) {
+        	if ( ! f.name.match(regex)) {
+						validSuffix = false;
+					}
+				}
+				if (!validSuffix){
+          alert('Only select ' + filetype + ' files');
+          this.form.reset();
+					$('#input-uploadfile-type')[0].value = filetype;
+          return;
+        }
+				filenames = '';
+				for (var i = 0, f; f = event.target.files[i]; i++) {
+					filenames += '' + f.name + '<br/>';
+				}
+				$('#selected_files').html(filenames);
+    });
+
+		var dropZoneId = "drop-zone";
+		var buttonId = "click-here";
+		var mouseOverClass = "mouse-over";
+
+		var dropZone = $("#" + dropZoneId);
+		var ooleft = dropZone.offset().left;
+		var ooright = dropZone.outerWidth() + ooleft;
+		var ootop = dropZone.offset().top;
+		var oobottom = dropZone.outerHeight() + ootop;
+		var inputFile = dropZone.find("input");
+		document.getElementById(dropZoneId).addEventListener("dragover", function (e) {
+				e.preventDefault();
+				e.stopPropagation();
+		}, true);
+
+		document.getElementById(dropZoneId).addEventListener("drop", function (e) {
+				$("#" + dropZoneId).removeClass(mouseOverClass);
+				inputFile[0].files = e.dataTransfer.files;
+				e.preventDefault();
+				e.stopPropagation();
+		}, true);
+
+
+});
+
+</script>

@@ -42,6 +42,7 @@ from lib.WifiListHandler import WifiListHandler
 from lib.SnapshotConfigHandler import SnapshotConfigHandler
 from lib.MidiConfigHandler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
+from lib.soundfont_upload_handler import SoundfontUploadHandler
 from lib.SystemBackupHandler import SystemBackupHandler
 from lib.presets_config_handler import PresetsConfigHandler
 
@@ -72,6 +73,7 @@ def make_app():
 		(r"/login", LoginHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
+		(r"/api/lib-soundfont-upload$", SoundfontUploadHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
@@ -87,7 +89,7 @@ def make_app():
 
 if __name__ == "__main__":
 	app = make_app()
-	app.listen(80, max_body_size=1024*1024*1024)
+	app.listen(80, max_body_size=6*1024*1024*1024)
 	tornado.ioloop.IOLoop.current().start()
 
 #------------------------------------------------------------------------------

@@ -41,6 +41,8 @@ from lib.musical_artifacts import MusicalArtifacts
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
+
+
 class SoundfontConfigHandler(tornado.web.RequestHandler):
 	SOUNDFONTS_DIRECTORY = "/zynthian/zynthian-my-data/soundfonts"
 
@@ -100,17 +102,18 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 
 	def do_save(self):
 		if 'soundfontfile' in self.request.files:
-			fileinfo = self.request.files['soundfontfile'][0]
-			fname = fileinfo['filename']
-			newFullPath = self.selected_full_path + "/" + fname
-			fh = open(newFullPath , 'wb')
-			logging.debug("uploading " + newFullPath)
-			try:
-				fh.write(fileinfo['body'])
-			except OSError as err:
-				logging.error("Uploading " + newFullPath + " failed: " + format(str(err)) )
-				pass
+			for fileinfo in self.request.files['soundfontfile']:
+				fname = fileinfo['filename']
+				newFullPath = self.selected_full_path + "/" + fname
+				fh = open(newFullPath , 'wb')
+				logging.debug("uploading " + newFullPath)
+				try:
+					fh.write(fileinfo['body'])
+				except OSError as err:
+					logging.error("Uploading " + newFullPath + " failed: " + format(str(err)) )
+					pass
 			self.selected_full_path = newFullPath;
+
 
 	def do_remove(self):
 		path = self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')

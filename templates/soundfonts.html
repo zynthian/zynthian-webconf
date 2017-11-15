@@ -1,7 +1,9 @@
 
 <h2>{{ escape(title) }}</h2>
 
-
+<form id="soundfont-upload-form" action="/api/lib-soundfont-upload" enctype="multipart/form-data" method="post">
+{% module Template('upload.html', config=config) %}
+</form>
 
 <form id="soundfont-form" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
@@ -41,13 +43,7 @@
           </div>
 
           <div class="row">
-            <input type="hidden" id="input-soundfile-type"   />
-            <label for="input-soundfile">Upload soundfont</label>
-            <input type="file" id="input-soundfile" name="soundfontfile" />
-          </div>
-
-          <div class="row">
-            <button name="ZYNTHIAN_SOUNDFONT_ACTION" value="SAVE" class="btn btn-lg btn-theme">SAVE</button>
+            <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD"></input>
           </div>
 
           <div id="soundfont-search-panel">
@@ -160,6 +156,7 @@ $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFO
       $('#ZYNTHIAN_SOUNDFONT_BANK_NAME')[0].value='';
 
       $("#ZYNTHIAN_SOUNDFONT_FULLPATH")[0].value = data.fullpath;
+			$("#soundfont-upload-form").attr("action", "/api/lib-soundfont-upload?destinationPath=" + data.fullpath) 
       $("#ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE")[0].value = data.soundfontType;
 
       if (data.nodeType == 'SOUNDFONT_TYPE'){
@@ -168,7 +165,7 @@ $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFO
       } else if (data.nodeType == 'BANK'){
           $('#soundfont-bank-panel').show();
           $('#ZYNTHIAN_SOUNDFONT_BANK_NAME')[0].value=data.text;
-          $('#input-soundfile-type')[0].value = data.soundfontType;
+          $('#input-uploadfile-type')[0].value = data.soundfontType;
           if (data.text != 'sf2'){
             $('#soundfont-bank-remove-panel').show();
             $('#soundfont-bank-rename-panel').show();
@@ -183,21 +180,7 @@ $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFO
 
   $('#sountfont-tree').treeview('selectNode',{% raw config['ZYNTHIAN_SOUNDFONT_SELECTION_NODE_ID'] %});
 
-  $(function(){
-      $("#input-soundfile").on('change', function(event) {
-          var file = event.target.files[0];
-          var filename = $(this).val();
-          var filetype = $('#input-soundfile-type')[0].value;
-          var regex = new RegExp( '.'+filetype+'$', 'gi' );
-          if ( ! filename.match(regex)) {
-            alert('Please select a ' + filetype + ' file');
-            $("#soundfont-form")[0].reset();
-            return;
-          }
-      });
 
-
-  });
 
 
 function setDownloadFile(filename){

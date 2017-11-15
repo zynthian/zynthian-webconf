@@ -339,6 +339,10 @@ section.bg_logo_wave {
 	color: @darktext;
 }
 
+.modal-body input[type='file']{
+	color: @light
+}
+
 .modal h4 {
 	text-transform: none;
 	color: @light;
@@ -632,4 +636,59 @@ div#midi_filter_rule_panel input:disabled,
 div#midi_filter_rule_panel select:disabled,
 div#midi_filter_rule_panel select:disabled option {
 	background-color: @lightgrey;
+}
+
+div#drop-zone {
+	/*Sort of important*/
+	width: 300px;
+	/*Sort of important*/
+	height: 200px;
+	position:absolute;
+	left:50%;
+	margin-left:-150px;
+	border: 2px dashed @light;
+	border-radius: 20px;
+	font-family: Arial;
+	text-align: center;
+	position: relative;
+	line-height: 180px;
+	font-size: 20px;
+	color: @light;
+}
+
+div#drop-zone input {
+	/*Important*/
+	position: absolute;
+	/*Important*/
+	cursor: pointer;
+	left: 0px;
+	top: 0px;
+	opacity:0;
+}
+
+/*Important*/
+div#drop-zone.mouse-over {
+	border: 2px dashed @light;
+	color: rgba(0,0,0,.5);
+}
+
+/*If you dont want the button*/
+div#click-here {
+	position: absolute;
+	cursor: pointer;
+	left: 50%;
+	top: 50%;
+	margin-left: -50px;
+	margin-top: 20px;
+	line-height: 26px;
+	color: white;
+	font-size: 12px;
+	width: 100px;
+	height: 26px;
+	border-radius: 4px;
+	background-color: #3b85c3;
+}
+
+div#click-here:hover {
+	background-color: #4499DD;
 }
