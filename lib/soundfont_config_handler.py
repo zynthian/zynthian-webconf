@@ -75,10 +75,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 
 		config['ZYNTHIAN_SOUNDFONT_SEARCH_RESULT'] = self.searchResult
 
-		try:
-			config['ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS')
-		except:
-			config['ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'] = ''
+		config['ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS','')
 
 		if self.genjson:
 			self.write(config)
@@ -92,27 +89,12 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			errors = {
 				'NEW': lambda: self.do_new_bank(),
 				'REMOVE': lambda: self.do_remove(),
-				'SAVE': lambda: self.do_save(),
 				'RENAME': lambda: self.do_rename(),
 				'SEARCH': lambda: self.do_search(),
 				'DOWNLOAD': lambda: self.do_download()
 			}[action]()
 
 		self.get(errors)
-
-	def do_save(self):
-		if 'soundfontfile' in self.request.files:
-			for fileinfo in self.request.files['soundfontfile']:
-				fname = fileinfo['filename']
-				newFullPath = self.selected_full_path + "/" + fname
-				fh = open(newFullPath , 'wb')
-				logging.debug("uploading " + newFullPath)
-				try:
-					fh.write(fileinfo['body'])
-				except OSError as err:
-					logging.error("Uploading " + newFullPath + " failed: " + format(str(err)) )
-					pass
-			self.selected_full_path = newFullPath;
 
 
 	def do_remove(self):

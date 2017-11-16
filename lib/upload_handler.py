@@ -36,7 +36,7 @@ from lib.post_streamer import PostDataStreamer
 
 
 
-class SoundfontPostDataStreamer(PostDataStreamer):
+class UploadPostDataStreamer(PostDataStreamer):
     percent = 0
 
     def on_progress(self):
@@ -45,15 +45,14 @@ class SoundfontPostDataStreamer(PostDataStreamer):
             new_percent = self.received*100//self.total
             if new_percent != self.percent:
                 self.percent = new_percent
-                print("progress",new_percent)
+               # print("progress",new_percent)
+
 
 @tornado.web.stream_request_body
-class SoundfontUploadHandler(tornado.web.RequestHandler):
-
+class UploadHandler(tornado.web.RequestHandler):
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
-
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -64,18 +63,20 @@ class SoundfontUploadHandler(tornado.web.RequestHandler):
 			#self.fout.close()
 			self.ps.finish_receive()
 			# Use parts here!
-
+			redirectUrl = "#"
 			try:
 				destinationPath = self.get_argument("destinationPath")
+				redirectUrl = self.get_argument("redirectUrl")
 				for part in self.ps.parts:
 					sourceFilename = part["tmpfile"].name
 					destinationFilename = destinationPath + "/" + self.ps.get_part_ct_param(part, "filename", None)
+					redirectUrl += "?ZYNTHIAN_UPLOAD_NEW_FILE=" + destinationFilename
 					logging.info("copy " + sourceFilename + " to " + destinationFilename  )
 					shutil.move(sourceFilename, destinationFilename)
 			except:
 				pass
 
-			self.redirect("/api/lib-soundfont")
+			self.redirect(redirectUrl)
 		finally:
 			# Don't forget to release temporary files.
 			self.ps.release_parts()
@@ -85,7 +86,7 @@ class SoundfontUploadHandler(tornado.web.RequestHandler):
 			total = int(self.request.headers.get("Content-Length","0"))
 		except:
 			total = 0
-		self.ps = SoundfontPostDataStreamer(total) #,tmpdir="/tmp"
+		self.ps = UploadPostDataStreamer(total) #,tmpdir="/tmp"
 		#self.fout = open("raw_received.dat","wb+")
 
 	def data_received(self, chunk):

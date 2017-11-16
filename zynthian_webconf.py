@@ -42,7 +42,7 @@ from lib.WifiListHandler import WifiListHandler
 from lib.SnapshotConfigHandler import SnapshotConfigHandler
 from lib.MidiConfigHandler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
-from lib.soundfont_upload_handler import SoundfontUploadHandler
+from lib.upload_handler import UploadHandler
 from lib.SystemBackupHandler import SystemBackupHandler
 from lib.presets_config_handler import PresetsConfigHandler
 
@@ -73,7 +73,7 @@ def make_app():
 		(r"/login", LoginHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
-		(r"/api/lib-soundfont-upload$", SoundfontUploadHandler),
+		(r"/api/upload$", UploadHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),

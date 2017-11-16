@@ -1,7 +1,7 @@
 
 <h2>{{ escape(title) }}</h2>
 
-<form id="soundfont-upload-form" action="/api/lib-soundfont-upload" enctype="multipart/form-data" method="post">
+<form id="soundfont-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
 {% module Template('upload.html', config=config) %}
 </form>
 
@@ -156,7 +156,7 @@ $('#sountfont-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SOUNDFO
       $('#ZYNTHIAN_SOUNDFONT_BANK_NAME')[0].value='';
 
       $("#ZYNTHIAN_SOUNDFONT_FULLPATH")[0].value = data.fullpath;
-			$("#soundfont-upload-form").attr("action", "/api/lib-soundfont-upload?destinationPath=" + data.fullpath) 
+      $("#soundfont-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-soundfont&destinationPath=" + data.fullpath)
       $("#ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE")[0].value = data.soundfontType;
 
       if (data.nodeType == 'SOUNDFONT_TYPE'){
