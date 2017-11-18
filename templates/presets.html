@@ -156,7 +156,7 @@ $('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS']
       $('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value='';
 
       $("#ZYNTHIAN_PRESETS_FULLPATH")[0].value = data.fullpath;
-      $("#presets-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-presets&destinationPath=" + data.fullpath)
+      $("#presets-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-presets&destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value)
       $("#ZYNTHIAN_PRESETS_BANK_TYPE")[0].value = data.bankType;
 
       if (data.nodeType == 'BANK_TYPE'){

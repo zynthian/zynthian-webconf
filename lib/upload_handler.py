@@ -26,7 +26,9 @@ import os
 import sys
 import logging
 import tornado.web
+import tornado.websocket
 import shutil
+import datetime
 
 from lib.post_streamer import PostDataStreamer
 
@@ -37,15 +39,45 @@ from lib.post_streamer import PostDataStreamer
 
 
 class UploadPostDataStreamer(PostDataStreamer):
-    percent = 0
+	percent = 0
 
-    def on_progress(self):
-        """Override this function to handle progress of receiving data."""
-        if self.total:
-            new_percent = self.received*100//self.total
-            if new_percent != self.percent:
-                self.percent = new_percent
-                logging.info("upload progress: " + str(new_percent))
+	def __init__(self, webSocketHandler, total, tmpdir=None):
+		self.webSocketHandler = webSocketHandler
+		super(UploadPostDataStreamer, self).__init__(total, tmpdir)
+
+
+	def on_progress(self):
+		"""Override this function to handle progress of receiving data."""
+		if self.total:
+			new_percent = self.received*100//self.total
+			if new_percent != self.percent:
+				self.percent = new_percent
+				logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent))
+				self.webSocketHandler.write_message(str(new_percent))
+
+
+
+class UploadPollingHandler(tornado.websocket.WebSocketHandler):
+	clientId = '1'
+
+	 # the client connected
+	def open(self):
+		logging.info("New client connected")
+
+
+	# the client sent the message
+	def on_message(self, message):
+		logging.info(message)
+		self.clientId = message
+		self.application.settings['upload_progress_handler'][self.clientId] = self
+		logging.info("progress handler set")
+		#self.write_message(message)
+
+	# client disconnected
+	def on_close(self):
+		logging.info("Client disconnected")
+		del self.application.settings['upload_progress_handler'][self.clientId]
+
 
 
 @tornado.web.stream_request_body
@@ -56,7 +88,9 @@ class UploadHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		self.write('''<html><body>No GET supported</body></html>''')
+		if self.ps and self.ps.percent:
+			logging.info("reporting percent: " + self.ps.percent)
+			self.write(self.ps.percent)
 
 	def post(self):
 		try:
@@ -86,9 +120,13 @@ class UploadHandler(tornado.web.RequestHandler):
 	def prepare(self):
 		try:
 			total = int(self.request.headers.get("Content-Length","0"))
+			client_id = self.get_argument("clientId")
 		except:
 			total = 0
-		self.ps = UploadPostDataStreamer(total) #,tmpdir="/tmp"
+			client_id = '1'
+
+
+		self.ps = UploadPostDataStreamer(self.application.settings['upload_progress_handler'][client_id], total ) #,tmpdir="/tmp"
 		#self.fout = open("raw_received.dat","wb+")
 
 	def data_received(self, chunk):

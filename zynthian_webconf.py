@@ -42,7 +42,7 @@ from lib.WifiListHandler import WifiListHandler
 from lib.SnapshotConfigHandler import SnapshotConfigHandler
 from lib.MidiConfigHandler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
-from lib.upload_handler import UploadHandler
+from lib.upload_handler import UploadHandler, UploadPollingHandler
 from lib.SystemBackupHandler import SystemBackupHandler
 from lib.presets_config_handler import PresetsConfigHandler
 
@@ -59,7 +59,8 @@ def make_app():
 	settings = {
 		"template_path": "templates",
 		"cookie_secret": "hsa9fKjf3Hf923hg6avJ)8fjh3mcGF12ht97834bh",
-		"login_url": "/login"
+		"login_url": "/login",
+		"upload_progress_handler": dict()
 	}
 	return tornado.web.Application([
 		(r'/$', AudioConfigHandler),
@@ -74,6 +75,7 @@ def make_app():
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
 		(r"/api/upload$", UploadHandler),
+		(r"/api/upload-polling$", UploadPollingHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),

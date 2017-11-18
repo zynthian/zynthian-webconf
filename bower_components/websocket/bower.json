@@ -1,0 +1,21 @@
+{
+  "name": "websocket",
+  "main": "lib/websocket.js",
+  "version": "1.1.2",
+  "authors": [
+    "jaywcjlove <398188662@qq.com>"
+  ],
+  "keywords": [
+    "websocket",
+    "socket"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jaywcjlove/websocket",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}

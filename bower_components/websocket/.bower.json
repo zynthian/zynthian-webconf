@@ -1,0 +1,31 @@
+{
+  "name": "websocket",
+  "main": "lib/websocket.js",
+  "version": "1.1.2",
+  "authors": [
+    "jaywcjlove <398188662@qq.com>"
+  ],
+  "keywords": [
+    "websocket",
+    "socket"
+  ],
+  "license": "MIT",
+  "homepage": "https://github.com/jaywcjlove/websocket",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ],
+  "_release": "1.1.2",
+  "_resolution": {
+    "type": "version",
+    "tag": "v1.1.2",
+    "commit": "e06ed4c56de448261de117edb713ce80188fa6ef"
+  },
+  "_source": "https://github.com/jaywcjlove/websocket.git",
+  "_target": "^1.1.2",
+  "_originalSource": "websocket",
+  "_direct": true
+}

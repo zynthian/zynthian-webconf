@@ -7,6 +7,7 @@
     </div>
     <div class="modal-body">
 			<input type="hidden" id="input-uploadfile-type"   />
+			<input type="hidden" id="input-uploadfile-session" />
 			<div id="drop-zone">
 				Drop files here...(Chrome only)
 				<div id="click-here">
@@ -18,6 +19,7 @@
 			<div id="selected_files">
 
 			</div>
+			<div id="upload_progress_panel" class="progress"> <div id="upload_progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div> </div>
     </div>
     <div class="modal-footer">
       <button class="btn btn-lg btn-theme">SAVE</button>
@@ -29,22 +31,26 @@
 
 
 $(document).ready(function() {
-	$('#upload_show').click(function(){
-		$('#upload_panel').show(500)
-	});
 
-	$('#upload_panel .close').click(function(){
-		$('#upload_panel').hide(500)
-	});
+		var random = Math.random().toString();
+		$('#input-uploadfile-session')[0].value = random;
 
-	window.onclick = function(event) {
-		if (event.target == document.getElementById('upload_panel')) {
-			$('#upload_panel').hide(500);
+		$('#upload_show').click(function(){
+			$('#upload_panel').show(500)
+			$('#upload_progress_panel').hide(500);
+		});
+
+		$('#upload_panel .close').click(function(){
+			$('#upload_panel').hide(500)
+		});
+
+		window.onclick = function(event) {
+			if (event.target == document.getElementById('upload_panel')) {
+				$('#upload_panel').hide(500);
+			}
 		}
-	}
-});
 
-$(function(){
+
     $("#input-uploadfile").on('change', function(event) {
         var filename = $(this).val();
         var filetype = $('#input-uploadfile-type')[0].value;
@@ -94,6 +100,73 @@ $(function(){
 				e.preventDefault();
 				e.stopPropagation();
 		}, true);
+
+
+
+		inputFile[0].form.addEventListener (
+		 "submit",
+		 function (evt, do_submit) {
+			 if (do_submit){
+
+				 return;
+			 }
+			 evt.preventDefault();
+
+			var deferred = $.Deferred();
+			deferred.done(function(value) {
+				inputFile[0].form.submit(true);
+			});
+			$('#upload_progress_panel').show(500);
+			connectWebsocket(deferred);
+
+		});
+
+		function connectWebsocket(connectedDeferred){
+			socket = new ws("ws://localhost/api/upload-polling");
+			socket.onconnecting = function(evn){
+				console.log("socket:onconnecting:",evn);
+    		// sendMsg("wcj");
+			}
+			socket.onopen = function(evn){
+    		console.log("socket:onopen:",evn);
+    		socket.send($('#input-uploadfile-session')[0].value);
+				$("#upload_progress_panel").addClass("active");
+				connectedDeferred.resolve();
+			}
+			socket.onclose = function(evn){
+    		console.log("socket.onclose:",evn);
+    	}
+
+			socket.onmessage = function(evt){
+				if (evt.data){
+	    		console.log("socket:onmessage:",evt.data);
+
+					$("#upload_progress").css('width',evt.data+'%');
+					$("#upload_progress").html(evt.data+'%');
+					if(evt.data > 99.999) {
+						$("#upload_progress_panel").removeClass("active");
+						$("#upload_progress").html("Done");
+						socket.close()
+					}
+				}
+			}
+
+			/*
+			progresspolling = setInterval(function(){
+		    $.get("/api/upload-polling", function(data){
+		      $("#upload_progress").css('width',data+'%');
+		      $("#upload_progress").html(data+'%');
+
+		      if(data > 99.999) {
+		        clearInterval(progresspolling);
+		        $("#progressouter").removeClass("active");
+		        $("#progress").html("Done");
+		      }
+		    })
+		  }, 50);
+			*/
+		}
+
 
 
 });
