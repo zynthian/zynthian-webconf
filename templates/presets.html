@@ -129,7 +129,7 @@ $(document).ready(function (){
     $('#ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
         // Enter pressed?
         if(e.which == 13) {
-            event.preventDefault();
+            e.preventDefault();
             $('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
         }
     });

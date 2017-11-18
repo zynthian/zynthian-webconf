@@ -45,7 +45,7 @@ class UploadPostDataStreamer(PostDataStreamer):
             new_percent = self.received*100//self.total
             if new_percent != self.percent:
                 self.percent = new_percent
-               # print("progress",new_percent)
+                logging.info("upload progress: " + new_percent)
 
 
 @tornado.web.stream_request_body
@@ -69,10 +69,12 @@ class UploadHandler(tornado.web.RequestHandler):
 				redirectUrl = self.get_argument("redirectUrl")
 				for part in self.ps.parts:
 					sourceFilename = part["tmpfile"].name
-					destinationFilename = destinationPath + "/" + self.ps.get_part_ct_param(part, "filename", None)
-					redirectUrl += "?ZYNTHIAN_UPLOAD_NEW_FILE=" + destinationFilename
-					logging.info("copy " + sourceFilename + " to " + destinationFilename  )
-					shutil.move(sourceFilename, destinationFilename)
+					destinationFilename = self.ps.get_part_ct_param(part, "filename", None)
+					if destinationFilename:
+						destinationFullPath = destinationPath + "/" + destinationFilename
+						redirectUrl += "?ZYNTHIAN_UPLOAD_NEW_FILE=" + destinationFullPath
+						logging.info("copy " + sourceFilename + " to " + destinationFullPath  )
+						shutil.move(sourceFilename, destinationFullPath)
 			except:
 				pass
 

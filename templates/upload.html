@@ -8,7 +8,7 @@
     <div class="modal-body">
 			<input type="hidden" id="input-uploadfile-type"   />
 			<div id="drop-zone">
-				Drop files here...
+				Drop files here...(Chrome only)
 				<div id="click-here">
 			        or click here..
       		<input type="file" id="input-uploadfile" name="uploadfile" multiple/>
@@ -80,13 +80,17 @@ $(function(){
 		var oobottom = dropZone.outerHeight() + ootop;
 		var inputFile = dropZone.find("input");
 		document.getElementById(dropZoneId).addEventListener("dragover", function (e) {
+				e.dataTransfer.dropEffect = 'copy';
+				dropZone.addClass(mouseOverClass);
 				e.preventDefault();
 				e.stopPropagation();
 		}, true);
 
 		document.getElementById(dropZoneId).addEventListener("drop", function (e) {
-				$("#" + dropZoneId).removeClass(mouseOverClass);
-				inputFile[0].files = e.dataTransfer.files;
+			 	dropZone.removeClass(mouseOverClass);
+				if (e.dataTransfer){
+					inputFile[0].files = e.dataTransfer.files;
+				}
 				e.preventDefault();
 				e.stopPropagation();
 		}, true);
