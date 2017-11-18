@@ -45,7 +45,7 @@ class UploadPostDataStreamer(PostDataStreamer):
             new_percent = self.received*100//self.total
             if new_percent != self.percent:
                 self.percent = new_percent
-                logging.info("upload progress: " + new_percent)
+                logging.info("upload progress: " + str(new_percent))
 
 
 @tornado.web.stream_request_body
