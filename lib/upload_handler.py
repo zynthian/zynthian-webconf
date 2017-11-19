@@ -53,7 +53,8 @@ class UploadPostDataStreamer(PostDataStreamer):
 			if new_percent != self.percent:
 				self.percent = new_percent
 				logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent))
-				self.webSocketHandler.write_message(str(new_percent))
+				if self.webSocketHandler:
+					self.webSocketHandler.write_message(str(new_percent))
 
 
 
@@ -76,7 +77,8 @@ class UploadPollingHandler(tornado.websocket.WebSocketHandler):
 	# client disconnected
 	def on_close(self):
 		logging.info("Client disconnected")
-		del self.application.settings['upload_progress_handler'][self.clientId]
+		if self.clientId in self.application.settings['upload_progress_handler']:
+			del self.application.settings['upload_progress_handler'][self.clientId]
 
 
 
@@ -125,8 +127,10 @@ class UploadHandler(tornado.web.RequestHandler):
 			total = 0
 			client_id = '1'
 
-
-		self.ps = UploadPostDataStreamer(self.application.settings['upload_progress_handler'][client_id], total ) #,tmpdir="/tmp"
+		upload_progress_handler = None
+		if client_id in self.application.settings['upload_progress_handler']:
+			upload_progress_handler = self.application.settings['upload_progress_handler'][client_id]
+		self.ps = UploadPostDataStreamer(upload_progress_handler, total ) #,tmpdir="/tmp"
 		#self.fout = open("raw_received.dat","wb+")
 
 	def data_received(self, chunk):

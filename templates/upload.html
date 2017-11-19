@@ -9,9 +9,11 @@
 			<input type="hidden" id="input-uploadfile-type"   />
 			<input type="hidden" id="input-uploadfile-session" />
 			<div id="drop-zone">
-				Drop files here...(Chrome only)
+				<span class="box__dragndrop">
+					Drop files here or
+				</span>
 				<div id="click-here">
-			        or click here..
+			        Click and choose
       		<input type="file" id="input-uploadfile" name="uploadfile" multiple/>
 				</div>
 
@@ -31,6 +33,10 @@
 
 
 $(document).ready(function() {
+		var isAdvancedUpload = function() {
+			var div = document.createElement('div');
+			return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
+		}();
 
 		var random = Math.random().toString();
 		$('#input-uploadfile-session')[0].value = random;
@@ -48,6 +54,25 @@ $(document).ready(function() {
 			if (event.target == document.getElementById('upload_panel')) {
 				$('#upload_panel').hide(500);
 			}
+		}
+
+		var dropZoneId = "drop-zone";
+		var buttonId = "click-here";
+		var mouseOverClass = "mouse-over";
+
+		var dropZone = $("#" + dropZoneId);
+		var ooleft = dropZone.offset().left;
+		var ooright = dropZone.outerWidth() + ooleft;
+		var ootop = dropZone.offset().top;
+		var oobottom = dropZone.outerHeight() + ootop;
+		var inputFile = dropZone.find("input");
+
+		displayFilenames = function(files){
+			filenames = '';
+			for (var i = 0, f; f = files[i]; i++) {
+				filenames += '' + f.name + '<br/>';
+			}
+			$('#selected_files').html(filenames);
 		}
 
 
@@ -68,56 +93,101 @@ $(document).ready(function() {
 					$('#input-uploadfile-type')[0].value = filetype;
           return;
         }
-				filenames = '';
-				for (var i = 0, f; f = event.target.files[i]; i++) {
-					filenames += '' + f.name + '<br/>';
-				}
-				$('#selected_files').html(filenames);
+				displayFilenames(event.target.files);
     });
 
-		var dropZoneId = "drop-zone";
-		var buttonId = "click-here";
-		var mouseOverClass = "mouse-over";
 
-		var dropZone = $("#" + dropZoneId);
-		var ooleft = dropZone.offset().left;
-		var ooright = dropZone.outerWidth() + ooleft;
-		var ootop = dropZone.offset().top;
-		var oobottom = dropZone.outerHeight() + ootop;
-		var inputFile = dropZone.find("input");
-		document.getElementById(dropZoneId).addEventListener("dragover", function (e) {
-				e.dataTransfer.dropEffect = 'copy';
-				dropZone.addClass(mouseOverClass);
-				e.preventDefault();
-				e.stopPropagation();
-		}, true);
+		var droppedFiles = false;
 
-		document.getElementById(dropZoneId).addEventListener("drop", function (e) {
-			 	dropZone.removeClass(mouseOverClass);
-				if (e.dataTransfer){
-					inputFile[0].files = e.dataTransfer.files;
+		var uploadForm = inputFile[0].form;
+		dropZone.removeClass('websocket_opened');
+
+		triggerFormSubmit = function() {
+				dropZone.addClass('is-uploading');
+				if (isAdvancedUpload) {
+					uploadFiles();
+				} else {
+					uploadForm.submit();
 				}
-				e.preventDefault();
-				e.stopPropagation();
-		}, true);
+		};
 
 
+		if (isAdvancedUpload) {
+  		dropZone.addClass('has-advanced-upload');
 
-		inputFile[0].form.addEventListener (
-		 "submit",
-		 function (evt, do_submit) {
-			 if (do_submit){
 
-				 return;
-			 }
-			 evt.preventDefault();
+			var droppedFiles = false;
 
-			var deferred = $.Deferred();
-			deferred.done(function(value) {
-				inputFile[0].form.submit(true);
-			});
-			$('#upload_progress_panel').show(500);
-			connectWebsocket(deferred);
+  		dropZone.on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+    		e.preventDefault();
+    		e.stopPropagation();
+  		})
+  		.on('dragover dragenter', function() {
+    		dropZone.addClass('is-dragover');
+  		})
+  		.on('dragleave dragend drop', function() {
+    		dropZone.removeClass('is-dragover');
+  		})
+  		.on('drop', function(e) {
+    		droppedFiles = e.originalEvent.dataTransfer.files;
+				displayFilenames(droppedFiles);
+  		});
+		}
+
+		uploadFiles = function(){
+			var ajaxData = new FormData(uploadForm);
+			if (droppedFiles) {
+				Array.prototype.forEach.call( droppedFiles, function( file ) {
+					ajaxData.append( inputFile.attr( 'name' ), file );
+				});
+			}
+			/*
+			if (inputFile[0].files){
+				Array.prototype.forEach.call( inputFile[0].files, function( file ) {
+					ajaxData.append( inputFile.attr( 'name' ), file );
+				});
+			}
+*/
+			var ajax = new XMLHttpRequest();
+			ajax.open( uploadForm.getAttribute( 'method' ), uploadForm.getAttribute( 'action' ), true );
+
+			ajax.onload = function() 	{
+				dropZone.removeClass( 'is-uploading' );
+				if( ajax.status >= 200 && ajax.status < 400 )	{
+					dropZone.addClass( ajax.status == 200 ? 'is-success' : 'is-error' );
+					if( ajax.status != 200) {
+						console.log("upload error: " + data.errror);
+					}
+				}
+				else alert( 'Error. Please, contact the webmaster!' );
+			};
+
+			ajax.onerror = function() {
+				dropZone.removeClass( 'is-uploading' );
+			};
+
+			ajax.send( ajaxData );
+		}
+
+		uploadForm.addEventListener ( 'submit', function (evt) {
+			 	if (dropZone.hasClass('is-uploading')) {
+					if (isAdvancedUpload) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+
+ 		 		dropZone.removeClass('is-error');
+				evt.preventDefault();
+
+
+				var deferred = $.Deferred();
+				deferred.done(function(value) {
+					triggerFormSubmit();
+				});
+				$('#upload_progress_panel').show(500);
+				connectWebsocket(deferred);
 
 		});
 
@@ -132,9 +202,10 @@ $(document).ready(function() {
     		socket.send($('#input-uploadfile-session')[0].value);
 				$("#upload_progress_panel").addClass("active");
 				connectedDeferred.resolve();
+
 			}
 			socket.onclose = function(evn){
-    		console.log("socket.onclose:",evn);
+				console.log("socket.onclose:",evn);
     	}
 
 			socket.onmessage = function(evt){
@@ -147,27 +218,11 @@ $(document).ready(function() {
 						$("#upload_progress_panel").removeClass("active");
 						$("#upload_progress").html("Done");
 						socket.close()
+						window.location.href=window.location.href;
 					}
 				}
 			}
-
-			/*
-			progresspolling = setInterval(function(){
-		    $.get("/api/upload-polling", function(data){
-		      $("#upload_progress").css('width',data+'%');
-		      $("#upload_progress").html(data+'%');
-
-		      if(data > 99.999) {
-		        clearInterval(progresspolling);
-		        $("#progressouter").removeClass("active");
-		        $("#progress").html("Done");
-		      }
-		    })
-		  }, 50);
-			*/
 		}
-
-
 
 });
 
