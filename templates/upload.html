@@ -192,7 +192,9 @@ $(document).ready(function() {
 		});
 
 		function connectWebsocket(connectedDeferred){
-			socket = new ws("ws://localhost/api/upload-polling");
+			var url = window.location.href
+			var parts = url.split("/");
+			socket = new ws("ws://"+parts[2]+"/api/upload-polling");
 			socket.onconnecting = function(evn){
 				console.log("socket:onconnecting:",evn);
     		// sendMsg("wcj");
