@@ -30,33 +30,65 @@ import tornado.websocket
 import shutil
 import datetime
 
-from lib.post_streamer import PostDataStreamer
+#from lib.post_streamer import PostDataStreamer
+from tornadostreamform.multipart_streamer import MultiPartStreamer, StreamedPart, TemporaryFileStreamedPart
 
 #------------------------------------------------------------------------------
-# Soundfont Configuration
+# Uoload Handling
 #------------------------------------------------------------------------------
+MB = 1024 * 1024
+GB = 1024 * MB
+TB = 1024 * GB
+MAX_STREAMED_SIZE = 1*TB
 
-
-
-class UploadPostDataStreamer(PostDataStreamer):
+class UploadPostDataStreamer(MultiPartStreamer):
 	percent = 0
 
-	def __init__(self, webSocketHandler, total, tmpdir=None):
+	def __init__(self, webSocketHandler, destinationPath, total):
 		self.webSocketHandler = webSocketHandler
-		super(UploadPostDataStreamer, self).__init__(total, tmpdir)
+		self.destinationPath = destinationPath
+		super(UploadPostDataStreamer, self).__init__(total)
 
 
-	def on_progress(self):
+	def on_progress(self, received, total):
 		"""Override this function to handle progress of receiving data."""
-		if self.total:
-			new_percent = self.received*100//self.total
+		if total:
+			new_percent = received*100//total
 			if new_percent != self.percent:
 				self.percent = new_percent
 				logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent))
 				if self.webSocketHandler:
 					self.webSocketHandler.write_message(str(new_percent))
 
+	def examine(self):
+		print("============= structure =============")
+		for idx,part in enumerate(self.parts):
+			print("PART #",idx)
+			print("    HEADERS")
+			for header in part.headers:
+				print("        ",repr(header.get("name","")),"=",repr(header.get("value","")))
+				params = header.get("params",None)
+				if params:
+					for pname in params:
+						print("            ",repr(pname),"=",repr(params[pname]))
+			print("    DATA")
+			print("        SIZE: ", part.get_size())
+			print("        filename: ",part.get_filename())
+			if part.get_size()<80:
+				print("        PAYLOAD:",repr(part.get_payload()))
+			else:
+				print("        PAYLOAD:","<too long...>")
 
+
+
+	def data_complete(self):
+		super(UploadPostDataStreamer, self).data_complete()
+		self.examine()
+		for part in self.parts:
+			if part.get_size()>0:
+				destinationFilename = part.get_filename()
+				logging.info("destinationFilename: " + destinationFilename)
+				part.move(self.destinationPath + "/" + destinationFilename)
 
 class UploadPollingHandler(tornado.websocket.WebSocketHandler):
 	clientId = '1'
@@ -90,39 +122,54 @@ class UploadHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+		# is not really used
 		if self.ps and self.ps.percent:
 			logging.info("reporting percent: " + self.ps.percent)
 			self.write(self.ps.percent)
 
 	def post(self):
+		redirectUrl = "#"
 		try:
 			#self.fout.close()
-			self.ps.finish_receive()
+			self.ps.data_complete()
 			# Use parts here!
-			redirectUrl = "#"
+
 			try:
 				destinationPath = self.get_argument("destinationPath")
 				redirectUrl = self.get_argument("redirectUrl")
-				for part in self.ps.parts:
-					sourceFilename = part["tmpfile"].name
-					destinationFilename = self.ps.get_part_ct_param(part, "filename", None)
-					if destinationFilename:
-						destinationFullPath = destinationPath + "/" + destinationFilename
-						redirectUrl += "?ZYNTHIAN_UPLOAD_NEW_FILE=" + destinationFullPath
-						logging.info("copy " + sourceFilename + " to " + destinationFullPath  )
-						shutil.move(sourceFilename, destinationFullPath)
-			except:
+				last_part = None
+				part_count = 0
+				for part in  self.ps.parts:
+					if part.get_size()>0:
+						last_part = part
+						part_count += 1
+
+				if last_part:
+					redirectUrl += "?ZYNTHIAN_UPLOAD_NEW_FILE="
+					if part_count>1:
+						redirectUrl += destinationPath
+					else:
+						redirectUrl += destinationPath + "/" + last_part.get_filename()
+			except Exception as e:
+				logging.error("copying failed: %s" % e)
 				pass
 
-			self.redirect(redirectUrl)
+
 		finally:
 			# Don't forget to release temporary files.
 			self.ps.release_parts()
+            #self.finish()
+			self.redirect(redirectUrl)
 
 	def prepare(self):
 		try:
+			global MAX_STREAMED_SIZE
+			if self.request.method.lower() == "post":
+				self.request.connection.set_max_body_size(MAX_STREAMED_SIZE)
+
 			total = int(self.request.headers.get("Content-Length","0"))
 			client_id = self.get_argument("clientId")
+			destinationPath = self.get_argument("destinationPath")
 		except:
 			total = 0
 			client_id = '1'
@@ -130,9 +177,9 @@ class UploadHandler(tornado.web.RequestHandler):
 		upload_progress_handler = None
 		if client_id in self.application.settings['upload_progress_handler']:
 			upload_progress_handler = self.application.settings['upload_progress_handler'][client_id]
-		self.ps = UploadPostDataStreamer(upload_progress_handler, total ) #,tmpdir="/tmp"
+		self.ps = UploadPostDataStreamer(upload_progress_handler,  destinationPath, total ) #,tmpdir="/tmp"
 		#self.fout = open("raw_received.dat","wb+")
 
 	def data_received(self, chunk):
 		#self.fout.write(chunk)
-		self.ps.receive(chunk)
+		self.ps.data_received(chunk)
