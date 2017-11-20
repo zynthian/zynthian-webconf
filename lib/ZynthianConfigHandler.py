@@ -85,6 +85,8 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 		# Write updated config file
 		with open(fpath,'w') as f:
 			f.writelines(lines)
+			f.flush()
+			os.fsync(f.fileno())
 
 		# Update System Configuration
 		try:
