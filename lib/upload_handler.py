@@ -41,6 +41,17 @@ GB = 1024 * MB
 TB = 1024 * GB
 MAX_STREAMED_SIZE = 1*TB
 
+class UploadStreamPart(TemporaryFileStreamedPart):
+
+	def move(self, file_path):
+		if not self.is_finalized:
+			raise Exception("Cannot move temporary file: stream is not finalized yet.")
+		if self.is_moved:
+			raise Exception("Cannot move temporary file: it has already been moved.")
+		self.f_out.close()
+		shutil.move(self.f_out.name, file_path)
+		self.is_moved = True
+
 class UploadPostDataStreamer(MultiPartStreamer):
 	percent = 0
 
@@ -49,6 +60,8 @@ class UploadPostDataStreamer(MultiPartStreamer):
 		self.destinationPath = destinationPath
 		super(UploadPostDataStreamer, self).__init__(total)
 
+	def create_part(self, headers):
+		return UploadStreamPart(self, headers, tmp_dir=None)
 
 	def on_progress(self, received, total):
 		"""Override this function to handle progress of receiving data."""
@@ -56,7 +69,7 @@ class UploadPostDataStreamer(MultiPartStreamer):
 			new_percent = received*100//total
 			if new_percent != self.percent:
 				self.percent = new_percent
-				logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent))
+				logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent) + ", received: " + str(received) + ", total: " + str(total))
 				if self.webSocketHandler:
 					self.webSocketHandler.write_message(str(new_percent))
 
@@ -100,10 +113,10 @@ class UploadPollingHandler(tornado.websocket.WebSocketHandler):
 
 	# the client sent the message
 	def on_message(self, message):
-		logging.info(message)
-		self.clientId = message
+		if message:
+			self.clientId = message
 		self.application.settings['upload_progress_handler'][self.clientId] = self
-		logging.info("progress handler set")
+		logging.info("progress handler set for %s" % self.clientId)
 		#self.write_message(message)
 
 	# client disconnected
@@ -162,6 +175,7 @@ class UploadHandler(tornado.web.RequestHandler):
 			self.redirect(redirectUrl)
 
 	def prepare(self):
+		destinationPath = None
 		try:
 			global MAX_STREAMED_SIZE
 			if self.request.method.lower() == "post":
