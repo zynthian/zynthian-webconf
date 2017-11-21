@@ -69,7 +69,7 @@ class UploadPostDataStreamer(MultiPartStreamer):
 			new_percent = received*100//total
 			if new_percent != self.percent:
 				self.percent = new_percent
-				logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent) + ", received: " + str(received) + ", total: " + str(total))
+				#logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent) + ", received: " + str(received) + ", total: " + str(total))
 				if self.webSocketHandler:
 					self.webSocketHandler.write_message(str(new_percent))
 
@@ -96,11 +96,10 @@ class UploadPostDataStreamer(MultiPartStreamer):
 
 	def data_complete(self):
 		super(UploadPostDataStreamer, self).data_complete()
-		self.examine()
 		for part in self.parts:
 			if part.get_size()>0:
 				destinationFilename = part.get_filename()
-				logging.info("destinationFilename: " + destinationFilename)
+				#logging.info("destinationFilename: " + destinationFilename)
 				part.move(self.destinationPath + "/" + destinationFilename)
 
 class UploadPollingHandler(tornado.websocket.WebSocketHandler):
@@ -116,8 +115,7 @@ class UploadPollingHandler(tornado.websocket.WebSocketHandler):
 		if message:
 			self.clientId = message
 		self.application.settings['upload_progress_handler'][self.clientId] = self
-		logging.info("progress handler set for %s" % self.clientId)
-		#self.write_message(message)
+		#logging.info("progress handler set for %s" % self.clientId)
 
 	# client disconnected
 	def on_close(self):
@@ -137,7 +135,7 @@ class UploadHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		# is not really used
 		if self.ps and self.ps.percent:
-			logging.info("reporting percent: " + self.ps.percent)
+			#logging.info("reporting percent: " + self.ps.percent)
 			self.write(self.ps.percent)
 
 	def post(self):
@@ -171,7 +169,6 @@ class UploadHandler(tornado.web.RequestHandler):
 		finally:
 			# Don't forget to release temporary files.
 			self.ps.release_parts()
-            #self.finish()
 			self.redirect(redirectUrl)
 
 	def prepare(self):
@@ -192,8 +189,6 @@ class UploadHandler(tornado.web.RequestHandler):
 		if client_id in self.application.settings['upload_progress_handler']:
 			upload_progress_handler = self.application.settings['upload_progress_handler'][client_id]
 		self.ps = UploadPostDataStreamer(upload_progress_handler,  destinationPath, total ) #,tmpdir="/tmp"
-		#self.fout = open("raw_received.dat","wb+")
 
 	def data_received(self, chunk):
-		#self.fout.write(chunk)
 		self.ps.data_received(chunk)
