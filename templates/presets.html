@@ -1,7 +1,9 @@
 
 <h2>{{ escape(title) }}</h2>
 
-
+<form id="presets-upload-form" action="/api/lib-presets" enctype="multipart/form-data" method="post">
+{% module Template('upload.html', config=config) %}
+</form>
 
 <form id="presets-form" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
@@ -41,13 +43,7 @@
           </div>
 
           <div class="row">
-            <input type="hidden" id="input-presetfile-type"   />
-            <label for="input-soundfile">Upload Preset</label>
-            <input type="file" id="input-presetfile" name="presetfile" />
-          </div>
-
-          <div class="row">
-            <button name="ZYNTHIAN_PRESETS_ACTION" value="SAVE" class="btn btn-lg btn-theme">SAVE</button>
+            <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD"></input>
           </div>
 
           <div id="presets-search-panel">
@@ -133,7 +129,7 @@ $(document).ready(function (){
     $('#ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
         // Enter pressed?
         if(e.which == 13) {
-            event.preventDefault();
+            e.preventDefault();
             $('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
         }
     });
@@ -160,6 +156,7 @@ $('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS']
       $('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value='';
 
       $("#ZYNTHIAN_PRESETS_FULLPATH")[0].value = data.fullpath;
+      $("#presets-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-presets&destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value)
       $("#ZYNTHIAN_PRESETS_BANK_TYPE")[0].value = data.bankType;
 
       if (data.nodeType == 'BANK_TYPE'){
@@ -168,7 +165,7 @@ $('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS']
       } else if (data.nodeType == 'BANK'){
           $('#presets-bank-panel').show();
           $('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value=data.text;
-          $('#input-presetfile-type')[0].value = data.bankType;
+          $('#input-uploadfile-type')[0].value = data.bankType;
           if (data.text != 'sf2'){
             $('#presets-bank-remove-panel').show();
             $('#presets-bank-rename-panel').show();
@@ -183,24 +180,8 @@ $('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS']
 
   $('#presets-tree').treeview('selectNode',{% raw config['ZYNTHIAN_PRESETS_SELECTION_NODE_ID'] %});
 
-  $(function(){
-      $("#input-presetfile").on('change', function(event) {
-          var file = event.target.files[0];
-          var filename = $(this).val();
-          var filetype = $('#input-presetfile-type')[0].value;
-          var regex = new RegExp( '.'+filetype+'$', 'gi' );
-          if ( ! filename.match(regex)) {
-            alert('Please select a ' + filetype + ' file');
-            $("#presets-form")[0].reset();
-            return;
-          }
-      });
-  });
-
 
 function setDownloadFile(filename){
   $('#ZYNTHIAN_PRESETS_DOWNLOAD_FILE')[0].value=filename;
 }
-
-
 </script>

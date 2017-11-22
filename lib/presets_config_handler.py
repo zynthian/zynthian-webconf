@@ -64,6 +64,16 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+
+
+		new_upload_file = self.get_argument('ZYNTHIAN_UPLOAD_NEW_FILE','')
+		if new_upload_file:
+			filename_parts = os.path.splitext(new_upload_file)
+			self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
+		self.handle_get(errors)
+
+
+	def handle_get(self, errors=None):
 		config=OrderedDict([])
 		self.maxTreeNodeIndex = 0
 		presets = self.walk_directory(PresetsConfigHandler.PRESETS_DIRECTORY, '', '')
@@ -74,10 +84,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 
 		config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] = self.searchResult
 
-		try:
-			config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS')
-		except:
-			config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS'] = ''
+		config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS','')
 
 		if self.genjson:
 			self.write(config)
@@ -91,26 +98,12 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 			errors = {
 				'NEW': lambda: self.do_new_bank(),
 				'REMOVE': lambda: self.do_remove(),
-				'SAVE': lambda: self.do_save(),
 				'RENAME': lambda: self.do_rename(),
 				'SEARCH': lambda: self.do_search(),
 				'DOWNLOAD': lambda: self.do_download()
 			}[action]()
 
-		self.get(errors)
-
-	def do_save(self):
-		if 'presetfile' in self.request.files:
-			fileinfo = self.request.files['presetfile'][0]
-			fname = fileinfo['filename']
-			newFullPath = self.selected_full_path + "/" + fname
-			fh = open(newFullPath , 'w')
-			logging.debug("uploading " + newFullPath)
-			try:
-				fh.write(str(fileinfo['body']))
-			except:
-				pass
-			self.selected_full_path = self.revise_filename(self.selected_full_path, newFullPath, self.get_argument('ZYNTHIAN_PRESETS_BANK_TYPE'))
+		self.handle_get(errors)
 
 	def do_remove(self):
 		path = self.get_argument('ZYNTHIAN_PRESETS_FULLPATH')
@@ -180,10 +173,11 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 
 			file_list =  os.listdir(selected_full_path)
 			file_list = sorted(file_list)
+
 			existing_program_numbers = []
 			for f in file_list:
 				if downloaded_file != selected_full_path + "/" + f:
-					logging.info(f)
+					# logging.info(f)
 					fp = os.path.join(selected_full_path, f)
 					m3 = re.match('.*/(\d*)-{0,1}(.*)', fp, re.M | re.I | re.S)
 					if m3:
@@ -191,7 +185,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 							existing_program_numbers.append(int(m3.group(1)))
 						except:
 							pass
-			logging.info(existing_program_numbers)
+			# logging.info(existing_program_numbers)
 
 			if  m.group(1) and not int(m.group(1)) in existing_program_numbers:
 				current_index = int(m.group(1))
@@ -199,6 +193,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 				current_index = 0
 				for existing_program_number in existing_program_numbers:
 					if existing_program_number != current_index:
+						current_index +=1
 						break
 					current_index +=1
 

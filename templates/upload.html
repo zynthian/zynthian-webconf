@@ -1,0 +1,231 @@
+
+<div id="upload_panel" class="modal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+      <h4 class="modal-title">Upload</h4>
+    </div>
+    <div class="modal-body">
+			<input type="hidden" id="input-uploadfile-type"   />
+			<input type="hidden" id="input-uploadfile-session" />
+			<div id="drop-zone">
+				<span class="box__dragndrop">
+					Drop files here or
+				</span>
+				<div id="click-here">
+			        Click and choose
+      		<input type="file" id="input-uploadfile" name="uploadfile" multiple/>
+				</div>
+
+			</div>
+			<div id="selected_files">
+
+			</div>
+			<div id="upload_progress_panel" class="progress"> <div id="upload_progress" class="progress-bar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100" style="width: 0%;"></div> </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-lg btn-theme">SAVE</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+
+$(document).ready(function() {
+		var isAdvancedUpload = function() {
+			var div = document.createElement('div');
+			return (('draggable' in div) || ('ondragstart' in div && 'ondrop' in div)) && 'FormData' in window && 'FileReader' in window;
+		}();
+
+		var random = Math.random().toString();
+		$('#input-uploadfile-session')[0].value = random;
+
+		$('#upload_show').click(function(){
+			$('#upload_panel').show(500)
+			$('#upload_progress_panel').hide(500);
+		});
+
+		$('#upload_panel .close').click(function(){
+			$('#upload_panel').hide(500)
+		});
+
+		window.onclick = function(event) {
+			if (event.target == document.getElementById('upload_panel')) {
+				$('#upload_panel').hide(500);
+			}
+		}
+
+		var dropZoneId = "drop-zone";
+		var buttonId = "click-here";
+		var mouseOverClass = "mouse-over";
+
+		var dropZone = $("#" + dropZoneId);
+		var ooleft = dropZone.offset().left;
+		var ooright = dropZone.outerWidth() + ooleft;
+		var ootop = dropZone.offset().top;
+		var oobottom = dropZone.outerHeight() + ootop;
+		var inputFile = dropZone.find("input");
+
+		displayFilenames = function(files){
+			filenames = '';
+			for (var i = 0, f; f = files[i]; i++) {
+				filenames += '' + f.name + '<br/>';
+			}
+			$('#selected_files').html(filenames);
+		}
+
+
+    $("#input-uploadfile").on('change', function(event) {
+        var filename = $(this).val();
+        var filetype = $('#input-uploadfile-type')[0].value;
+        var regex = new RegExp( '.'+filetype+'$', 'gi' );
+				validSuffix = true;
+
+				for (var i = 0, f; f = event.target.files[i]; i++) {
+        	if ( ! f.name.match(regex)) {
+						validSuffix = false;
+					}
+				}
+				if (!validSuffix){
+          alert('Only select ' + filetype + ' files');
+          this.form.reset();
+					$('#input-uploadfile-type')[0].value = filetype;
+          return;
+        }
+				displayFilenames(event.target.files);
+    });
+
+
+		var droppedFiles = false;
+
+		var uploadForm = inputFile[0].form;
+		dropZone.removeClass('websocket_opened');
+
+		triggerFormSubmit = function() {
+				dropZone.addClass('is-uploading');
+				if (isAdvancedUpload) {
+					uploadFiles();
+				} else {
+					uploadForm.submit();
+				}
+		};
+
+
+		if (isAdvancedUpload) {
+  		dropZone.addClass('has-advanced-upload');
+
+
+			var droppedFiles = false;
+
+  		dropZone.on('drag dragstart dragend dragover dragenter dragleave drop', function(e) {
+    		e.preventDefault();
+    		e.stopPropagation();
+  		})
+  		.on('dragover dragenter', function() {
+    		dropZone.addClass('is-dragover');
+  		})
+  		.on('dragleave dragend drop', function() {
+    		dropZone.removeClass('is-dragover');
+  		})
+  		.on('drop', function(e) {
+    		droppedFiles = e.originalEvent.dataTransfer.files;
+				displayFilenames(droppedFiles);
+  		});
+		}
+
+		uploadFiles = function(){
+			var ajaxData = new FormData(uploadForm);
+			if (droppedFiles) {
+				Array.prototype.forEach.call( droppedFiles, function( file ) {
+					ajaxData.append( inputFile.attr( 'name' ), file );
+				});
+			}
+			/*
+			if (inputFile[0].files){
+				Array.prototype.forEach.call( inputFile[0].files, function( file ) {
+					ajaxData.append( inputFile.attr( 'name' ), file );
+				});
+			}
+*/
+			var ajax = new XMLHttpRequest();
+			ajax.open( uploadForm.getAttribute( 'method' ), uploadForm.getAttribute( 'action' ), true );
+
+			ajax.onload = function() 	{
+				dropZone.removeClass( 'is-uploading' );
+				if( ajax.status >= 200 && ajax.status < 400 )	{
+					dropZone.addClass( ajax.status == 200 ? 'is-success' : 'is-error' );
+					if( ajax.status != 200) {
+						console.log("upload error: " + data.errror);
+					}
+				}
+				else alert( 'Error. Please, contact the webmaster!' );
+			};
+
+			ajax.onerror = function() {
+				dropZone.removeClass( 'is-uploading' );
+			};
+
+			ajax.send( ajaxData );
+		}
+
+		uploadForm.addEventListener ( 'submit', function (evt) {
+			 	if (dropZone.hasClass('is-uploading')) {
+					if (isAdvancedUpload) {
+						return false;
+					} else {
+						return true;
+					}
+				}
+
+ 		 		dropZone.removeClass('is-error');
+				evt.preventDefault();
+
+
+				var deferred = $.Deferred();
+				deferred.done(function(value) {
+					triggerFormSubmit();
+				});
+				$('#upload_progress_panel').show(500);
+				connectWebsocket(deferred);
+
+		});
+
+		function connectWebsocket(connectedDeferred){
+			var url = window.location.href
+			var parts = url.split("/");
+			socket = new ws("ws://"+parts[2]+"/api/upload-polling");
+			socket.onconnecting = function(evn){
+				console.log("socket:onconnecting:",evn);
+    		// sendMsg("wcj");
+			}
+			socket.onopen = function(evn){
+    		console.log("socket:onopen:",evn);
+    		socket.send($('#input-uploadfile-session')[0].value);
+				$("#upload_progress_panel").addClass("active");
+				connectedDeferred.resolve();
+
+			}
+			socket.onclose = function(evn){
+				console.log("socket.onclose:",evn);
+    	}
+
+			socket.onmessage = function(evt){
+				if (evt.data){
+	    		console.log("socket:onmessage:",evt.data);
+
+					$("#upload_progress").css('width',evt.data+'%');
+					$("#upload_progress").html(evt.data+'%');
+					if(evt.data > 99.999) {
+						$("#upload_progress_panel").removeClass("active");
+						$("#upload_progress").html("Done");
+						socket.close()
+						window.location.href=window.location.href;
+					}
+				}
+			}
+		}
+
+});
+
+</script>
