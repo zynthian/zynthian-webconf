@@ -133,6 +133,11 @@ $(document).ready(function (){
             $('#ZYNTHIAN_SOUNDFONT_ACTION_SEARCH').click();
         }
     });
+
+		$('#upload_panel')[0].onuploadend = function(response){
+			console.log("upload succeded: " + response);
+			window.location.href = window.location.href;
+		}
 });
 
 function showProgressAnimation(){

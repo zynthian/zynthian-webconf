@@ -30,8 +30,6 @@ import tornado.web
 import json
 import shutil
 import requests
-import bz2
-import zipfile
 from collections import OrderedDict
 from subprocess import check_output, call
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
@@ -76,6 +74,8 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		config['ZYNTHIAN_SOUNDFONT_SEARCH_RESULT'] = self.searchResult
 
 		config['ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_SOUNDFONT_MUSICAL_ARTIFACT_TAGS','')
+
+		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 		if self.genjson:
 			self.write(config)

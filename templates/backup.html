@@ -1,38 +1,67 @@
 
 <h2>{{ escape(title) }}</h2>
 
-
+<form id="restore-upload-form" action="#" enctype="multipart/form-data" method="post">
+{% module Template('upload.html', config=config) %}
+</form>
 
 <form id="backup-form" enctype="multipart/form-data" method="post">
-<div class="container-fluid">
-  <div class="row">
-    <label>Backup items as defined in /zynthian/config/backup_items.txt</label>
-    <table class="table table-striped table-bordered table-condensed">
-    {% for backupItem in config['ZYNTHIAN_BACKUP_ITEMS'] %}
-    {% if config['ZYNTHIAN_BACKUP_ITEMS'][backupItem] %}
-    <tr>
-      <td title="{% for backupItemFile in  config['ZYNTHIAN_BACKUP_ITEMS'][backupItem] %}{{ escape(backupItemFile + '\n') }}{% end %}">{{ escape(backupItem)}} </td>
-    </tr>
-    {% end %}
-    {% end %}
-    </table>
-  </div>
-  <div class="row">
-    <button name="ZYNTHIAN_BACKUP_ACTION" value="BACKUP" class="btn btn-lg btn-theme">BACKUP</button>
-  </div>
-  <div class="row">
-    <label for="ZYNTHIAN_RESTORE_FILE">Restore file (zip):</label>
-    <input type="file" id="ZYNTHIAN_RESTORE_FILE" name="ZYNTHIAN_RESTORE_FILE" />
-  </div>
-  <div class="row">
-    <button name="ZYNTHIAN_BACKUP_ACTION" value="RESTORE" class="btn btn-lg btn-theme">RESTORE</button>
-  </div>
-  <div class="row">
-  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+	<ul class="nav nav-tabs" role="tablist">
+		<li class="{% if 'ZYNTHIAN_UPLOAD_NEW_FILE' not in config %}active{% end %}"><a href="#system_backup" role="tab" data-toggle="tab">System Backup</a></li>
+		<li><a href="#data_backup" role="tab" data-toggle="tab">Data Backup</a></li>
+		<li class="{% if 'ZYNTHIAN_UPLOAD_NEW_FILE' in config %}active{% end %}"><a href="#restore" role="tab" data-toggle="tab">Restore</a></li>
+	</ul>
 
-  </div>
+
+<div class="tab-content">
+	<div class="tab-pane {% if 'ZYNTHIAN_UPLOAD_NEW_FILE' not in config %}active{% end %}" id="system_backup">
+		<div class="container-fluid">
+		  <div class="row">
+		    <label>Backup items as defined in /zynthian/config/system_backup_items.txt</label>
+		    <table class="table table-striped table-bordered table-condensed">
+		    {% for backupItem in config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'] %}
+		    {% if config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'][backupItem] %}
+		    <tr>
+		      <td title="{% for backupItemFile in  config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'][backupItem] %}{{ escape(backupItemFile + '\n') }}{% end %}">{{ escape(backupItem)}} </td>
+		    </tr>
+		    {% end %}
+		    {% end %}
+		    </table>
+		  </div>
+		  <div class="row">
+		    <button name="ZYNTHIAN_BACKUP_ACTION" value="SYSTEM_BACKUP" class="btn btn-lg btn-theme btn-block">BACKUP</button>
+		  </div>
+  	</div>
+	</div>
+	<div class="tab-pane" id="data_backup">
+		<div class="row">
+			<label>Backup items as defined in /zynthian/config/data_backup_items.txt</label>
+			<table class="table table-striped table-bordered table-condensed">
+			{% for backupItem in config['ZYNTHIAN_DATA_BACKUP_ITEMS'] %}
+			{% if config['ZYNTHIAN_DATA_BACKUP_ITEMS'][backupItem] %}
+			<tr>
+				<td title="{% for backupItemFile in  config['ZYNTHIAN_DATA_BACKUP_ITEMS'][backupItem] %}{{ escape(backupItemFile + '\n') }}{% end %}">{{ escape(backupItem)}} </td>
+			</tr>
+			{% end %}
+			{% end %}
+			</table>
+		</div>
+		<div class="row">
+			<button name="ZYNTHIAN_BACKUP_ACTION" value="DATA_BACKUP" class="btn btn-lg btn-theme btn-block">BACKUP</button>
+		</div>
+	</div>
+	<div class="tab-pane {% if 'ZYNTHIAN_UPLOAD_NEW_FILE' in config %}active{% end %}" id="restore">
+		<div class="row">
+			<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="RESTORE"></input>
+		</div>
+		<div class="row">
+				<div id="restore-log" class="log_panel"></div
+		</div>
+	</div>
 </div>
-
+<div class="row">
+{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+</div>
 </form>
 
 <div id="loading-div-background">
@@ -46,24 +75,50 @@
 
 $(document).ready(function (){
     $("#loading-div-background").hide();
+		$('#input-uploadfile-type')[0].value = 'zip';
+		$("#restore-upload-form").attr("action", "/api/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
+		$('#upload_panel')[0].onuploadend = function(response){
+				console.log("upload succeded: " + response);
+				var logDiv = $("#restore-log");
+ 				logDiv.addClass("updating");
+ 				logDiv.html('');
+				connectRestoreWebsocket(response);
+		}
 });
 
 function showProgressAnimation(){
     $("#loading-div-background").show();
 }
 
-$(function(){
-    $("#ZYNTHIAN_RESTORE_FILE").on('change', function(event) {
-        var file = event.target.files[0];
-        var filename = $(this).val();
-        var regex = new RegExp( '.zip$', 'gi' );
-        if ( ! filename.match(regex)) {
-          alert('Please select a zip file');
-          $("#backup-form")[0].reset();
-          return;
-        }
-    });
-});
+function connectRestoreWebsocket(restoreFile){
+	var url = window.location.href
+	var parts = url.split("/");
+	var restoreSocket = new WebSocket("ws://"+parts[2]+"/api/sys-restore-progress");
+	restoreSocket.onconnecting = function(evn){
+		console.log("restore socket:onconnecting:",evn);
+	}
+	restoreSocket.onopen = function(evn){
+		console.log("restore socket:onopen:",evn);
+		this.send(restoreFile);
+	}
+	restoreSocket.onclose = function(evn){
+		console.log("restore socket.onclose:",evn);
+	}
+	restoreSocket.onmessage = function(evt){
+		if (evt.data){
+			console.log("restoresocket:onmessage:",evt.data);
+			var logDiv = $("#restore-log");
+ 		  if (evt.data == "EOCOMMAND"){
+ 				logDiv.removeClass("updating");
+ 			} else {
+ 				console.log("socket:onmessage:",evt.data);
+ 				logDiv.append(evt.data + "<br />");
+ 				logDiv[0].scrollTop = logDiv[0].scrollHeight;
+			}
+		}
+	}
+}
+
 
 
 

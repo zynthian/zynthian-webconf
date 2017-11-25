@@ -109,7 +109,6 @@ class UploadPollingHandler(tornado.websocket.WebSocketHandler):
 	def open(self):
 		logging.info("New client connected")
 
-
 	# the client sent the message
 	def on_message(self, message):
 		if message:
@@ -122,8 +121,6 @@ class UploadPollingHandler(tornado.websocket.WebSocketHandler):
 		logging.info("Client disconnected")
 		if self.clientId in self.application.settings['upload_progress_handler']:
 			del self.application.settings['upload_progress_handler'][self.clientId]
-
-
 
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):
@@ -139,15 +136,13 @@ class UploadHandler(tornado.web.RequestHandler):
 			self.write(self.ps.percent)
 
 	def post(self):
-		redirectUrl = "#"
 		try:
 			#self.fout.close()
 			self.ps.data_complete()
 			# Use parts here!
-
+			response = ''
 			try:
 				destinationPath = self.get_argument("destinationPath")
-				redirectUrl = self.get_argument("redirectUrl")
 				last_part = None
 				part_count = 0
 				for part in  self.ps.parts:
@@ -156,20 +151,19 @@ class UploadHandler(tornado.web.RequestHandler):
 						part_count += 1
 
 				if last_part:
-					redirectUrl += "?ZYNTHIAN_UPLOAD_NEW_FILE="
 					if part_count>1:
-						redirectUrl += destinationPath
+						response = destinationPath
 					else:
-						redirectUrl += destinationPath + "/" + last_part.get_filename()
+						response = destinationPath + "/" + last_part.get_filename()
 			except Exception as e:
 				logging.error("copying failed: %s" % e)
 				pass
-
-
 		finally:
 			# Don't forget to release temporary files.
 			self.ps.release_parts()
-			self.redirect(redirectUrl)
+			logging.info("response %s" % response)
+			self.write(response)
+			self.finish
 
 	def prepare(self):
 		destinationPath = None

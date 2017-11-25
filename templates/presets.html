@@ -1,11 +1,11 @@
 
 <h2>{{ escape(title) }}</h2>
 
-<form id="presets-upload-form" action="/api/lib-presets" enctype="multipart/form-data" method="post">
+<form id="presets-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
 {% module Template('upload.html', config=config) %}
 </form>
 
-<form id="presets-form" enctype="multipart/form-data" method="post">
+<form id="presets-form" action="/api/lib-presets" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
   <div class="row">
     <div class="col-md-5">
@@ -122,6 +122,7 @@
 
 <script type="text/javascript">
 
+var presetsForm = $('#presets-form')[0];
 
 $(document).ready(function (){
     $("#loading-div-background").hide();
@@ -133,6 +134,35 @@ $(document).ready(function (){
             $('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
         }
     });
+
+		$('#upload_panel')[0].onuploadend = function(response){
+				console.log("upload succeded: " + response);
+				var ajaxData = new FormData(presetsForm);
+				ajaxData.append('ZYNTHIAN_PRESETS_ACTION','REVISE_UPLOAD')
+				var ajax = new XMLHttpRequest();
+
+				ajax.open( presetsForm.getAttribute( 'method' ), presetsForm.getAttribute( 'action' ), true );
+
+				ajax.onload = function() 	{
+					if( ajax.status >= 200 && ajax.status < 400 )	{
+						if( ajax.status != 200) {
+							console.log("upload error: " + data.errror);
+						}
+					}
+					else alert( 'Error. Please, contact the webmaster!' );
+				};
+
+				ajax.onloadend = function() {
+					console.log("revise uploads succeeded");
+					window.location.href = window.location.href;
+				};
+
+				ajax.onerror = function() {
+					console.log("revise uploads failed");
+				};
+
+				ajax.send(ajaxData);
+		}
 });
 
 function showProgressAnimation(){
