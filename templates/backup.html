@@ -76,48 +76,56 @@
 $(document).ready(function (){
     $("#loading-div-background").hide();
 		$('#input-uploadfile-type')[0].value = 'zip';
-		$("#restore-upload-form").attr("action", "/api/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
+
+		var deferred = $.Deferred();
+		deferred.done(function(value) {
+			$("#upload_progress_panel").addClass("active");
+			var socketMessage = {"handler_name": "UploadProgressHandler",
+				"data": $('#input-uploadfile-session')[0].value};
+
+			window.zynthianSocket.send(JSON.stringify(socketMessage));
+		});
+		connectZynthianWebSocket(deferred);
+
+
+		var url = window.location.href
+		var parts = url.split("/");
+		$("#restore-upload-form").attr("action", "http://" + parts[2] + "/api/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
+
+
 		$('#upload_panel')[0].onuploadend = function(response){
-				console.log("upload succeded: " + response);
+				console.log("upload succeeded: " + response);
 				var logDiv = $("#restore-log");
  				logDiv.addClass("updating");
  				logDiv.html('');
-				connectRestoreWebsocket(response);
+
+				var socketMessage = {"handler_name": "RestoreMessageHandler",
+					"data": response};
+				//zynthiansocket = connectWebsocket();
+
+				window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
+					if (data){
+						console.log("RestoreMessageHandler:onmessage:", data);
+						var logDiv = $("#restore-log");
+						if (data == "EOCOMMAND"){
+							logDiv.removeClass("updating");
+						} else {
+							logDiv.append(data + "<br />");
+							logDiv[0].scrollTop = logDiv[0].scrollHeight;
+						}
+					}
+				});
+				window.zynthianSocket.send(JSON.stringify(socketMessage));
 		}
+
 });
+
 
 function showProgressAnimation(){
     $("#loading-div-background").show();
 }
 
-function connectRestoreWebsocket(restoreFile){
-	var url = window.location.href
-	var parts = url.split("/");
-	var restoreSocket = new WebSocket("ws://"+parts[2]+"/api/sys-restore-progress");
-	restoreSocket.onconnecting = function(evn){
-		console.log("restore socket:onconnecting:",evn);
-	}
-	restoreSocket.onopen = function(evn){
-		console.log("restore socket:onopen:",evn);
-		this.send(restoreFile);
-	}
-	restoreSocket.onclose = function(evn){
-		console.log("restore socket.onclose:",evn);
-	}
-	restoreSocket.onmessage = function(evt){
-		if (evt.data){
-			console.log("restoresocket:onmessage:",evt.data);
-			var logDiv = $("#restore-log");
- 		  if (evt.data == "EOCOMMAND"){
- 				logDiv.removeClass("updating");
- 			} else {
- 				console.log("socket:onmessage:",evt.data);
- 				logDiv.append(evt.data + "<br />");
- 				logDiv[0].scrollTop = logDiv[0].scrollHeight;
-			}
-		}
-	}
-}
+
 
 
 

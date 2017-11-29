@@ -33,11 +33,16 @@ import zipfile
 from io import BytesIO
 from collections import OrderedDict
 import time
+import jsonpickle
+from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 
 SYSTEM_BACKUP_ITEMS_FILE = "/zynthian/config/system_backup_items.txt"
 DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
 
+def get_backup_items(filename):
+	with open(filename) as f:
+		return f.read().splitlines()#
 
 #------------------------------------------------------------------------------
 # Snapshot Config Handler
@@ -83,6 +88,8 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		else:
 			self.render("config.html", body="backup.html", config=config, title="Backup / Restore", errors=errors)
 
+
+
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_BACKUP_ACTION')
 		if action:
@@ -116,12 +123,8 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		f.close()
 		self.finish()
 
-	def get_backup_items(self, filename):
-		with open(filename) as f:
-			return f.read().splitlines()
-
 	def walk_backup_items(self, worker, backupFolderFilename):
-		for backupFolder in self.get_backup_items(backupFolderFilename):
+		for backupFolder in get_backup_items(backupFolderFilename):
 			logging.info(backupFolder)
 			try:
 				sourceFolder = os.path.expandvars(backupFolder)
@@ -129,26 +132,16 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 					worker(dirname, subdirs, files)
 			except:
 				pass
+	def is_valid_restore_item(self, validRestoreItems, restoreMember):
+		for validRestoreItem in validRestoreItems:
+			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
+				return True
+		return False
 
-class RestoreProgressHandler(tornado.websocket.WebSocketHandler):
-
-	 # the client connected
-	def open(self):
-		logging.info("New RestoreProgressHandler client connected")
-
-	# the client sent the message
-	def on_message(self, message):
-		logging.info("restore on_message: %s" % message)
-		self.do_restore(message)
-		#logging.info("progress handler set for %s" % self.clientId)
-
-	# client disconnected
-	def on_close(self):
-		logging.info("RestoreProgressHandler Client disconnected")
-
-	def get_backup_items(self, filename):
-		with open(filename) as f:
-			return f.read().splitlines()#
+class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
+	@classmethod
+	def is_registered_for(cls, handler_name):
+		return handler_name == 'RestoreMessageHandler'
 
 	def is_valid_restore_item(self, validRestoreItems, restoreMember):
 		for validRestoreItem in validRestoreItems:
@@ -156,13 +149,13 @@ class RestoreProgressHandler(tornado.websocket.WebSocketHandler):
 				return True
 		return False
 
-	def do_restore(self, restoreFile):
+	def on_websocket_message(self, restoreFile):
 		#fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]
 		#restoreFile = fileinfo['filename']
 		logging.debug("restoring: " + restoreFile)
 		with open(restoreFile , "rb") as f:
-			validRestoreItems = self.get_backup_items(SYSTEM_BACKUP_ITEMS_FILE)
-			validRestoreItems += self.get_backup_items(DATA_BACKUP_ITEMS_FILE)
+			validRestoreItems = get_backup_items(SYSTEM_BACKUP_ITEMS_FILE)
+			validRestoreItems += get_backup_items(DATA_BACKUP_ITEMS_FILE)
 
 			with zipfile.ZipFile(f,'r') as restoreZip:
 				for member in restoreZip.namelist():
@@ -170,10 +163,12 @@ class RestoreProgressHandler(tornado.websocket.WebSocketHandler):
 						logMessage = "restored: " + member
 						restoreZip.extract(member, "/")
 						logging.debug(logMessage)
-						self.write_message(logMessage)
+						message = ZynthianWebSocketMessage('RestoreMessageHandler', logMessage)
+						self.websocket.write_message(jsonpickle.encode(message))
 					else:
 						logging.warn("restore of " + member + " not permitted")
 				restoreZip.close()
 			f.close()
 		os.remove(restoreFile)
-		self.write_message('EOCOMMAND');
+		message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
+		self.websocket.write_message(jsonpickle.encode(message));

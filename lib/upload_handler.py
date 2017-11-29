@@ -29,12 +29,15 @@ import tornado.web
 import tornado.websocket
 import shutil
 import datetime
+import jsonpickle
+from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
+
 
 #from lib.post_streamer import PostDataStreamer
 from tornadostreamform.multipart_streamer import MultiPartStreamer, StreamedPart, TemporaryFileStreamedPart
 
 #------------------------------------------------------------------------------
-# Uoload Handling
+# Upload Handling
 #------------------------------------------------------------------------------
 MB = 1024 * 1024
 GB = 1024 * MB
@@ -71,7 +74,8 @@ class UploadPostDataStreamer(MultiPartStreamer):
 				self.percent = new_percent
 				#logging.info("upload progress: " + str(datetime.datetime.now()) + " " + str(new_percent) + ", received: " + str(received) + ", total: " + str(total))
 				if self.webSocketHandler:
-					self.webSocketHandler.write_message(str(new_percent))
+					message = ZynthianWebSocketMessage('UploadProgressHandler', str(new_percent))
+					self.webSocketHandler.websocket.write_message(jsonpickle.encode(message))
 
 	def examine(self):
 		print("============= structure =============")
@@ -102,25 +106,25 @@ class UploadPostDataStreamer(MultiPartStreamer):
 				#logging.info("destinationFilename: " + destinationFilename)
 				part.move(self.destinationPath + "/" + destinationFilename)
 
-class UploadPollingHandler(tornado.websocket.WebSocketHandler):
+class UploadProgressHandler(ZynthianWebSocketMessageHandler):
 	clientId = '1'
 
-	 # the client connected
-	def open(self):
-		logging.info("New client connected")
+	@classmethod
+	def is_registered_for(cls, handler_name):
+		return handler_name == 'UploadProgressHandler'
 
-	# the client sent the message
-	def on_message(self, message):
+	def on_websocket_message(self, message):
 		if message:
 			self.clientId = message
-		self.application.settings['upload_progress_handler'][self.clientId] = self
+			logging.info("on_websocket_message %s" % message)
+		self.websocket.application.settings['upload_progress_handler'][self.clientId] = self
 		#logging.info("progress handler set for %s" % self.clientId)
 
 	# client disconnected
 	def on_close(self):
 		logging.info("Client disconnected")
-		if self.clientId in self.application.settings['upload_progress_handler']:
-			del self.application.settings['upload_progress_handler'][self.clientId]
+		if self.clientId in self.websocket.application.settings['upload_progress_handler']:
+			del self.websocket.application.settings['upload_progress_handler'][self.clientId]
 
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):

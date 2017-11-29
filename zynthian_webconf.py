@@ -42,14 +42,21 @@ from lib.WifiListHandler import WifiListHandler
 from lib.SnapshotConfigHandler import SnapshotConfigHandler
 from lib.MidiConfigHandler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
-from lib.upload_handler import UploadHandler, UploadPollingHandler
-from lib.system_backup_handler import SystemBackupHandler, RestoreProgressHandler
+from lib.upload_handler import UploadHandler
+from lib.system_backup_handler import SystemBackupHandler
 from lib.presets_config_handler import PresetsConfigHandler
+from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 
 #------------------------------------------------------------------------------
 
+MB = 1024 * 1024
+GB = 1024 * MB
+TB = 1024 * GB
+MAX_STREAMED_SIZE = 1*TB
+
 #Configure Logging
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
@@ -60,8 +67,7 @@ def make_app():
 		"template_path": "templates",
 		"cookie_secret": "hsa9fKjf3Hf923hg6avJ)8fjh3mcGF12ht97834bh",
 		"login_url": "/login",
-		"upload_progress_handler": dict(),
-		"restore_progress_handler": dict()
+		"upload_progress_handler": dict()
 	}
 	return tornado.web.Application([
 		(r'/$', AudioConfigHandler),
@@ -75,8 +81,6 @@ def make_app():
 		(r"/login", LoginHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
-		(r"/api/upload$", UploadHandler),
-		(r"/api/upload-polling$", UploadPollingHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
@@ -85,15 +89,17 @@ def make_app():
 		(r"/api/ui-midi$", MidiConfigHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),
 		(r"/api/sys-backup$", SystemBackupHandler),
-		(r"/api/sys-restore-progress$", RestoreProgressHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),
 		(r"/api/sys-reboot$", RebootHandler),
 		(r"/api/wifi/list$", WifiListHandler),
+		(r'/api/upload$', UploadHandler),
+		(r"/api/ws$", ZynthianWebSocketHandler),
 	], **settings)
+
 
 if __name__ == "__main__":
 	app = make_app()
-	app.listen(80, max_body_size=6*1024*1024*1024)
+	app.listen(80, max_body_size=MAX_STREAMED_SIZE)
 	tornado.ioloop.IOLoop.current().start()
 
 #------------------------------------------------------------------------------
