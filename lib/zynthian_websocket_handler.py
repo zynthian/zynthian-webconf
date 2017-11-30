@@ -38,9 +38,7 @@ import jsonpickle
 #------------------------------------------------------------------------------
 
 def ZynthianWebSocketMessageHandlerFactory(handler_name, websocket):
-	logging.info('ZynthianWebSocketMessageHandlerFactory')
 	for cls in ZynthianWebSocketMessageHandler.__subclasses__():
-		logging.info(str(cls))
 		if cls.is_registered_for(handler_name):
 			return cls(handler_name, websocket)
 	raise ValueError
@@ -52,6 +50,9 @@ class ZynthianWebSocketMessageHandler(object):
 
 	def on_websocket_message(self, message):
 		raise NotImplementedError("Please Implement on_websocket_message")
+
+	def on_close(self):
+		pass
 
 
 
@@ -77,22 +78,26 @@ class ZynthianWebSocketMessage(object):
 		self._data = value
 
 class ZynthianWebSocketHandler(tornado.websocket.WebSocketHandler):
+	handlers = []
+
 	def check_origin(self, origin):
 		return True
 
 	 # the client connected
 	def open(self):
-		logging.info("New client connected")
+		logging.info("New client connected to ZynthianWebSocketHandler")
 
 	# the client sent the message
 	def on_message(self, message):
 		if message:
-			logging.info("incomding raw message %s " % message)
 			decoded_message = jsonpickle.decode(message)
 			logging.info("incomding ws message %s " % decoded_message)
 			handler = ZynthianWebSocketMessageHandlerFactory(decoded_message['handler_name'], self)
 			handler.on_websocket_message(decoded_message['data'])
+			self.handlers.append(handler)
 
 	# client disconnected
 	def on_close(self):
 		logging.info("Client disconnected")
+		for handler in self.handlers:
+			handler.on_close()

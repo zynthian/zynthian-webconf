@@ -125,7 +125,6 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 
 	def walk_backup_items(self, worker, backupFolderFilename):
 		for backupFolder in get_backup_items(backupFolderFilename):
-			logging.info(backupFolder)
 			try:
 				sourceFolder = os.path.expandvars(backupFolder)
 				for dirname, subdirs, files in os.walk(sourceFolder):
@@ -152,7 +151,6 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
 	def on_websocket_message(self, restoreFile):
 		#fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]
 		#restoreFile = fileinfo['filename']
-		logging.debug("restoring: " + restoreFile)
 		with open(restoreFile , "rb") as f:
 			validRestoreItems = get_backup_items(SYSTEM_BACKUP_ITEMS_FILE)
 			validRestoreItems += get_backup_items(DATA_BACKUP_ITEMS_FILE)

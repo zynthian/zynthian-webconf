@@ -116,13 +116,11 @@ class UploadProgressHandler(ZynthianWebSocketMessageHandler):
 	def on_websocket_message(self, message):
 		if message:
 			self.clientId = message
-			logging.info("on_websocket_message %s" % message)
 		self.websocket.application.settings['upload_progress_handler'][self.clientId] = self
 		#logging.info("progress handler set for %s" % self.clientId)
 
 	# client disconnected
 	def on_close(self):
-		logging.info("Client disconnected")
 		if self.clientId in self.websocket.application.settings['upload_progress_handler']:
 			del self.websocket.application.settings['upload_progress_handler'][self.clientId]
 
@@ -165,7 +163,6 @@ class UploadHandler(tornado.web.RequestHandler):
 		finally:
 			# Don't forget to release temporary files.
 			self.ps.release_parts()
-			logging.info("response %s" % response)
 			self.write(response)
 			self.finish
 
