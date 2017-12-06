@@ -144,6 +144,20 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		])
 
 		client = jack.Client("ZynthianWebConf")
+		midi_in_ports = client.get_ports( is_midi=True, is_physical=True, is_input=True)
+		midi_out_ports = client.get_ports( is_midi=True, is_physical=True, is_output=True)
+		#midi_in_ports = client.get_ports( is_physical=True, is_output=True)
+		#midi_out_ports = client.get_ports( is_physical=True, is_input=True)
+		midi_ports = []
+		for idx,midi_port in enumerate(midi_in_ports):
+			midi_ports.append({'midi_in':midi_port.name,
+				'midi_out':midi_out_ports[idx].name})
+
+		ports_config=OrderedDict([
+			['MIDI_PORTS', midi_ports]
+		])
+
+		logging.info(str(ports_config))
 
 		config=OrderedDict([
 			['ZYNTHIAN_PRESET_PRELOAD_NOTEON', {
@@ -208,21 +222,20 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': os.getenv('ZYNTHIAN_MIDI_FILTER_RULES',""),
 				'cols': 50,
 				'rows': 5,
-				'addButton': 'midi_filter_rule_add',
+				'addButton': 'display_midi_filter_rule_panel',
 				'addPanel': 'midi_filter_rule.html',
 				'addPanelConfig': add_panel_config,
 				'advanced': True
 			}],
-			['ZYNTHIAN_MIDI_IN_PORT', {
-				'type': 'text',
-				'title': 'MIDI In Ports',
-				'value': ', '.join([p.name for p in client.get_ports( is_midi=True, is_physical=True, is_input=True)]),
-				'advanced': True
-			}],
-			['ZYNTHIAN_MIDI_OUT_PORT', {
-				'type': 'text',
-				'title': 'MIDI Out Ports',
-				'value': ', '.join([p.name for p in client.get_ports( is_midi=True, is_physical=True, is_output=True)]),
+			['ZYNTHIAN_MIDI_PORTS', {
+				'type': 'textarea',
+				'title': 'MIDI Ports',
+				'value': os.getenv('ZYNTHIAN_MIDI_PORTS',''),
+				'cols': 50,
+				'rows': 5,
+				'addButton': 'display_midi_ports_panel',
+				'addPanel': 'midi_ports.html',
+				'addPanelConfig': ports_config,
 				'advanced': True
 			}]
 		])

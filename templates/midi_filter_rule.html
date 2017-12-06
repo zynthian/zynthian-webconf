@@ -85,7 +85,7 @@
         </div>
       </div>
       <div class="modal-footer">
-          <button id="midi-filter-rule-add" class="btn btn-success" data-dismiss="modal" type="button" onclick="addFilterRule();"><span aria-hidden="true">ADD</span></button>
+          <button id="midi-filter-rule-add" class="btn btn-success" data-dismiss="modal" type="button"><span aria-hidden="true">ADD</span></button>
       </div>
     </div>
   </div>
@@ -94,7 +94,7 @@
 <script>
 
 $(document).ready(function() {
-	$('#midi_filter_rule_add').click(function(){
+	$('#display_midi_filter_rule_panel').click(function(){
     refreshSelectionView();
 		$('#midi_filter_rule_panel').show(500)
 	});
