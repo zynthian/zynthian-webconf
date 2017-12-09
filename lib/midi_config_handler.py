@@ -143,21 +143,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}]
 		])
 
-		client = jack.Client("ZynthianWebConf")
-		midi_in_ports = client.get_ports( is_midi=True, is_physical=True, is_input=True)
-		midi_out_ports = client.get_ports( is_midi=True, is_physical=True, is_output=True)
-		#midi_in_ports = client.get_ports( is_physical=True, is_output=True)
-		#midi_out_ports = client.get_ports( is_physical=True, is_input=True)
-		midi_ports = []
-		for idx,midi_port in enumerate(midi_in_ports):
-			midi_ports.append({'midi_in':midi_port.name,
-				'midi_out':midi_out_ports[idx].name})
-
-		ports_config=OrderedDict([
-			['MIDI_PORTS', midi_ports]
-		])
-
-		logging.info(str(ports_config))
+		ports_config=self.get_ports_config()
 
 		config=OrderedDict([
 			['ZYNTHIAN_PRESET_PRELOAD_NOTEON', {
@@ -232,15 +218,13 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'MIDI Ports',
 				'value': os.getenv('ZYNTHIAN_MIDI_PORTS',''),
 				'cols': 50,
-				'rows': 5,
+				'rows': 2,
 				'addButton': 'display_midi_ports_panel',
 				'addPanel': 'midi_ports.html',
 				'addPanelConfig': ports_config,
 				'advanced': True
 			}]
 		])
-
-
 
 		if self.genjson:
 			self.write(config)
@@ -250,7 +234,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_PRESET_PRELOAD_NOTEON','0')
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-
 
 		filterError = self.validate_filter_rules(escaped_request_arguments);
 
@@ -273,3 +256,26 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				mfs = MidiFilterScript(newLine, False)
 			except Exception as e:
 				return "ERROR parsing MIDI filter rule: " + str(e)
+
+	def get_ports_config(self):
+		client = jack.Client("ZynthianWebConf")
+		midi_in_ports = client.get_ports( is_midi=True, is_physical=True, is_input=True)
+		midi_out_ports = client.get_ports( is_midi=True, is_physical=True, is_output=True)
+		#midi_in_ports = client.get_ports( is_physical=True, is_output=True)
+		#midi_out_ports = client.get_ports( is_physical=True, is_input=True)
+
+		current_midi_ports = os.getenv('ZYNTHIAN_MIDI_PORTS','')
+		logging.info(current_midi_ports)
+		midi_ports = []
+		for idx,midi_port in enumerate(midi_in_ports):
+			midi_ports.append({
+				'midi_in':midi_port.name,
+				'midi_out':midi_out_ports[idx].name,
+				'checked_in': 'checked="checked"' if midi_port.name in current_midi_ports else '',
+				'checked_out': 'checked="checked"' if midi_out_ports[idx].name in current_midi_ports else ''})
+		ports_config=OrderedDict([
+			['MIDI_PORTS', midi_ports]
+		])
+
+		#logging.info(str(ports_config))
+		return ports_config

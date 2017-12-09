@@ -17,13 +17,13 @@
 			<div class="row">
 				<div class="col-md-6">
 					<label class="radio inline">
-						<input type="radio" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_in'] }}" />
+						<input type="radio" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_in'] }}" {{ midi_port['checked_in'] }} />
 						{{ midi_port['midi_in'] }}
 					</label>
 				</div>
 				<div class="col-md-6">
 					<label class="radio inline">
-						<input type="radio" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_out'] }}" />
+						<input type="radio" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_out'] }}" {{ midi_port['checked_out'] }} />
 						{{ midi_port['midi_out'] }}
 					</label>
 				</div>
@@ -31,7 +31,7 @@
 			{% end %}
     </div>
 		<div class="modal-footer">
-				<button id="midi_ports_add" class="btn btn-success" data-dismiss="modal" type="button"><span aria-hidden="true">ADD</span></button>
+				<button id="midi_ports_add" class="btn btn-success" data-dismiss="modal" type="button"><span aria-hidden="true">SAVE</span></button>
 		</div>
   </div>
 </div>
@@ -65,14 +65,16 @@ $(document).ready(function() {
 
 function refreshMidiPorts(){
   midiPortsTextarea = document.getElementById('ZYNTHIAN_MIDI_PORTS') ;
-  if (midiPortsTextarea.value) {
-    midiPortsTextarea.value += "\n"
-  }
-  midiPortsTextarea.value += 'New line';
+	checkedPorts = $("input[name^=MIDI_PORT_]:radio:checked");
+	midiPortsTextarea.value = '';
+	for (var i = 0; i < checkedPorts.length; i++){
+		if (midiPortsTextarea.value != ''){
+			midiPortsTextarea.value += ",";
+		}
+		midiPortsTextarea.value += checkedPorts[i].value;
+	}
+
   return true;
 }
-
-
-
 
 </script>
