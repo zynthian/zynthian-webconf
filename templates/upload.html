@@ -14,7 +14,7 @@
 				</span>
 				<div id="click-here">
 			        Click and choose
-      		<input type="file" id="input-uploadfile" name="uploadfile" multiple/>
+      		<input type="file" id="input-uploadfile" name="uploadfile" {% if config['ZYNTHIAN_UPLOAD_MULTIPLE'] == True %}multiple{% end %} />
 				</div>
 
 			</div>
@@ -149,6 +149,7 @@ $(document).ready(function() {
 			}
 */
 			var ajax = new XMLHttpRequest();
+
 			ajax.open( uploadForm.getAttribute( 'method' ), uploadForm.getAttribute( 'action' ), true );
 
 			ajax.onload = function() 	{
@@ -162,6 +163,13 @@ $(document).ready(function() {
 				else alert( 'Error. Please, contact the webmaster!' );
 			};
 
+			ajax.onloadend = function() {
+				if ($('#upload_panel')[0].onuploadend){
+					$('#upload_panel')[0].onuploadend(ajax.response);
+				}
+				$('#upload_panel').hide(500);
+			};
+
 			ajax.onerror = function() {
 				dropZone.removeClass( 'is-uploading' );
 			};
@@ -172,6 +180,7 @@ $(document).ready(function() {
 		uploadForm.addEventListener ( 'submit', function (evt) {
 			 	if (dropZone.hasClass('is-uploading')) {
 					if (isAdvancedUpload) {
+						evt.preventDefault();
 						return false;
 					} else {
 						return true;
@@ -181,50 +190,22 @@ $(document).ready(function() {
  		 		dropZone.removeClass('is-error');
 				evt.preventDefault();
 
+				window.zynthianSocket.registerHandler('UploadProgressHandler', function(data) {
+					if (data){
+		    		console.log("socket:onmessage:",data);
 
-				var deferred = $.Deferred();
-				deferred.done(function(value) {
-					triggerFormSubmit();
+						$("#upload_progress").css('width',data+'%');
+						$("#upload_progress").html(data+'%');
+						if(data > 99.999) {
+							$("#upload_progress_panel").removeClass("active");
+							$("#upload_progress").html("Done");
+						}
+					}
 				});
+				triggerFormSubmit();
 				$('#upload_progress_panel').show(500);
-				connectWebsocket(deferred);
 
 		});
-
-		function connectWebsocket(connectedDeferred){
-			var url = window.location.href
-			var parts = url.split("/");
-			socket = new ws("ws://"+parts[2]+"/api/upload-polling");
-			socket.onconnecting = function(evn){
-				console.log("socket:onconnecting:",evn);
-    		// sendMsg("wcj");
-			}
-			socket.onopen = function(evn){
-    		console.log("socket:onopen:",evn);
-    		socket.send($('#input-uploadfile-session')[0].value);
-				$("#upload_progress_panel").addClass("active");
-				connectedDeferred.resolve();
-
-			}
-			socket.onclose = function(evn){
-				console.log("socket.onclose:",evn);
-    	}
-
-			socket.onmessage = function(evt){
-				if (evt.data){
-	    		console.log("socket:onmessage:",evt.data);
-
-					$("#upload_progress").css('width',evt.data+'%');
-					$("#upload_progress").html(evt.data+'%');
-					if(evt.data > 99.999) {
-						$("#upload_progress_panel").removeClass("active");
-						$("#upload_progress").html("Done");
-						socket.close()
-						window.location.href=window.location.href;
-					}
-				}
-			}
-		}
 
 });
 

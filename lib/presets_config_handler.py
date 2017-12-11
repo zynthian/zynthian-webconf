@@ -30,8 +30,6 @@ import tornado.web
 import json
 import shutil
 import requests
-import bz2
-import zipfile
 from collections import OrderedDict
 from subprocess import check_output, call
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
@@ -64,16 +62,6 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-
-
-		new_upload_file = self.get_argument('ZYNTHIAN_UPLOAD_NEW_FILE','')
-		if new_upload_file:
-			filename_parts = os.path.splitext(new_upload_file)
-			self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
-		self.handle_get(errors)
-
-
-	def handle_get(self, errors=None):
 		config=OrderedDict([])
 		self.maxTreeNodeIndex = 0
 		presets = self.walk_directory(PresetsConfigHandler.PRESETS_DIRECTORY, '', '')
@@ -85,6 +73,8 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 		config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] = self.searchResult
 
 		config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS','')
+
+		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 		if self.genjson:
 			self.write(config)
@@ -100,10 +90,11 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 				'REMOVE': lambda: self.do_remove(),
 				'RENAME': lambda: self.do_rename(),
 				'SEARCH': lambda: self.do_search(),
-				'DOWNLOAD': lambda: self.do_download()
+				'DOWNLOAD': lambda: self.do_download(),
+				'REVISE_UPLOAD': lambda: self.do_revise_upload()
 			}[action]()
 
-		self.handle_get(errors)
+		self.get(errors)
 
 	def do_remove(self):
 		path = self.get_argument('ZYNTHIAN_PRESETS_FULLPATH')
@@ -161,6 +152,17 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 				self.cleanup_download(self.selected_full_path, self.selected_full_path)
 
 				self.selected_full_path = self.revise_filename(self.selected_full_path, downloaded_file, file_type)
+
+	def do_revise_upload(self):
+		try:
+			new_upload_file = self.get_argument('ZYNTHIAN_UPLOAD_NEW_FILE','')
+			if new_upload_file:
+				filename_parts = os.path.splitext(new_upload_file)
+				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
+		except OSError as err:
+			logging.error(format(err))
+			return format(err)
+
 
 	def get_preset_number_padding(self, file_type):
 		# in case we need to differentiate between 4 and 5

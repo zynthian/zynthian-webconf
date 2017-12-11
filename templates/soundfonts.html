@@ -133,6 +133,21 @@ $(document).ready(function (){
             $('#ZYNTHIAN_SOUNDFONT_ACTION_SEARCH').click();
         }
     });
+
+		var deferred = $.Deferred();
+		deferred.done(function(value) {
+			$("#upload_progress_panel").addClass("active");
+			var socketMessage = {"handler_name": "UploadProgressHandler",
+				"data": $('#input-uploadfile-session')[0].value};
+
+			window.zynthianSocket.send(JSON.stringify(socketMessage));
+		});
+		connectZynthianWebSocket(deferred);
+
+		$('#upload_panel')[0].onuploadend = function(response){
+			console.log("upload succeded: " + response);
+			window.location.href = window.location.href;
+		}
 });
 
 function showProgressAnimation(){
