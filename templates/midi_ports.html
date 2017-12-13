@@ -16,14 +16,14 @@
 			{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']) %}
 			<div class="row">
 				<div class="col-md-6">
-					<label class="radio inline">
-						<input type="radio" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_in'] }}" {{ midi_port['checked_in'] }} />
+					<label class="check inline">
+						<input type="checkbox" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_in'] }}" {{ midi_port['checked_in'] }} />
 						{{ midi_port['midi_in'] }}
 					</label>
 				</div>
 				<div class="col-md-6">
-					<label class="radio inline">
-						<input type="radio" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_out'] }}" {{ midi_port['checked_out'] }} />
+					<label class="check inline">
+						<input type="checkbox" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_out'] }}" {{ midi_port['checked_out'] }} />
 						{{ midi_port['midi_out'] }}
 					</label>
 				</div>
@@ -65,7 +65,7 @@ $(document).ready(function() {
 
 function refreshMidiPorts(){
   midiPortsTextarea = document.getElementById('ZYNTHIAN_MIDI_PORTS') ;
-	checkedPorts = $("input[name^=MIDI_PORT_]:radio:checked");
+	checkedPorts = $("input[name^=MIDI_PORT_]:checkbox:checked");
 	midiPortsTextarea.value = '';
 	for (var i = 0; i < checkedPorts.length; i++){
 		if (midiPortsTextarea.value != ''){
