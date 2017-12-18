@@ -139,7 +139,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		self.load_midi_profiles()
-		self.midi_envs = self.midi_profile_presets[self.current_midi_profile_script]
+		if self.current_midi_profile_script:
+			self.midi_envs = self.midi_profile_presets[self.current_midi_profile_script]
+		else:
+			self.midi_envs = {}
 		ports_config=self.get_ports_config()
 
 
@@ -329,7 +332,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def load_midi_profile_directories(self):
 		self.midi_profile_scripts = [self.PROFILE_SYS_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_SYS_DIRECTORY)]
 		self.midi_profile_scripts.extend([self.PROFILE_USER_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_USER_DIRECTORY)])
-		self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
+		if len(self.midi_profile_scripts) > 0:
+			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
+		else:
+			self.current_midi_profile_script = ""
 		if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
 			self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
 
