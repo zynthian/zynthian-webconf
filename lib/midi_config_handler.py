@@ -322,8 +322,19 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					errors['zynthian_midi_profile_delete_script'] = 'You can only delete user profiles!'
 			else:
 				#SAVE
-				self.update_profile(self.current_midi_profile_script, escaped_request_arguments)
-				errors = self.update_config(escaped_request_arguments)
+				if self.current_midi_profile_script:
+					updateParameters = []
+					for parameter in escaped_request_arguments:
+						if not parameter.startswith('ZYNTHIAN_'):
+							updateParameters.append(parameter)
+
+					for k in updateParameters:
+						del escaped_request_arguments[k]
+
+					self.update_profile(self.current_midi_profile_script, escaped_request_arguments)
+					errors = self.update_config(escaped_request_arguments)
+				else:
+					errors['zynthian_midi_profile_new_script_name'] = 'Profile name missing'
 			self.restart_ui()
 		else:
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
