@@ -2,7 +2,7 @@
 #********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# SoundFont Manager Handler
+# Zynthian Websocket Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
