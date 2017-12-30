@@ -257,7 +257,22 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
 				'title': 'MIDI network enabled',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED'),
+				'advanced': True
+			}],
+			['ZYNTHIAN_MIDI_NETWORK_IN_CHANNEL', {
+				'type': 'select',
+				'title': 'Network IN channel',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_IN_CHANNEL', '02'),
+				'options': map(lambda x: str(x).zfill(2), list(range(1, 17))),
+				'advanced': True
+			}],
+			['ZYNTHIAN_MIDI_NETWORK_OUT_CHANNEL', {
+				'type': 'select',
+				'title': 'Network OUT channel',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_OUT_CHANNEL','02'),
+				'options': map(lambda x: str(x).zfill(2), list(range(1, 17))),
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_FILTER_RULES', {
 				'type': 'textarea',
