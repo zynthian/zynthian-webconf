@@ -135,7 +135,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.load_midi_profile_directories()
 
 
-
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		self.load_midi_profiles()
@@ -144,9 +143,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		else:
 			self.midi_envs = {}
 		ports_config=self.get_ports_config()
-
-
-
 
 		add_panel_config=OrderedDict([
 			['FILTER_ADD_MIDI_EVENT', {
@@ -164,9 +160,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'option_labels': self.midi_cc_labels
 			}]
 		])
-
-
-
 
 		#upper case ZYNTHIAN_MIDI will be stored in profile file
 		#other upper case in zynthian_envar
@@ -292,8 +285,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
 
-
-
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
 		filter_error = self.validate_filter_rules(escaped_request_arguments);
@@ -339,6 +330,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		else:
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
 		self.get(errors)
+
 
 	def load_midi_profile_directories(self):
 		self.midi_profile_scripts = [self.PROFILE_SYS_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_SYS_DIRECTORY)]
@@ -388,7 +380,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def load_midi_profiles(self):
-
 		p = re.compile("export (\w*)=\"(.*)\"")
 		invalidFiles = []
 		for midi_profile_script in self.midi_profile_scripts:
@@ -414,7 +405,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			return self.midi_envs[key]
 		else:
 			return default
-
 
 
 	def update_profile(self, script_file_name, request_arguments):
