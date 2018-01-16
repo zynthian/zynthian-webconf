@@ -39,8 +39,7 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
-	PROFILE_SYS_DIRECTORY = "/zynthian/zynthian-data/midi-profiles"
-	PROFILE_USER_DIRECTORY = "/zynthian/zynthian-my-data/midi-profiles"
+	PROFILES_DIRECTORY = os.environ.get("ZYNTHIAN_MY_DATA_DIR")+"/midi-profiles"
 
 	midi_program_change_presets=OrderedDict([
 		['Custom', {
@@ -348,14 +347,19 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def load_midi_profile_directories(self):
-		self.midi_profile_scripts = [self.PROFILE_SYS_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_SYS_DIRECTORY)]
-		self.midi_profile_scripts.extend([self.PROFILE_USER_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_USER_DIRECTORY)])
-		if len(self.midi_profile_scripts) > 0:
-			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
-		else:
-			self.current_midi_profile_script = ""
+		#Get profiles list
+		self.midi_profile_scripts = [self.PROFILES_DIRECTORY + '/' + x for x in os.listdir(self.PROFILES_DIRECTORY)]
+		#Get active profile
+		self.current_midi_profile_script=None
 		if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
 			self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
+		else:
+			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
+		if self.current_midi_profile_script not in self.midi_profile_scripts:
+			#Create empty default profile
+			self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
+			self.midi_profile_scripts=[self.current_midi_profile_script]
+			self.update_profile(self.current_midi_profile_script, {})
 
 	def validate_filter_rules(self, escaped_request_arguments):
 		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
@@ -428,7 +432,9 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			midiEntries = []
 			for parameter in request_arguments:
 				if parameter.startswith('ZYNTHIAN_MIDI'):
-					f.write('export %s="%s"\n' % (parameter, request_arguments[parameter][0]))
+					value=request_arguments[parameter][0].replace("\n", "\\n")
+					value=value.replace("\r", "")
+					f.write('export %s="%s"\n' % (parameter, value))
 					midiEntries.append(parameter)
 
 			for k in midiEntries:

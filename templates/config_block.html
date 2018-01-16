@@ -44,7 +44,7 @@
 				{% if config[varname]['value']==option %}selected=1{% end %}
 				{% if 'presets' in config[varname] %}
 					{% for fn,preset in list(config[varname]['presets'][option].items()) %}
-						data-{{ escape(fn) }}="{{ escape(preset) }}"
+						data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
 					{% end %}
 				{% end %}
 				>
@@ -94,9 +94,10 @@ function set_presets(sel) {
 			if (input[0].type=="checkbox"){
 				input.prop("checked",v=="1"?true:false);
 			} else {
-				input.val(v)
+				input.val(decodeURIComponent(v).replace("\\n","\n"))
 			}
-			console.log(field.name+' => '+v)
+			//console.log(field.name+' => ' + v)
+			//console.log(field.name+' => ' + decodeURIComponent(v))
 		}
 	});
 }
