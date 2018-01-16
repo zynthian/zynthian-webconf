@@ -39,8 +39,7 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
-	PROFILE_SYS_DIRECTORY = "/zynthian/zynthian-data/midi-profiles"
-	PROFILE_USER_DIRECTORY = "/zynthian/zynthian-my-data/midi-profiles"
+	PROFILES_DIRECTORY = os.environ.get("ZYNTHIAN_MY_DATA_DIR")+"/midi-profiles"
 
 	midi_program_change_presets=OrderedDict([
 		['Custom', {
@@ -135,7 +134,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.load_midi_profile_directories()
 
 
-
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		self.load_midi_profiles()
@@ -144,9 +142,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		else:
 			self.midi_envs = {}
 		ports_config=self.get_ports_config()
-
-
-
 
 		add_panel_config=OrderedDict([
 			['FILTER_ADD_MIDI_EVENT', {
@@ -164,9 +159,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'option_labels': self.midi_cc_labels
 			}]
 		])
-
-
-
 
 		#upper case ZYNTHIAN_MIDI will be stored in profile file
 		#other upper case in zynthian_envar
@@ -257,7 +249,22 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
 				'title': 'MIDI network enabled',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED'),
+				'advanced': True
+			}],
+			['ZYNTHIAN_MIDI_NETWORK_IN_CHANNEL', {
+				'type': 'select',
+				'title': 'Network IN channel',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_IN_CHANNEL', '02'),
+				'options': map(lambda x: str(x).zfill(2), list(range(1, 17))),
+				'advanced': True
+			}],
+			['ZYNTHIAN_MIDI_NETWORK_OUT_CHANNEL', {
+				'type': 'select',
+				'title': 'Network OUT channel',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_OUT_CHANNEL','02'),
+				'options': map(lambda x: str(x).zfill(2), list(range(1, 17))),
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_FILTER_RULES', {
 				'type': 'textarea',
@@ -291,8 +298,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
-
-
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
@@ -340,15 +345,21 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
 		self.get(errors)
 
+
 	def load_midi_profile_directories(self):
-		self.midi_profile_scripts = [self.PROFILE_SYS_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_SYS_DIRECTORY)]
-		self.midi_profile_scripts.extend([self.PROFILE_USER_DIRECTORY + '/' + x for x in os.listdir(self.PROFILE_USER_DIRECTORY)])
-		if len(self.midi_profile_scripts) > 0:
-			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
-		else:
-			self.current_midi_profile_script = ""
+		#Get profiles list
+		self.midi_profile_scripts = [self.PROFILES_DIRECTORY + '/' + x for x in os.listdir(self.PROFILES_DIRECTORY)]
+		#Get active profile
+		self.current_midi_profile_script=None
 		if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
 			self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
+		else:
+			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
+		if self.current_midi_profile_script not in self.midi_profile_scripts:
+			#Create empty default profile
+			self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
+			self.midi_profile_scripts=[self.current_midi_profile_script]
+			self.update_profile(self.current_midi_profile_script, {})
 
 	def validate_filter_rules(self, escaped_request_arguments):
 		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
@@ -388,7 +399,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def load_midi_profiles(self):
-
 		p = re.compile("export (\w*)=\"(.*)\"")
 		invalidFiles = []
 		for midi_profile_script in self.midi_profile_scripts:
@@ -416,14 +426,15 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			return default
 
 
-
 	def update_profile(self, script_file_name, request_arguments):
 		with open(script_file_name, 'w+') as f:
 			f.write('#!/bin/bash\n')
 			midiEntries = []
 			for parameter in request_arguments:
 				if parameter.startswith('ZYNTHIAN_MIDI'):
-					f.write('export %s="%s"\n' % (parameter, request_arguments[parameter][0]))
+					value=request_arguments[parameter][0].replace("\n", "\\n")
+					value=value.replace("\r", "")
+					f.write('export %s="%s"\n' % (parameter, value))
 					midiEntries.append(parameter)
 
 			for k in midiEntries:

@@ -18,7 +18,7 @@
 		{% elif config[varname]['type']=='password' %}
 		<input name="{{ escape(varname) }}" type="password" />
 		{% elif config[varname]['type']=='boolean' %}
-		<input name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
+		<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
 		{% elif config[varname]['type']=='button' %}
 		<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn btn-lg {{ config[varname]['class'] }}" >
 			{{ config[varname]['title'] }}
@@ -44,7 +44,7 @@
 				{% if config[varname]['value']==option %}selected=1{% end %}
 				{% if 'presets' in config[varname] %}
 					{% for fn,preset in list(config[varname]['presets'][option].items()) %}
-						data-{{ escape(fn) }}="{{ escape(preset) }}"
+						data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
 					{% end %}
 				{% end %}
 				>
@@ -83,11 +83,21 @@
 
 <script>
 function set_presets(sel) {
-	$.each($(sel.form).serializeArray(), function(i, field) {
+	var serializedInputs = $(sel.form).serializeArray();
+	$("input:checkbox").each(function(){
+        serializedInputs.push({name: this.name, value: this.checked? this.value:"false"});
+    });
+	$.each(serializedInputs, function(i, field) {
 		var v=$(sel).find("option[value='"+$(sel).val()+"']").attr('data-'+field.name);
 		if (v!=null) {
-			$(sel.form).find("[name="+field.name+"]").val(v)
-			console.log(field.name+' => '+v)
+			input = $(sel.form).find("[name="+field.name+"]");
+			if (input[0].type=="checkbox"){
+				input.prop("checked",v=="1"?true:false);
+			} else {
+				input.val(decodeURIComponent(v).replace("\\n","\n"))
+			}
+			//console.log(field.name+' => ' + v)
+			//console.log(field.name+' => ' + decodeURIComponent(v))
 		}
 	});
 }
