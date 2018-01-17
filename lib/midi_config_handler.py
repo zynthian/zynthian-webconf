@@ -370,23 +370,30 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				return "ERROR parsing MIDI filter rule: " + str(e)
 
 	def get_ports_config(self):
-		midi_ports = []
+		midi_ports = { 'IN': [], 'OUT': [] }
 		try:
 			client = jack.Client("ZynthianWebConf")
 			midi_in_ports = client.get_ports( is_midi=True, is_physical=True, is_input=True)
 			midi_out_ports = client.get_ports( is_midi=True, is_physical=True, is_output=True)
-			#midi_in_ports = client.get_ports( is_physical=True, is_output=True)
-			#midi_out_ports = client.get_ports( is_physical=True, is_input=True)
 
 			current_midi_ports = os.getenv('ZYNTHIAN_MIDI_PORTS','')
 			#logging.info(current_midi_ports)
 
 			for idx,midi_port in enumerate(midi_in_ports):
-				midi_ports.append({
-					'midi_in':midi_port.shortname,
-					'midi_out':midi_out_ports[idx].shortname,
-					'checked_in': 'checked="checked"' if midi_port.shortname in current_midi_ports else '',
-					'checked_out': 'checked="checked"' if midi_out_ports[idx].shortname in current_midi_ports else ''})
+				midi_ports['OUT'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': midi_port.shortname,
+					'checked': 'checked="checked"' if midi_port.name in current_midi_ports else ''
+				})
+
+			for idx,midi_port in enumerate(midi_out_ports):
+				midi_ports['IN'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': midi_port.shortname,
+					'checked': 'checked="checked"' if midi_port.name in current_midi_ports else ''
+				})
 
 		except Exception as e:
 			logging.error(e)
