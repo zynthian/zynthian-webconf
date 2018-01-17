@@ -12,7 +12,7 @@
 					<div class="row">
 						<div class="col-md-10 col-md-offset=1">
 							<label class="check inline">
-								<input type="checkbox" name="MIDI_IN_PORT_{{midi_port_idx}}" value="{{ midi_port['name'] }}" {{ midi_port['checked'] }} />
+								<input type="checkbox" name="MIDI_IN_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
 								{{ midi_port['alias'] }}
 							</label>
 						</div>
@@ -25,7 +25,7 @@
 					<div class="row">
 						<div class="col-md-10 col-md-offset=1">
 							<label class="check inline">
-								<input type="checkbox" name="MIDI_OUT_PORT_{{midi_port_idx}}" value="{{ midi_port['name'] }}" {{ midi_port['checked'] }} />
+								<input type="checkbox" name="MIDI_OUT_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
 								{{ midi_port['alias'] }}
 							</label>
 						</div>

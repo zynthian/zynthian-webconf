@@ -31,8 +31,12 @@ from collections import OrderedDict
 from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 import jack
+
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 from zyngine.zynthian_midi_filter import MidiFilterScript
+
+sys.path.append(os.environ.get('ZYNTHIAN_SW_DIR')+"/mod-ui")
+import mod.utils
 
 #------------------------------------------------------------------------------
 # System Menu
@@ -40,6 +44,7 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 
 class MidiConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = os.environ.get("ZYNTHIAN_MY_DATA_DIR")+"/midi-profiles"
+	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=MIDI_out"
 
 	midi_program_change_presets=OrderedDict([
 		['Custom', {
@@ -372,37 +377,80 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def get_ports_config(self):
 		midi_ports = { 'IN': [], 'OUT': [] }
 		try:
+			#Get MIDI ports list from jack
 			client = jack.Client("ZynthianWebConf")
-			midi_in_ports = client.get_ports( is_midi=True, is_physical=True, is_input=True)
-			midi_out_ports = client.get_ports( is_midi=True, is_physical=True, is_output=True)
+			#For jack, output/input convention are reversed => output=readable, input=writable
+			midi_in_ports = client.get_ports(is_midi=True, is_physical=True, is_output=True)
+			midi_out_ports = client.get_ports(is_midi=True, is_physical=True, is_input=True)
+			client.deactivate()
+			client.close()
 
-			current_midi_ports = os.getenv('ZYNTHIAN_MIDI_PORTS','')
-			#logging.info(current_midi_ports)
+			#Get current MIDI ports configuration
+			current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS',self.DEFAULT_MIDI_PORTS)
+			current_midi_ports=current_midi_ports.replace("\\n","\n")
+			logging.debug("MIDI_PORTS = %s" % current_midi_ports)
 
+			#Parse DISABLED_IN ports
+			disabled_in_re = re.compile("^DISABLED_IN\s*=\s*(.*)$",re.MULTILINE)
+			m=disabled_in_re.search(current_midi_ports)
+			if m:
+				disabled_midi_in_ports=m.group(1).split(",")
+				logging.debug("DISABLED_MIDI_IN = %s" % disabled_midi_in_ports)
+			else:
+				disabled_midi_in_ports=""
+				logging.warning("get_ports_config(): Using default DISABLED MIDI IN ports")
+
+			#Parse ENABLED_OUT ports
+			enabled_out_re = re.compile("^ENABLED_OUT\s*=\s*(.*)$",re.MULTILINE)
+			m=enabled_out_re.search(current_midi_ports)
+			if m:
+				enabled_midi_out_ports=m.group(1).split(",")
+				logging.debug("ENABLED_MIDI_OUT = %s" % enabled_midi_out_ports)
+			else:
+				enabled_midi_out_ports=["ttymidi:MIDI_out"]
+				logging.warning("get_ports_config(): Using default ENABLED MIDI OUT ports")
+
+			#Generate MIDI_PORTS{IN,OUT} configuration array
+			mod.utils.init_jack() #TODO => This doesn't work if MOD-UI is running because the jack client name collides
+
+			jack_ports=mod.utils.get_jack_hardware_ports(False,False)
+			logging.debug("JACK PORTS => %s" % jack_ports)
+			
 			for idx,midi_port in enumerate(midi_in_ports):
-				midi_ports['OUT'].append({
-					'name': midi_port.name,
-					'shortname': midi_port.shortname,
-					'alias': midi_port.shortname,
-					'checked': 'checked="checked"' if midi_port.name in current_midi_ports else ''
-				})
-
-			for idx,midi_port in enumerate(midi_out_ports):
+				alias=self.get_port_alias(midi_port)
+				port_id=alias.replace(' ','_')
 				midi_ports['IN'].append({
 					'name': midi_port.name,
 					'shortname': midi_port.shortname,
-					'alias': midi_port.shortname,
-					'checked': 'checked="checked"' if midi_port.name in current_midi_ports else ''
+					'alias': alias,
+					'id': port_id,
+					'checked': 'checked="checked"' if midi_port.name not in disabled_midi_in_ports else ''
 				})
+			for idx,midi_port in enumerate(midi_out_ports):
+				alias=self.get_port_alias(midi_port)
+				port_id=alias.replace(' ','_')
+				midi_ports['OUT'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': alias,
+					'id': port_id,
+					'checked': 'checked="checked"' if port_id in enabled_midi_out_ports else ''
+				})
+				mod.utils.cleanup()
 
 		except Exception as e:
-			logging.error(e)
+			logging.error("get_ports_config(): %s" %e)
 
-		ports_config=OrderedDict([
-			['MIDI_PORTS', midi_ports]
-		])
-		return ports_config
-		#logging.info(str(ports_config))
+		return {'MIDI_PORTS': midi_ports}
+
+
+	def get_port_alias(self, midi_port):
+		alias=mod.utils.get_jack_port_alias(midi_port.name)
+		if alias:
+			alias=' '.join(alias.split('-')[5:])
+		else:
+			alias=midi_port.shortname.replace('_',' ')
+		return alias
 
 
 	def load_midi_profiles(self):
