@@ -1,46 +1,50 @@
 <div id="midi_ports_panel" class="modal">
-  <div class="modal-content">
-    <div class="modal-header">
-      <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-      <h4 class="modal-title">Manage MIDI ports</h4>
-    </div>
-    <div class="modal-body">
+	<div class="modal-content">
+		<div class="modal-header">
+			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<h4 class="modal-title">Manage MIDI ports</h4>
+		</div>
+		<div class="modal-body">
 			<div class="row">
 				<div class="col-md-6">
 					<img src="/img/midi_in.png" alt="MIDI IN"/>
+					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['IN']) %}
+					<div class="row">
+						<div class="col-md-10 col-md-offset=1">
+							<label class="check inline">
+								<input type="checkbox" name="MIDI_IN_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
+								{{ midi_port['alias'] }}
+							</label>
+						</div>
+					</div>
+					{% end %}
 				</div>
 				<div class="col-md-6">
 					<img src="/img/midi_out.png" alt="MIDI OUT"/>
+					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['OUT']) %}
+					<div class="row">
+						<div class="col-md-10 col-md-offset=1">
+							<label class="check inline">
+								<input type="checkbox" name="MIDI_OUT_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
+								{{ midi_port['alias'] }}
+							</label>
+						</div>
+					</div>
+					{% end %}
 				</div>
 			</div>
-			{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']) %}
-			<div class="row">
-				<div class="col-md-6">
-					<label class="check inline">
-						<input type="checkbox" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_in'] }}" {{ midi_port['checked_in'] }} />
-						{{ midi_port['midi_in'] }}
-					</label>
-				</div>
-				<div class="col-md-6">
-					<label class="check inline">
-						<input type="checkbox" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['midi_out'] }}" {{ midi_port['checked_out'] }} />
-						{{ midi_port['midi_out'] }}
-					</label>
-				</div>
-			</div>
-			{% end %}
     </div>
 		<div class="modal-footer">
-				<button id="midi_ports_add" class="btn btn-success" data-dismiss="modal" type="button"><span aria-hidden="true">SAVE</span></button>
+			<button id="midi_ports_add" class="btn btn-success" data-dismiss="modal" type="button"><span aria-hidden="true">SAVE</span></button>
 		</div>
-  </div>
+	</div>
 </div>
 
 <script>
 
 $(document).ready(function() {
 	$('#display_midi_ports_panel').click(function(){
-    $('#midi_ports_panel').show(500)
+		$('#midi_ports_panel').show(500)
 	});
 
 	$('#midi_ports_panel .close').click(function(){
@@ -54,27 +58,33 @@ $(document).ready(function() {
 	}
 
 
-  document.getElementById('midi_ports_add').onclick = function(event) {
-        if (refreshMidiPorts()){
-      	   $('#midi_ports_panel').hide(500);
-        } else {
-          alert('You didn\'t choose a valid configuration');
-        }
+	document.getElementById('midi_ports_add').onclick = function(event) {
+		if (refreshMidiPorts()){
+			$('#midi_ports_panel').hide(500);
+		} else {
+			alert('You didn\'t choose a valid configuration');
+		}
 	}
 });
 
 function refreshMidiPorts(){
-  midiPortsTextarea = document.getElementById('ZYNTHIAN_MIDI_PORTS') ;
-	checkedPorts = $("input[name^=MIDI_PORT_]:checkbox:checked");
-	midiPortsTextarea.value = '';
-	for (var i = 0; i < checkedPorts.length; i++){
-		if (midiPortsTextarea.value != ''){
-			midiPortsTextarea.value += ",";
-		}
-		midiPortsTextarea.value += checkedPorts[i].value;
-	}
+	midiPortsTextarea = document.getElementById('ZYNTHIAN_MIDI_PORTS') ;
 
-  return true;
+	midiPortsTextarea.value = 'DISABLED_IN=';
+	checkedPorts = $("input[name^=MIDI_IN_PORT_]:checkbox:not(:checked)");
+	for (var i = 0; i < checkedPorts.length; i++){
+		midiPortsTextarea.value += checkedPorts[i].value + ',';
+	}
+	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
+
+	midiPortsTextarea.value += '\nENABLED_OUT=';
+	checkedPorts = $("input[name^=MIDI_OUT_PORT_]:checkbox:checked");
+	for (var i = 0; i < checkedPorts.length; i++){
+		midiPortsTextarea.value += checkedPorts[i].value + ',';
+	}
+	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
+
+	return true;
 }
 
 </script>

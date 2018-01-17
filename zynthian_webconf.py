@@ -54,8 +54,18 @@ GB = 1024 * MB
 TB = 1024 * GB
 MAX_STREAMED_SIZE = 1*TB
 
-#Configure Logging
-logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
+#------------------------------------------------------------------------------
+# Configure Logging
+#------------------------------------------------------------------------------
+
+if os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'):
+	log_level=int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
+else:
+	log_level=logging.ERROR
+	#log_level=logging.WARNING
+
+# Set root logging level
+logging.basicConfig(stream=sys.stderr, level=log_level)
 
 
 #------------------------------------------------------------------------------
