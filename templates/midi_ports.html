@@ -12,7 +12,7 @@
 					<div class="row">
 						<div class="col-md-10 col-md-offset=1">
 							<label class="check inline">
-								<input type="checkbox" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['name'] }}" {{ midi_port['checked'] }} />
+								<input type="checkbox" name="MIDI_IN_PORT_{{midi_port_idx}}" value="{{ midi_port['name'] }}" {{ midi_port['checked'] }} />
 								{{ midi_port['alias'] }}
 							</label>
 						</div>
@@ -25,7 +25,7 @@
 					<div class="row">
 						<div class="col-md-10 col-md-offset=1">
 							<label class="check inline">
-								<input type="checkbox" name="MIDI_PORT_{{midi_port_idx}}" value="{{ midi_port['name'] }}" {{ midi_port['checked'] }} />
+								<input type="checkbox" name="MIDI_OUT_PORT_{{midi_port_idx}}" value="{{ midi_port['name'] }}" {{ midi_port['checked'] }} />
 								{{ midi_port['alias'] }}
 							</label>
 						</div>
@@ -69,14 +69,21 @@ $(document).ready(function() {
 
 function refreshMidiPorts(){
 	midiPortsTextarea = document.getElementById('ZYNTHIAN_MIDI_PORTS') ;
-	checkedPorts = $("input[name^=MIDI_PORT_]:checkbox:checked");
-	midiPortsTextarea.value = '';
+
+	midiPortsTextarea.value = 'DISABLED_IN=';
+	checkedPorts = $("input[name^=MIDI_IN_PORT_]:checkbox:not(:checked)");
 	for (var i = 0; i < checkedPorts.length; i++){
-		if (midiPortsTextarea.value != ''){
-			midiPortsTextarea.value += ",";
-		}
-		midiPortsTextarea.value += checkedPorts[i].value;
+		midiPortsTextarea.value += checkedPorts[i].value + ',';
 	}
+	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
+
+	midiPortsTextarea.value += '\nENABLED_OUT=';
+	checkedPorts = $("input[name^=MIDI_OUT_PORT_]:checkbox:checked");
+	for (var i = 0; i < checkedPorts.length; i++){
+		midiPortsTextarea.value += checkedPorts[i].value + ',';
+	}
+	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
+
 	return true;
 }
 
