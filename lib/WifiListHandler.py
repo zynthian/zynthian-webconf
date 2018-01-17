@@ -41,31 +41,35 @@ class WifiListHandler(tornado.web.RequestHandler):
 	def get(self):
 		wifiList = OrderedDict()
 		try:
-			network = None
-			ssid = None
-			encryption = False
-			quality = 0
-			signalLevel = 0
 
-			for byteLine in check_output("iwlist wlan0 scan | grep -e ESSID -e Encryption -e Quality", shell=True).splitlines():
-				line = byteLine.decode("utf-8")
-				if line.find('ESSID')>=0:
-					network = {'encryption':False, 'quality':0, 'signalLevel':0}
-					ssid = line.split(':')[1].replace("\"","")
-					if ssid:
-							self.add_network(wifiList, ssid, network, encryption, quality, signalLevel)
-							logging.info("Found Network: %s" % ssid)
+			for interface_byte in check_output("ifconfig -a | sed 's/[ \t].*//;/^$/d'", shell=True).splitlines():
+				interface = interface_byte.decode("utf-8")
+				logging.info(interface)
+				
+				if interface.startswith("wlan"):
+					network = None
+					ssid = None
 					encryption = False
 					quality = 0
-					signalLevel = 0
-				elif line.find('Encryption key:on')>=0:
-					encryption = True
-				else:
-					m = re.match('.*Quality=(.*?)/(.*?) Signal level=(.*?(100|dBm)).*', line, re.M | re.I)
-					if m:
-						quality = round(int(m.group(1)) / int(m.group(2)) * 100,2)
-						signalLevel = m.group(3)
-
+					signal_level = 0	
+					for line_byte in check_output("iwlist {0} scan | grep -e ESSID -e Encryption -e Quality".format(interface), shell=True).splitlines():
+						line = line_byte.decode("utf-8")
+						if line.find('ESSID')>=0:
+							network = {'encryption':False, 'quality':0, 'signalLevel':0}
+							ssid = line.split(':')[1].replace("\"","")
+							if ssid:
+								self.add_network(wifiList, ssid, network, encryption, quality, signal_level)
+								logging.info("Found Network: %s" % ssid)
+								encryption = False
+							quality = 0
+							signal_level = 0
+						elif line.find('Encryption key:on')>=0:
+							encryption = True
+						else:
+							m = re.match('.*Quality=(.*?)/(.*?) Signal level=(.*?(100|dBm)).*', line, re.M | re.I)
+							if m:
+								quality = round(int(m.group(1)) / int(m.group(2)) * 100,2)
+								signal_level = m.group(3)
 			wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
 			wifiList = OrderedDict(reversed(list(wifiList.items())))
 
