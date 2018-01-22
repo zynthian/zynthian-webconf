@@ -6,7 +6,7 @@
 		</div>
 		<div class="modal-body">
 			<div class="row">
-				<div class="col-md-6">
+				<div class="col-md-5 col-md-offset-1">
 					<img src="/img/midi_in.png" alt="MIDI IN"/>
 					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['IN']) %}
 					<div class="row">
@@ -19,7 +19,7 @@
 					</div>
 					{% end %}
 				</div>
-				<div class="col-md-6">
+				<div class="col-md-5">
 					<img src="/img/midi_out.png" alt="MIDI OUT"/>
 					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['OUT']) %}
 					<div class="row">
