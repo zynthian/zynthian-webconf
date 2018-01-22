@@ -438,11 +438,16 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def get_port_alias(self, midi_port):
-		alias=midi_port.alias
-		logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
-		if alias:
+		try:
+			aliases=midi_port.aliases
+			alias=aliases[0]
+			logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
+			#Each returned alias string is something like that:
+			# in-hw-1-0-0-LPK25-MIDI-1
+			#or    
+			# out-hw-2-0-0-MK-249C-USB-MIDI-keyboard-MIDI-
 			alias=' '.join(alias.split('-')[5:])
-		else:
+		except:
 			alias=midi_port.shortname.replace('_',' ')
 		return alias
 
