@@ -439,8 +439,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	def get_port_alias(self, midi_port):
 		try:
-			aliases=midi_port.aliases
-			alias=aliases[0]
+			alias=midi_port.aliases[0]
 			logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
 			#Each returned alias string is something like that:
 			# in-hw-1-0-0-LPK25-MIDI-1
