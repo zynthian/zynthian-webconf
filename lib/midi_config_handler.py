@@ -32,7 +32,8 @@ from subprocess import check_output
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 import jack
 
-sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+#sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+import zynconf
 from zyngine.zynthian_midi_filter import MidiFilterScript
 
 #sys.path.append(os.environ.get('ZYNTHIAN_SW_DIR')+"/mod-ui")
@@ -135,7 +136,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def prepare(self):
-		super(MidiConfigHandler,self).prepare()
+		super().prepare()
 		self.load_midi_profile_directories()
 
 
@@ -386,27 +387,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			#Get current MIDI ports configuration
 			current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS',self.DEFAULT_MIDI_PORTS)
 			current_midi_ports=current_midi_ports.replace("\\n","\n")
-			logging.debug("MIDI_PORTS = %s" % current_midi_ports)
+			#logging.debug("MIDI_PORTS = %s" % current_midi_ports)
 
-			#Parse DISABLED_IN ports
-			disabled_in_re = re.compile("^DISABLED_IN\s*=\s*(.*)$",re.MULTILINE)
-			m=disabled_in_re.search(current_midi_ports)
-			if m:
-				disabled_midi_in_ports=m.group(1).split(",")
-				logging.debug("DISABLED_MIDI_IN = %s" % disabled_midi_in_ports)
-			else:
-				disabled_midi_in_ports=""
-				logging.warning("get_ports_config(): Using default DISABLED MIDI IN ports")
-
-			#Parse ENABLED_OUT ports
-			enabled_out_re = re.compile("^ENABLED_OUT\s*=\s*(.*)$",re.MULTILINE)
-			m=enabled_out_re.search(current_midi_ports)
-			if m:
-				enabled_midi_out_ports=m.group(1).split(",")
-				logging.debug("ENABLED_MIDI_OUT = %s" % enabled_midi_out_ports)
-			else:
-				enabled_midi_out_ports=["ttymidi:MIDI_out"]
-				logging.warning("get_ports_config(): Using default ENABLED MIDI OUT ports")
+			disabled_midi_in_ports=zynconf.get_disabled_midi_in_ports(current_midi_ports)
+			enabled_midi_out_ports=zynconf.get_enabled_midi_out_ports(current_midi_ports)
 
 			#Generate MIDI_PORTS{IN,OUT} configuration array
 			for idx,midi_port in enumerate(midi_in_ports):
@@ -431,7 +415,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				})
 
 		except Exception as e:
-			logging.error("get_ports_config(): %s" %e)
+			logging.error("%s" %e)
 
 		#logging.debug("MIDI_PORTS => %s" % midi_ports)
 		return {'MIDI_PORTS': midi_ports}
