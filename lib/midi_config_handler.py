@@ -23,14 +23,15 @@
 #********************************************************************
 
 import os
-import sys
-import tornado.web
-import logging
 import re
+import sys
+import jack
+import logging
+import tornado.web
 from collections import OrderedDict
 from subprocess import check_output
+
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
-import jack
 
 #sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
@@ -351,10 +352,13 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
 		self.get(errors)
 
-
 	def load_midi_profile_directories(self):
 		#Get profiles list
 		self.midi_profile_scripts = [self.PROFILES_DIRECTORY + '/' + x for x in os.listdir(self.PROFILES_DIRECTORY)]
+		#If list is empty => create empty default profile
+		self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
+		self.midi_profile_scripts=[self.current_midi_profile_script]
+		self.update_profile(self.current_midi_profile_script, {})
 		#Get active profile
 		self.current_midi_profile_script=None
 		if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
@@ -362,10 +366,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		else:
 			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
 		if self.current_midi_profile_script not in self.midi_profile_scripts:
-			#Create empty default profile
-			self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
-			self.midi_profile_scripts=[self.current_midi_profile_script]
-			self.update_profile(self.current_midi_profile_script, {})
+			self.current_midi_profile_script=self.midi_profile_scripts[0]
 
 	def validate_filter_rules(self, escaped_request_arguments):
 		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
