@@ -30,6 +30,7 @@ import logging
 import tornado.web
 from collections import OrderedDict
 from subprocess import check_output
+from shutil import copyfile
 
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
@@ -133,8 +134,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		['CC', 'Continuous Controller Change']
 	])
 
-	midi_profile_presets=OrderedDict([])
-
 
 	def prepare(self):
 		super().prepare()
@@ -144,10 +143,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		self.load_midi_profiles()
-		if self.current_midi_profile_script:
-			self.midi_envs = self.midi_profile_presets[self.current_midi_profile_script]
-		else:
-			self.midi_envs = {}
 		ports_config=self.get_ports_config()
 
 		add_panel_config=OrderedDict([
@@ -302,6 +297,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="config_block.html", config=config, title="MIDI", errors=errors)
 
+
+	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
@@ -352,21 +349,31 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
 		self.get(errors)
 
+
 	def load_midi_profile_directories(self):
 		#Get profiles list
 		self.midi_profile_scripts = [self.PROFILES_DIRECTORY + '/' + x for x in os.listdir(self.PROFILES_DIRECTORY)]
-		#If list is empty => create empty default profile
-		self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
-		self.midi_profile_scripts=[self.current_midi_profile_script]
-		self.update_profile(self.current_midi_profile_script, {})
-		#Get active profile
-		self.current_midi_profile_script=None
-		if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
-			self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
+		#If list is empty ...
+		if len(self.midi_profile_scripts)==0:
+			self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
+			self.midi_profile_scripts=[self.current_midi_profile_script]
+			try:
+				#Try to copy from default template
+				default_src=os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys") + "/scripts/default_midi_profile.sh"
+				copyfile(default_src, self.current_midi_profile_script)
+			except Exception as e:
+				logging.error(e)
+				#Or create an empty default profile
+				self.update_profile(self.current_midi_profile_script, {})
+		#Else, get active profile
 		else:
-			self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
-		if self.current_midi_profile_script not in self.midi_profile_scripts:
-			self.current_midi_profile_script=self.midi_profile_scripts[0]
+			if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
+				self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
+			else:
+				self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
+			if self.current_midi_profile_script not in self.midi_profile_scripts:
+				self.current_midi_profile_script=self.midi_profile_scripts[0]
+
 
 	def validate_filter_rules(self, escaped_request_arguments):
 		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
@@ -375,6 +382,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				mfs = MidiFilterScript(newLine, False)
 			except Exception as e:
 				return "ERROR parsing MIDI filter rule: " + str(e)
+
 
 	def get_ports_config(self):
 		midi_ports = { 'IN': [], 'OUT': [] }
@@ -437,6 +445,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def load_midi_profiles(self):
+		self.midi_profile_presets=OrderedDict([])
 		p = re.compile("export (\w*)=\"(.*)\"")
 		invalidFiles = []
 		for midi_profile_script in self.midi_profile_scripts:
@@ -445,16 +454,24 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			try:
 				with open(midi_profile_script) as f:
 					for line in f:
+						if line[0]=='#':
+							continue
 						m = p.match(line)
 						if m:
 							profile_values[m.group(1)] = m.group(2)
 				self.midi_profile_presets[midi_profile_script] = profile_values
+				logging.debug("LOADED MIDI PROFILE %s" % midi_profile_script)
 			except:
 				invalidFiles.append(midi_profile_script)
 
 		for midi_profile_script in invalidFiles:
-			logging.info("invalid file will be ignored: " + midi_profile_script)
+			logging.warning("Invalid profile will be ignored: " + midi_profile_script)
 			self.midi_profile_scripts.remove(midi_profile_script)
+
+		if self.current_midi_profile_script:
+			self.midi_envs = self.midi_profile_presets[self.current_midi_profile_script]
+		else:
+			self.midi_envs = {}
 
 
 	def get_midi_env(self, key, default=''):
