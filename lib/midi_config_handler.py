@@ -317,7 +317,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 			if new_profile_script_name:
 				#New MIDI profile
-				new_profile_script_path = self.PROFILE_USER_DIRECTORY + '/' + new_profile_script_name + '.sh'
+				new_profile_script_path = self.PROFILES_DIRECTORY + '/' + new_profile_script_name + '.sh'
 				self.update_profile(new_profile_script_path, escaped_request_arguments)
 				mode = os.stat(new_profile_script_path).st_mode
 				mode |= (mode & 0o444) >> 2	# copy R bits to X
@@ -325,8 +325,9 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				self.load_midi_profile_directories()
 			elif 'zynthian_midi_profile_delete_script' in self.request.arguments and self.get_argument('zynthian_midi_profile_delete_script') == "1":
 				#DELETE
-				if self.current_midi_profile_script.startswith(self.PROFILE_USER_DIRECTORY):
+				if self.current_midi_profile_script.startswith(self.PROFILES_DIRECTORY):
 					os.remove(self.current_midi_profile_script)
+					self.current_midi_profile_script = None;
 				else:
 					errors['zynthian_midi_profile_delete_script'] = 'You can only delete user profiles!'
 			else:
