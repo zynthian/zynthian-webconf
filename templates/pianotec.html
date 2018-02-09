@@ -1,0 +1,107 @@
+
+<h2>{{ escape(title) }}</h2>
+
+<form id="pianotec-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
+{% module Template('upload.html', config=config) %}
+</form>
+
+<form id="pianotec-form" action="/api/sw-pianotec" enctype="multipart/form-data" method="post">
+<div class="container-fluid">
+  <div class="row">
+		<div class="row">
+			<p>
+			When you bought a licence from <a href="https://www.pianoteq.com/">Pianotec</a>, you receive a binary file and a licence key.
+		</p>
+		<p>
+			You are replacing the initial demo version with the following upload
+		</p>
+		</div>
+
+		<div class="row">
+		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD BINARY" onclick="$('#pianotec-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianotec&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
+		</div>
+
+		<div class="row" id='upload-success'>
+			<p>
+			The new binary is installed.
+			</p>
+			<p>
+			If you haven't entered the licence key yet, you need to start a X11-forward ssh session (ssh -X), start Pianotec on the zynthian and enter the licence key in the X11 session.
+			<p>
+		</div>
+
+  </div>
+  <div class="row">
+  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+  </div>
+</div>
+
+</form>
+
+<div id="loading-div-background">
+  <div id="loading-div" class="ui-corner-all">
+    PROCESSING. PLEASE WAIT...
+  </div>
+</div>
+
+<script type="text/javascript">
+var pianotecForm = $('#pianotec-form')[0];
+
+$(document).ready(function (){
+    $("#loading-div-background").hide();
+		$("#upload-success").hide();
+
+		$('#input-uploadfile-type')[0].value = 'tar.gz';
+
+		var deferred = $.Deferred();
+		deferred.done(function(value) {
+			$("#upload_progress_panel").addClass("active");
+
+			var socketMessage = {"handler_name": "UploadProgressHandler",
+				"data": $('#input-uploadfile-session')[0].value};
+
+			window.zynthianSocket.send(JSON.stringify(socketMessage));
+		});
+		connectZynthianWebSocket(deferred);
+
+		$('#upload_panel')[0].onuploadend = function(response){
+			console.log("upload succeeded: " + response);
+			var ajaxData = new FormData(pianotecForm);
+			ajaxData.append('ZYNTHIAN_PIANOTEC_ACTION','INSTALL_PIANOTEC')
+			ajaxData.append("ZYNTHIAN_PIANOTEC_FILENAME", response);
+			var ajax = new XMLHttpRequest();
+
+			ajax.open( pianotecForm.getAttribute( 'method' ), pianotecForm.getAttribute( 'action' ), true );
+
+			ajax.onload = function() 	{
+				if( ajax.status >= 200 && ajax.status < 400 )	{
+					if( ajax.status != 200) {
+						console.log("upload error: " + data.errror);
+					}
+				}
+				else alert( 'Error. Please, contact the webmaster!' );
+			};
+
+			ajax.onloadend = function() {
+					$("#upload-success").show();
+
+				//window.location.href = window.location.href;
+			};
+
+			ajax.onerror = function() {
+				console.log("revise uploads failed");
+			};
+
+			ajax.send(ajaxData);
+		}
+});
+
+function showProgressAnimation(){
+    $("#loading-div-background").show();
+}
+
+
+
+
+
+</script>

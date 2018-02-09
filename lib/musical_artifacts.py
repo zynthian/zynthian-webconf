@@ -28,6 +28,7 @@ import logging
 import requests
 import bz2
 import zipfile
+import tarfile
 
 
 
