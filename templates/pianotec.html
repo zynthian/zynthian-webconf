@@ -10,10 +10,14 @@
   <div class="row">
 		<div class="row">
 			<p>
-			When you bought a licence from <a href="https://www.pianoteq.com/">Pianotec</a>, you receive a binary file and a licence key.
+				The zynthian image is providing a free trial version (Pianoteq 6 Stage) of <a href="https://www.pianoteq.com/">Pianotec</a>. This version is restricted.
+				Some keys are disabled and the application stops after 20 minutes.
+			</p>
+			<p>
+			When you bought a licence, you receive a binary file and a licence key.
 		</p>
 		<p>
-			You are replacing the initial demo version with the following upload
+			You are replacing the initial demo version with the following upload.
 		</p>
 		</div>
 
@@ -21,9 +25,18 @@
 		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD BINARY" onclick="$('#pianotec-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianotec&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
 		</div>
 
-		<div class="row" id='upload-success'>
+		<div class="row" id='upload-finished'>
 			<p>
-			The new binary is installed.
+			The new binary is being installed.
+			</p>
+			<p>
+			Please wait...
+			<p>
+		</div>
+
+		<div class="row" id='installation-success'>
+			<p>
+			The new binary was installed successfully.
 			</p>
 			<p>
 			If you haven't entered the licence key yet, you need to start a X11-forward ssh session (ssh -X), start Pianotec on the zynthian and enter the licence key in the X11 session.
@@ -49,7 +62,9 @@ var pianotecForm = $('#pianotec-form')[0];
 
 $(document).ready(function (){
     $("#loading-div-background").hide();
-		$("#upload-success").hide();
+		$("#installation-success").hide();
+		$("#upload-finished").hide();
+
 
 		$('#input-uploadfile-type')[0].value = 'tar.gz';
 
@@ -66,11 +81,15 @@ $(document).ready(function (){
 
 		$('#upload_panel')[0].onuploadend = function(response){
 			console.log("upload succeeded: " + response);
+
+			$("#upload-finished").show();
+			$("#installation-success").hide();
+
 			var ajaxData = new FormData(pianotecForm);
 			ajaxData.append('ZYNTHIAN_PIANOTEC_ACTION','INSTALL_PIANOTEC')
 			ajaxData.append("ZYNTHIAN_PIANOTEC_FILENAME", response);
-			var ajax = new XMLHttpRequest();
 
+			var ajax = new XMLHttpRequest();
 			ajax.open( pianotecForm.getAttribute( 'method' ), pianotecForm.getAttribute( 'action' ), true );
 
 			ajax.onload = function() 	{
@@ -83,8 +102,8 @@ $(document).ready(function (){
 			};
 
 			ajax.onloadend = function() {
-					$("#upload-success").show();
-
+					$("#installation-success").show();
+					$("#upload-finished").hide();
 				//window.location.href = window.location.href;
 			};
 
