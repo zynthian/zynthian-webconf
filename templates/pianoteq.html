@@ -1,16 +1,16 @@
 
 <h2>{{ escape(title) }}</h2>
 
-<form id="pianotec-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
+<form id="pianoteq-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
 {% module Template('upload.html', config=config) %}
 </form>
 
-<form id="pianotec-form" action="/api/sw-pianotec" enctype="multipart/form-data" method="post">
+<form id="pianoteq-form" action="/api/sw-pianoteq" enctype="multipart/form-data" method="post">
 <div class="container-fluid">
   <div class="row">
 		<div class="row">
 			<p>
-				The zynthian image is providing a free trial version (Pianoteq 6 Stage) of <a href="https://www.pianoteq.com/">Pianotec</a>. This version is restricted.
+				The zynthian image is providing a free trial version (Pianoteq 6 Stage) of <a href="https://www.pianoteq.com/">Pianoteq</a>. This version is restricted.
 				Some keys are disabled and the application stops after 20 minutes.
 			</p>
 			<p>
@@ -22,7 +22,7 @@
 		</div>
 
 		<div class="row">
-		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD BINARY" onclick="$('#pianotec-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianotec&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
+		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD BINARY" onclick="$('#pianoteq-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
 		</div>
 
 		<div class="row" id='upload-finished'>
@@ -39,7 +39,7 @@
 			The new binary was installed successfully.
 			</p>
 			<p>
-			If you haven't entered the licence key yet, you need to start a X11-forward ssh session (ssh -X), start Pianotec on the zynthian and enter the licence key in the X11 session.
+			If you haven't entered the licence key yet, you need to start a X11-forward ssh session (ssh -X), start Pianoteq on the zynthian and enter the licence key in the X11 session.
 			<p>
 		</div>
 
@@ -58,7 +58,7 @@
 </div>
 
 <script type="text/javascript">
-var pianotecForm = $('#pianotec-form')[0];
+var pianoteqForm = $('#pianoteq-form')[0];
 
 $(document).ready(function (){
     $("#loading-div-background").hide();
@@ -85,12 +85,12 @@ $(document).ready(function (){
 			$("#upload-finished").show();
 			$("#installation-success").hide();
 
-			var ajaxData = new FormData(pianotecForm);
-			ajaxData.append('ZYNTHIAN_PIANOTEC_ACTION','INSTALL_PIANOTEC')
-			ajaxData.append("ZYNTHIAN_PIANOTEC_FILENAME", response);
+			var ajaxData = new FormData(pianoteqForm);
+			ajaxData.append('ZYNTHIAN_PIANOTEQ_ACTION','INSTALL_PIANOTEQ')
+			ajaxData.append("ZYNTHIAN_PIANOTEQ_FILENAME", response);
 
 			var ajax = new XMLHttpRequest();
-			ajax.open( pianotecForm.getAttribute( 'method' ), pianotecForm.getAttribute( 'action' ), true );
+			ajax.open( pianoteqForm.getAttribute( 'method' ), pianoteqForm.getAttribute( 'action' ), true );
 
 			ajax.onload = function() 	{
 				if( ajax.status >= 200 && ajax.status < 400 )	{

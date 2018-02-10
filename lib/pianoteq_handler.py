@@ -37,7 +37,7 @@ from lib.ZynthianConfigHandler import ZynthianConfigHandler
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class PianotecHandler(tornado.web.RequestHandler):
+class PianoteqHandler(tornado.web.RequestHandler):
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -59,20 +59,20 @@ class PianotecHandler(tornado.web.RequestHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", body="pianotec.html", config=config, title="Pianoteq", errors=errors)
+			self.render("config.html", body="pianoteq.html", config=config, title="Pianoteq", errors=errors)
 
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_PIANOTEC_ACTION')
+		action = self.get_argument('ZYNTHIAN_PIANOTEQ_ACTION')
 		if action:
 			errors = {
-        		'INSTALL_PIANOTEC': lambda: self.do_install_pianotec()
+        		'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq()
     		}[action]()
 
 
 		self.get(errors)
 
-	def do_install_pianotec(self):
-		filename = self.get_argument('ZYNTHIAN_PIANOTEC_FILENAME');
+	def do_install_pianoteq(self):
+		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
 		logging.info(filename)
 		tar = tarfile.open(filename, "r:gz")
 		for member in tar.getmembers():
