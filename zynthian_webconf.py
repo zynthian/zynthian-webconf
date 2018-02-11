@@ -39,7 +39,7 @@ from lib.UiConfigHandler import UiConfigHandler
 from lib.WiringConfigHandler import WiringConfigHandler
 from lib.WifiConfigHandler import WifiConfigHandler
 from lib.WifiListHandler import WifiListHandler
-from lib.SnapshotConfigHandler import SnapshotConfigHandler
+from lib.snapshot_config_handler import SnapshotConfigHandler
 from lib.midi_config_handler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
 from lib.upload_handler import UploadHandler

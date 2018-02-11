@@ -54,6 +54,12 @@
         <div class="row">
           <button name="ZYNTHIAN_SNAPSHOT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
         </div>
+				<div class="row">
+					<p>
+						<textarea id="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" name="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" rows="20">
+						</textarea>
+					</p>
+				</div>
       </div>
   </div>
   <div class="row">
@@ -83,6 +89,13 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].disabled = data.nodes;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].value = data.program;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].disabled = data.nodes;
+			$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].disabled = false;
+			if (data.details){
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS").show();
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].value = JSON.stringify(data.details,  null, "    ");
+			} else {
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS").hide();
+			}
 
       $('#snapshot-panel').show();
     }
