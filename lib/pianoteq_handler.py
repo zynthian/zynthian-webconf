@@ -102,7 +102,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			os.unlink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		elif(os.path.isdir("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
 			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		else:
+		elif(os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		os.symlink("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
