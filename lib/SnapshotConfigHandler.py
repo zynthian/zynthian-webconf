@@ -37,7 +37,7 @@ from collections import OrderedDict
 #------------------------------------------------------------------------------
 
 class SnapshotConfigHandler(tornado.web.RequestHandler):
-	SNAPSHOT_DIRECTORY = "/zynthian/zynthian-my-data/snapshots"
+	SNAPSHOTS_DIRECTORY = "/zynthian/zynthian-my-data/snapshots"
 	LEADING_ZERO_BANK = 5
 	LEADING_ZERO_PROGRAM = 3
 
@@ -56,7 +56,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 
-		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOT_DIRECTORY, 0, '', '')
+		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY, 0, '', '')
 
 		config['ZYNTHIAN_SNAPSHOTS'] = json.dumps(snapshots)
 		config['ZYNTHIAN_SNAPSHOT_BANKS'] = self.get_existing_banks(snapshots, True)

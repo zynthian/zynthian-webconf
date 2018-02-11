@@ -34,18 +34,21 @@ from lib.ZynthianConfigHandler import ZynthianConfigHandler
 #------------------------------------------------------------------------------
 
 class SecurityConfigHandler(ZynthianConfigHandler):
+	@staticmethod
+	def get_host_name():
+		with open("/etc/hostname") as f:
+			return f.readline()
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		#Get Hostname
-		with open("/etc/hostname") as f:
-			hostname=f.readline()
+
 
 		config=OrderedDict([
 			['HOSTNAME', {
 				'type': 'text',
 				'title': 'Hostname',
-				'value': hostname
+				'value': SecurityConfigHandler.get_host_name()
 			}],
 			['PASSWORD', {
 				'type': 'password',
