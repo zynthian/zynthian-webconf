@@ -13,3 +13,7 @@
 	{% end %}
 </div>
 {% end %}
+
+<div class="row">
+{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+</div>

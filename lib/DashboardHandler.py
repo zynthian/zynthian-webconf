@@ -2,7 +2,7 @@
 #********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# Config Summary Handler
+# Dashboard Handler
 #
 # Copyright (C) 2018 Fernando Moyano <jofemodo@zynthian.org>
 #
@@ -31,10 +31,10 @@ from collections import OrderedDict
 from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
-# Reboot Hadler
+# Dashboard Hadler
 #------------------------------------------------------------------------------
 
-class ConfigSummaryHandler(ZynthianConfigHandler):
+class DashboardHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self):
@@ -151,7 +151,7 @@ class ConfigSummaryHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", body="summary_block.html", config=config, title="Summary", errors=None)
+			self.render("config.html", body="dashboard_block.html", config=config, title="Dashboard", errors=None)
 
 
 	def get_git_info(self, path):
