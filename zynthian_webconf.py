@@ -31,6 +31,7 @@ import tornado.ioloop
 import tornado.web
 from collections import OrderedDict
 from lib.LoginHandler import LoginHandler
+from lib.ConfigSummaryHandler import ConfigSummaryHandler
 from lib.AudioConfigHandler import AudioConfigHandler
 from lib.DisplayConfigHandler import DisplayConfigHandler
 from lib.RebootHandler import RebootHandler
@@ -80,7 +81,7 @@ def make_app():
 		"upload_progress_handler": dict()
 	}
 	return tornado.web.Application([
-		(r'/$', AudioConfigHandler),
+		(r'/$', ConfigSummaryHandler),
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
 		(r'/(.*\.html)$', tornado.web.StaticFileHandler, {'path': 'html'}),
 		(r'/(favicon\.ico)$', tornado.web.StaticFileHandler, {'path': 'img'}),
