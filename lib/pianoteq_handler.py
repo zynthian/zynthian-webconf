@@ -30,6 +30,7 @@ import requests
 import subprocess
 import shlex
 import shutil
+import glob
 
 from collections import OrderedDict
 
@@ -105,6 +106,32 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		os.symlink("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
+		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
+
 		# Cover my tracks
 		if(os.path.isdir("/tmp/pianoteq")):
 			shutil.rmtree("/tmp/pianoteq")
+
+	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
+	def recursive_copy_files(self,source_path, destination_path, override=False):
+		"""
+		Recursive copies files from source  to destination directory.
+		:param source_path: source directory
+		:param destination_path: destination directory
+		:param override if True all files will be overridden otherwise skip if file exist
+		:return: count of copied files
+		"""
+		files_count = 0
+		if not os.path.exists(destination_path):
+			os.mkdir(destination_path)
+		items = glob.glob(source_path + '/*')
+		for item in items:
+			if os.path.isdir(item):
+				path = os.path.join(destination_path, item.split('/')[-1])
+				files_count += self.recursive_copy_files(source_path=item, destination_path=path, override=override)
+			else:
+				file = os.path.join(destination_path, item.split('/')[-1])
+				if not os.path.exists(file) or override:
+					shutil.copyfile(item, file)
+					files_count += 1
+		return files_count
