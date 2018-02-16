@@ -42,6 +42,9 @@ from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 class PianoteqHandler(tornado.web.RequestHandler):
 
+	PIANOTEQ_SW_DIR = r'/zynthian/zynthian-sw/pianoteq6'
+	PIANOTEQ_ADDON_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Addons'
+
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
@@ -57,8 +60,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = False
-		errors = {}
-
+		logging.info(errors)
 		if self.genjson:
 			self.write(config)
 		else:
@@ -68,34 +70,50 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		action = self.get_argument('ZYNTHIAN_PIANOTEQ_ACTION')
 		if action:
 			errors = {
-        		'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq()
-    		}[action]()
-
-
+				'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
+				'ADD_LICENCE': lambda: self.do_install_licence()
+			}[action]()
 		self.get(errors)
+
+
+	def do_install_licence(self):
+		licence = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENCE');
+
+		logging.info(licence)
 
 	def do_install_pianoteq(self):
 		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
 		logging.info("Installing %s" % filename)
-
+		errors = None
 		# Just to be sure...
 		if(os.path.isdir("/tmp/pianoteq")):
 			shutil.rmtree("/tmp/pianoteq")
-		if(not os.path.isdir("/zynthian/zynthian-sw/pianoteq6")):
-			os.mkdir("/zynthian/zynthian-sw/pianoteq6")
+		if(not os.path.isdir(PianoteqHandler.PIANOTEQ_SW_DIR)):
+			os.mkdir(PianoteqHandler.PIANOTEQ_SW_DIR)
 
+		filename_parts = os.path.splitext(filename)
+		if(filename_parts[1] == '.7z'):
+			errors = self.do_install_pianoteq_binary(filename);
+		elif(filename_parts[1] == '.ptq'):
+			errors = self.do_install_pianoteq_ptq(filename);
+		# Cover my tracks
+		if(os.path.isdir("/tmp/pianoteq")):
+			shutil.rmtree("/tmp/pianoteq")
+		return errors
+
+	def do_install_pianoteq_binary(self, filename):
 		# Install binary
 		subprocess.call(shlex.split("/usr/bin/7z x -o/tmp/pianoteq %s \"Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE*\"" % filename))
-		if(os.path.isfile("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE")):
-			logging.info("Removing old pianoteq binary")
-			os.remove("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE")
+		if(os.path.isfile("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)):
+			logging.info("Removing old pianoteq binary %s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)
+			os.remove("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq binary")
-		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE","/zynthian/zynthian-sw/pianoteq6/")
+		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE", PianoteqHandler.PIANOTEQ_SW_DIR)
 
 		# Install LV2 plugin
-		if(os.path.isdir("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE.lv2")):
+		if(os.path.isdir("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR)):
 			logging.info("Removing old pianoteq LV2 plugin")
-			shutil.rmtree("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE.lv2")
+			shutil.rmtree("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq LV2 plugin")
 		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-sw/pianoteq6/")
 		if(os.path.islink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
@@ -104,13 +122,16 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		elif(os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		os.symlink("/zynthian/zynthian-sw/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
+		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
 		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
 
-		# Cover my tracks
-		if(os.path.isdir("/tmp/pianoteq")):
-			shutil.rmtree("/tmp/pianoteq")
+	def do_install_pianoteq_ptq(self, filename):
+		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
+			logging.info("Moving %s to %s" % (filename, PianoteqHandler.PIANOTEQ_ADDON_DIR))
+			shutil.move(filename, PianoteqHandler.PIANOTEQ_ADDON_DIR)
+		else:
+			return "No ADDON directory found: %s" % PianoteqHandler.PIANOTEQ_ADDON_DIR
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
 	def recursive_copy_files(self,source_path, destination_path, override=False):

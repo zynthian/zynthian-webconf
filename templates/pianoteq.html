@@ -19,6 +19,9 @@
 		<p>
 			You are replacing the initial demo version with the following upload.
 		</p>
+		<p>
+			After you have uploaded the file ending with 7z you can upload additional modules ending with ptq also.
+		</p>
 		</div>
 
 		<div class="row">
@@ -27,7 +30,7 @@
 
 		<div class="row" id='upload-finished'>
 			<p>
-			The new binary is being installed.
+			The new file is being installed.
 			</p>
 			<p>
 			Please wait...
@@ -36,11 +39,19 @@
 
 		<div class="row" id='installation-success'>
 			<p>
-			The new binary was installed successfully.
+			The new file was installed successfully.
+			</p>
+		</div>
+		<div class="row">
+			<p>
+			The licence key can be entered here:
 			</p>
 			<p>
-			If you haven't entered the licence key yet, you need to start a X11-forward ssh session (ssh -X), start Pianoteq on the zynthian and enter the licence key in the X11 session.
+				<input type="text" name="ZYNTHIAN_PIANOTEQ_LICENCE" />
+			</p>
 			<p>
+				<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ADD_LICENCE" class="btn btn-lg btn-theme">Add licence</button>
+			</p>
 		</div>
 
   </div>
@@ -66,7 +77,7 @@ $(document).ready(function (){
 		$("#upload-finished").hide();
 
 
-		$('#input-uploadfile-type')[0].value = '7z';
+		$('#input-uploadfile-type')[0].value = '7z,ptq';
 
 		var deferred = $.Deferred();
 		deferred.done(function(value) {
@@ -104,7 +115,7 @@ $(document).ready(function (){
 			ajax.onloadend = function() {
 					$("#installation-success").show();
 					$("#upload-finished").hide();
-				//window.location.href = window.location.href;
+				  //window.location.href = window.location.href;
 			};
 
 			ajax.onerror = function() {
