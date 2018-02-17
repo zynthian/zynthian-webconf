@@ -83,7 +83,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC', []],
 		['HifiBerry Digi', []],
 		['HifiBerry Amp',[]],
-		['AudioInjector', []],
+		['AudioInjector', ['Capture', 'Master']],
 		['IQAudio DAC', []],
 		['IQAudio DAC+', []],
 		['IQAudio Digi', []],
@@ -137,18 +137,30 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		errors=self.update_config(postedConfig)
 		for varname in postedConfig:
 			if varname.find('ALSA_VOLUME_')>=0:
-				mixerControl = varname[12:].replace('_',' ')
+				channelName = varname[12:]
+				channelType = ''
+				mixerControl = ''
+				if channelName.find('Playback')>=0:
+					channelType = 'Playback'
+					mixerControl = channelName[8:].replace('_',' ')
+				else:
+					channelType = 'Capture'
+					mixerControl = channelName[7:].replace('_',' ')
+
 				try:
-					call("amixer -M set '" + mixerControl + "' Playback " + self.get_argument(varname) + "% unmute", shell=True)
-				except:
-					pass
-		self.redirect('/api/sys-reboot')
+					amixer_command = "amixer -M set '" + mixerControl + "' " + channelType + " " + self.get_argument(varname) + "% unmute"
+					logging.info(amixer_command)
+					call(amixer_command, shell=True)
+				except Exception as err:
+					logging.error(format(err))
+		#self.redirect('/api/sys-reboot')
 		self.get(errors)
 
 	def get_mixer_controls(self, config):
 		mixerControl = None
 		controlName = ''
-		playbackChannel = False
+		channelType = ''
+
 		volumePercent = ''
 		idx = 0
 		try:
@@ -156,8 +168,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				line = byteLine.decode("utf-8")
 
 				if line.find('Simple mixer control')>=0:
-					if controlName and playbackChannel:
-						self.addMixerControl(config, mixerControl, controlName, volumePercent)
+					if controlName and channelType:
+						self.add_mixer_control(config, mixerControl, controlName, volumePercent, channelType)
 					mixerControl = {'type': 'slider',
 						'id': idx,
 						'title': '',
@@ -167,32 +179,36 @@ class AudioConfigHandler(ZynthianConfigHandler):
 						'step': 1,
 						'advanced': False}
 					controlName = ''
-					playbackChannel = False
+					channelType = ''
+
 					volumePercent = ''
 					idx += 1
 					m = re.match("Simple mixer control '(.*?)'.*", line, re.M | re.I)
 					if m:
 						controlName = m.group(1)
 				elif line.find('Playback channels:')>=0:
-						playbackChannel = True
+						channelType = 'Playback'
+				elif line.find('Capture channels:')>=0:
+						channelType = 'Capture'
 				else:
-					m = re.match(".*Playback.*\[(\d*)%\].*", line, re.M | re.I)
+					m = re.match(".*(Playback|Capture).*\[(\d*)%\].*", line, re.M | re.I)
 					if m:
-						volumePercent = m.group(1)
+						volumePercent = m.group(2)
+						channelType = m.group(1)
 			if controlName and playbackChannel:
-				self.addMixerControl(config, mixerControl, controlName, volumePercent)
-		except:
-			pass
+				self.add_mixer_control(config, mixerControl, controlName, volumePercent, channelType)
+		except Exception as err:
+			logging.error(format(err))
 
 
-	def add_mixer_control(self, config, mixerControl, controlName, volumePercent):
+	def add_mixer_control(self, config, mixerControl, controlName, volumePercent, channelType):
 		validMixer = ''
 		if os.environ.get('SOUNDCARD_NAME'):
 			validMixer = self.soundcard_mixer_controls[os.environ.get('SOUNDCARD_NAME')]
 
 		realControlName = controlName.replace(' ','_')
 		if not validMixer or realControlName in validMixer:
-			configKey = 'ALSA_VOLUME_' + realControlName
+			configKey = 'ALSA_VOLUME_' + channelType + '_' + realControlName
 			mixerControl['title'] = 'ALSA volume ' + controlName
 			mixerControl['value'] = volumePercent
 

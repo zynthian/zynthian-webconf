@@ -31,8 +31,8 @@ import tornado.ioloop
 import tornado.web
 from collections import OrderedDict
 from lib.LoginHandler import LoginHandler
-from lib.DashboardHandler import DashboardHandler
-from lib.AudioConfigHandler import AudioConfigHandler
+from lib.dashboard_handler import DashboardHandler
+from lib.audio_config_handler import AudioConfigHandler
 from lib.DisplayConfigHandler import DisplayConfigHandler
 from lib.RebootHandler import RebootHandler
 from lib.SecurityConfigHandler import SecurityConfigHandler
