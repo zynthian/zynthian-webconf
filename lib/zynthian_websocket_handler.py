@@ -32,7 +32,6 @@ import json
 import datetime
 import jsonpickle
 
-
 #------------------------------------------------------------------------------
 # Zynthian Websocket Handling
 #------------------------------------------------------------------------------
@@ -53,8 +52,6 @@ class ZynthianWebSocketMessageHandler(object):
 
 	def on_close(self):
 		pass
-
-
 
 class ZynthianWebSocketMessage(object):
 	def __init__(self, handler_name, data):
@@ -91,7 +88,7 @@ class ZynthianWebSocketHandler(tornado.websocket.WebSocketHandler):
 	def on_message(self, message):
 		if message:
 			decoded_message = jsonpickle.decode(message)
-			logging.info("incomding ws message %s " % decoded_message)
+			logging.info("incoming ws message %s " % decoded_message)
 			handler = ZynthianWebSocketMessageHandlerFactory(decoded_message['handler_name'], self)
 			handler.on_websocket_message(decoded_message['data'])
 			self.handlers.append(handler)

@@ -75,11 +75,12 @@ $(document).ready(function() {
 			$('#selected_files').html(filenames);
 		}
 
-
     $("#input-uploadfile").on('change', function(event) {
         var filename = $(this).val();
-        var filetype = $('#input-uploadfile-type')[0].value;
-        var regex = new RegExp( '.'+filetype+'$', 'gi' );
+        var filetypes = $('#input-uploadfile-type')[0].value;
+				var filetypeArray = filetypes.split(',');
+
+        var regex = new RegExp( '.('+filetypeArray.join('|')+')$', 'gi' );
 				validSuffix = true;
 
 				for (var i = 0, f; f = event.target.files[i]; i++) {
@@ -88,11 +89,12 @@ $(document).ready(function() {
 					}
 				}
 				if (!validSuffix){
-          alert('Only select ' + filetype + ' files');
+          alert('Only select ' + filetypes + ' files');
           this.form.reset();
-					$('#input-uploadfile-type')[0].value = filetype;
+					$('#input-uploadfile-type')[0].value = filetypes;
           return;
         }
+
 				displayFilenames(event.target.files);
     });
 

@@ -47,6 +47,7 @@ from lib.upload_handler import UploadHandler
 from lib.system_backup_handler import SystemBackupHandler
 from lib.presets_config_handler import PresetsConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
+from lib.pianoteq_handler import PianoteqHandler
 
 #------------------------------------------------------------------------------
 
@@ -96,6 +97,7 @@ def make_app():
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),
+		(r"/api/sw-pianoteq$", PianoteqHandler),
 		(r"/api/ui-style$", UiConfigHandler),
 		(r"/api/ui-midi$", MidiConfigHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),

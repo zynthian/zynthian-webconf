@@ -103,7 +103,8 @@ class UploadPostDataStreamer(MultiPartStreamer):
 		for part in self.parts:
 			if part.get_size()>0:
 				destinationFilename = part.get_filename()
-				#logging.info("destinationFilename: " + destinationFilename)
+				logging.info(part.get_name())
+				logging.info("destinationPath: " + self.destinationPath)
 				part.move(self.destinationPath + "/" + destinationFilename)
 
 class UploadProgressHandler(ZynthianWebSocketMessageHandler):
@@ -176,7 +177,8 @@ class UploadHandler(tornado.web.RequestHandler):
 			total = int(self.request.headers.get("Content-Length","0"))
 			client_id = self.get_argument("clientId")
 			destinationPath = self.get_argument("destinationPath")
-		except:
+		except Exception as e:
+			logging.error("prepare failed: %s" % e)
 			total = 0
 			client_id = '1'
 
