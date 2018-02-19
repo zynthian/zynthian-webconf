@@ -179,9 +179,12 @@ class DashboardHandler(ZynthianConfigHandler):
 
 
 	def get_sd_info(self):
-		out=check_output("df -h / | grep '/dev/root'", shell=True).decode()
-		parts=re.split('\s+', out)
-		return { 'total': parts[1], 'used': parts[2], 'free': parts[3], 'usage': parts[4] }
+		try:
+			out=check_output("df -h / | grep '/dev/root'", shell=True).decode()
+			parts=re.split('\s+', out)
+			return { 'total': parts[1], 'used': parts[2], 'free': parts[3], 'usage': parts[4] }
+		except:
+			return { 'total': 'NA', 'used': 'NA', 'free': 'NA', 'usage': 'NA' }
 
 
 	def get_num_of_files(self, path):
