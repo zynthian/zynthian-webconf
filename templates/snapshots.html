@@ -56,7 +56,7 @@
         </div>
 				<div class="row">
 					<p>
-						<textarea id="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" name="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" rows="20">
+						<textarea id="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" name="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" rows="10">
 						</textarea>
 					</p>
 				</div>
@@ -92,7 +92,7 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
 			$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].disabled = false;
 			if (data.details){
 					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS").show();
-					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].value = JSON.stringify(data.details,  null, "    ");
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].value = formatSnapshotDetails(data.details);
 			} else {
 					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS").hide();
 			}
@@ -101,6 +101,15 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
     }
   });
   $('#snapshot-tree').treeview('selectNode',{% raw config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] %});
+
+	function formatSnapshotDetails(snapshotDetails){
+			var result = '';
+			for (idx in snapshotDetails.layers){
+				layer = snapshotDetails.layers[idx]
+				result += layer.engine_nick + (layer.midi_chan + 1) + "\n\t" + layer.preset_name + "\n\n";
+			}
+			return result;
+	}
 
 
 
