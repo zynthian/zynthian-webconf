@@ -188,5 +188,5 @@ class DashboardHandler(ZynthianConfigHandler):
 
 
 	def get_num_of_files(self, path):
-		n=check_output("find %s -type f | wc -l" % path, shell=True).decode()
+		n=check_output("find %s -type f -follow | wc -l" % path, shell=True).decode()
 		return n
