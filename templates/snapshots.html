@@ -54,6 +54,12 @@
         <div class="row">
           <button name="ZYNTHIAN_SNAPSHOT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
         </div>
+				<div class="row">
+					<p>
+						<textarea id="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" name="ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS" rows="10">
+						</textarea>
+					</p>
+				</div>
       </div>
   </div>
   <div class="row">
@@ -83,11 +89,27 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].disabled = data.nodes;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].value = data.program;
       $("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].disabled = data.nodes;
+			$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].disabled = false;
+			if (data.details){
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS").show();
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS")[0].value = formatSnapshotDetails(data.details);
+			} else {
+					$("#ZYNTHIAN_SNAPSHOT_SELECTION_DETAILS").hide();
+			}
 
       $('#snapshot-panel').show();
     }
   });
   $('#snapshot-tree').treeview('selectNode',{% raw config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] %});
+
+	function formatSnapshotDetails(snapshotDetails){
+			var result = '';
+			for (idx in snapshotDetails.layers){
+				layer = snapshotDetails.layers[idx]
+				result += layer.engine_nick + (layer.midi_chan + 1) + "\n\t" + layer.preset_name + "\n\n";
+			}
+			return result;
+	}
 
 
 

@@ -177,6 +177,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 			bname = ''
 			text = ''
 			progno = ''
+			details = ''
 			if m:
 				#logging.info(m.group(0) + ";" + m.group(1) + ";" + m.group(2))
 				if not bankNumber:
@@ -190,6 +191,13 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 					bno = bankNumber.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
 					bname = bankName
 					progno = m.group(1).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM)
+					with open(fullPath) as snapshotfile:
+						logging.info(fullPath)
+						try:
+							details = json.load(snapshotfile)
+						except:
+							pass
+						snapshotfile.close()
 			snapshot = {
 				'text': f,
 				'name': text,
@@ -197,7 +205,8 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 				'id': idx,
 				'bank': bno,
 				'bankName': bname,
-				'program': progno}
+				'program': progno,
+				'details': details}
 			idx+=1
 			if os.path.isdir(os.path.join(directory, f)):
 				snapshot['nodes'] = self.walk_directory(os.path.join(directory, f), idx, bno, bname)
