@@ -83,8 +83,8 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		licence = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENCE');
 
 		logging.info(licence)
-		root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 		if(os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE)):
+			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 			try:
 				licence_value = None
 				for xml_value in root.iter("VALUE"):
@@ -185,10 +185,11 @@ class PianoteqHandler(tornado.web.RequestHandler):
 
 	def get_licence_key(self):
 		#xpath with fromstring doesn't work
-		root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
-		try:
-			for xml_value in root.iter("VALUE"):
-				if (xml_value.attrib['name'] == 'serial'):
-					return xml_value.attrib['val']
-		except:
-			return ''
+		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
+			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+			try:
+				for xml_value in root.iter("VALUE"):
+					if (xml_value.attrib['name'] == 'serial'):
+						return xml_value.attrib['val']
+			except:
+				return ''
