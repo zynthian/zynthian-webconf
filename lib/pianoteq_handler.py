@@ -45,6 +45,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 
 	PIANOTEQ_SW_DIR = r'/zynthian/zynthian-sw/pianoteq6'
 	PIANOTEQ_ADDON_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Addons'
+	PIANOTEQ_MY_PRESETS_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Presets/My Presets'
 	PIANOTEQ_CONFIG_FILE = os.path.expanduser("~")  + '/.config/Modartt/Pianoteq60 STAGE.prefs'
 
 	def get_current_user(self):
@@ -146,6 +147,10 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
 		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
+
+		# Create "My Presets" if not already exist
+		if(not os.path.isdir(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)):
+			os.makedirs(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)
 
 	def do_install_pianoteq_ptq(self, filename):
 		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
