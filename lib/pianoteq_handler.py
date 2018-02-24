@@ -83,23 +83,24 @@ class PianoteqHandler(tornado.web.RequestHandler):
 
 		logging.info(licence)
 		root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
-		try:
-			licence_value = None
-			for xml_value in root.iter("VALUE"):
-				logging.info(xml_value.attrib['name'])
-				if (xml_value.attrib['name'] == 'serial'):
-					licence_value = xml_value
-			if (licence_value == None):
-				licence_value = ET.Element('VALUE')
-				root.getroot().append(licence_value)
-				licence_value.set('name','serial')
+		if(os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE)):
+			try:
+				licence_value = None
+				for xml_value in root.iter("VALUE"):
+					logging.info(xml_value.attrib['name'])
+					if (xml_value.attrib['name'] == 'serial'):
+						licence_value = xml_value
+				if (licence_value == None):
+					licence_value = ET.Element('VALUE')
+					root.getroot().append(licence_value)
+					licence_value.set('name','serial')
 
-			licence_value.set('val', licence)
-			root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+				licence_value.set('val', licence)
+				root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 
-		except Exception as e:
-			logging.error("Installing licence failed: %s" % format(e))
-			return format(e)
+			except Exception as e:
+				logging.error("Installing licence failed: %s" % format(e))
+				return format(e)
 
 	def do_install_pianoteq(self):
 		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
@@ -142,7 +143,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		elif(os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
+		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
 		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
 
