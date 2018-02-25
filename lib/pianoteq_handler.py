@@ -152,6 +152,9 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		if(not os.path.isdir(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)):
 			os.makedirs(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)
 
+		# Fix audio-setup for using JACK
+		self.fix_config_for_jack()
+
 	def do_install_pianoteq_ptq(self, filename):
 		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
 			logging.info("Moving %s to %s" % (filename, PianoteqHandler.PIANOTEQ_ADDON_DIR))
@@ -193,3 +196,21 @@ class PianoteqHandler(tornado.web.RequestHandler):
 						return xml_value.attrib['val']
 			except:
 				return ''
+
+	def fix_config_for_jack(self):
+		if(os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE)):
+			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+			try:
+				for devicesetup in root.iter('DEVICESETUP'):
+                                        devicesetup.set('deviceType','JACK')
+                                        devicesetup.set('audioOutputDeviceName','Auto-connect ON')
+                                        devicesetup.set('audioInputDeviceName','Auto-connect ON')
+                                        devicesetup.set('audioDeviceRate','44100')
+                                        devicesetup.set('forceStereo','0')
+
+				root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+
+			except Exception as e:
+				logging.error("Installing devicesetup failed: %s" % format(e))
+				return format(e)
+	
