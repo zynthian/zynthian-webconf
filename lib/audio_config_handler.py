@@ -83,7 +83,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC', []],
 		['HifiBerry Digi', []],
 		['HifiBerry Amp',[]],
-		['AudioInjector', ['Capture', 'Master']],
+		['AudioInjector', []],
 		['IQAudio DAC', []],
 		['IQAudio DAC+', []],
 		['IQAudio Digi', []],
@@ -134,6 +134,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	def post(self):
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
 		errors=self.update_config(postedConfig)
 		for varname in postedConfig:
 			if varname.find('ALSA_VOLUME_')>=0:
@@ -153,7 +154,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					call(amixer_command, shell=True)
 				except Exception as err:
 					logging.error(format(err))
-		#self.redirect('/api/sys-reboot')
+		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
+			self.redirect('/api/sys-reboot')
 		self.get(errors)
 
 	def get_mixer_controls(self, config):
@@ -215,4 +217,4 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			config[configKey] = mixerControl
 
 	def needs_reboot(self):
-		return True
+		return True 
