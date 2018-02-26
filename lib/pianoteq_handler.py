@@ -45,6 +45,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 
 	PIANOTEQ_SW_DIR = r'/zynthian/zynthian-sw/pianoteq6'
 	PIANOTEQ_ADDON_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Addons'
+	PIANOTEQ_MY_PRESETS_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Presets/My Presets'
 	PIANOTEQ_CONFIG_FILE = os.path.expanduser("~")  + '/.config/Modartt/Pianoteq60 STAGE.prefs'
 
 	def get_current_user(self):
@@ -82,24 +83,25 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		licence = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENCE');
 
 		logging.info(licence)
-		root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
-		try:
-			licence_value = None
-			for xml_value in root.iter("VALUE"):
-				logging.info(xml_value.attrib['name'])
-				if (xml_value.attrib['name'] == 'serial'):
-					licence_value = xml_value
-			if (licence_value == None):
-				licence_value = ET.Element('VALUE')
-				root.getroot().append(licence_value)
-				licence_value.set('name','serial')
+		if(os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE)):
+			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+			try:
+				licence_value = None
+				for xml_value in root.iter("VALUE"):
+					logging.info(xml_value.attrib['name'])
+					if (xml_value.attrib['name'] == 'serial'):
+						licence_value = xml_value
+				if (licence_value == None):
+					licence_value = ET.Element('VALUE')
+					root.getroot().append(licence_value)
+					licence_value.set('name','serial')
 
-			licence_value.set('val', licence)
-			root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+				licence_value.set('val', licence)
+				root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 
-		except Exception as e:
-			logging.error("Installing licence failed: %s" % format(e))
-			return format(e)
+			except Exception as e:
+				logging.error("Installing licence failed: %s" % format(e))
+				return format(e)
 
 	def do_install_pianoteq(self):
 		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
@@ -142,9 +144,13 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		elif(os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
+		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
 		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
+
+		# Create "My Presets" if not already exist
+		if(not os.path.isdir(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)):
+			os.makedirs(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)
 
 	def do_install_pianoteq_ptq(self, filename):
 		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
@@ -179,10 +185,11 @@ class PianoteqHandler(tornado.web.RequestHandler):
 
 	def get_licence_key(self):
 		#xpath with fromstring doesn't work
-		root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
-		try:
-			for xml_value in root.iter("VALUE"):
-				if (xml_value.attrib['name'] == 'serial'):
-					return xml_value.attrib['val']
-		except:
-			return ''
+		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
+			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+			try:
+				for xml_value in root.iter("VALUE"):
+					if (xml_value.attrib['name'] == 'serial'):
+						return xml_value.attrib['val']
+			except:
+				return ''
