@@ -17,10 +17,10 @@
 			When you buy a licence, you receive a binary file and a licence key.
 		</p>
 		<p>
-			You are replacing the initial demo version with the following upload.
+			You are replacing the initial demo version with the following upload. It will take effect after a reboot of the system.
 		</p>
 		<p>
-			After you have uploaded the file ending with 7z you can upload additional modules ending with ptq also.
+			After you have uploaded the file ending with 7z you can upload additional modules ending with ptq also after the reboot of the system.
 		</p>
 		</div>
 
@@ -44,14 +44,27 @@
 		</div>
 		<div class="row">
 			<p>
-			The licence key can be entered here:
+			You have to enter the licence key like the follows.
+
+			</p>
+			<ul class="content-section" style="margin-left: 1em;">
+				<li>Reboot machine</li>
+				<li>Open X11 forwarding session (ssh -X your.zynthian)</li>
+				<li>Start Pianoteq on your zynthian</li>
+				<li>Pianoteq UI opens in the X11 session</li>
+				<li>Follow screen instructions</li>
+			</ul>
+			<p>
+				Licence key:
 			</p>
 			<p>
-				<input type="text" name="ZYNTHIAN_PIANOTEQ_LICENCE" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENCE'] }} "/>
+				<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENCE" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENCE'] }} "/>
 			</p>
+			<!--
 			<p>
 				<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ADD_LICENCE" class="btn btn-lg btn-theme">Add licence</button>
 			</p>
+		-->
 		</div>
 
   </div>
