@@ -43,6 +43,7 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 
 	def prepare(self):
 		zynconf.load_config()
+		zynconf.load_midi_config()
 		self.genjson=False
 		try:
 			if self.get_query_argument("json"):
