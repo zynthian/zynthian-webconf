@@ -153,11 +153,9 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			os.makedirs(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)
 
 	def do_install_pianoteq_ptq(self, filename):
-		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
-			logging.info("Moving %s to %s" % (filename, PianoteqHandler.PIANOTEQ_ADDON_DIR))
-			shutil.move(filename, PianoteqHandler.PIANOTEQ_ADDON_DIR)
-		else:
-			return "No ADDON directory found: %s" % PianoteqHandler.PIANOTEQ_ADDON_DIR
+		self.ensure_dir(PianoteqHandler.PIANOTEQ_ADDON_DIR)
+		logging.info("Moving %s to %s" % (filename, PianoteqHandler.PIANOTEQ_ADDON_DIR))
+		shutil.move(filename, PianoteqHandler.PIANOTEQ_ADDON_DIR)
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
 	def recursive_copy_files(self,source_path, destination_path, override=False):
@@ -182,6 +180,17 @@ class PianoteqHandler(tornado.web.RequestHandler):
 					shutil.copyfile(item, file)
 					files_count += 1
 		return files_count
+
+	def ensure_dir(self, file_path):
+		if(os.path.isfile(file_path)):
+			directory=os.path.dirname(file_path)
+		else:
+			directory=file_path
+		if(not os.path.isdir(directory)):
+			logging.info("Creating directory %s" % file_path)
+			os.makedirs(directory)
+		else:
+			logging.info("Directory %s already exists." % file_path)
 
 	def get_licence_key(self):
 		#xpath with fromstring doesn't work
