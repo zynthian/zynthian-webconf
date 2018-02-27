@@ -83,7 +83,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC', []],
 		['HifiBerry Digi', []],
 		['HifiBerry Amp',[]],
-		['AudioInjector', []],
+		['AudioInjector', ['Master','Capture']],
 		['IQAudio DAC', []],
 		['IQAudio DAC+', []],
 		['IQAudio Digi', []],
@@ -154,6 +154,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					call(amixer_command, shell=True)
 				except Exception as err:
 					logging.error(format(err))
+		if self.get_argument('SOUNDCARD_NAME') == 'AudioInjector':
+			try:
+				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
+			except Exception as err:
+				logging.error(format(err))
+
 		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
 			self.redirect('/api/sys-reboot')
 		self.get(errors)
@@ -217,4 +223,4 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			config[configKey] = mixerControl
 
 	def needs_reboot(self):
-		return True 
+		return True
