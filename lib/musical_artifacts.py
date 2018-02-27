@@ -52,7 +52,7 @@ class MusicalArtifacts:
 			query += querySeparator + 'tags=' + tags
 			querySeparator = "&"
 
-		response = requests.get(query)
+		response = requests.get(query, verify=False)
 		searchResult = response.json()
 		for row in searchResult:
 			if not "file" in row and "mirrors" in row and len(row['mirrors'])>0:
@@ -62,7 +62,7 @@ class MusicalArtifacts:
 		return searchResult
 
 	def download_artifact(self, sourceFile, destinationFile, fileType, destinationFolder):
-		r = requests.get(sourceFile)
+		r = requests.get(sourceFile, verify=False)
 		with open(destinationFile , "wb") as destFile:
 			destFile.write(r.content)
 			deleteDownloadedFile = False
