@@ -103,11 +103,11 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 
 	def do_new_bank(self):
 		newBank = self.get_argument('ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER')
-		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOT_DIRECTORY, 0, '', '')
+		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY, 0, '', '')
 		if newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) in self.get_existing_banks(snapshots, False):
 			return "Bank exists already"
 		if newBank:
-			bankDirectory = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/' + newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) + '-Bank'+newBank
+			bankDirectory = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/' + newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) + '-Bank'+newBank
 			if not os.path.exists(bankDirectory):
 				os.makedirs(bankDirectory)
 
@@ -124,7 +124,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 
 	def do_save(self):
 		fullPath = self.get_argument('ZYNTHIAN_SNAPSHOT_FULLPATH')
-		newFullPath = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/'
+		newFullPath = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/'
 		if os.path.isdir(fullPath):
 			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')
 			if self.get_argument('ZYNTHIAN_SNAPSHOT_NAME'):
@@ -136,7 +136,7 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 			if (self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')):
 				newFullPath += '-' + self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
 			newFullPath += '.zss'
-			newBankDirectory = SnapshotConfigHandler.SNAPSHOT_DIRECTORY + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK')
+			newBankDirectory = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK')
 			if os.path.exists(newFullPath):
 				return "Snapshot exists already!"
 			for existingSnapshot in os.listdir(newBankDirectory):
