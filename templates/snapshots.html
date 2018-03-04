@@ -106,7 +106,7 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOT
 			var result = '';
 			for (idx in snapshotDetails.layers){
 				layer = snapshotDetails.layers[idx]
-				result += layer.engine_nick + (layer.midi_chan + 1) + "\n\t" + layer.preset_name + "\n\n";
+				result += layer.engine_nick + (layer.midi_chan + 1) + "\n\t" + layer.bank_name + "/" + layer.preset_name + "\n\n";
 			}
 			return result;
 	}
