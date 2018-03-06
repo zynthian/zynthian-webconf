@@ -37,8 +37,7 @@ import jsonpickle
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 
-SYSTEM_BACKUP_ITEMS_FILE = "/zynthian/config/system_backup_items.txt"
-DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
+
 
 def get_backup_items(filename):
 	with open(filename) as f:
@@ -49,6 +48,9 @@ def get_backup_items(filename):
 #------------------------------------------------------------------------------
 
 class SystemBackupHandler(tornado.web.RequestHandler):
+	SYSTEM_BACKUP_ITEMS_FILE = "/zynthian/config/system_backup_items.txt"
+	DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
+
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -80,8 +82,8 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 			for filename in files:
 				config['ZYNTHIAN_DATA_BACKUP_ITEMS'][dirname].append(filename)
 
-		self.walk_backup_items(addSystemBackupItem, SYSTEM_BACKUP_ITEMS_FILE)
-		self.walk_backup_items(addDataBackupItem, DATA_BACKUP_ITEMS_FILE)
+		self.walk_backup_items(addSystemBackupItem, SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE)
+		self.walk_backup_items(addDataBackupItem, SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
 
 		if self.genjson:
 			self.write(config)
@@ -99,17 +101,18 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 			}[action]()
 
 	def do_system_backup(self):
-		self.do_backup('zynthian_system_backup',SYSTEM_BACKUP_ITEMS_FILE)
+		self.do_backup('zynthian_system_backup',SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE)
 
 	def do_data_backup(self):
-		self.do_backup('zynthian_data_backup', DATA_BACKUP_ITEMS_FILE)
+		self.do_backup('zynthian_data_backup', SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
 
 	def do_backup(self, backupFileNamePrefix, backupItemsFileName):
 		zipname='{0}{1}.zip'.format(backupFileNamePrefix, time.strftime("%Y%m%d-%H%M%S"))
 		f=BytesIO()
 		zf = zipfile.ZipFile(f, "w")
 		def zip_backup_items(dirname, subdirs, files):
-			zf.write(dirname)
+			if dirname != '/':
+				zf.write(dirname)
 			for filename in files:
 				zf.write(os.path.join(dirname, filename))
 
@@ -124,13 +127,26 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		self.finish()
 
 	def walk_backup_items(self, worker, backupFolderFilename):
+		excluded_folders = []
 		for backupFolder in get_backup_items(backupFolderFilename):
-			try:
-				sourceFolder = os.path.expandvars(backupFolder)
-				for dirname, subdirs, files in os.walk(sourceFolder):
-					worker(dirname, subdirs, files)
-			except:
-				pass
+			sourceFolder = os.path.expandvars(backupFolder)
+			if sourceFolder.startswith("^"):
+				sourceFolder = os.path.expandvars(sourceFolder[1:])
+				excluded_folders.append(sourceFolder)
+				exclude_filename = '/' + os.path.basename(os.path.normpath(sourceFolder)) + '.exclude'
+				with open(exclude_filename, "w") as exclude_file:
+					for dirname, subdirs, files in os.walk(sourceFolder):
+						for filename in files:
+							exclude_file.write(os.path.join(dirname,filename) + '\n')
+				worker('/', None , exclude_filename[1:].split(':')) #convert single string to array of 1 string
+			else:
+				try:
+					for dirname, subdirs, files in os.walk(sourceFolder):
+						if not any(dirname.startswith(s) for s in excluded_folders):
+							worker(dirname, subdirs, files)
+				
+				except:
+					pass
 	def is_valid_restore_item(self, validRestoreItems, restoreMember):
 		for validRestoreItem in validRestoreItems:
 			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
