@@ -7,17 +7,36 @@
 
 <form id="backup-form" enctype="multipart/form-data" method="post">
 	<ul class="nav nav-tabs" role="tablist">
-		<li class="{% if 'ZYNTHIAN_UPLOAD_NEW_FILE' not in config %}active{% end %}"><a href="#system_backup" role="tab" data-toggle="tab">System Backup</a></li>
-		<li><a href="#data_backup" role="tab" data-toggle="tab">Data Backup</a></li>
-		<li class="{% if 'ZYNTHIAN_UPLOAD_NEW_FILE' in config %}active{% end %}"><a href="#restore" role="tab" data-toggle="tab">Restore</a></li>
+		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == 'SYSTEM_BACKUP' %}active{% end %}"><a href="#system_backup" role="tab" data-toggle="tab">System Backup</a></li>
+		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == 'DATA_BACKUP' %}active{% end %}"><a href="#data_backup" role="tab" data-toggle="tab">Data Backup</a></li>
+		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == 'RESTORE' %}active{% end %}"><a href="#restore" role="tab" data-toggle="tab">Restore</a></li>
 	</ul>
 
 
 <div class="tab-content">
-	<div class="tab-pane {% if 'ZYNTHIAN_UPLOAD_NEW_FILE' not in config %}active{% end %}" id="system_backup">
+	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'SYSTEM_BACKUP' %}active{% end %}" id="system_backup">
 		<div class="container-fluid">
+			<div class="row">
+			 <label>Directories containing system files:</label>
+			 <textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES" rows="5">
+				 {% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES'] %}{{ system_backup_directory }}
+				 {% end %}
+			 </textarea>
+		 </div>
+		 <div class="row">
+			<label>Excluded directories or files:</label>
+			<input type="file" id="ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES" name="ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES" multiple style="display: none;"/>
+			<input type="button" class="btn btn-theme btn-block" value="Browse..." onclick="document.getElementById('ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES').click();" />
+			<textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
+				{% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ system_backup_directory }}
+				{% end %}
+			</textarea>
+		</div>
+		<div class="row">
+		 <button name="ZYNTHIAN_BACKUP_ACTION" value="SAVE_SYSTEM_BACKUP_DIRECTORIES" class="btn btn-lg btn-theme btn-block">SAVE</button>
+	 	</div>
 		  <div class="row">
-		    <label>Backup items as defined in /zynthian/config/system_backup_items.txt</label>
+		    <label>Resolved backup items as defined in /zynthian/config/system_backup_items.txt</label>
 		    <table class="table table-striped table-bordered table-condensed">
 		    {% for backupItem in config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'] %}
 		    {% if config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'][backupItem] %}
@@ -33,7 +52,26 @@
 		  </div>
   	</div>
 	</div>
-	<div class="tab-pane" id="data_backup">
+	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'DATA_BACKUP' %}active{% end %}" id="data_backup">
+		<div class="row">
+		 <label>Directories containing data files:</label>
+		 <textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES" rows="5">
+			 {% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES'] %}{{ data_backup_directory }}
+			 {% end %}
+		 </textarea>
+	 </div>
+	 <div class="row">
+		<label>Excluded directories or files: </label>
+		<input type="file" id="ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES" name="ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES" multiple style="display: none;"/>
+		<input type="button" class="btn btn-theme btn-block" value="Browse..." onclick="document.getElementById('ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES').click();" />
+		<textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
+			{% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ data_backup_directory }}
+			{% end %}
+		</textarea>
+	</div>
+	<div class="row">
+	 <button name="ZYNTHIAN_BACKUP_ACTION" value="SAVE_DATA_BACKUP_DIRECTORIES" class="btn btn-lg btn-theme btn-block">SAVE</button>
+	</div>
 		<div class="row">
 			<label>Backup items as defined in /zynthian/config/data_backup_items.txt</label>
 			<table class="table table-striped table-bordered table-condensed">
@@ -50,7 +88,7 @@
 			<button name="ZYNTHIAN_BACKUP_ACTION" value="DATA_BACKUP" class="btn btn-lg btn-theme btn-block">BACKUP</button>
 		</div>
 	</div>
-	<div class="tab-pane {% if 'ZYNTHIAN_UPLOAD_NEW_FILE' in config %}active{% end %}" id="restore">
+	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'RESTORE' %}active{% end %}" id="restore">
 		<div class="row">
 			<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="RESTORE"></input>
 		</div>
@@ -124,6 +162,28 @@ $(document).ready(function (){
 function showProgressAnimation(){
     $("#loading-div-background").show();
 }
+
+addFilename = function(filesTextarea, files){
+	var filesTextareaId = '#' + filesTextarea;
+	filenames = $(filesTextareaId).html().trim() + '\n';
+
+	for (var i = 0, f; f = files[i]; i++) {
+		filenames += '' + f.name + '\n';
+	}
+	$(filesTextareaId).html(filenames);
+	alert("You need to prepend the fullpath manually!");
+}
+
+$("#ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES").on('change', function(event) {
+		 var filename = $(this).val();
+		 addFilename('ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS', event.target.files);
+ });
+
+ $("#ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES").on('change', function(event) {
+ 		 var filename = $(this).val();
+ 		 addFilename('ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS', event.target.files);
+  });
+
 
 
 
