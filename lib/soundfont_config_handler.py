@@ -98,11 +98,11 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				'REMOVE': lambda: self.do_remove(),
 				'RENAME': lambda: self.do_rename(),
 				'SEARCH': lambda: self.do_search(),
-				'DOWNLOAD': lambda: self.do_download()
+				'DOWNLOAD': lambda: self.do_download(),
+				'BACKUP': lambda: self.do_backup()
 			}[action]()
-
-		self.get(errors)
-
+		if action != 'BACKUP':
+			self.get(errors)
 
 	def do_remove(self):
 		path = self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
@@ -161,6 +161,14 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				self.cleanup_download(self.selected_full_path, self.selected_full_path)
 				self.selected_full_path = downloadedFile
 
+	def do_backup(self):
+		if  self.get_argument('ZYNTHIAN_SOUNDFONT_NAME'):
+			self.set_header('Content-Type', 'application/zip')
+			self.set_header('Content-Disposition', 'attachment; filename=%s' % self.get_argument('ZYNTHIAN_SOUNDFONT_NAME'))
+
+			with open(self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH'), 'rb') as backup_file:
+				self.write(backup_file.read())
+			self.finish()
 
 	def cleanup_download(self, currentDirectory, targetDirectory):
 		fileList =  os.listdir(currentDirectory)
