@@ -30,8 +30,6 @@ import bz2
 import zipfile
 import tarfile
 
-
-
 #------------------------------------------------------------------------------
 # Configure logging
 #------------------------------------------------------------------------------
@@ -40,7 +38,9 @@ import tarfile
 logging.basicConfig(stream=sys.stderr, level=logging.DEBUG)
 
 class MusicalArtifacts:
+	
 	ROOT_URL = 'https://musical-artifacts.com/artifacts.json'
+
 
 	def search_artifacts(self, artifactFormat, tags):
 		query = self.ROOT_URL
@@ -61,6 +61,7 @@ class MusicalArtifacts:
 				row['file'] = ''
 		return searchResult
 
+
 	def download_artifact(self, sourceFile, destinationFile, fileType, destinationFolder):
 		r = requests.get(sourceFile, verify=False)
 		with open(destinationFile , "wb") as destFile:
@@ -76,6 +77,7 @@ class MusicalArtifacts:
 				os.remove(destinationFile)
 			return destinationFile
 
+
 	def download_tar_bz2(self, destinationFile, fileType, destinationFolder):
 		tar = tarfile.open(destinationFile, "r:bz2")
 		for member in tar.getmembers():
@@ -84,6 +86,7 @@ class MusicalArtifacts:
 					member.name = os.path.basename(member.name)
 					tar.extract(member, destinationFolder)
 		tar.close()
+
 
 	def download_zip(self, destinationFile, fileType, destinationFolder):
 		with zipfile.ZipFile(destinationFile,'r') as soundfontZip:

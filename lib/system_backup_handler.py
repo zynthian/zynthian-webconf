@@ -34,10 +34,12 @@ from io import BytesIO
 from collections import OrderedDict
 import time
 import jsonpickle
+
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
-
-
+#------------------------------------------------------------------------------
+# Module helper functions
+#------------------------------------------------------------------------------
 
 def get_backup_items(filename):
 	with open(filename) as f:
@@ -48,12 +50,14 @@ def get_backup_items(filename):
 #------------------------------------------------------------------------------
 
 class SystemBackupHandler(tornado.web.RequestHandler):
+
 	SYSTEM_BACKUP_ITEMS_FILE = "/zynthian/config/system_backup_items.txt"
 	DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
 
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
+
 
 	def prepare(self):
 		self.genjson=False
@@ -62,6 +66,7 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 				self.genjson=True
 		except:
 			pass
+
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -91,7 +96,7 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 			self.render("config.html", body="backup.html", config=config, title="Backup / Restore", errors=errors)
 
 
-
+	@tornado.web.authenticated
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_BACKUP_ACTION')
 		if action:
@@ -100,11 +105,14 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 				'DATA_BACKUP': lambda: self.do_data_backup(),
 			}[action]()
 
+
 	def do_system_backup(self):
 		self.do_backup('zynthian_system_backup',SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE)
 
+
 	def do_data_backup(self):
 		self.do_backup('zynthian_data_backup', SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
+
 
 	def do_backup(self, backupFileNamePrefix, backupItemsFileName):
 		zipname='{0}{1}.zip'.format(backupFileNamePrefix, time.strftime("%Y%m%d-%H%M%S"))
@@ -125,6 +133,7 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		self.write(f.getvalue())
 		f.close()
 		self.finish()
+
 
 	def walk_backup_items(self, worker, backupFolderFilename):
 		excluded_folders = []
@@ -147,22 +156,28 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 				
 				except:
 					pass
+
+
 	def is_valid_restore_item(self, validRestoreItems, restoreMember):
 		for validRestoreItem in validRestoreItems:
 			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
 				return True
 		return False
 
+
 class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
+
 	@classmethod
 	def is_registered_for(cls, handler_name):
 		return handler_name == 'RestoreMessageHandler'
 
+
 	def is_valid_restore_item(self, validRestoreItems, restoreMember):
 		for validRestoreItem in validRestoreItems:
 			if str("/" + restoreMember).startswith(os.path.expandvars(validRestoreItem)):
 				return True
 		return False
+
 
 	def on_websocket_message(self, restoreFile):
 		#fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]

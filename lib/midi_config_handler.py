@@ -32,9 +32,8 @@ from collections import OrderedDict
 from subprocess import check_output
 from shutil import copyfile
 
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
-#sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
 from zyngine.zynthian_midi_filter import MidiFilterScript
 

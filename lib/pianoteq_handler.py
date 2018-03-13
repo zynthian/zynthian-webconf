@@ -32,10 +32,9 @@ import shlex
 import shutil
 import glob
 from xml.etree import ElementTree as ET
-
 from collections import OrderedDict
 
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -69,6 +68,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		else:
 			self.render("config.html", body="pianoteq.html", config=config, title="Pianoteq", errors=errors)
 
+	@tornado.web.authenticated
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_PIANOTEQ_ACTION')
 		if action:
@@ -83,19 +83,18 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		licence = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENCE');
 
 		logging.info(licence)
-		if(os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE)):
+		if os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE):
 			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 			try:
 				licence_value = None
 				for xml_value in root.iter("VALUE"):
 					logging.info(xml_value.attrib['name'])
-					if (xml_value.attrib['name'] == 'serial'):
+					if xml_value.attrib['name'] == 'serial':
 						licence_value = xml_value
-				if (licence_value == None):
+				if licence_value is None:
 					licence_value = ET.Element('VALUE')
 					root.getroot().append(licence_value)
 					licence_value.set('name','serial')
-
 				licence_value.set('val', licence)
 				root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 
@@ -107,17 +106,22 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
 		logging.info("Installing %s" % filename)
 		errors = None
+
 		# Just to be sure...
-		if(os.path.isdir("/tmp/pianoteq")):
+		if os.path.isdir("/tmp/pianoteq"):
 			shutil.rmtree("/tmp/pianoteq")
-		if(not os.path.isdir(PianoteqHandler.PIANOTEQ_SW_DIR)):
+		if not os.path.isdir(PianoteqHandler.PIANOTEQ_SW_DIR):
 			os.mkdir(PianoteqHandler.PIANOTEQ_SW_DIR)
 
+		# Install different type of files
 		filename_parts = os.path.splitext(filename)
-		if(filename_parts[1] == '.7z'):
+		# Pianoteq binaries
+		if filename_parts[1] == '.7z':
 			errors = self.do_install_pianoteq_binary(filename);
-		elif(filename_parts[1] == '.ptq'):
+		# Pianoteq instruments
+		elif filename_parts[1] == '.ptq':
 			errors = self.do_install_pianoteq_ptq(filename);
+
 		# Cover my tracks
 		if(os.path.isdir("/tmp/pianoteq")):
 			shutil.rmtree("/tmp/pianoteq")
@@ -126,30 +130,30 @@ class PianoteqHandler(tornado.web.RequestHandler):
 	def do_install_pianoteq_binary(self, filename):
 		# Install binary
 		subprocess.call(shlex.split("/usr/bin/7z x -o/tmp/pianoteq %s \"Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE*\"" % filename))
-		if(os.path.isfile("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)):
+		if os.path.isfile("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR):
 			logging.info("Removing old pianoteq binary %s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)
 			os.remove("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq binary")
 		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE", PianoteqHandler.PIANOTEQ_SW_DIR)
 
 		# Install LV2 plugin
-		if(os.path.isdir("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR)):
+		if os.path.isdir("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR):
 			logging.info("Removing old pianoteq LV2 plugin")
 			shutil.rmtree("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq LV2 plugin")
 		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-sw/pianoteq6/")
-		if(os.path.islink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
+		if os.path.islink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
 			os.unlink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		elif(os.path.isdir("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
+		elif os.path.isdir("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
 			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		elif(os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")):
+		elif os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
 		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
 
 		# Create "My Presets" if not already exist
-		if(not os.path.isdir(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)):
+		if not os.path.isdir(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR):
 			os.makedirs(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)
 
 	def do_install_pianoteq_ptq(self, filename):
@@ -182,23 +186,23 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		return files_count
 
 	def ensure_dir(self, file_path):
-		if(os.path.isfile(file_path)):
+		if os.path.isfile(file_path):
 			directory=os.path.dirname(file_path)
 		else:
 			directory=file_path
-		if(not os.path.isdir(directory)):
+		if not os.path.isdir(directory):
 			logging.info("Creating directory %s" % file_path)
 			os.makedirs(directory)
 		else:
-			logging.info("Directory %s already exists." % file_path)
+			logging.warning("Directory %s already exists." % file_path)
 
 	def get_licence_key(self):
 		#xpath with fromstring doesn't work
-		if(os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR)):
+		if os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR):
 			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
 			try:
 				for xml_value in root.iter("VALUE"):
-					if (xml_value.attrib['name'] == 'serial'):
+					if xml_value.attrib['name'] == 'serial':
 						return xml_value.attrib['val']
-			except:
-				return ''
+			except Exception as e:
+				logging.error("Error parsing license: %s" % e)

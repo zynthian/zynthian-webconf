@@ -32,7 +32,8 @@ import shutil
 import requests
 from collections import OrderedDict
 from subprocess import check_output, call
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+
+from lib.zynthian_config_handler import ZynthianConfigHandler
 from lib.musical_artifacts import MusicalArtifacts
 
 #------------------------------------------------------------------------------
@@ -81,6 +82,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 		else:
 			self.render("config.html", body="presets.html", config=config, title="Presets", errors=errors)
 
+	@tornado.web.authenticated
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_PRESETS_ACTION')
 		self.selected_full_path =  self.get_argument('ZYNTHIAN_PRESETS_FULLPATH')

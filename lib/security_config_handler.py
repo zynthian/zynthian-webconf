@@ -27,23 +27,24 @@ import logging
 import tornado.web
 from collections import OrderedDict
 from subprocess import check_output
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # System Menu
 #------------------------------------------------------------------------------
 
 class SecurityConfigHandler(ZynthianConfigHandler):
+
 	@staticmethod
 	def get_host_name():
 		with open("/etc/hostname") as f:
 			return f.readline()
 
+
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		#Get Hostname
-
-
 		config=OrderedDict([
 			['HOSTNAME', {
 				'type': 'text',
@@ -59,6 +60,17 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 				'type': 'password',
 				'title': 'Repeat password',
 				'value': '*'
+			}],
+			['REGENERATE_KEYS', {
+				'type': 'button',
+				'title': 'Regenerate Keys',
+				'script_file': 'regenerate_keys.js',
+				'button_type': 'button',
+				'class': 'btn-warning',
+			}],
+			['_command', {
+				'type': 'hidden',
+				'value': ''
 			}]
 		])
 		if self.genjson:
@@ -66,9 +78,19 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="config_block.html", config=config, title="Security/Access", errors=errors)
 
+
+	@tornado.web.authenticated
 	def post(self):
-		errors=self.update_system_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.get(errors)
+		params=tornado.escape.recursive_unicode(self.request.arguments)
+		logging.debug("COMMAND: %s" % params['_command'][0])
+		if params['_command'][0]=="REGENERATE_KEYS":
+			cmd=os.environ.get('ZYNTHIAN_SYS_DIR') + "/sbin/regenerate_keys.sh"
+			check_output(cmd, shell=True)
+			self.redirect('/api/sys-reboot')
+		else:
+			errors=self.update_system_config(params)
+			self.get(errors)
+
 
 	def update_system_config(self, config):
 		#Update Password

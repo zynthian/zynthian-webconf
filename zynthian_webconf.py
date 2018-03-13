@@ -26,20 +26,23 @@
 import os
 import re
 import sys
+import string
+import random
 import logging
 import tornado.ioloop
 import tornado.web
 from collections import OrderedDict
-from lib.LoginHandler import LoginHandler
+from os.path import isfile, isdir, join
+from lib.login_handler import LoginHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
-from lib.DisplayConfigHandler import DisplayConfigHandler
-from lib.RebootHandler import RebootHandler
-from lib.SecurityConfigHandler import SecurityConfigHandler
-from lib.UiConfigHandler import UiConfigHandler
-from lib.WiringConfigHandler import WiringConfigHandler
-from lib.WifiConfigHandler import WifiConfigHandler
-from lib.WifiListHandler import WifiListHandler
+from lib.display_config_handler import DisplayConfigHandler
+from lib.reboot_handler import RebootHandler
+from lib.security_config_handler import SecurityConfigHandler
+from lib.ui_config_handler import UiConfigHandler
+from lib.wiring_config_handler import WiringConfigHandler
+from lib.wifi_config_handler import WifiConfigHandler
+from lib.wifi_list_handler import WifiListHandler
 from lib.snapshot_config_handler import SnapshotConfigHandler
 from lib.midi_config_handler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
@@ -74,13 +77,36 @@ logging.basicConfig(stream=sys.stderr, level=log_level)
 # Build Web App & Start Server
 #------------------------------------------------------------------------------
 
+# Try to load from config file. If doesn't exist, generate a new one and save it!
+def get_cookie_secret():
+	cookie_secret_fpath=os.environ.get('ZYNTHIAN_CONFIG_DIR') + "/webconf_cookie_secret.txt"
+	try:
+		with open(cookie_secret_fpath, "r") as fh:
+			cookie_secret = fh.read().strip()
+			logging.info("Cookie Secret: %s" % cookie_secret)
+			return cookie_secret
+	except:
+		cookie_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(37))
+		logging.info("Generated new Cookie Secret: %s" % cookie_secret)
+		try:
+			with open(cookie_secret_fpath, "w") as fh:
+				fh.write(cookie_secret)
+				fh.flush()
+				os.fsync(fh.fileno())
+		except Exception as e:
+			logging.error("Can't save cookie secret file '%s': %s" % (cookie_secret_fpath,e))
+		return cookie_secret
+
+
 def make_app():
+
 	settings = {
 		"template_path": "templates",
-		"cookie_secret": "hsa9fKjf3Hf923hg6avJ)8fjh3mcGF12ht97834bh",
+		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
 		"upload_progress_handler": dict()
 	}
+
 	return tornado.web.Application([
 		(r'/$', DashboardHandler),
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),

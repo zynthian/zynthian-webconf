@@ -32,7 +32,8 @@ import shutil
 import requests
 from collections import OrderedDict
 from subprocess import check_output, call
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+
+from lib.zynthian_config_handler import ZynthianConfigHandler
 from lib.musical_artifacts import MusicalArtifacts
 
 #------------------------------------------------------------------------------
@@ -42,6 +43,7 @@ from lib.musical_artifacts import MusicalArtifacts
 
 
 class SoundfontConfigHandler(tornado.web.RequestHandler):
+	
 	SOUNDFONTS_DIRECTORY = "/zynthian/zynthian-my-data/soundfonts"
 
 	selectedTreeNode = 0
@@ -50,8 +52,10 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 	maxTreeNodeIndex = 0
 	musical_artifacts = MusicalArtifacts()
 
+
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
+
 
 	def prepare(self):
 		self.genjson=False
@@ -60,6 +64,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				self.genjson=True
 		except:
 			pass
+
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -82,6 +87,8 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		else:
 			self.render("config.html", body="soundfonts.html", config=config, title="Soundfonts", errors=errors)
 
+
+	@tornado.web.authenticated
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_SOUNDFONT_ACTION')
 		self.selected_full_path =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH')
@@ -107,11 +114,13 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 		except:
 			pass
 
+
 	def do_new_bank(self):
 		if 	self.get_argument('ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME'):
 			newBank =  self.get_argument('ZYNTHIAN_SOUNDFONT_FULLPATH') + "/" + self.get_argument('ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME')
 			os.mkdir(newBank)
 			self.selected_full_path = newBank
+
 
 	def do_rename(self):
 		newName = ''
@@ -130,6 +139,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				destinationFolder = m.group(1) + newName
 				shutil.move(sourceFolder, destinationFolder)
 				self.selected_full_path = destinationFolder;
+
 
 	def do_search(self):
 		try:
@@ -163,7 +173,6 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				if not f.startswith(".") and  f.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):
 					targetPath = os.path.join(targetDirectory, f)
 					shutil.move(sourcePath, targetPath)
-
 
 
 	def walk_directory(self, directory, nodeType, soundfontType):

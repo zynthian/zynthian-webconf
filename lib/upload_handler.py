@@ -30,8 +30,8 @@ import tornado.websocket
 import shutil
 import datetime
 import jsonpickle
-from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
+from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 #from lib.post_streamer import PostDataStreamer
 from tornadostreamform.multipart_streamer import MultiPartStreamer, StreamedPart, TemporaryFileStreamedPart
@@ -55,7 +55,9 @@ class UploadStreamPart(TemporaryFileStreamedPart):
 		shutil.move(self.f_out.name, file_path)
 		self.is_moved = True
 
+
 class UploadPostDataStreamer(MultiPartStreamer):
+
 	percent = 0
 
 	def __init__(self, webSocketHandler, destinationPath, total):
@@ -63,8 +65,10 @@ class UploadPostDataStreamer(MultiPartStreamer):
 		self.destinationPath = destinationPath
 		super(UploadPostDataStreamer, self).__init__(total)
 
+
 	def create_part(self, headers):
 		return UploadStreamPart(self, headers, tmp_dir=None)
+
 
 	def on_progress(self, received, total):
 		"""Override this function to handle progress of receiving data."""
@@ -76,6 +80,7 @@ class UploadPostDataStreamer(MultiPartStreamer):
 				if self.webSocketHandler:
 					message = ZynthianWebSocketMessage('UploadProgressHandler', str(new_percent))
 					self.webSocketHandler.websocket.write_message(jsonpickle.encode(message))
+
 
 	def examine(self):
 		print("============= structure =============")
@@ -95,7 +100,6 @@ class UploadPostDataStreamer(MultiPartStreamer):
 				print("        PAYLOAD:",repr(part.get_payload()))
 			else:
 				print("        PAYLOAD:","<too long...>")
-
 
 
 	def data_complete(self):

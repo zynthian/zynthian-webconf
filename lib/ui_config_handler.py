@@ -26,7 +26,8 @@ import os
 import logging
 import tornado.web
 from collections import OrderedDict
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # UI Configuration
@@ -93,6 +94,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="config_block.html", config=config, title="User Interface", errors=errors)
 
+	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR','0')
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))

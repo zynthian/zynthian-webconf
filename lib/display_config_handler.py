@@ -27,7 +27,7 @@ import logging
 import tornado.web
 from subprocess import check_output
 from collections import OrderedDict
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Display Configuration
@@ -217,6 +217,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="config_block.html", config=config, title="Display", errors=errors)
 
+	@tornado.web.authenticated
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.delete_fb_splash() # New splash-screens will be generated on next boot

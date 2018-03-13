@@ -27,7 +27,8 @@ import tornado.web
 import logging
 from collections import OrderedDict
 from subprocess import check_output
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
+
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Wiring Configuration
@@ -137,11 +138,14 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="config_block.html", config=config, title="Wiring", errors=errors)
 
+
+	@tornado.web.authenticated
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.rebuild_zyncoder()
 		self.restart_ui()
 		errors=self.get()
+
 
 	def rebuild_zyncoder(self):
 		try:

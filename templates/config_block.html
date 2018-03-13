@@ -5,62 +5,66 @@
 
 <h2>{{ escape(title) }}</h2>
 
-<form method="post">
+<form id="config_block_form" method="post">
 {% for varname in config %}
 	<div {% try %} {% if config[varname]['advanced'] %}class="advanced-view"{% end %} {% except %} {% end %}>
-		{% if config[varname]['type']!='button' %}
-		<label>{{ escape(config[varname]['title']) }}:</label>
-		{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
+
+		{% if config[varname]['type']!='button' and config[varname]['type']!='hidden'%}
+			<label>{{ escape(config[varname]['title']) }}:</label>
+			{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 		{% end %}
 
 		{% if config[varname]['type']=='text' %}
-		<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}" />
-		{% elif config[varname]['type']=='password' %}
-		<input name="{{ escape(varname) }}" type="password" />
-		{% elif config[varname]['type']=='boolean' %}
-		<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
-		{% elif config[varname]['type']=='button' %}
-		<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn btn-lg {{ config[varname]['class'] }}" >
-			{{ config[varname]['title'] }}
-		</button>
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}" />
 
-		{% if 'script_file' in config[varname] %}
-				<script src="../js/{{ config[varname]['script_file'] }}" >
-				</script>
-		{% end %}
+		{% elif config[varname]['type']=='password' %}
+			<input name="{{ escape(varname) }}" type="password" />
+
+		{% elif config[varname]['type']=='boolean' %}
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
+
+		{% elif config[varname]['type']=='hidden' %}
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(config[varname]['value']) }}" />
+
+		{% elif config[varname]['type']=='button' %}
+			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn btn-lg {{ config[varname]['class'] }}" >
+			{{ config[varname]['title'] }}
+			</button>
+			{% if 'script_file' in config[varname] %}
+				<script src="../js/{{ config[varname]['script_file'] }}" ></script>
+			{% end %}
 
 		{% elif config[varname]['type']=='textarea' %}
-		{% if 'addButton' in config[varname] %}
-		<button id="{{ config[varname]['addButton'] }}" type="button">+</button>
-		{% end %}
-		{% if 'addPanel' in config[varname] %}
-		{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
-		{% end %}
-		<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
+			{% if 'addButton' in config[varname] %}
+				<button id="{{ config[varname]['addButton'] }}" type="button">+</button>
+			{% end %}
+			{% if 'addPanel' in config[varname] %}
+				{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
+			{% end %}
+			<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
+
 		{% elif config[varname]['type']=='select' %}
-		<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
-		{% for option in config[varname]['options'] %}
-			<option value="{{ escape(option) }}"
-				{% if config[varname]['value']==option %}selected=1{% end %}
-				{% if 'presets' in config[varname] %}
-					{% for fn,preset in list(config[varname]['presets'][option].items()) %}
-						data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
+			<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
+			{% for option in config[varname]['options'] %}
+				<option value="{{ escape(option) }}"
+					{% if config[varname]['value']==option %}selected=1{% end %}
+					{% if 'presets' in config[varname] %}
+						{% for fn,preset in list(config[varname]['presets'][option].items()) %}
+							data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
+						{% end %}
 					{% end %}
-				{% end %}
-				>
+					>
 				{% if 'option_labels' in config[varname] %}
 					{{ escape(config[varname]['option_labels'][option]) }}
 				{% else %}
 					{{ escape(option) }}
 				{% end %}
-			</option>
-		{% end %}
-		</select>
+				</option>
+			{% end %}
+			</select>
+
 		{% elif config[varname]['type']=='slider' %}
-		<input
-				type="text"
-				name="{{ escape(varname) }}"
-				data-provide="slider"
+			<input type="text" name="{{ escape(varname) }}" data-provide="slider"
 				data-slider-min="{{ config[varname]['min'] }}"
 				data-slider-max="{{ config[varname]['max'] }}"
 				data-slider-step="{{ config[varname]['step'] }}"
@@ -68,17 +72,19 @@
 				data-slider-tooltip="show"
 			/>
 		{% end %}
+
 		<br>
 		{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
 		<br>
 	</div>
 {% end %}
-	<br>
 
-	<input type="submit" value="Save" class="btn btn-lg btn-theme" />
-	{% if handler.needs_reboot() == True %}
+<input type="submit" value="Save" class="btn btn-lg btn-theme" />
+
+{% if handler.needs_reboot() == True %}
 	<span class="label label-info">The zynthian might reboot when you save the changes.</span>
-	{% end %}
+{% end %}
+
 </form>
 
 <script>

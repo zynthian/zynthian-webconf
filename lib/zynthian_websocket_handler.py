@@ -42,6 +42,7 @@ def ZynthianWebSocketMessageHandlerFactory(handler_name, websocket):
 			return cls(handler_name, websocket)
 	raise ValueError
 
+
 class ZynthianWebSocketMessageHandler(object):
 	def __init__(self, handler_name, websocket):
 		self.handler_name = handler_name
@@ -52,6 +53,7 @@ class ZynthianWebSocketMessageHandler(object):
 
 	def on_close(self):
 		pass
+
 
 class ZynthianWebSocketMessage(object):
 	def __init__(self, handler_name, data):
@@ -73,6 +75,7 @@ class ZynthianWebSocketMessage(object):
 	@data.setter
 	def data(self, value):
 		self._data = value
+
 
 class ZynthianWebSocketHandler(tornado.websocket.WebSocketHandler):
 	handlers = []

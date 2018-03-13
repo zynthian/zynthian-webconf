@@ -37,11 +37,12 @@ from collections import OrderedDict
 class WifiConfigHandler(tornado.web.RequestHandler):
 
 	passwordMask = "*****"
+	fieldMap = { "ZYNTHIAN_WIFI_PRIORITY": "priority" }
 
-	fieldMap = {"ZYNTHIAN_WIFI_PRIORITY": "priority"}
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
+
 
 	def prepare(self):
 		self.genjson=False
@@ -50,6 +51,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 				self.genjson=True
 		except:
 			pass
+
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -89,6 +91,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 			self.render("config.html", body="wifi.html", config=config, title="Wifi", errors=errors)
 
 
+	@tornado.web.authenticated
 	def post(self):
 		wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT')
 		fieldNames = ["ZYNTHIAN_WIFI_PRIORITY"]
@@ -103,11 +106,13 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		fo.close()
 		errors=self.get()
 
+
 	def get_supplicant_file_name(self):
 		supplicant_file_name = "/etc/wpa_supplicant/wpa_supplicant.conf"
 		#if os.path.getsize(supplicant_file_name) == 0:
 		#	supplicant_file_name = "/zynthian/zynthian-sys/etc/wpa_supplicant/wpa_supplicant.conf"
 		return supplicant_file_name
+
 
 	def read_supplicant_data(self, supplicant_file_name):
 		try:
@@ -118,6 +123,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		except:
 			pass
 		return ""
+
 
 	def apply_updated_fields(self, wpa_supplicant_data, fieldNames):
 		supplicant_file_name = self.get_supplicant_file_name()
@@ -153,6 +159,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 							wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
 
 		return wpa_supplicant_data
+
 
 	def add_new_network(self, wpa_supplicant_data, newSSID):
 		wpa_supplicant_data += '\nnetwork={\n\tssid="'
