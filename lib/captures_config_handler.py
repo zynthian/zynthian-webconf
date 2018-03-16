@@ -43,7 +43,6 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/captures"
 	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
-
 	selectedTreeNode = 0
 	selected_full_path = '';
 	searchResult = '';
