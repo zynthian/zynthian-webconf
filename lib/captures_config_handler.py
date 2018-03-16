@@ -25,6 +25,7 @@
 import os
 import uuid
 import re
+import fnmatch
 import logging
 import tornado.web
 import json
@@ -32,8 +33,7 @@ import shutil
 import requests
 from collections import OrderedDict
 from subprocess import check_output, call
-from lib.ZynthianConfigHandler import ZynthianConfigHandler
-
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -41,6 +41,8 @@ from lib.ZynthianConfigHandler import ZynthianConfigHandler
 
 class CapturesConfigHandler(tornado.web.RequestHandler):
 	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/captures"
+	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
+
 
 	selectedTreeNode = 0
 	selected_full_path = '';
@@ -64,10 +66,17 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		self.maxTreeNodeIndex = 0
 		captures = []
 		try:
-			captures = self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY)
+			if os.path.ismount(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY):
+				captures.extend(self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY))
+			else:
+				logging.info("/media/usb0 not found")
 		except:
 			pass
 
+		try:
+			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY))
+		except:
+			pass
 
 		config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
 
@@ -141,17 +150,16 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		captures = []
 		fileList =  os.listdir(directory)
 		fileList = sorted(fileList)
-		for f in fileList:
+		for f in fnmatch.filter(fileList, '*.mp3'):
 			fullPath = os.path.join(directory, f)
 			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
 			text = ''
 
 			if m:
 				text = m.group(1)
-
 			try:
 				if self.selected_full_path == fullPath:
-					self.selectedTreeNode = self.maxTreeNodeIndex
+					self.selectedTreeNode = self.maxTreeNodeIndex # max is current right now
 			except:
 				pass
 			capture = {

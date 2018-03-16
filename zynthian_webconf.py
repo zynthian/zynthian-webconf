@@ -84,7 +84,7 @@ def get_cookie_secret():
 	try:
 		with open(cookie_secret_fpath, "r") as fh:
 			cookie_secret = fh.read().strip()
-			logging.info("Cookie Secret: %s" % cookie_secret)
+			#logging.info("Cookie Secret: %s" % cookie_secret)
 			return cookie_secret
 	except:
 		cookie_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(37))
