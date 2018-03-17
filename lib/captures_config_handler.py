@@ -40,7 +40,7 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 #------------------------------------------------------------------------------
 
 class CapturesConfigHandler(tornado.web.RequestHandler):
-	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/captures"
+	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/capture"
 	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
 	selectedTreeNode = 0
@@ -129,7 +129,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			source_file = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
 			filename = self.get_argument('ZYNTHIAN_CAPTURES_NAME')
 
-			self.set_header('Content-Type', 'application/mp3')
+			self.set_header('Content-Type', 'application/wav')
 			self.set_header('Content-Disposition', 'attachment; filename=%s' % filename)
 
 			with open(source_file, 'r') as f:
@@ -149,7 +149,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		captures = []
 		fileList =  os.listdir(directory)
 		fileList = sorted(fileList)
-		for f in fnmatch.filter(fileList, '*.mp3'):
+		for f in fnmatch.filter(fileList, '*.wav'):
 			fullPath = os.path.join(directory, f)
 			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
 			text = ''
