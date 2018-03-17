@@ -75,7 +75,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 3.2B', {
 			'DISPLAY_CONFIG': 'dtoverlay=waveshare32b:rotate=270,swapxy=1\n'+
-				'dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
+				'#dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
 			'FRAMEBUFFER': '/dev/fb1'
