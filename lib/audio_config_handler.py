@@ -204,7 +204,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					if m:
 						volumePercent = m.group(2)
 						channelType = m.group(1)
-			if controlName and playbackChannel:
+			if controlName and channelTpe:
 				self.add_mixer_control(config, mixerControl, controlName, volumePercent, channelType)
 		except Exception as err:
 			logging.error(format(err))
