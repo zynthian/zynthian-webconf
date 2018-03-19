@@ -72,7 +72,7 @@ $('#captures-panel').hide();
 var jsonTree = JSON.parse('{% raw config['ZYNTHIAN_CAPTURES'] %}')
 $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
   levels: 3,
-  emptyIcon: "glyphicon glyphicon-floppy-disk",
+  emptyIcon: "",
   expandIcon: "glyphicon glyphicon-folder-close",
   collapseIcon: "glyphicon glyphicon-folder-open",
   onNodeSelected: function(event, data) {

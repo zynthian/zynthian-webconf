@@ -66,14 +66,14 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		captures = []
 		try:
 			if os.path.ismount(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY):
-				captures.extend(self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY))
+				captures.extend(self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY,  'fa fa-usb'))
 			else:
 				logging.info("/media/usb0 not found")
 		except:
 			pass
 
 		try:
-			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY))
+			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'glyphicon glyphicon-floppy-disk'))
 		except:
 			pass
 
@@ -145,7 +145,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			f.close()
 
 
-	def walk_directory(self, directory):
+	def walk_directory(self, directory, icon):
 		captures = []
 		fileList =  os.listdir(directory)
 		fileList = sorted(fileList)
@@ -165,10 +165,11 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 				'text': f,
 				'name': text,
 				'fullpath': fullPath,
+				'icon': icon,
 				'id': self.maxTreeNodeIndex}
 			self.maxTreeNodeIndex+=1
 			if os.path.isdir(os.path.join(directory, f)):
-				capture['nodes'] = self.walk_directory(os.path.join(directory, f))
+				capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
 
 			captures.append(capture)
 
