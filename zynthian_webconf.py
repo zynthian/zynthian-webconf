@@ -51,6 +51,7 @@ from lib.system_backup_handler import SystemBackupHandler
 from lib.presets_config_handler import PresetsConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.pianoteq_handler import PianoteqHandler
+from lib.captures_config_handler import CapturesConfigHandler
 
 #------------------------------------------------------------------------------
 
@@ -83,7 +84,7 @@ def get_cookie_secret():
 	try:
 		with open(cookie_secret_fpath, "r") as fh:
 			cookie_secret = fh.read().strip()
-			logging.info("Cookie Secret: %s" % cookie_secret)
+			#logging.info("Cookie Secret: %s" % cookie_secret)
 			return cookie_secret
 	except:
 		cookie_secret = ''.join(random.choice(string.ascii_uppercase + string.ascii_lowercase + string.digits) for _ in range(37))
@@ -120,6 +121,7 @@ def make_app():
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
+		(r"/api/lib-captures$", CapturesConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),
