@@ -359,7 +359,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			self.midi_profile_scripts=[self.current_midi_profile_script]
 			try:
 				#Try to copy from default template
-				default_src=os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys") + "/scripts/default_midi_profile.sh"
+				default_src=os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys") + "/config/default_midi_profile.sh"
 				copyfile(default_src, self.current_midi_profile_script)
 			except Exception as e:
 				logging.error(e)
