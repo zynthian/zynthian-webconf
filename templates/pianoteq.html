@@ -2,7 +2,7 @@
 <h2>{{ escape(title) }}</h2>
 
 <form id="pianoteq-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
-{% module Template('upload.html', config=config) %}
+	{% module Template('upload.html', config=config) %}
 </form>
 
 <form id="pianoteq-form" action="/api/sw-pianoteq" enctype="multipart/form-data" method="post">
@@ -68,84 +68,78 @@
 		-->
 		</div>
 
-  </div>
-  <div class="row">
-  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
-  </div>
-</div>
+	</div>
+	<div class="row">
+		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+	</div>
 
+</div>
 </form>
 
 <div id="loading-div-background">
-  <div id="loading-div" class="ui-corner-all">
-    PROCESSING. PLEASE WAIT...
-  </div>
+	<div id="loading-div" class="ui-corner-all">
+		PROCESSING. PLEASE WAIT...
+	</div>
 </div>
 
 <script type="text/javascript">
 var pianoteqForm = $('#pianoteq-form')[0];
 
 $(document).ready(function (){
-    $("#loading-div-background").hide();
+	$("#loading-div-background").hide();
+	$("#installation-success").hide();
+	$("#upload-finished").hide();
+
+	$('#input-uploadfile-type')[0].value = '7z,ptq';
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$("#upload_progress_panel").addClass("active");
+		var socketMessage = {
+			"handler_name": "UploadProgressHandler",
+			"data": $('#input-uploadfile-session')[0].value
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	});
+	connectZynthianWebSocket(deferred);
+
+	$('#upload_panel')[0].onuploadend = function(response){
+		console.log("upload succeeded: " + response);
+		$("#upload-finished").show();
 		$("#installation-success").hide();
-		$("#upload-finished").hide();
 
+		var ajaxData = new FormData(pianoteqForm);
+		ajaxData.append('ZYNTHIAN_PIANOTEQ_ACTION','INSTALL_PIANOTEQ')
+		ajaxData.append("ZYNTHIAN_PIANOTEQ_FILENAME", response);
 
-		$('#input-uploadfile-type')[0].value = '7z,ptq';
+		var ajax = new XMLHttpRequest();
+		ajax.open( pianoteqForm.getAttribute( 'method' ), pianoteqForm.getAttribute( 'action' ), true );
 
-		var deferred = $.Deferred();
-		deferred.done(function(value) {
-			$("#upload_progress_panel").addClass("active");
-
-			var socketMessage = {"handler_name": "UploadProgressHandler",
-				"data": $('#input-uploadfile-session')[0].value};
-
-			window.zynthianSocket.send(JSON.stringify(socketMessage));
-		});
-		connectZynthianWebSocket(deferred);
-
-		$('#upload_panel')[0].onuploadend = function(response){
-			console.log("upload succeeded: " + response);
-
-			$("#upload-finished").show();
-			$("#installation-success").hide();
-
-			var ajaxData = new FormData(pianoteqForm);
-			ajaxData.append('ZYNTHIAN_PIANOTEQ_ACTION','INSTALL_PIANOTEQ')
-			ajaxData.append("ZYNTHIAN_PIANOTEQ_FILENAME", response);
-
-			var ajax = new XMLHttpRequest();
-			ajax.open( pianoteqForm.getAttribute( 'method' ), pianoteqForm.getAttribute( 'action' ), true );
-
-			ajax.onload = function() 	{
-				if( ajax.status >= 200 && ajax.status < 400 )	{
-					if( ajax.status != 200) {
-						console.log("upload error: " + data.errror);
-					}
+		ajax.onload = function() 	{
+			if( ajax.status >= 200 && ajax.status < 400 )	{
+				if( ajax.status != 200) {
+					console.log("upload error: " + data.errror);
 				}
-				else alert( 'Error. Please, contact the webmaster!' );
-			};
+			}
+			else alert( 'Error. Please, contact the webmaster!' );
+		};
 
-			ajax.onloadend = function() {
-					$("#installation-success").show();
-					$("#upload-finished").hide();
-				  //window.location.href = window.location.href;
-			};
+		ajax.onloadend = function() {
+			$("#installation-success").show();
+			$("#upload-finished").hide();
+			//window.location.href = window.location.href;
+		};
 
-			ajax.onerror = function() {
-				console.log("revise uploads failed");
-			};
+		ajax.onerror = function() {
+			console.log("revise uploads failed");
+		};
 
-			ajax.send(ajaxData);
-		}
+		ajax.send(ajaxData);
+	}
 });
 
 function showProgressAnimation(){
-    $("#loading-div-background").show();
+	$("#loading-div-background").show();
 }
-
-
-
-
 
 </script>

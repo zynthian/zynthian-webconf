@@ -5,54 +5,54 @@
 	<div id="no-captures-panel" class="row">
 		No captures have been made yet.
 	</div>
-  <div class="row">
-    <div class="col-md-5">
-        <div id="captures-tree"></div>
-    </div>
 
-    <div id="captures-panel" class="col-md-7">
-        <input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH" />
-        <input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE" />
-        <input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" />
+	<div class="row">
+		<div class="col-md-5">
+			<div id="captures-tree"></div>
+		</div>
+
+		<div id="captures-panel" class="col-md-7">
+			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH" />
+			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE" />
+			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" />
 
 
-        <div id="captures-panel">
-
-          <div id="captures-rename-panel">
-            <div class="row">
-              <label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
-              <input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME" />
-            </div>
-
-            <div class="row">
-              <button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
-            </div>
-
-          </div>
-
+			<div id="captures-panel">
+				<div id="captures-rename-panel">
 					<div class="row">
-						<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme">DOWNLOAD</button>
+						<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
+						<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME" />
 					</div>
 
-          <div class="row" id="captures-remove-panel">
-            <button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
-          </div>
+					<div class="row">
+						<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+					</div>
 
-        </div>
-      </div>
-  </div>
-  <div class="row">
-  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+				</div>
 
+				<div class="row">
+					<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme">DOWNLOAD</button>
+				</div>
+
+				<div class="row" id="captures-remove-panel">
+					<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+				</div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="row">
+	{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
   </div>
+
 </div>
-
 </form>
 
 <div id="loading-div-background">
-  <div id="loading-div" class="ui-corner-all">
-    PROCESSING. PLEASE WAIT...
-  </div>
+	<div id="loading-div" class="ui-corner-all">
+		PROCESSING. PLEASE WAIT...
+	</div>
 </div>
 
 <script type="text/javascript">
@@ -60,36 +60,32 @@
 var capturesForm = $('#captures-form')[0];
 
 $(document).ready(function (){
-    $("#loading-div-background").hide();
+	$("#loading-div-background").hide();
 });
 
 
 function showProgressAnimation(){
-    $("#loading-div-background").show();
+	$("#loading-div-background").show();
 }
 
 $('#captures-panel').hide();
 var jsonTree = JSON.parse('{% raw config['ZYNTHIAN_CAPTURES'] %}')
 $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
-  levels: 3,
-  emptyIcon: "",
-  expandIcon: "glyphicon glyphicon-folder-close",
-  collapseIcon: "glyphicon glyphicon-folder-open",
-  onNodeSelected: function(event, data) {
-      $("#loading-div-background").css({ opacity: 1.0 });
-
-      $('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
-
-      $("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
-
-
-      $('#captures-panel').show();
-    }
-  });
-
-	if (jsonTree.length > 0){
-		$('#captures-tree').treeview('selectNode', {% raw config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] %});
-		$('#no-captures-panel').hide();
+	levels: 3,
+	emptyIcon: "",
+	expandIcon: "glyphicon glyphicon-folder-close",
+	collapseIcon: "glyphicon glyphicon-folder-open",
+	onNodeSelected: function(event, data) {
+		$("#loading-div-background").css({ opacity: 1.0 });
+		$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
+		$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
+		$('#captures-panel').show();
 	}
+});
+
+if (jsonTree.length > 0){
+	$('#captures-tree').treeview('selectNode', {% raw config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] %});
+	$('#no-captures-panel').hide();
+}
 
 </script>

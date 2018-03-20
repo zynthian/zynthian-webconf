@@ -7,29 +7,29 @@
 
 	<!-- Modal HTML -->
 	<div id="newNetworkModal" class="modal fade">
-			<div class="modal-dialog">
-					<div class="modal-content">
-							<div class="modal-header">
-									<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-									<h4 class="modal-title">Add network</h4>
-							</div>
-							<div class="modal-body">
-								<label>SSID:</label><br />
-								<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
-									onchange="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = this.value">
-								</select>
-								<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
-							</div>
-							<div class="modal-footer">
-							 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />
-							</div>
-					</div>
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Add network</h4>
+				</div>
+				<div class="modal-body">
+					<label>SSID:</label><br />
+					<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
+						onchange="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = this.value">
+					</select>
+					<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
+				</div>
+				<div class="modal-footer">
+				 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />
+				</div>
 			</div>
+		</div>
 	</div>
 
 	<ul class="nav nav-tabs" role="tablist">
 		{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
-	  <li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid64'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
+		<li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid64'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
 		{% end %}
 		<li ><a href="#wpa_supplicant" role="tab" data-toggle="tab">{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['title'] }}</a></li>
 	</ul>
@@ -70,8 +70,8 @@ function wifiListLoaded(data) {
 	}
 	i=0;
 	$.each(data, function(ssid, info) {
-			$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").append('<option value="' + ssid + '">' + ssid + ' (' + info.quality + '%)' + '</option>');
-			i++;
+		$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").append('<option value="' + ssid + '">' + ssid + ' (' + info.quality + '%)' + '</option>');
+		i++;
 	});
 	if (i>0) {
 		$("#ZYNTHIAN_WIFI_NEW_SSID_SELECT").show();
@@ -82,8 +82,8 @@ function wifiListLoaded(data) {
 }
 
 $(document).ready(function(){
-		$(".btn-new-network").click(function(){
-			$.getJSON( '/api/wifi/list' , {}, wifiListLoaded );
-		});
+	$(".btn-new-network").click(function(){
+		$.getJSON( '/api/wifi/list' , {}, wifiListLoaded );
+	});
 });
 </script>

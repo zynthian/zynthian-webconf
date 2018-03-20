@@ -2,116 +2,115 @@
 <h2>{{ escape(title) }}</h2>
 
 <form id="presets-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
-{% module Template('upload.html', config=config) %}
+	{% module Template('upload.html', config=config) %}
 </form>
 
 <form id="presets-form" action="/api/lib-presets" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
-  <div class="row">
-    <div class="col-md-5">
-        <div id="presets-tree"></div>
-    </div>
-    <div id="presets-panel" class="col-md-7">
-        <input type="hidden" id="ZYNTHIAN_PRESETS_FULLPATH" name="ZYNTHIAN_PRESETS_FULLPATH" />
-        <input type="hidden" id="ZYNTHIAN_PRESETS_BANK_TYPE" name="ZYNTHIAN_PRESETS_BANK_TYPE" />
-        <input type="hidden" id="ZYNTHIAN_PRESETS_DOWNLOAD_FILE" name="ZYNTHIAN_PRESETS_DOWNLOAD_FILE" />
 
+	<div class="row">
 
-        <div id="presets-new-bank-panel">
-          <div class="row">
-            <label>Bank:</label>
-          </div>
-          <div class="row">
-            <input type="text" id="ZYNTHIAN_PRESETS_NEW_BANK_NAME" name="ZYNTHIAN_PRESETS_NEW_BANK_NAME" />
-          </div>
-          <div class="row">
-            <button name="ZYNTHIAN_PRESETS_ACTION" value="NEW" class="btn btn-lg btn-theme">New bank</button>
-          </div>
-        </div>
+		<div class="col-md-5">
+			<div id="presets-tree"></div>
+		</div>
 
-        <div id="presets-bank-panel">
+		<div id="presets-panel" class="col-md-7">
+			<input type="hidden" id="ZYNTHIAN_PRESETS_FULLPATH" name="ZYNTHIAN_PRESETS_FULLPATH" />
+			<input type="hidden" id="ZYNTHIAN_PRESETS_BANK_TYPE" name="ZYNTHIAN_PRESETS_BANK_TYPE" />
+			<input type="hidden" id="ZYNTHIAN_PRESETS_DOWNLOAD_FILE" name="ZYNTHIAN_PRESETS_DOWNLOAD_FILE" />
 
-          <div id="presets-bank-rename-panel">
-            <div class="row">
-              <label for="ZYNTHIAN_PRESETS_BANK_NAME">Bank:</label>
-              <input type="text" id="ZYNTHIAN_PRESETS_BANK_NAME" name="ZYNTHIAN_PRESETS_BANK_NAME" />
-            </div>
+			<div id="presets-new-bank-panel">
+				<div class="row">
+					<label>Bank:</label>
+				</div>
+				<div class="row">
+					<input type="text" id="ZYNTHIAN_PRESETS_NEW_BANK_NAME" name="ZYNTHIAN_PRESETS_NEW_BANK_NAME" />
+				</div>
+				<div class="row">
+					<button name="ZYNTHIAN_PRESETS_ACTION" value="NEW" class="btn btn-lg btn-theme">New bank</button>
+				</div>
+			</div>
 
-            <div class="row">
-              <button name="ZYNTHIAN_PRESETS_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
-            </div>
-          </div>
+			<div id="presets-bank-panel">
+				<div id="presets-bank-rename-panel">
+					<div class="row">
+						<label for="ZYNTHIAN_PRESETS_BANK_NAME">Bank:</label>
+						<input type="text" id="ZYNTHIAN_PRESETS_BANK_NAME" name="ZYNTHIAN_PRESETS_BANK_NAME" />
+					</div>
 
-          <div class="row">
-            <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD"></input>
-          </div>
+					<div class="row">
+						<button name="ZYNTHIAN_PRESETS_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+					</div>
+				</div>
 
-          <div id="presets-search-panel">
-            <div class="row">
-              <label for="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts</label>
-              <input type="text" id="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS" name="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS']) }}" />
-            </div>
+				<div class="row">
+					<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD"></input>
+				</div>
 
-            <div class="row">
-              <button id="ZYNTHIAN_PRESETS_ACTION_SEARCH" name="ZYNTHIAN_PRESETS_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
-            </div>
+				<div id="presets-search-panel">
+					<div class="row">
+						<label for="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts</label>
+						<input type="text" id="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS" name="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS']) }}" />
+					</div>
 
-            <div class="row">
-              <table class="table table-striped table-bordered table-condensed">
-            {% if config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] %}
-            {% for row in config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] %}
-                <tr>
-                  <td title="{{ escape(row['description']) }}">
-                    {% if len(row['more_info'])>0 %}
-                      <a href="{{ row['more_info'][0] }}" target="_blank" >
-                        {{ row['name'] }}
-                      </a>
-                    {% else %}
-                      {{ row['name'] }}
-                    {% end %}
-                </td>
-                  <td>
-                    <button name="ZYNTHIAN_PRESETS_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
-                  </td>
-                </tr>
-            {% end %}
-            {% end %}
-              </table>
-            </div>
-          </div>
+					<div class="row">
+						<button id="ZYNTHIAN_PRESETS_ACTION_SEARCH" name="ZYNTHIAN_PRESETS_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
+					</div>
 
-          <div class="row" id="presets-bank-remove-panel">
-            <button name="ZYNTHIAN_PRESETS_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
-          </div>
+					<div class="row">
+						<table class="table table-striped table-bordered table-condensed">
+						{% if config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] %}
+						{% for row in config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] %}
+							<tr>
+								<td title="{{ escape(row['description']) }}">
+									{% if len(row['more_info'])>0 %}
+										<a href="{{ row['more_info'][0] }}" target="_blank" >
+											{{ row['name'] }}
+										</a>
+									{% else %}
+										{{ row['name'] }}
+									{% end %}
+							</td>
+								<td>
+									<button name="ZYNTHIAN_PRESETS_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
+								</td>
+							</tr>
+						{% end %}
+						{% end %}
+						</table>
+					</div>
+				</div>
 
-        </div>
+				<div class="row" id="presets-bank-remove-panel">
+					<button name="ZYNTHIAN_PRESETS_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+				</div>
+			</div>
 
-        <div id="presets-file-panel">
+			<div id="presets-file-panel">
+				<div id="presets-rename-panel">
+					<div class="row">
+						<label for="ZYNTHIAN_PRESETS_PRESET_NAME">Preset:</label>
+						<input type="text" id="ZYNTHIAN_PRESETS_PRESET_NAME" name="ZYNTHIAN_PRESETS_PRESET_NAME" />
+					</div>
 
-          <div id="presets-rename-panel">
-            <div class="row">
-              <label for="ZYNTHIAN_PRESETS_PRESET_NAME">Preset:</label>
-              <input type="text" id="ZYNTHIAN_PRESETS_PRESET_NAME" name="ZYNTHIAN_PRESETS_PRESET_NAME" />
-            </div>
+					<div class="row">
+						<button name="ZYNTHIAN_PRESETS_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+					</div>
+				</div>
 
-            <div class="row">
-              <button name="ZYNTHIAN_PRESETS_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
-            </div>
-          </div>
+				<div class="row">
+					<button name="ZYNTHIAN_PRESETS_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+				</div>
+			</div>
 
-          <div class="row">
-            <button name="ZYNTHIAN_PRESETS_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
-          </div>
+		</div>
+	</div>
 
-        </div>
-      </div>
-  </div>
-  <div class="row">
-  {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+	<div class="row">
+		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+	</div>
 
-  </div>
 </div>
-
 </form>
 
 <div id="loading-div-background">
@@ -125,103 +124,103 @@
 var presetsForm = $('#presets-form')[0];
 
 $(document).ready(function (){
-    $("#loading-div-background").hide();
+	$("#loading-div-background").hide();
 
-    $('#ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
-        // Enter pressed?
-        if(e.which == 13) {
-            e.preventDefault();
-            $('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
-        }
-    });
-
-		var deferred = $.Deferred();
-		deferred.done(function(value) {
-			$("#upload_progress_panel").addClass("active");
-			var socketMessage = {"handler_name": "UploadProgressHandler",
-				"data": $('#input-uploadfile-session')[0].value};
-
-			window.zynthianSocket.send(JSON.stringify(socketMessage));
-		});
-		connectZynthianWebSocket(deferred);
-
-		$('#upload_panel')[0].onuploadend = function(response){
-				console.log("upload succeded: " + response);
-				var ajaxData = new FormData(presetsForm);
-				ajaxData.append('ZYNTHIAN_PRESETS_ACTION','REVISE_UPLOAD')
-				var ajax = new XMLHttpRequest();
-
-				ajax.open( presetsForm.getAttribute( 'method' ), presetsForm.getAttribute( 'action' ), true );
-
-				ajax.onload = function() 	{
-					if( ajax.status >= 200 && ajax.status < 400 )	{
-						if( ajax.status != 200) {
-							console.log("upload error: " + data.errror);
-						}
-					}
-					else alert( 'Error. Please, contact the webmaster!' );
-				};
-
-				ajax.onloadend = function() {
-					console.log("revise uploads succeeded");
-					window.location.href = window.location.href;
-				};
-
-				ajax.onerror = function() {
-					console.log("revise uploads failed");
-				};
-
-				ajax.send(ajaxData);
+	$('#ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
+		// Enter pressed?
+		if(e.which == 13) {
+			e.preventDefault();
+			$('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
 		}
+	});
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$("#upload_progress_panel").addClass("active");
+		var socketMessage = {
+			"handler_name": "UploadProgressHandler",
+			"data": $('#input-uploadfile-session')[0].value
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	});
+
+	connectZynthianWebSocket(deferred);
+
+	$('#upload_panel')[0].onuploadend = function(response){
+		console.log("upload succeded: " + response);
+		var ajaxData = new FormData(presetsForm);
+		ajaxData.append('ZYNTHIAN_PRESETS_ACTION','REVISE_UPLOAD')
+		var ajax = new XMLHttpRequest();
+
+		ajax.open( presetsForm.getAttribute( 'method' ), presetsForm.getAttribute( 'action' ), true );
+
+		ajax.onload = function() 	{
+			if( ajax.status >= 200 && ajax.status < 400 )	{
+				if( ajax.status != 200) {
+					console.log("upload error: " + data.errror);
+				}
+			}
+			else alert( 'Error. Please, contact the webmaster!' );
+		};
+
+		ajax.onloadend = function() {
+			console.log("revise uploads succeeded");
+			window.location.href = window.location.href;
+		};
+
+		ajax.onerror = function() {
+			console.log("revise uploads failed");
+		};
+
+		ajax.send(ajaxData);
+	}
+
 });
 
 function showProgressAnimation(){
-    $("#loading-div-background").show();
+	$("#loading-div-background").show();
 }
 
 $('#presets-panel').hide();
 $('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS'] %}'), bootstrap2: true ,
-  levels: 3,
-  emptyIcon: "glyphicon glyphicon-floppy-disk",
-  expandIcon: "glyphicon glyphicon-folder-close",
-  collapseIcon: "glyphicon glyphicon-folder-open",
-  onNodeSelected: function(event, data) {
-      $("#loading-div-background").css({ opacity: 1.0 });
-      $('#presets-new-bank-panel').hide();
-      $('#presets-bank-panel').hide();
-      $('#presets-file-panel').hide();
-      $('#presets-bank-remove-panel').hide();
-      $('#presets-bank-rename-panel').hide();
-      $('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value='';
-      $('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value='';
+	levels: 3,
+	emptyIcon: "glyphicon glyphicon-floppy-disk",
+	expandIcon: "glyphicon glyphicon-folder-close",
+	collapseIcon: "glyphicon glyphicon-folder-open",
+	onNodeSelected: function(event, data) {
+		$("#loading-div-background").css({ opacity: 1.0 });
+		$('#presets-new-bank-panel').hide();
+		$('#presets-bank-panel').hide();
+		$('#presets-file-panel').hide();
+		$('#presets-bank-remove-panel').hide();
+		$('#presets-bank-rename-panel').hide();
+		$('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value='';
+		$('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value='';
+		$("#ZYNTHIAN_PRESETS_FULLPATH")[0].value = data.fullpath;
+		$("#presets-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-presets&destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value);
+		$("#ZYNTHIAN_PRESETS_BANK_TYPE")[0].value = data.bankType;
 
-      $("#ZYNTHIAN_PRESETS_FULLPATH")[0].value = data.fullpath;
-      $("#presets-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-presets&destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value)
-      $("#ZYNTHIAN_PRESETS_BANK_TYPE")[0].value = data.bankType;
+		if (data.nodeType == 'BANK_TYPE') {
+			$('#presets-new-bank-panel').show();
+		} else if (data.nodeType == 'BANK') {
+			$('#presets-bank-panel').show();
+			$('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value=data.text;
+			$('#input-uploadfile-type')[0].value = data.bankType;
+			if (data.text != 'sf2'){
+				$('#presets-bank-remove-panel').show();
+				$('#presets-bank-rename-panel').show();
+			}
+		} else if (data.nodeType == 'PRESET') {
+			$('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value=data.text;
+			$('#presets-file-panel').show();
+		}
+		$('#presets-panel').show();
+	}
+});
 
-      if (data.nodeType == 'BANK_TYPE'){
-          $('#presets-new-bank-panel').show();
-
-      } else if (data.nodeType == 'BANK'){
-          $('#presets-bank-panel').show();
-          $('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value=data.text;
-          $('#input-uploadfile-type')[0].value = data.bankType;
-          if (data.text != 'sf2'){
-            $('#presets-bank-remove-panel').show();
-            $('#presets-bank-rename-panel').show();
-          }
-      } else if (data.nodeType == 'PRESET'){
-        $('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value=data.text;
-        $('#presets-file-panel').show();
-      }
-      $('#presets-panel').show();
-    }
-  });
-
-  $('#presets-tree').treeview('selectNode',{% raw config['ZYNTHIAN_PRESETS_SELECTION_NODE_ID'] %});
-
+$('#presets-tree').treeview('selectNode',{% raw config['ZYNTHIAN_PRESETS_SELECTION_NODE_ID'] %});
 
 function setDownloadFile(filename){
-  $('#ZYNTHIAN_PRESETS_DOWNLOAD_FILE')[0].value=filename;
+	$('#ZYNTHIAN_PRESETS_DOWNLOAD_FILE')[0].value=filename;
 }
 </script>

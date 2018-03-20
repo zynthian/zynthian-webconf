@@ -73,12 +73,11 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			pass
 
 		try:
-			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'glyphicon glyphicon-floppy-disk'))
+			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'fa fa-file-audio'))
 		except:
 			pass
 
 		config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
-
 		config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
 
 		if self.genjson:
