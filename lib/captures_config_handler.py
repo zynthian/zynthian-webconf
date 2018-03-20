@@ -66,14 +66,14 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		captures = []
 		try:
 			if os.path.ismount(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY):
-				captures.extend(self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY,  'fa fa-usb'))
+				captures.extend(self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY,  'fa fa-fw fa-usb'))
 			else:
 				logging.info("/media/usb0 not found")
 		except:
 			pass
 
 		try:
-			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'fa fa-file-audio'))
+			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'fa fa-fw fa-file'))
 		except:
 			pass
 
