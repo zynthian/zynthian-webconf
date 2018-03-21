@@ -35,31 +35,17 @@ from xml.etree import ElementTree as ET
 from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
+from zyngine.zynthian_engine_pianoteq import *
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class PianoteqHandler(tornado.web.RequestHandler):
-
-	PIANOTEQ_SW_DIR = r'/zynthian/zynthian-sw/pianoteq6'
-	PIANOTEQ_ADDON_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Addons'
-	PIANOTEQ_MY_PRESETS_DIR = os.path.expanduser("~")  + '/.local/share/Modartt/Pianoteq/Presets/My Presets'
-	PIANOTEQ_CONFIG_FILE = os.path.expanduser("~")  + '/.config/Modartt/Pianoteq60 STAGE.prefs'
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
+class PianoteqHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+		#self.pianoteq_autoconfig()
 		config=OrderedDict([])
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = False
 		config['ZYNTHIAN_PIANOTEQ_LICENCE'] = self.get_licence_key()
@@ -83,8 +69,8 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		licence = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENCE');
 
 		logging.info(licence)
-		if os.path.isfile(PianoteqHandler.PIANOTEQ_CONFIG_FILE):
-			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+		if os.path.isfile(PIANOTEQ_CONFIG_FILE):
+			root = ET.parse(PIANOTEQ_CONFIG_FILE)
 			try:
 				licence_value = None
 				for xml_value in root.iter("VALUE"):
@@ -96,7 +82,7 @@ class PianoteqHandler(tornado.web.RequestHandler):
 					root.getroot().append(licence_value)
 					licence_value.set('name','serial')
 				licence_value.set('val', licence)
-				root.write(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+				root.write(PIANOTEQ_CONFIG_FILE)
 
 			except Exception as e:
 				logging.error("Installing licence failed: %s" % format(e))
@@ -110,8 +96,8 @@ class PianoteqHandler(tornado.web.RequestHandler):
 		# Just to be sure...
 		if os.path.isdir("/tmp/pianoteq"):
 			shutil.rmtree("/tmp/pianoteq")
-		if not os.path.isdir(PianoteqHandler.PIANOTEQ_SW_DIR):
-			os.mkdir(PianoteqHandler.PIANOTEQ_SW_DIR)
+		if not os.path.isdir(PIANOTEQ_SW_DIR):
+			os.mkdir(PIANOTEQ_SW_DIR)
 
 		# Install different type of files
 		filename_parts = os.path.splitext(filename)
@@ -130,16 +116,16 @@ class PianoteqHandler(tornado.web.RequestHandler):
 	def do_install_pianoteq_binary(self, filename):
 		# Install binary
 		subprocess.call(shlex.split("/usr/bin/7z x -o/tmp/pianoteq %s \"Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE*\"" % filename))
-		if os.path.isfile("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR):
-			logging.info("Removing old pianoteq binary %s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)
-			os.remove("%s/Pianoteq 6 STAGE" % PianoteqHandler.PIANOTEQ_SW_DIR)
+		if os.path.isfile("%s/Pianoteq 6 STAGE" % PIANOTEQ_SW_DIR):
+			logging.info("Removing old pianoteq binary %s/Pianoteq 6 STAGE" % PIANOTEQ_SW_DIR)
+			os.remove("%s/Pianoteq 6 STAGE" % PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq binary")
-		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE", PianoteqHandler.PIANOTEQ_SW_DIR)
+		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE", PIANOTEQ_SW_DIR)
 
 		# Install LV2 plugin
-		if os.path.isdir("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR):
+		if os.path.isdir("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR):
 			logging.info("Removing old pianoteq LV2 plugin")
-			shutil.rmtree("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR)
+			shutil.rmtree("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq LV2 plugin")
 		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-sw/pianoteq6/")
 		if os.path.islink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
@@ -148,18 +134,21 @@ class PianoteqHandler(tornado.web.RequestHandler):
 			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 		elif os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
 			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PianoteqHandler.PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
+		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
 
 		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
 
 		# Create "My Presets" if not already exist
-		if not os.path.isdir(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR):
-			os.makedirs(PianoteqHandler.PIANOTEQ_MY_PRESETS_DIR)
+		if not os.path.isdir(PIANOTEQ_MY_PRESETS_DIR):
+			os.makedirs(PIANOTEQ_MY_PRESETS_DIR)
+
+		# Configure Pianoteq
+		self.pianoteq_autoconfig()
 
 	def do_install_pianoteq_ptq(self, filename):
-		self.ensure_dir(PianoteqHandler.PIANOTEQ_ADDON_DIR)
-		logging.info("Moving %s to %s" % (filename, PianoteqHandler.PIANOTEQ_ADDON_DIR))
-		shutil.move(filename, PianoteqHandler.PIANOTEQ_ADDON_DIR)
+		self.ensure_dir(PIANOTEQ_ADDON_DIR)
+		logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
+		shutil.move(filename, PIANOTEQ_ADDON_DIR)
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
 	def recursive_copy_files(self,source_path, destination_path, override=False):
@@ -198,11 +187,25 @@ class PianoteqHandler(tornado.web.RequestHandler):
 
 	def get_licence_key(self):
 		#xpath with fromstring doesn't work
-		if os.path.exists(PianoteqHandler.PIANOTEQ_ADDON_DIR):
-			root = ET.parse(PianoteqHandler.PIANOTEQ_CONFIG_FILE)
+		if os.path.exists(PIANOTEQ_ADDON_DIR):
+			root = ET.parse(PIANOTEQ_CONFIG_FILE)
 			try:
 				for xml_value in root.iter("VALUE"):
 					if xml_value.attrib['name'] == 'serial':
 						return xml_value.attrib['val']
 			except Exception as e:
 				logging.error("Error parsing license: %s" % e)
+
+	def pianoteq_autoconfig(self):
+		# Get and Save pianoteq binary options
+		info = get_pianoteq_binary_info()
+		if info:
+			# Save envars
+			config = {
+				"PIANOTEQ_VERSION": [str(info['version'])],
+				"PIANOTEQ_TRIAL": [str(info['trial'])]
+			}
+			errors=self.update_config(config)
+
+		# Regenerate presets cache
+		zynthian_engine_pianoteq(None, True)
