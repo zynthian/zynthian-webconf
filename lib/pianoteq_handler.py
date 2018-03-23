@@ -120,9 +120,6 @@ class PianoteqHandler(ZynthianConfigHandler):
 			logging.info("Removing old pianoteq binary %s/Pianoteq 6 STAGE" % PIANOTEQ_SW_DIR)
 			os.remove("%s/Pianoteq 6 STAGE" % PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq binary")
-		if(os.path.isfile("/zynthian/zynthian-my-data/pianoteq6/presets_cache.json")):
-			# remove (perhaps) old preset-cache, so we force a new generation at next start of the engine
-			os.remove("/zynthian/zynthian-my-data/pianoteq6/presets_cache.json")
 		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE", PIANOTEQ_SW_DIR)
 
 		# Install LV2 plugin
