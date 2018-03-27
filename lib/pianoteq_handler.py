@@ -108,6 +108,9 @@ class PianoteqHandler(ZynthianConfigHandler):
 		elif filename_parts[1] == '.ptq':
 			errors = self.do_install_pianoteq_ptq(filename);
 
+		# Configure Pianoteq
+		self.pianoteq_autoconfig()
+
 		# Cover my tracks
 		if(os.path.isdir("/tmp/pianoteq")):
 			shutil.rmtree("/tmp/pianoteq")
@@ -142,13 +145,12 @@ class PianoteqHandler(ZynthianConfigHandler):
 		if not os.path.isdir(PIANOTEQ_MY_PRESETS_DIR):
 			os.makedirs(PIANOTEQ_MY_PRESETS_DIR)
 
-		# Configure Pianoteq
-		self.pianoteq_autoconfig()
 
 	def do_install_pianoteq_ptq(self, filename):
 		self.ensure_dir(PIANOTEQ_ADDON_DIR)
 		logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
 		shutil.move(filename, PIANOTEQ_ADDON_DIR)
+
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
 	def recursive_copy_files(self,source_path, destination_path, override=False):
