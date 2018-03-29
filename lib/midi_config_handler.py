@@ -253,20 +253,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED'),
 				'advanced': True
 			}],
-			['ZYNTHIAN_MIDI_NETWORK_IN_CHANNEL', {
-				'type': 'select',
-				'title': 'Network IN channel',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_IN_CHANNEL', '02'),
-				'options': map(lambda x: str(x).zfill(2), list(range(1, 17))),
-				'advanced': True
-			}],
-			['ZYNTHIAN_MIDI_NETWORK_OUT_CHANNEL', {
-				'type': 'select',
-				'title': 'Network OUT channel',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_OUT_CHANNEL','02'),
-				'options': map(lambda x: str(x).zfill(2), list(range(1, 17))),
-				'advanced': True
-			}],
 			['ZYNTHIAN_MIDI_FILTER_RULES', {
 				'type': 'textarea',
 				'title': 'Midi filter rules',
@@ -436,7 +422,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
 			#Each returned alias string is something like that:
 			# in-hw-1-0-0-LPK25-MIDI-1
-			#or    
+			#or
 			# out-hw-2-0-0-MK-249C-USB-MIDI-keyboard-MIDI-
 			alias=' '.join(alias.split('-')[5:])
 		except:
