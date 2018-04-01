@@ -31,6 +31,7 @@ import tornado.web
 import json
 import shutil
 import requests
+import jsonpickle
 from collections import OrderedDict
 from subprocess import check_output, call
 from lib.zynthian_config_handler import ZynthianConfigHandler
@@ -128,19 +129,20 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			source_file = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
 			filename = self.get_argument('ZYNTHIAN_CAPTURES_NAME')
 
-			self.set_header('Content-Type', 'application/wav')
-			self.set_header('Content-Disposition', 'attachment; filename=%s' % filename)
-
-			with open(source_file, 'r') as f:
+			with open(source_file, 'rb') as f:
 				try:
 					while True:
 						data = f.read(4096)
 						if not data:
 							break
 						self.write(data)
+
+					self.set_header('Content-Type', 'application/wav')
+					self.set_header('Content-Disposition', 'attachment; filename=%s' % filename)
 					self.finish()
 				except Exception as exc:
-					self.write(json_encode({'data': exc}))
+					self.set_header('Content-Type', 'application/json')
+					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
 
