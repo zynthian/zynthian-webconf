@@ -149,7 +149,7 @@ class PianoteqHandler(ZynthianConfigHandler):
 	def do_install_pianoteq_ptq(self, filename):
 		self.ensure_dir(PIANOTEQ_ADDON_DIR)
 		logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
-		shutil.move(filename, PIANOTEQ_ADDON_DIR)
+		shutil.move(filename, PIANOTEQ_ADDON_DIR + os.path.basename(filename))
 
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
