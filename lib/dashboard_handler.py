@@ -67,23 +67,6 @@ class DashboardHandler(ZynthianConfigHandler):
 					'url': "/api/hw-wiring"
 				}]
 			])],
-			['MIDI', OrderedDict([
-				['PROFILE', {
-					'title': 'Profile',
-					'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
-					'url': "/api/ui-midi"
-				}],
-				['FINE_TUNING', {
-					'title': 'Fine Tuning',
-					'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
-					'url': "/api/ui-midi"
-				}],
-				['MASTER_CHANNEL', {
-					'title': 'Master Channel',
-					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
-					'url': "/api/ui-midi"
-				}]
-			])],
 			['LIBRARY', OrderedDict([
 				['SNAPSHOTS', {
 					'title': 'Snapshots',
@@ -99,6 +82,28 @@ class DashboardHandler(ZynthianConfigHandler):
 					'title': 'User Soundfonts',
 					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts"),
 					'url': "/api/lib-soundfont"
+				}]
+			])],
+			['MIDI', OrderedDict([
+				['PROFILE', {
+					'title': 'Profile',
+					'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
+					'url': "/api/ui-midi"
+				}],
+				['FINE_TUNING', {
+					'title': 'Fine Tuning',
+					'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
+					'url': "/api/ui-midi"
+				}],
+				['MASTER_CHANNEL', {
+					'title': 'Master Channel',
+					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
+					'url': "/api/ui-midi"
+				}],
+				['MIDI_NETWORK', {
+					'title': 'Network',
+					'value': str(self.is_service_active("qmidinet")),
+					'url': "/api/ui-midi"
 				}]
 			])],
 			['SOFTWARE', OrderedDict([
@@ -190,3 +195,14 @@ class DashboardHandler(ZynthianConfigHandler):
 	def get_num_of_files(self, path):
 		n=check_output("find %s -type f -follow | wc -l" % path, shell=True).decode()
 		return n
+
+
+	def is_service_active(self, service):
+		cmd="systemctl is-active %s" % service
+		try:
+			result=check_output(cmd, shell=True).decode('utf-8','ignore')
+		except Exception as e:
+			result="ERROR: %s" % e
+		#print("Is service "+str(service)+" active? => "+str(result))
+		if result.strip()=='active': return True
+		else: return False

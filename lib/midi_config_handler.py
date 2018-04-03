@@ -193,8 +193,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', {
 				'type': 'boolean',
-				'title': 'Preset preload on Note-On',
+				'title': 'Preload Presets on Note-On',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON')
+			}],
+			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable MIDI over Network',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED'),
+				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
 				'type': 'select',
@@ -245,12 +251,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'text',
 				'title': 'Master Bank change-down',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_DOWN'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
-				'type': 'boolean',
-				'title': 'MIDI network enabled',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_FILTER_RULES', {
