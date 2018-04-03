@@ -50,6 +50,23 @@ class DashboardHandler(ZynthianConfigHandler):
 		sd_info=self.get_sd_info()
 
 		config=OrderedDict([
+			['SYSTEM', OrderedDict([
+				['HOSTNAME', {
+					'title': 'Hostname',
+					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
+					'url': "/api/sys-security"
+				}],
+				['RAM', {
+					'title': 'Memory',
+					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
+					'url': ""
+				}],
+				['SD CARD', {
+					'title': 'SD Card',
+					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
+					'url': ""
+				}]
+			])],
 			['HARDWARE', OrderedDict([
 				['SOUNDCARD_NAME', {
 					'title': 'Soundcard',
@@ -65,23 +82,6 @@ class DashboardHandler(ZynthianConfigHandler):
 					'title': 'Wiring',
 					'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 					'url': "/api/hw-wiring"
-				}]
-			])],
-			['LIBRARY', OrderedDict([
-				['SNAPSHOTS', {
-					'title': 'Snapshots',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots"),
-					'url': "/api/lib-snapshot"
-				}],
-				['USER_PRESETS', {
-					'title': 'User Presets',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets"),
-					'url': "/api/lib-presets"
-				}],
-				['USER_SOUNDFONTS', {
-					'title': 'User Soundfonts',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts"),
-					'url': "/api/lib-soundfont"
 				}]
 			])],
 			['MIDI', OrderedDict([
@@ -133,24 +133,28 @@ class DashboardHandler(ZynthianConfigHandler):
 					'url': "https://github.com/zynthian/zynthian-webconf/commit/{}".format(git_info_webconf['gitid'])
 				}]
 			])],
-			['SYSTEM', OrderedDict([
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
-					'url': "/api/sys-security"
+			['LIBRARY', OrderedDict([
+				['SNAPSHOTS', {
+					'title': 'Snapshots',
+					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots"),
+					'url': "/api/lib-snapshot"
 				}],
-				['RAM', {
-					'title': 'Memory',
-					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
-					'url': ""
+				['USER_PRESETS', {
+					'title': 'User Presets',
+					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets"),
+					'url': "/api/lib-presets"
 				}],
-				['SD CARD', {
-					'title': 'SD Card',
-					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
-					'url': ""
+				['USER_SOUNDFONTS', {
+					'title': 'User Soundfonts',
+					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts"),
+					'url': "/api/lib-soundfont"
+				}],
+				['AUDIO_CAPTURES', {
+					'title': 'Audio Captures',
+					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture"),
+					'url': "/api/lib-captures"
 				}]
 			])]
-
 		])
 
 		if self.genjson:
