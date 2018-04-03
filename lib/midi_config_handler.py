@@ -392,6 +392,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			#For jack, output/input convention are reversed => output=readable, input=writable
 			midi_in_ports = client.get_ports(is_midi=True, is_physical=True, is_output=True)
 			midi_out_ports = client.get_ports(is_midi=True, is_physical=True, is_input=True)
+			#Add QMidiNet ports
+			qmidinet_in_ports=client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_output=True )
+			qmidinet_out_ports=client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_input=True )
+			try:
+				midi_in_ports.append(qmidinet_in_ports[0])
+				midi_out_ports.append(qmidinet_out_ports[0])
+			except:
+				pass
 
 			#Get current MIDI ports configuration
 			current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS',self.DEFAULT_MIDI_PORTS)
@@ -440,7 +448,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			# out-hw-2-0-0-MK-249C-USB-MIDI-keyboard-MIDI-
 			alias=' '.join(alias.split('-')[5:])
 		except:
-			alias=midi_port.shortname.replace('_',' ')
+			alias=midi_port.name.replace('_',' ')
 		return alias
 
 
