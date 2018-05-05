@@ -21,7 +21,7 @@
 					<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
 				</div>
 				<div class="modal-footer">
-				 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme">Add new network</button><br />
+				 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme btn-block">Add new network</button><br />
 				</div>
 			</div>
 		</div>
@@ -45,7 +45,7 @@
 				<label>Priority:</label><br />
 				<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" onchange="document.getElementById('ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED').value='1';" />
 				<input type="hidden" id="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" /><br /><br />
-				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');" class="btn btn-danger">Remove Network</button><br />
+				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">Remove Network</button><br />
 
 		</div>
 		{% end %}
@@ -56,7 +56,7 @@
 		</div>
 	</div>
 	<br>
-	<button name="ZYNTHIAN_WIFI_ACTION" value="SAVE" class="btn btn-lg btn-theme">Save</button>
+	<button name="ZYNTHIAN_WIFI_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block">Save</button>
 </form>
 
 
