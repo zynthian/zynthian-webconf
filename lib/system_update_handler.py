@@ -40,7 +40,6 @@ from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, Zynt
 UPDATE_COMMANDS = {
 	'Diagnosis' : 'echo "Not implemented yet"',
 	'Software' : '/zynthian/zynthian-sys/scripts/update_zynthian.sh',
-	'Library' : '/zynthian/zynthian-sys/scripts/update_zynthian_data.sh',
 	'Reset to Factory Settings' : 'echo "Not implemented yet"'
 }
 #------------------------------------------------------------------------------
