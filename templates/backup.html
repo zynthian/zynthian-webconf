@@ -27,9 +27,7 @@
 			 </textarea>
 		 </div>
 		 <div class="row advanced-view">
-			<label>Excluded directories or files:</label>
-			<input type="file" id="ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES" name="ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES" multiple style="display: none;"/>
-			<input type=button" class="btn btn-theme btn-block" value="Browse..." onclick="document.getElementById('ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES').click();" />
+			<label>Excluded directories or files (full path):</label>
 			<textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
 				{% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ system_backup_directory }}
 				{% end %}
@@ -64,9 +62,7 @@
 		 </textarea>
 	 </div>
 	 <div class="row advanced-view">
-		<label>Excluded directories or files: </label>
-		<input type="file" id="ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES" name="ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES" multiple style="display: none;"/>
-		<input type="button" class="btn btn-theme btn-block" value="Browse..." onclick="document.getElementById('ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES').click();" />
+		<label>Excluded directories or files (full path): </label>
 		<textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
 			{% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ data_backup_directory }}
 			{% end %}
@@ -165,28 +161,6 @@ $(document).ready(function (){
 function showProgressAnimation(){
     $("#loading-div-background").show();
 }
-
-addFilename = function(filesTextarea, files){
-	var filesTextareaId = '#' + filesTextarea;
-	filenames = $(filesTextareaId).html().trim() + '\n';
-
-	for (var i = 0, f; f = files[i]; i++) {
-		filenames += '' + f.name + '\n';
-	}
-	$(filesTextareaId).html(filenames);
-	alert("You need to prepend the fullpath manually!");
-}
-
-$("#ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES").on('change', function(event) {
-		 var filename = $(this).val();
-		 addFilename('ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS', event.target.files);
- });
-
- $("#ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES").on('change', function(event) {
- 		 var filename = $(this).val();
- 		 addFilename('ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS', event.target.files);
-  });
-
 
 
 function restore_advanced_view() {
