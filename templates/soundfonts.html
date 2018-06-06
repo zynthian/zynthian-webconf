@@ -26,7 +26,7 @@
 					<input type="text" id="ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME" name="ZYNTHIAN_SOUNDFONT_NEW_BANK_NAME" />
 				</div>
 				<div class="row">
-					<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="NEW" class="btn btn-lg btn-theme">New bank</button>
+					<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="NEW" class="btn btn-lg btn-theme btn-block">New bank</button>
 				</div>
 			</div>
 
@@ -38,7 +38,7 @@
 					</div>
 
 					<div class="row">
-						<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+						<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="RENAME" class="btn btn-lg btn-theme btn-block">RENAME</button>
 					</div>
 				</div>
 
@@ -53,7 +53,7 @@
 					</div>
 
 					<div class="row">
-						<button id="ZYNTHIAN_SOUNDFONT_ACTION_SEARCH" name="ZYNTHIAN_SOUNDFONT_ACTION" value="SEARCH" class="btn btn-lg btn-theme" onclick="showProgressAnimation()" >SEARCH</button>
+						<button id="ZYNTHIAN_SOUNDFONT_ACTION_SEARCH" name="ZYNTHIAN_SOUNDFONT_ACTION" value="SEARCH" class="btn btn-lg btn-theme btn-block" onclick="showProgressAnimation()" >SEARCH</button>
 					</div>
 
 					<div class="row">
@@ -71,7 +71,7 @@
 									{% end %}
 							</td>
 								<td>
-									<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
+									<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme btn-block" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
 								</td>
 							</tr>
 						{% end %}
@@ -81,7 +81,7 @@
 				</div>
 
 				<div class="row" id="soundfont-bank-remove-panel">
-					<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+					<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">DELETE</button>
 				</div>
 
 			</div>
@@ -94,7 +94,7 @@
 					</div>
 
 					<div class="row">
-						<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
+						<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="RENAME" class="btn btn-lg btn-theme btn-block">RENAME</button>
 					</div>
 				</div>
 
@@ -103,7 +103,7 @@
 				</div>
 
 				<div class="row">
-					<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+					<button name="ZYNTHIAN_SOUNDFONT_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">DELETE</button>
 				</div>
 			</div>
 

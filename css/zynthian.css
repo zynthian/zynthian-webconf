@@ -32,7 +32,7 @@
   Bootstrap Carousel Fade Transition (for Bootstrap 3.3.x)
   CSS from:       http://codepen.io/transportedman/pen/NPWRGq
   and:            http://stackoverflow.com/questions/18548731/bootstrap-3-carousel-fading-to-new-slide-instead-of-sliding-to-new-slide
-  Inspired from:  http://codepen.io/Rowno/pen/Afykb 
+  Inspired from:  http://codepen.io/Rowno/pen/Afykb
 */
 .carousel-fade .carousel-inner .item {
   opacity: 0;
@@ -672,14 +672,14 @@ div#click-here:hover {
 div#drop-zone.has-advanced-upload .box__dragndrop {
   display: inline;
 }
-div.log_panel {
+div.log-panel {
   margin-top: 10px;
   height: 600px;
   overflow-y: hidden;
   overflow: auto;
   white-space: nowrap;
 }
-div#update-log.updating {
+div.log-panel.updating {
   background-color: #606060;
   color: #ffffff;
 }
