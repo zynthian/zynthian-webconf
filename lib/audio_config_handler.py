@@ -70,7 +70,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['JustBoom Digi', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=justboom-digi'
 		}],
+		['Fe-Pi Audio', {
+			'SOUNDCARD_CONFIG': 'dtoverlay=fe-pi-audio'
+		}],
 		['USB device', {
+			'SOUNDCARD_CONFIG': ''
+		}],
+		['Dummy device', {
 			'SOUNDCARD_CONFIG': ''
 		}],
 		['Custom device', {
@@ -90,7 +96,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['PiSound', []],
 		['JustBoom DAC', []],
 		['JustBoom Digi', []],
-		['USB device', []]
+		['Fe-Pi Audio', []],
+		['USB device', []],
+		['Dummy device', []]
 	])
 
 	@tornado.web.authenticated
