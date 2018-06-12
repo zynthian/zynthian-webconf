@@ -100,8 +100,8 @@ class DashboardHandler(ZynthianConfigHandler):
 					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
 					'url': "/api/ui-midi"
 				}],
-				['MIDI_NETWORK', {
-					'title': 'Network',
+				['QMIDINET', {
+					'title': 'QMidiNet',
 					'value': str(self.is_service_active("qmidinet")),
 					'url': "/api/ui-midi"
 				}]

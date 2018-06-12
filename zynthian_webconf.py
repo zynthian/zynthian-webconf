@@ -38,6 +38,7 @@ from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.display_config_handler import DisplayConfigHandler
 from lib.reboot_handler import RebootHandler
+from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
@@ -134,6 +135,7 @@ def make_app():
 		(r"/api/sys-update$", SystemUpdateHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),
 		(r"/api/sys-reboot$", RebootHandler),
+		(r"/api/sys-poweroff$", PoweroffHandler),
 		(r"/api/wifi/list$", WifiListHandler),
 		(r'/api/upload$', UploadHandler),
 		(r"/api/ws$", ZynthianWebSocketHandler),
