@@ -39,7 +39,7 @@ from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, Zynt
 
 UPDATE_COMMANDS = OrderedDict[
 	#['Diagnosis' : 'echo "Not implemented yet"'],
-	['Update Software' : '/zynthian/zynthian-sys/scripts/update_zynthian.sh'],
+	['Update Software' : '/zynthian/zynthian-sys/scripts/update_zynthian.sh']
 	#['Reset to Factory Settings' : 'echo "Not implemented yet"']
 ]
 }
