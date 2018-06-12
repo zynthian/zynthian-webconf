@@ -93,17 +93,17 @@
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
-								<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">User Interface <span class="caret"></span></a>
+								<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Interface <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/ui-style" %}class="active"{% end %}><a href="/api/ui-style">Style</a></li>
+									<li {% if request.uri=="/api/ui-style" %}class="active"{% end %}><a href="/api/ui-style">UI Style</a></li>
 									<li {% if request.uri=="/api/ui-midi" %}class="active"{% end %}><a href="/api/ui-midi">MIDI</a></li>
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:9]=="/api/sys-" %}active{% end %}">
 								<a href="#menu-sys" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/sys-security" %}class="active"{% end %}><a href="/api/sys-security">Security/Access</a></li>
 									<li {% if request.uri=="/api/sys-wifi" %}class="active"{% end %}><a href="/api/sys-wifi">Wifi</a></li>
+									<li {% if request.uri=="/api/sys-security" %}class="active"{% end %}><a href="/api/sys-security">Security/Access</a></li>
 									<li {% if request.uri=="/api/sys-backup" %}class="active"{% end %}><a href="/api/sys-backup">Backup / Restore</a></li>
 									<li {% if request.uri=="/api/sys-update" %}class="active"{% end %}><a href="/api/sys-update">Update</a></li>
 									<li {% if request.uri=="/api/sys-reboot" %}class="active"{% end %}><a href="/api/sys-reboot">Reboot</a></li>
