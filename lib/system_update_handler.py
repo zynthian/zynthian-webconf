@@ -42,7 +42,7 @@ UPDATE_COMMANDS = OrderedDict[
 	#['Reset to Factory Settings'], ['echo "Not implemented yet"'],
 	['Update Software'], ['/zynthian/zynthian-sys/scripts/update_zynthian.sh']
 ]
-}
+
 #------------------------------------------------------------------------------
 # SystemUpdateHandler Config Handler
 #------------------------------------------------------------------------------
