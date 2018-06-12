@@ -37,11 +37,12 @@ import subprocess
 import jsonpickle
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
-UPDATE_COMMANDS = OrderedDict[
-	#['Diagnosis'], ['echo "Not implemented yet"'],
-	#['Reset to Factory Settings'], ['echo "Not implemented yet"'],
-	['Update Software'], ['/zynthian/zynthian-sys/scripts/update_zynthian.sh']
-]
+UPDATE_COMMANDS = OrderedDict([
+		#['Diagnosis', 'echo "Not implemented yet"'],
+		#['Reset to Factory Settings', 'echo "Not implemented yet"'],
+		['Update Software', '/zynthian/zynthian-sys/scripts/update_zynthian.sh']
+	]
+)
 
 #------------------------------------------------------------------------------
 # SystemUpdateHandler Config Handler
