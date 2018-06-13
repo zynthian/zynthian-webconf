@@ -49,7 +49,7 @@ from lib.midi_config_handler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
 from lib.upload_handler import UploadHandler
 from lib.system_backup_handler import SystemBackupHandler
-from lib.system_update_handler import SystemUpdateHandler
+from lib.software_update_handler import SoftwareUpdateHandler
 from lib.presets_config_handler import PresetsConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.pianoteq_handler import PianoteqHandler
@@ -127,12 +127,12 @@ def make_app():
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),
+		(r"/api/sw-update$", SoftwareUpdateHandler),
 		(r"/api/sw-pianoteq$", PianoteqHandler),
 		(r"/api/ui-style$", UiConfigHandler),
 		(r"/api/ui-midi$", MidiConfigHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),
 		(r"/api/sys-backup$", SystemBackupHandler),
-		(r"/api/sys-update$", SystemUpdateHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),
 		(r"/api/sys-reboot$", RebootHandler),
 		(r"/api/sys-poweroff$", PoweroffHandler),

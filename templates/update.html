@@ -27,10 +27,10 @@ function executeUpdate(update_action){
 	var logDiv = $("#update-log");
 	logDiv.addClass("updating");
 	logDiv.html('');
-	var socketMessage = {"handler_name": "SystemUpdateMessageHandler",
+	var socketMessage = {"handler_name": "SoftwareUpdateMessageHandler",
 		"data": update_action};
 	//zynthiansocket = connectWebsocket();
-	window.zynthianSocket.registerHandler('SystemUpdateMessageHandler', function(data) {
+	window.zynthianSocket.registerHandler('SoftwareUpdateMessageHandler', function(data) {
 		if (data){
 			var logDiv = $("#update-log");
 			if (data == "EOCOMMAND"){

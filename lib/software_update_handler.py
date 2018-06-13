@@ -2,7 +2,7 @@
 #********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# System Backup Handler
+# Software Update Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
@@ -45,10 +45,10 @@ UPDATE_COMMANDS = OrderedDict([
 )
 
 #------------------------------------------------------------------------------
-# SystemUpdateHandler Config Handler
+# SoftwareUpdateHandler Config Handler
 #------------------------------------------------------------------------------
 
-class SystemUpdateHandler(tornado.web.RequestHandler):
+class SoftwareUpdateHandler(tornado.web.RequestHandler):
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -72,18 +72,18 @@ class SystemUpdateHandler(tornado.web.RequestHandler):
 		else:
 			self.render("config.html", body="update.html", config=config, title="Update", errors=errors)
 
-class SystemUpdateMessageHandler(ZynthianWebSocketMessageHandler):
+
+class SoftwareUpdateMessageHandler(ZynthianWebSocketMessageHandler):
 	@classmethod
 	def is_registered_for(cls, handler_name):
-		return handler_name == 'SystemUpdateMessageHandler'
-
+		return handler_name == 'SoftwareUpdateMessageHandler'
 
 
 	def on_websocket_message(self, update_command):
 		p = subprocess.Popen(UPDATE_COMMANDS[update_command], shell=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 		for line in p.stdout:
 			logging.info(line.decode())
-			message = ZynthianWebSocketMessage('SystemUpdateMessageHandler', line.decode())
+			message = ZynthianWebSocketMessage('SoftwareUpdateMessageHandler', line.decode())
 			self.websocket.write_message(jsonpickle.encode(message))
-		message = ZynthianWebSocketMessage('SystemUpdateMessageHandler', "EOCOMMAND")
+			message = ZynthianWebSocketMessage('SoftwareUpdateMessageHandler', "EOCOMMAND")
 		self.websocket.write_message(jsonpickle.encode(message))
