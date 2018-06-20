@@ -206,10 +206,7 @@ $('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS']
 			$('#presets-bank-panel').show();
 			$('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value=data.text;
 			$('#input-uploadfile-type')[0].value = data.bankType;
-			if (data.text != 'sf2'){
-				$('#presets-bank-remove-panel').show();
-				$('#presets-bank-rename-panel').show();
-			}
+		
 		} else if (data.nodeType == 'PRESET') {
 			$('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value=data.text;
 			$('#presets-file-panel').show();
