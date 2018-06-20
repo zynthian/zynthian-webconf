@@ -10,7 +10,7 @@
   <div class="row">
 		<div class="row">
 			<p>
-				<a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical model engine approved by Steinway &amp; Sons. It can simulate a wide range of instruments (Grand Piano, Electric Piano, Clavichord, Harpa, Celesta, Vibraphone, Bells, etc.) with a high degree of precission and realism. It's a pleasure to play it!
+				<a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical model engine approved by Steinway &amp; Sons. It can simulate a wide range of instruments (Grand Piano, Electric Piano, Clavichord, Harpa, Celesta, Vibraphone, Bells, etc.) with a high degree of precision and realism. It's a pleasure to play it!
 			</p>
 			<p>You are able to test the restricted trial version (Pianoteq 6 Stage) that have some keys disabled and stops playing after 20 minutes.
 			</p>
@@ -122,16 +122,20 @@ $(document).ready(function (){
 		ajax.onload = function() 	{
 			if( ajax.status >= 200 && ajax.status < 400 )	{
 				if( ajax.status != 200) {
-					console.log("upload error: " + data.errror);
+					console.log("upload error: " + ajax.response);
 				}
 			}
-			else alert( 'ERROR: Please, report the bug on zynthian forum!' );
+			else {
+				alert( ajax.response );
+			}
 		};
 
 		ajax.onloadend = function() {
 			$("#upload-finished").hide();
-			$("#installation-success").show();
-			$("#license-activation").show();
+			if (this.status == 200){
+				$("#installation-success").show();
+				$("#license-activation").show();
+			} 
 			//window.location.href = window.location.href;
 		};
 

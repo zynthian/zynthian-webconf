@@ -155,7 +155,7 @@ $(document).ready(function() {
 			if( ajax.status >= 200 && ajax.status < 400 )	{
 				dropZone.addClass( ajax.status == 200 ? 'is-success' : 'is-error' );
 				if( ajax.status != 200) {
-					console.log("upload error: " + data.errror);
+					console.log("upload error: " + data.error);
 				}
 			}
 			else alert( 'Error. Please, contact the webmaster!' );

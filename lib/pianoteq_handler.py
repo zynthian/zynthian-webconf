@@ -55,7 +55,13 @@ class PianoteqHandler(ZynthianConfigHandler):
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", body="pianoteq.html", config=config, title="Pianoteq", errors=errors)
+			if errors:
+				logging.error("Installing pianoteq failed: %s" % format(errors))
+				self.clear()
+				self.set_status(400)
+				self.finish("Installing pianoteq failed: %s" % format(errors))
+			else:
+				self.render("config.html", body="pianoteq.html", config=config, title="Pianoteq", errors=errors)
 
 	@tornado.web.authenticated
 	def post(self):
@@ -93,30 +99,33 @@ class PianoteqHandler(ZynthianConfigHandler):
 
 	def do_install_pianoteq(self):
 		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
-		logging.info("Installing %s" % filename)
-		errors = None
+		if filename:
+			logging.info("Installing %s" % filename)
+			errors = None
 
-		# Just to be sure...
-		if os.path.isdir("/tmp/pianoteq"):
-			shutil.rmtree("/tmp/pianoteq")
-		if not os.path.isdir(PIANOTEQ_SW_DIR):
-			os.mkdir(PIANOTEQ_SW_DIR)
+			# Just to be sure...
+			if os.path.isdir("/tmp/pianoteq"):
+				shutil.rmtree("/tmp/pianoteq")
+				if not os.path.isdir(PIANOTEQ_SW_DIR):
+					os.mkdir(PIANOTEQ_SW_DIR)
 
-		# Install different type of files
-		filename_parts = os.path.splitext(filename)
-		# Pianoteq binaries
-		if filename_parts[1].lower() == '.7z':
-			errors = self.do_install_pianoteq_binary(filename);
-		# Pianoteq instruments
-		elif filename_parts[1].lower() == '.ptq':
-			errors = self.do_install_pianoteq_ptq(filename);
+			# Install different type of files
+			filename_parts = os.path.splitext(filename)
+			# Pianoteq binaries
+			if filename_parts[1].lower() == '.7z':
+				errors = self.do_install_pianoteq_binary(filename);
+			# Pianoteq instruments
+			elif filename_parts[1].lower() == '.ptq':
+				errors = self.do_install_pianoteq_ptq(filename);
 
-		# Configure Pianoteq
-		self.pianoteq_autoconfig()
+			# Configure Pianoteq
+			self.pianoteq_autoconfig()
 
-		# Cover my tracks
-		if(os.path.isdir("/tmp/pianoteq")):
-			shutil.rmtree("/tmp/pianoteq")
+			# Cover my tracks
+			if(os.path.isdir("/tmp/pianoteq")):
+				shutil.rmtree("/tmp/pianoteq")
+		else:
+			errors = 'Please select a file'
 		return errors
 
 	def do_install_pianoteq_binary(self, filename):
