@@ -28,6 +28,7 @@ import logging
 import base64
 import tornado.web
 from collections import OrderedDict
+from subprocess import check_output
 
 
 #------------------------------------------------------------------------------
@@ -104,6 +105,8 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		fo.write(wpa_supplicant_data)
 		fo.flush()
 		fo.close()
+
+		check_output("wpa_cli -i wlan0 reconfigure", shell=True)
 		errors=self.get()
 
 

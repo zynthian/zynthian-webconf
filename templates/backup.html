@@ -1,3 +1,6 @@
+<div class="pull-right">
+        <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
+</div>
 
 <h2>{{ escape(title) }}</h2>
 
@@ -16,23 +19,21 @@
 <div class="tab-content">
 	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'SYSTEM_BACKUP' %}active{% end %}" id="system_backup">
 		<div class="container-fluid">
-			<div class="row">
+			<div class="row advanced-view">
 			 <label>Directories containing system files:</label>
 			 <textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES" rows="5">
 				 {% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES'] %}{{ system_backup_directory }}
 				 {% end %}
 			 </textarea>
 		 </div>
-		 <div class="row">
-			<label>Excluded directories or files:</label>
-			<input type="file" id="ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES" name="ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES" multiple style="display: none;"/>
-			<input type="button" class="btn btn-theme btn-block" value="Browse..." onclick="document.getElementById('ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES').click();" />
+		 <div class="row advanced-view">
+			<label>Excluded directories or files (full path):</label>
 			<textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
 				{% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ system_backup_directory }}
 				{% end %}
 			</textarea>
 		</div>
-		<div class="row">
+		<div class="row advanced-view">
 		 <button name="ZYNTHIAN_BACKUP_ACTION" value="SAVE_SYSTEM_BACKUP_DIRECTORIES" class="btn btn-lg btn-theme btn-block">SAVE</button>
 	 	</div>
 		  <div class="row">
@@ -53,23 +54,21 @@
   	</div>
 	</div>
 	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'DATA_BACKUP' %}active{% end %}" id="data_backup">
-		<div class="row">
+		<div class="row advanced-view">
 		 <label>Directories containing data files:</label>
 		 <textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES" rows="5">
 			 {% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES'] %}{{ data_backup_directory }}
 			 {% end %}
 		 </textarea>
 	 </div>
-	 <div class="row">
-		<label>Excluded directories or files: </label>
-		<input type="file" id="ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES" name="ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES" multiple style="display: none;"/>
-		<input type="button" class="btn btn-theme btn-block" value="Browse..." onclick="document.getElementById('ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES').click();" />
+	 <div class="row advanced-view">
+		<label>Excluded directories or files (full path): </label>
 		<textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
 			{% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ data_backup_directory }}
 			{% end %}
 		</textarea>
 	</div>
-	<div class="row">
+	<div class="row advanced-view">
 	 <button name="ZYNTHIAN_BACKUP_ACTION" value="SAVE_DATA_BACKUP_DIRECTORIES" class="btn btn-lg btn-theme btn-block">SAVE</button>
 	</div>
 		<div class="row">
@@ -93,7 +92,7 @@
 			<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="RESTORE"></input>
 		</div>
 		<div class="row">
-				<div id="restore-log" class="log_panel"></div
+				<div id="restore-log" class="log-panel"></div
 		</div>
 	</div>
 </div>
@@ -163,29 +162,30 @@ function showProgressAnimation(){
     $("#loading-div-background").show();
 }
 
-addFilename = function(filesTextarea, files){
-	var filesTextareaId = '#' + filesTextarea;
-	filenames = $(filesTextareaId).html().trim() + '\n';
 
-	for (var i = 0, f; f = files[i]; i++) {
-		filenames += '' + f.name + '\n';
-	}
-	$(filesTextareaId).html(filenames);
-	alert("You need to prepend the fullpath manually!");
+function restore_advanced_view() {
+        if (Cookies.get('advanced_view')) {
+                $('input#check_advanced_view').prop("checked", true);
+                $('.advanced-view').show();
+        } else {
+                $('input#check_advanced_view').prop("checked", false);
+                $('.advanced-view').hide;
+        }
 }
 
-$("#ZYNTHIAN_ADD_EXLUDED_DATA_BACKUP_DIRECTORIES").on('change', function(event) {
-		 var filename = $(this).val();
-		 addFilename('ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS', event.target.files);
- });
+function onchange_check_advanced_view() {
+        if ($('input#check_advanced_view').prop("checked")==true) {
+                Cookies.set('advanced_view','1')
+                $('.advanced-view').slideDown(500);
+        } else {
+                Cookies.remove('advanced_view')
+                $('.advanced-view').slideUp(500);
+        }
+}
 
- $("#ZYNTHIAN_ADD_EXLUDED_SYSTEM_BACKUP_DIRECTORIES").on('change', function(event) {
- 		 var filename = $(this).val();
- 		 addFilename('ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS', event.target.files);
-  });
-
-
-
+$(document).ready(function() {
+        restore_advanced_view()
+});
 
 
 

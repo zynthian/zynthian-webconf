@@ -38,6 +38,7 @@ from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.display_config_handler import DisplayConfigHandler
 from lib.reboot_handler import RebootHandler
+from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
@@ -48,6 +49,7 @@ from lib.midi_config_handler import MidiConfigHandler
 from lib.soundfont_config_handler import SoundfontConfigHandler
 from lib.upload_handler import UploadHandler
 from lib.system_backup_handler import SystemBackupHandler
+from lib.software_update_handler import SoftwareUpdateHandler
 from lib.presets_config_handler import PresetsConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.pianoteq_handler import PianoteqHandler
@@ -125,6 +127,7 @@ def make_app():
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),
+		(r"/api/sw-update$", SoftwareUpdateHandler),
 		(r"/api/sw-pianoteq$", PianoteqHandler),
 		(r"/api/ui-style$", UiConfigHandler),
 		(r"/api/ui-midi$", MidiConfigHandler),
@@ -132,6 +135,7 @@ def make_app():
 		(r"/api/sys-backup$", SystemBackupHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),
 		(r"/api/sys-reboot$", RebootHandler),
+		(r"/api/sys-poweroff$", PoweroffHandler),
 		(r"/api/wifi/list$", WifiListHandler),
 		(r'/api/upload$', UploadHandler),
 		(r"/api/ws$", ZynthianWebSocketHandler),

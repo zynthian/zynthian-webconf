@@ -265,4 +265,4 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
 			f.close()
 		os.remove(restoreFile)
 		message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
-		self.websocket.write_message(jsonpickle.encode(message));
+		self.websocket.write_message(jsonpickle.encode(message))

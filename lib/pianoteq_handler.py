@@ -43,6 +43,9 @@ from zyngine.zynthian_engine_pianoteq import *
 
 class PianoteqHandler(ZynthianConfigHandler):
 
+	data_dir = os.environ.get('ZYNTHIAN_DATA_DIR',"/zynthian/zynthian-data")
+	plugins_dir = os.environ.get('ZYNTHIAN_PLUGINS_DIR',"/zynthian/zynthian-plugins")
+
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		#self.pianoteq_autoconfig()
@@ -102,10 +105,10 @@ class PianoteqHandler(ZynthianConfigHandler):
 		# Install different type of files
 		filename_parts = os.path.splitext(filename)
 		# Pianoteq binaries
-		if filename_parts[1] == '.7z':
+		if filename_parts[1].lower() == '.7z':
 			errors = self.do_install_pianoteq_binary(filename);
 		# Pianoteq instruments
-		elif filename_parts[1] == '.ptq':
+		elif filename_parts[1].lower() == '.ptq':
 			errors = self.do_install_pianoteq_ptq(filename);
 
 		# Configure Pianoteq
@@ -130,16 +133,16 @@ class PianoteqHandler(ZynthianConfigHandler):
 			logging.info("Removing old pianoteq LV2 plugin")
 			shutil.rmtree("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR)
 		logging.info("Installing new pianoteq LV2 plugin")
-		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-sw/pianoteq6/")
-		if os.path.islink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
-			os.unlink("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		elif os.path.isdir("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
-			shutil.rmtree("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		elif os.path.isfile("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2"):
-			os.remove("/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
-		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR ,"/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2")
+		shutil.move("/tmp/pianoteq/Pianoteq 6 STAGE/arm/Pianoteq 6 STAGE.lv2", PIANOTEQ_SW_DIR)
+		if os.path.islink(self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2"):
+			os.unlink(self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2")
+		elif os.path.isdir(self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2"):
+			shutil.rmtree(self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2")
+		elif os.path.isfile(self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2"):
+			os.remove(self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2")
+		os.symlink("%s/Pianoteq 6 STAGE.lv2" % PIANOTEQ_SW_DIR ,self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2")
 
-		self.recursive_copy_files("/zynthian/zynthian-data/pianoteq6/Pianoteq 6 STAGE.lv2","/zynthian/zynthian-plugins/lv2/Pianoteq 6 STAGE.lv2",True)
+		self.recursive_copy_files(self.data_dir + "/pianoteq6/Pianoteq 6 STAGE.lv2",self.plugins_dir + "/lv2/Pianoteq 6 STAGE.lv2",True)
 
 		# Create "My Presets" if not already exist
 		if not os.path.isdir(PIANOTEQ_MY_PRESETS_DIR):
@@ -149,7 +152,7 @@ class PianoteqHandler(ZynthianConfigHandler):
 	def do_install_pianoteq_ptq(self, filename):
 		self.ensure_dir(PIANOTEQ_ADDON_DIR)
 		logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
-		shutil.move(filename, PIANOTEQ_ADDON_DIR + os.path.basename(filename))
+		shutil.move(filename, PIANOTEQ_ADDON_DIR + "/" + os.path.basename(filename))
 
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python

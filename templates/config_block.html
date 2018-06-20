@@ -36,7 +36,7 @@
 
 		{% elif config[varname]['type']=='textarea' %}
 			{% if 'addButton' in config[varname] %}
-				<button id="{{ config[varname]['addButton'] }}" type="button">+</button>
+				<button id="{{ config[varname]['addButton'] }}" class="btn-block" type="button">+</button>
 			{% end %}
 			{% if 'addPanel' in config[varname] %}
 				{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}

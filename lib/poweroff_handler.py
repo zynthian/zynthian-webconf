@@ -2,7 +2,7 @@
 #********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# Reboot Handler
+# Poweroff Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
@@ -30,18 +30,18 @@ from subprocess import check_output
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
-# Reboot Hadler
+# Poweroff Hadler
 #------------------------------------------------------------------------------
 
-class RebootHandler(ZynthianConfigHandler):
+class PoweroffHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self):
 		if self.genjson:
-			self.write("REBOOT")
+			self.write("POWEROFF")
 		else:
-			self.render("config.html", body="reboot_block.html", config=None, title="Reboot", errors=None)
+			self.render("config.html", body="poweroff_block.html", config=None, title="Poweroff", errors=None)
 		try:
-			check_output("(sleep 1 & reboot)&", shell=True)
+			check_output("poweroff", shell=True)
 		except Exception as e:
 			logging.error(e)

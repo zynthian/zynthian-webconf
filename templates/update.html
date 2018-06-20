@@ -1,0 +1,47 @@
+<h2>{{ escape(title) }}</h2>
+
+<form id="update-form" enctype="multipart/form-data" method="post">
+<div class="container-fluid">
+  <div class="row">
+		{% for update_item in config['UPDATE_COMMANDS'] %}
+		<button type="button" name="ZYNTHIAN_UPDATE_ACTION" value="{{ update_item }}" class="btn btn-lg btn-theme" onclick="executeUpdate('{{ update_item }}')">{{ update_item }}</button>
+		{% end %}
+	</div>
+	<div class="row">
+		<div id="update-log" class="log_panel"></div>
+	</div>
+</div>
+
+</form>
+
+<script>
+$(document).ready(function (){
+    $(':button').prop('disabled', true);
+		var deferred = $.Deferred();
+		deferred.done(function(value) {
+			$(':button').prop('disabled', false);
+		});
+		connectZynthianWebSocket(deferred);
+});
+function executeUpdate(update_action){
+	var logDiv = $("#update-log");
+	logDiv.addClass("updating");
+	logDiv.html('');
+	var socketMessage = {"handler_name": "SoftwareUpdateMessageHandler",
+		"data": update_action};
+	//zynthiansocket = connectWebsocket();
+	window.zynthianSocket.registerHandler('SoftwareUpdateMessageHandler', function(data) {
+		if (data){
+			var logDiv = $("#update-log");
+			if (data == "EOCOMMAND"){
+				logDiv.removeClass("updating");
+			} else {
+				console.log("socket:onmessage:",data);
+				logDiv.append(data + "<br />");
+				logDiv[0].scrollTop = logDiv[0].scrollHeight;
+			}
+		}
+	});
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
+</script>
