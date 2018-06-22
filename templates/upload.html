@@ -127,7 +127,12 @@ $(document).ready(function() {
 			dropZone.removeClass('is-dragover');
 		})
 		.on('drop', function(e) {
-			droppedFiles = e.originalEvent.dataTransfer.files;
+			if ({{ 'true' if config['ZYNTHIAN_UPLOAD_MULTIPLE'] else 'false' }} == true){
+				droppedFiles = e.originalEvent.dataTransfer.files;
+			} else {
+				droppedFiles = [];
+				droppedFiles[0] = e.originalEvent.dataTransfer.files[0];
+			}
 			displayFilenames(droppedFiles);
 		});
 	}
