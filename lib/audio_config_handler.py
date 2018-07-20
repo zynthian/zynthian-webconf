@@ -43,6 +43,11 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC+ light', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac'
 		}],
+		['HifiBerry DAC+ RTC', {
+			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\n'+
+				'dtoverlay=i2c-rtc,ds130\n' +
+				'dtparam=i2c_arm=on\n'
+		}],
 		['HifiBerry Digi', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi'
 		}],
@@ -86,7 +91,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	soundcard_mixer_controls=OrderedDict([
 		['HifiBerry DAC+', ['Digital']],
-		['HifiBerry DAC', []],
+		['HifiBerry DAC+ light', ['Digital']],
+		['HifiBerry DAC+ RTC', ['Digital']],
 		['HifiBerry Digi', []],
 		['HifiBerry Amp',[]],
 		['AudioInjector', ['Master','Capture']],
