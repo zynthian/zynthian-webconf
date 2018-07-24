@@ -45,8 +45,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['HifiBerry DAC+ RTC', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\n'+
-				'dtoverlay=i2c-rtc,ds130\n' +
-				'dtparam=i2c_arm=on\n'
+				'dtoverlay=i2c-rtc,ds130'
 		}],
 		['HifiBerry Digi', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi'
