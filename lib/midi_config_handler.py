@@ -126,7 +126,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	])
 
 	midi_event_options=OrderedDict([
-		['PG', 'Program change'],
+		['PC', 'Program change'],
 		['KP', 'Polyphonic Key Pressure (Aftertouch)'],
 		['CP', 'Channel Pressure (Aftertouch)'],
 		['PB', 'Pitch Bending'],
@@ -191,9 +191,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'class': 'btn-success',
 				'script_file': 'midi_profile_new.js'
 			}],
+			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
+				'type': 'boolean',
+				'title': 'Map external events to Active layer/channel',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL')
+			}],
 			['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', {
 				'type': 'boolean',
-				'title': 'Preload Presets on Note-On',
+				'title': 'Preload Presets on Note',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON')
 			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
