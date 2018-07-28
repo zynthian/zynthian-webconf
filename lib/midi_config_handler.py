@@ -45,7 +45,7 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
-	PROFILES_DIRECTORY = os.environ.get("ZYNTHIAN_MY_DATA_DIR")+"/midi-profiles"
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_MY_DATA_DIR")
 	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=MIDI_out"
 
 	midi_program_change_presets=OrderedDict([
@@ -126,6 +126,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	])
 
 	midi_event_options=OrderedDict([
+		['NON', 'Note-On'],
+		['NOFF', 'Note-Off'],
 		['PC', 'Program change'],
 		['KP', 'Polyphonic Key Pressure (Aftertouch)'],
 		['CP', 'Channel Pressure (Aftertouch)'],
@@ -343,14 +345,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	def load_midi_profile_directories(self):
 		#Get profiles list
-		self.midi_profile_scripts = [self.PROFILES_DIRECTORY + '/' + x for x in os.listdir(self.PROFILES_DIRECTORY)]
+		self.midi_profile_scripts = ["%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)]
 		#If list is empty ...
 		if len(self.midi_profile_scripts)==0:
-			self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
+			self.current_midi_profile_script = "%s/default.sh" % self.PROFILES_DIRECTORY
 			self.midi_profile_scripts=[self.current_midi_profile_script]
 			try:
 				#Try to copy from default template
-				default_src=os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys") + "/config/default_midi_profile.sh"
+				default_src= "%s/config/default_midi_profile.sh" % os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys")
 				copyfile(default_src, self.current_midi_profile_script)
 			except Exception as e:
 				logging.error(e)

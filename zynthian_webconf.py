@@ -82,7 +82,7 @@ logging.basicConfig(stream=sys.stderr, level=log_level)
 
 # Try to load from config file. If doesn't exist, generate a new one and save it!
 def get_cookie_secret():
-	cookie_secret_fpath=os.environ.get('ZYNTHIAN_CONFIG_DIR') + "/webconf_cookie_secret.txt"
+	cookie_secret_fpath="%s/webconf_cookie_secret.txt" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
 	try:
 		with open(cookie_secret_fpath, "r") as fh:
 			cookie_secret = fh.read().strip()
@@ -144,7 +144,7 @@ def make_app():
 
 if __name__ == "__main__":
 	app = make_app()
-	app.listen(80, max_body_size=MAX_STREAMED_SIZE)
+	app.listen(os.environ.get('ZYNTHIAN_WEBCONF_PORT', 80), max_body_size=MAX_STREAMED_SIZE)
 	tornado.ioloop.IOLoop.current().start()
 
 #------------------------------------------------------------------------------
