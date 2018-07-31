@@ -125,7 +125,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		['127', '127 - Poly Mode']
 	])
 
-	midi_event_options=OrderedDict([
+	midi_event_types=OrderedDict([
 		['NON', 'Note-On'],
 		['NOFF', 'Note-Off'],
 		['PC', 'Program change'],
@@ -146,19 +146,12 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.load_midi_profiles()
 		ports_config=self.get_ports_config()
 
-		add_panel_config=OrderedDict([
-			['FILTER_ADD_MIDI_EVENT', {
-				'options': list(self.midi_event_options.keys()),
-				'option_labels': self.midi_event_options
+		mfr_config=OrderedDict([
+			['RULE_EVENT_TYPES', {
+				'options': list(self.midi_event_types.keys()),
+				'option_labels': self.midi_event_types
 			}],
-			['FILTER_ADD_MAPPED_MIDI_EVENT', {
-				'options': list(self.midi_event_options.keys()),
-				'option_labels': self.midi_event_options
-			}],
-			['FILTER_ADD_CC_VALUE', {
-				'option_labels': self.midi_cc_labels
-			}],
-			['FILTER_ADD_MAPPED_CC_VALUE', {
+			['RULE_CC_NUMS', {
 				'option_labels': self.midi_cc_labels
 			}]
 		])
@@ -268,7 +261,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'rows': 5,
 				'addButton': 'display_midi_filter_rule_panel',
 				'addPanel': 'midi_filter_rule.html',
-				'addPanelConfig': add_panel_config,
+				'addPanelConfig': mfr_config,
 				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_PORTS', {
