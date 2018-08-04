@@ -45,7 +45,7 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
-	PROFILES_DIRECTORY = os.environ.get("ZYNTHIAN_MY_DATA_DIR")+"/midi-profiles"
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_MY_DATA_DIR")
 	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=MIDI_out"
 
 	midi_program_change_presets=OrderedDict([
@@ -125,8 +125,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		['127', '127 - Poly Mode']
 	])
 
-	midi_event_options=OrderedDict([
-		['PG', 'Program change'],
+	midi_event_types=OrderedDict([
+		['NON', 'Note-On'],
+		['NOFF', 'Note-Off'],
+		['PC', 'Program change'],
 		['KP', 'Polyphonic Key Pressure (Aftertouch)'],
 		['CP', 'Channel Pressure (Aftertouch)'],
 		['PB', 'Pitch Bending'],
@@ -144,19 +146,12 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.load_midi_profiles()
 		ports_config=self.get_ports_config()
 
-		add_panel_config=OrderedDict([
-			['FILTER_ADD_MIDI_EVENT', {
-				'options': list(self.midi_event_options.keys()),
-				'option_labels': self.midi_event_options
+		mfr_config=OrderedDict([
+			['RULE_EVENT_TYPES', {
+				'options': list(self.midi_event_types.keys()),
+				'option_labels': self.midi_event_types
 			}],
-			['FILTER_ADD_MAPPED_MIDI_EVENT', {
-				'options': list(self.midi_event_options.keys()),
-				'option_labels': self.midi_event_options
-			}],
-			['FILTER_ADD_CC_VALUE', {
-				'option_labels': self.midi_cc_labels
-			}],
-			['FILTER_ADD_MAPPED_CC_VALUE', {
+			['RULE_CC_NUMS', {
 				'option_labels': self.midi_cc_labels
 			}]
 		])
@@ -191,9 +186,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'class': 'btn-success',
 				'script_file': 'midi_profile_new.js'
 			}],
+			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
+				'type': 'boolean',
+				'title': 'Map external events to Active layer/channel',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL')
+			}],
 			['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', {
 				'type': 'boolean',
-				'title': 'Preload Presets on Note-On',
+				'title': 'Preload Presets on Note',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON')
 			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
@@ -261,7 +261,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'rows': 5,
 				'addButton': 'display_midi_filter_rule_panel',
 				'addPanel': 'midi_filter_rule.html',
-				'addPanelConfig': add_panel_config,
+				'addPanelConfig': mfr_config,
 				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_PORTS', {
@@ -338,14 +338,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	def load_midi_profile_directories(self):
 		#Get profiles list
-		self.midi_profile_scripts = [self.PROFILES_DIRECTORY + '/' + x for x in os.listdir(self.PROFILES_DIRECTORY)]
+		self.midi_profile_scripts = ["%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)]
 		#If list is empty ...
 		if len(self.midi_profile_scripts)==0:
-			self.current_midi_profile_script = self.PROFILES_DIRECTORY + "/default.sh"
+			self.current_midi_profile_script = "%s/default.sh" % self.PROFILES_DIRECTORY
 			self.midi_profile_scripts=[self.current_midi_profile_script]
 			try:
 				#Try to copy from default template
-				default_src=os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys") + "/config/default_midi_profile.sh"
+				default_src= "%s/config/default_midi_profile.sh" % os.getenv('ZYNTHIAN_SYS_DIR',"/zynthian/zynthian-sys")
 				copyfile(default_src, self.current_midi_profile_script)
 			except Exception as e:
 				logging.error(e)

@@ -7,40 +7,45 @@
 		</div>
 
 		<div class="modal-body">
-			<select id="FILTER_ADD_COMMAND" name="FILTER_ADD_COMMAND" onchange="refreshSelectionView()">
-				<option value="">Select a command</option>
-				<option value="IGNORE">Ignore</option>
-				<option value="MAP">Map</option>
+			<select id="RULE_COMMAND" name="RULE_COMMAND" onchange="refreshSelectionView()">
+				<option value="">Select a Rule Command ...</option>
+				<option value="IGNORE">IGNORE</option>
+				<option value="MAP">MAP</option>
 			</select>
 
 			<div class="row">
-				<div class="col-md-6">
-					<label for="FILTER_ADD_CHANNEL">from Source Channels</label>
-					<select id="FILTER_ADD_CHANNEL" multiple name="FILTER_ADD_CHANNEL" onchange="refreshSelectionView()" size="5">
+				<div id="rule_from_panel" class="col-md-6">
+					<label for="RULE_FROM_CHANNEL">FROM channels:</label>
+					<select id="RULE_FROM_CHANNEL" multiple name="RULE_FROM_CHANNEL" onchange="refreshSelectionView()" size="8">
+						<option value="">All</option>
 					{% for i in range(16) %}
 						<option value="{{i}}">{{i+1}}</option>
 					{% end %}
 					</select>
 
-					<label  for="FILTER_ADD_MIDI_EVENT">Midi Event</label>
-					<select id="FILTER_ADD_MIDI_EVENT" multiple name="FILTER_ADD_MIDI_EVENT" onchange="refreshSelectionView()" size="5">
-					{% for option in config['FILTER_ADD_MIDI_EVENT']['options'] %}
-						<option value="{{ escape(option) }}">
-							{% if 'option_labels' in config['FILTER_ADD_MIDI_EVENT'] %}
-								{{ escape(config['FILTER_ADD_MIDI_EVENT']['option_labels'][option]) }}
+					<label  for="RULE_FROM_EVENT_TYPE">event type:</label>
+					<select id="RULE_FROM_EVENT_TYPE" name="RULE_FROM_EVENT_TYPE" onchange="refreshSelectionView()" size="7">
+					{% for et in config['RULE_EVENT_TYPES']['options'] %}
+						<option value="{{ escape(et) }}">
+							{% if 'option_labels' in config['RULE_EVENT_TYPES'] %}
+								{{ escape(config['RULE_EVENT_TYPES']['option_labels'][et]) }}
 							{% else %}
-								{{ escape(option) }}
+								{{ escape(et) }}
 							{% end %}
 						</option>
 					{% end %}
 					</select>
 
-					<label id="FILTER_ADD_CC_VALUE_LABEL" for="FILTER_ADD_CC_VALUE">Midi CC Number</label>
-					<select multiple id="FILTER_ADD_CC_VALUE" name="FILTER_ADD_CC_VALUE" onchange="" size="7">
+					<label id="RULE_FROM_EVENT_NUM_LABEL" for="RULE_FROM_EVENT_NUM">event numbers:</label>
+					<input id="RULE_FROM_EVENT_NUM" name="RULE_FROM_EVENT_NUM">
+
+					<label id="RULE_FROM_CC_NUM_LABEL" for="RULE_FROM_CC_NUM">CC numbers:</label>
+					<select multiple id="RULE_FROM_CC_NUM" name="RULE_FROM_CC_NUM" onchange="" size="7">
+						<option value="">All</option>
 						{% for i in range(128) %}
 						<option value="{{i}}">
-							{% if 'option_labels' in config['FILTER_ADD_CC_VALUE'] and str(i) in config['FILTER_ADD_CC_VALUE']['option_labels'] %}
-								{{ escape(config['FILTER_ADD_CC_VALUE']['option_labels'][str(i)]) }}
+							{% if 'option_labels' in config['RULE_CC_NUMS'] and str(i) in config['RULE_CC_NUMS']['option_labels'] %}
+								{{ escape(config['RULE_CC_NUMS']['option_labels'][str(i)]) }}
 							{% else %}
 								{{ i }}
 							{% end %}
@@ -49,33 +54,38 @@
 					</select>
 				</div>
 
-				<div class="col-md-6">
-					<label id="FILTER_ADD_MAPPED_CHANNEL_LABEL" for="FILTER_ADD_MAPPED_CHANNEL">to Mapped Channels</label>
-					<select id="FILTER_ADD_MAPPED_CHANNEL" multiple name="FILTER_ADD_MAPPED_CHANNEL" onchange="refreshSelectionView()" size="5">
+				<div id="rule_to_panel" class="col-md-6">
+					<label id="RULE_TO_CHANNEL_LABEL" for="RULE_TO_CHANNEL">TO channels:</label>
+					<select id="RULE_TO_CHANNEL" multiple name="RULE_TO_CHANNEL" onchange="refreshSelectionView()" size="8">
+						<option value="">All</option>
 						{% for i in range(16) %}
 						<option value="{{i}}">{{i+1}}</option>
 						{% end %}
 					</select>
 
-					<label id="FILTER_ADD_MAPPED_MIDI_EVENT_LABEL" for="FILTER_ADD_MAPPED_MIDI_EVENT">Mapped Midi Event</label>
-					<select id="FILTER_ADD_MAPPED_MIDI_EVENT" multiple name="FILTER_ADD_MAPPED_MIDI_EVENT" onchange="refreshSelectionView()" size="5">
-						{% for option in config['FILTER_ADD_MAPPED_MIDI_EVENT']['options'] %}
-							<option value="{{ escape(option) }}">
-								{% if 'option_labels' in config['FILTER_ADD_MAPPED_MIDI_EVENT'] %}
-									{{ escape(config['FILTER_ADD_MAPPED_MIDI_EVENT']['option_labels'][option]) }}
+					<label id="RULE_TO_EVENT_TYPE_LABEL" for="RULE_TO_EVENT_TYPE">event type:</label>
+					<select id="RULE_TO_EVENT_TYPE" name="RULE_TO_EVENT_TYPE" onchange="refreshSelectionView()" size="7">
+						{% for et in config['RULE_EVENT_TYPES']['options'] %}
+							<option value="{{ escape(et) }}">
+								{% if 'option_labels' in config['RULE_EVENT_TYPES'] %}
+									{{ escape(config['RULE_EVENT_TYPES']['option_labels'][et]) }}
 								{% else %}
-									{{ escape(option) }}
+									{{ escape(et) }}
 								{% end %}
 							</option>
 						{% end %}
 					</select>
 
-					<label id="FILTER_ADD_MAPPED_CC_VALUE_LABEL" for="FILTER_ADD_MAPPED_CC_VALUE">Mapped Midi CC Number</label>
-					<select   id="FILTER_ADD_MAPPED_CC_VALUE" name="FILTER_ADD_MAPPED_CC_VALUE" onchange="" size="7">
+					<label id="RULE_TO_EVENT_NUM_LABEL" for="RULE_TO_EVENT_NUM">event numbers:</label>
+					<input id="RULE_TO_EVENT_NUM" name="RULE_TO_EVENT_NUM">
+					
+					<label id="RULE_TO_CC_NUM_LABEL" for="RULE_TO_CC_NUM">CC numbers:</label>
+					<select id="RULE_TO_CC_NUM" name="RULE_TO_CC_NUM" onchange="" size="7">
+						<option value="">All</option>
 						{% for i in range(128) %}
 						<option value="{{i}}">
-							{% if 'option_labels' in config['FILTER_ADD_MAPPED_CC_VALUE'] and str(i) in config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'] %}
-								{{ escape(config['FILTER_ADD_MAPPED_CC_VALUE']['option_labels'][str(i)]) }}
+							{% if 'option_labels' in config['RULE_CC_NUMS'] and str(i) in config['RULE_CC_NUMS']['option_labels'] %}
+								{{ escape(config['RULE_CC_NUMS']['option_labels'][str(i)]) }}
 							{% else %}
 								{{ i }}
 							{% end %}
@@ -85,15 +95,17 @@
 				</div>
 			</div>
 
-			<div class="modal-footer">
-				<button id="midi-filter-rule-add" class="btn btn-success btn-block" data-dismiss="modal" type="button"><span aria-hidden="true">ADD</span></button>
-			</div>
-
 		</div>
+		
+		<div class="modal-footer">
+			<button id="midi-filter-rule-add" class="btn btn-success btn-block" data-dismiss="modal" type="button"><span aria-hidden="true">ADD</span></button>
+		</div>
+
 	</div>
 </div>
 
 <script>
+var enabledNumberInputTypes = ['NON','NOFF','KP','CC','PC'];
 
 $(document).ready(function() {
 	$('#display_midi_filter_rule_panel').click(function(){
@@ -111,123 +123,125 @@ $(document).ready(function() {
 		}
 	}
 
-	commandSelect = document.getElementById('FILTER_ADD_COMMAND');
-	channelSelect = document.getElementById('FILTER_ADD_CHANNEL');
-	midiEventSelect = document.getElementById('FILTER_ADD_MIDI_EVENT');
-
-	mappedChannelSelect = document.getElementById('FILTER_ADD_MAPPED_CHANNEL');
-	mappedChannelSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CHANNEL_LABEL');
-
-	mappedMidiEventSelect = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT');
-	mappedMidiEventSelectLabel = document.getElementById('FILTER_ADD_MAPPED_MIDI_EVENT_LABEL');
-
-	ccValueSelect = document.getElementById('FILTER_ADD_CC_VALUE');
-	ccValueSelectLabel = document.getElementById('FILTER_ADD_CC_VALUE_LABEL');
-
-	mappedCCValueSelect = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE');
-	mappedCCValueSelectLabel = document.getElementById('FILTER_ADD_MAPPED_CC_VALUE_LABEL');
-
-	filterRuleAddButton = document.getElementById('midi-filter-rule-add');
-	filterRuleAddButton.onclick = function(event) {
+	$("button#midi-filter-rule-add").click(function(){
 		if (addFilterRule()){
 			$('#midi_filter_rule_panel').hide(500);
 		} else {
-			alert('You didn\'t select a valid option');
+			alert("Bad rule options!");
 		}
-	}
+	});
 });
 
 function addFilterRule(){
-	if (!commandSelect.value) {
-		return false;
-	}
-	command = commandSelect.value;
-	filterRulesTextarea = document.getElementById('ZYNTHIAN_MIDI_FILTER_RULES') ;
+	var command = $('select#RULE_COMMAND').val();
+	if (!command) return false;
 
-	channel_options = $("#FILTER_ADD_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
-	channels = '';
-	if (channel_options){
-		channels =  'CH#' + channel_options;
-	}
+	//FROM part ...
 
-	if (!midiEventSelect.value) {
-		return false;
-	}
-	midi_event = midiEventSelect.value;
-
-	cc_value = ''
-	cc_values_options = $("#FILTER_ADD_CC_VALUE option:selected").map(function(){ return this.value }).get().join(",");
-	if (cc_values_options){
-		cc_value =  '#' + cc_values_options;
+	var from_channel_options = $("#RULE_FROM_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
+	var from_channels = '';
+	if (from_channel_options) {
+		from_channels =  'CH#' + from_channel_options;
 	}
 
-	mapped_channel_options = $("#FILTER_ADD_MAPPED_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
-	mapped_channels = '';
-	if (mapped_channel_options){
-		mapped_channels =  'CH#' + mapped_channel_options + ' ';
+	from_event_type = $('select#RULE_FROM_EVENT_TYPE').val();
+	if (!from_event_type) return false;
+
+	var from_event_num = '';
+	var from_event_num_options = null;
+	if (from_event_type=="CC") {
+		var from_event_num_options = $("#RULE_FROM_CC_NUM option:selected").map(function(){ return this.value }).get().join(",");
+	}
+	else {
+		var from_event_num_options = $("#RULE_FROM_EVENT_NUM").val();
+	}
+	if (from_event_num_options) {
+		from_event_num =  '#' + from_event_num_options;
 	}
 
-	mapped_midi_event = ''
-	if (mappedMidiEventSelect.value){
-		mapped_midi_event = '=> ' + mapped_channels +  mappedMidiEventSelect.value
-		mapped_cc_values_options = $("#FILTER_ADD_MAPPED_CC_VALUE option:selected").map(function(){ return this.value }).get().join(",");
-		if (mapped_cc_values_options){
-			mapped_midi_event += '#' + mapped_cc_values_options;
+	var new_rule = command + ' ' + from_channels + ' ' + from_event_type + from_event_num;
+
+	//TO part
+	
+	if (command=="MAP") {
+
+		var to_channel_options = $("#RULE_TO_CHANNEL option:selected").map(function(){ return this.value }).get().join(",");
+		var to_channels = '';
+		if (to_channel_options) {
+			to_channels =  'CH#' + to_channel_options;
 		}
+
+		var to_event_type = $('select#RULE_TO_EVENT_TYPE').val();
+		if (!to_event_type) return false;
+
+		var to_event_num = '';
+		var to_event_num_options = null;
+		if (to_event_type=="CC") {
+			to_event_num_options = $("#RULE_TO_CC_NUM option:selected").map(function(){ return this.value }).get().join(",");
+		}
+		else {
+			to_event_num_options = $("#RULE_TO_EVENT_NUM").val();
+		}
+		if (to_event_num_options) {
+			to_event_num =  '#' + to_event_num_options;
+		}
+
+		new_rule +=  ' => ' + to_channels + ' ' + to_event_type + to_event_num
 	}
 
-	newLine = command + ' ' + channels + ' ' + midi_event + cc_value + ' ' +   mapped_midi_event
+	console.log("NEW RULE: "+new_rule)
+	
+	var current_rules_text=$('textarea#ZYNTHIAN_MIDI_FILTER_RULES').val();
+	if (current_rules_text) current_rules_text += "\n";
+	$('textarea#ZYNTHIAN_MIDI_FILTER_RULES').val(current_rules_text+new_rule);
 
-	if (filterRulesTextarea.value) {
-		filterRulesTextarea.value += "\n"
-	}
-	filterRulesTextarea.value += newLine;
 	return true;
 }
 
 
 function refreshSelectionView() {
-	if ('CC' == midiEventSelect.value){
-		ccValueSelect.disabled = false;
-		ccValueSelectLabel.disabled = false;
+	var command = $('select#RULE_COMMAND').val();
+
+	var from_event_type = $('select#RULE_FROM_EVENT_TYPE').val();
+	if (from_event_type=="CC") {
+		$("label#RULE_FROM_EVENT_NUM_LABEL").slideUp(500);
+		$("input#RULE_FROM_EVENT_NUM").slideUp(500);
+		$("label#RULE_FROM_CC_NUM_LABEL").slideDown(500);
+		$("select#RULE_FROM_CC_NUM").slideDown(500);
+	} else if (enabledNumberInputTypes.includes(from_event_type)) {
+		$("label#RULE_FROM_EVENT_NUM_LABEL").slideDown(500);
+		$("input#RULE_FROM_EVENT_NUM").slideDown(500);
+		$("label#RULE_FROM_CC_NUM_LABEL").slideUp(500);
+		$("select#RULE_FROM_CC_NUM").slideUp(500);
 	} else {
-		ccValueSelect.disabled = true;
-		ccValueSelectLabel.disabled = true;
-		var elements = ccValueSelect.options;
-		for(var i = 0; i < elements.length; i++){
-			elements[i].selected = false;
-		}
+		$("label#RULE_FROM_EVENT_NUM_LABEL").slideUp(500);
+		$("input#RULE_FROM_EVENT_NUM").slideUp(500);
+		$("label#RULE_FROM_CC_NUM_LABEL").slideUp(500);
+		$("select#RULE_FROM_CC_NUM").slideUp(500);
 	}
 
-	hideCCValue = true;
-	if ('MAP' == commandSelect.value) {
-		mappedChannelSelect.disabled = false;
-		mappedChannelSelectLabel.disabled = false;
-		mappedMidiEventSelect.disabled = false;
-		mappedMidiEventSelectLabel.disabled = false;
-		if ('CC' == mappedMidiEventSelect.value){
-			hideCCValue = false
+	if (command=="MAP") {
+		$("div#rule_to_panel").show(500);
+		
+		var to_event_type = $('select#RULE_TO_EVENT_TYPE').val();
+		if (to_event_type=="CC") {
+			$("label#RULE_TO_CC_NUM_LABEL").show(500);
+			$("select#RULE_TO_CC_NUM").show(500);
+			$("label#RULE_TO_EVENT_NUM_LABEL").hide(500);
+			$("input#RULE_TO_EVENT_NUM").hide(500);
+		} else if (enabledNumberInputTypes.includes(to_event_type)) {
+			$("label#RULE_TO_EVENT_NUM_LABEL").show(500);
+			$("input#RULE_TO_EVENT_NUM").show(500);
+			$("label#RULE_TO_CC_NUM_LABEL").hide(500);
+			$("select#RULE_TO_CC_NUM").hide(500);
+		} else {
+			$("label#RULE_TO_CC_NUM_LABEL").hide(500);
+			$("select#RULE_TO_CC_NUM").hide(500);
+			$("label#RULE_TO_EVENT_NUM_LABEL").hide(500);
+			$("input#RULE_TO_EVENT_NUM").hide(500);
 		}
 	} else {
-		mappedChannelSelect.disabled = true;
-		mappedChannelSelectLabel.disabled = true;
-		mappedMidiEventSelect.disabled = true;
-		mappedMidiEventSelectLabel.disabled = true;
-		var elements = mappedMidiEventSelect.options;
-		for(var i = 0; i < elements.length; i++){
-			elements[i].selected = false;
-		}
-	}
-	if (hideCCValue) {
-		mappedCCValueSelect.disabled = true;
-		mappedCCValueSelectLabel.disabled = true;
-		var elements = mappedCCValueSelect.options;
-		for(var i = 0; i < elements.length; i++){
-			elements[i].selected = false;
-		}
-	} else {
-		mappedCCValueSelect.disabled = false;
-		mappedCCValueSelectLabel.disabled = false;
+		$("div#rule_to_panel").hide(500);
 	}
 }
 
