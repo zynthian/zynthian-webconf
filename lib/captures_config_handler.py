@@ -150,7 +150,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		captures = []
 		fileList =  os.listdir(directory)
 		fileList = sorted(fileList)
-		for f in fnmatch.filter(fileList, '*.wav'):
+		for f in fnmatch.filter(fileList, '*.wav') + fnmatch.filter(fileList, '*.mid'):
 			fullPath = os.path.join(directory, f)
 			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
 			text = ''
