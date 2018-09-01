@@ -18,7 +18,7 @@
 			<div id="captures-tree"></div>
 		</div>
 
-		<div id="captures-panel" class="col-md-7">
+		<div id="captures-panel-main" class="col-md-7">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH" />
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE" />
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" />
@@ -83,10 +83,16 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 	expandIcon: "glyphicon glyphicon-folder-close",
 	collapseIcon: "glyphicon glyphicon-folder-open",
 	onNodeSelected: function(event, data) {
-		$("#loading-div-background").css({ opacity: 1.0 });
-		$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
-		$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
-		$('#captures-panel').show();
+		if (data.fullpath==='ignore'){
+			$('#ZYNTHIAN_CAPTURES_NAME')[0].value='';
+			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = '';
+			$('#captures-panel').hide();
+		} else {
+			$("#loading-div-background").css({ opacity: 1.0 });
+			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
+			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
+			$('#captures-panel').show();
+		}
 	}
 });
 

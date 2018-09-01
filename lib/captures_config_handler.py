@@ -23,18 +23,14 @@
 #********************************************************************
 
 import os
-import uuid
 import re
 import fnmatch
 import logging
 import tornado.web
 import json
 import shutil
-import requests
 import jsonpickle
 from collections import OrderedDict
-from subprocess import check_output, call
-from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -45,8 +41,8 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
 	selectedTreeNode = 0
-	selected_full_path = '';
-	searchResult = '';
+	selected_full_path = ''
+	searchResult = ''
 	maxTreeNodeIndex = 0
 
 	def get_current_user(self):
@@ -65,18 +61,8 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		config=OrderedDict([])
 		self.maxTreeNodeIndex = 0
 		captures = []
-		try:
-			if os.path.ismount(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY):
-				captures.extend(self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY,  'fa fa-fw fa-usb'))
-			else:
-				logging.info("/media/usb0 not found")
-		except:
-			pass
-
-		try:
-			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'fa fa-fw fa-file'))
-		except:
-			pass
+		captures.append(self.create_node('wav'))
+		captures.append(self.create_node('mid'))
 
 		config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
 		config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
@@ -137,7 +123,9 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 							break
 						self.write(data)
 
-					self.set_header('Content-Type', 'application/wav')
+
+
+					self.set_header('Content-Type', self.get_content_type(filename))
 					self.set_header('Content-Disposition', 'attachment; filename=%s' % filename)
 					self.finish()
 				except Exception as exc:
@@ -145,12 +133,46 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
+	def get_content_type(self, filename):
+		m = re.match('(.*)\.(.*)', filename, re.M | re.I | re.S)
+		if m:
+			if m.group(2) == 'mid':
+				return 'audio/midi'
+		return 'application/wav'
 
-	def walk_directory(self, directory, icon):
+	def create_node(self, file_extension):
 		captures = []
-		fileList =  os.listdir(directory)
+		root_capture = {
+			'text': file_extension,
+			'name': file_extension,
+			'fullpath': 'ignore',
+			'icon': '',
+			'id': self.maxTreeNodeIndex
+		}
+		self.maxTreeNodeIndex += 1
+
+		try:
+			if os.path.ismount(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY):
+				captures.extend(
+					self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY, 'fa fa-fw fa-usb', file_extension))
+			else:
+				logging.info("/media/usb0 not found")
+		except:
+			pass
+
+		try:
+			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'fa fa-fw fa-file', file_extension))
+		except:
+			pass
+		root_capture['nodes'] = captures
+		return root_capture
+
+	def walk_directory(self, directory, icon, file_extension):
+		captures = []
+		fileList = os.listdir(directory)
+		logging.info(directory)
 		fileList = sorted(fileList)
-		for f in fnmatch.filter(fileList, '*.wav'):
+		for f in fnmatch.filter(fileList, '*.%s' % file_extension):
 			fullPath = os.path.join(directory, f)
 			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
 			text = ''
