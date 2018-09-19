@@ -1,0 +1,88 @@
+
+<div class="pull-right">
+	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
+</div>
+
+<h2>{{ escape(title) }}</h2>
+
+<form id="jalv-lv2-form" action="/api/sw-jalv-lv2" enctype="multipart/form-data" method="post">
+<div class="container-fluid jalv-lv2-plugin-panel">
+  <div class="row">
+
+	  <div class="row">
+		  <div  class="col-md-1 header advanced-view">
+			  Install
+		  </div>
+		  <div  class="col-md-5 header">
+			  Name
+		  </div>
+		  <div  class="col-md-6 header">
+		  URL
+	  	</div>
+	  </div>
+	  {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'] %}
+	  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} advanced-view {% end %}" >
+		  <div id="plugin-installed" class="col-md-1 advanced-view">
+			  <input type="checkbox" value="ZYNTHIAN_JALV_INSTALL{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} checked="checked" {% end %}>
+		  </div>
+		  <div id="plugin-name" class="col-md-5">
+			  {{ escape(pluginname) }}
+		  </div>
+		  <div id="plugin-url" class="col-md-6">
+			  {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['URL']) }}
+		  </div>
+	  </div>
+	  {% end %}
+
+	</div>
+	<div class="row">
+		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+	</div>
+
+</div>
+	<div class="container-fluid">
+	<div class="row">
+		<button name="ZYNTHIAN_CAPTURES_ACTION" value="INSTALL_LV2_PLUGINS" class="btn btn-lg btn-theme advanced-view">Save</button>
+	</div>
+</div>
+
+</form>
+
+
+
+<script type="text/javascript">
+var jalvForm = $('#jalv-lv2-form')[0];
+
+$(document).ready(function (){
+
+});
+
+function showProgressAnimation(){
+	$("#loading-div-background").show();
+}
+
+function restore_advanced_view() {
+	if (Cookies.get('advanced_view')) {
+		$('input#check_advanced_view').prop("checked", true);
+		$('.advanced-view').show();
+	} else {
+		$('input#check_advanced_view').prop("checked", false);
+		$('.advanced-view').hide();
+	}
+}
+
+function onchange_check_advanced_view() {
+	if ($('input#check_advanced_view').prop("checked")==true) {
+		Cookies.set('advanced_view','1')
+		$('.advanced-view').slideDown(100);
+	} else {
+		Cookies.remove('advanced_view')
+		$('.advanced-view').slideUp(100);
+	}
+}
+
+$(document).ready(function() {
+	restore_advanced_view()
+});
+
+</script>
