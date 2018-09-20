@@ -23,7 +23,7 @@
 	  {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'] %}
 	  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} advanced-view {% end %}" >
 		  <div id="plugin-installed" class="col-md-1 advanced-view">
-			  <input type="checkbox" value="ZYNTHIAN_JALV_INSTALL{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} checked="checked" {% end %}>
+			  <input type="checkbox" name="ZYNTHIAN_JALV_INSTALL_{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} checked="checked" {% end %}>
 		  </div>
 		  <div id="plugin-name" class="col-md-5">
 			  {{ escape(pluginname) }}

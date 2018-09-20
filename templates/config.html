@@ -91,6 +91,7 @@
 								<ul class="dropdown-menu">
 									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
 									<li {% if request.uri=="/api/sw-pìanoteq" %}class="active"{% end %}><a href="/api/sw-pianoteq">Pianoteq</a></li>
+									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">JALV / LV2 Plugins</a></li>
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">

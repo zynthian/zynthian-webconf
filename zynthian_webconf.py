@@ -24,15 +24,12 @@
 #********************************************************************
 
 import os
-import re
 import sys
 import string
 import random
 import logging
 import tornado.ioloop
 import tornado.web
-from collections import OrderedDict
-from os.path import isfile, isdir, join
 from lib.login_handler import LoginHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
@@ -54,6 +51,7 @@ from lib.presets_config_handler import PresetsConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.pianoteq_handler import PianoteqHandler
 from lib.captures_config_handler import CapturesConfigHandler
+from lib.jalv_lv2_handler import JalvLv2Handler
 
 #------------------------------------------------------------------------------
 
@@ -129,6 +127,7 @@ def make_app():
 		(r"/api/hw-wiring$", WiringConfigHandler),
 		(r"/api/sw-update$", SoftwareUpdateHandler),
 		(r"/api/sw-pianoteq$", PianoteqHandler),
+		(r"/api/sw-jalv-lv2", JalvLv2Handler),
 		(r"/api/ui-style$", UiConfigHandler),
 		(r"/api/ui-midi$", MidiConfigHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),
