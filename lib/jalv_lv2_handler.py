@@ -74,7 +74,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
                         world = lilv.World()
                         world.load_all()
                         for plugin in world.get_all_plugins():
-                                logging.info("adding plugin %s" % plugin.get_name())
+                                logging.info("adding plugin %s, %s" % (plugin.get_name(), plugin.get_class().get_label()))
                                 plugins["%s" % plugin.get_name()] = {'URL': "%s" % plugin.get_uri(), 'INSTALLED': False}
                         self.all_plugins = OrderedDict(sorted(plugins.items()))
                 except Exception as e:
