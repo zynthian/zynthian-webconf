@@ -74,8 +74,8 @@ class JalvLv2Handler(ZynthianConfigHandler):
                         world = lilv.World()
                         world.load_all()
                         for plugin in world.get_all_plugins():
-                                if plugin.get_class().get_label()=="Generators":
-                                        plugins[plugin.get_name(),{'URL': plugin.get_uri(), 'INSTALLED': False}]
+                                logging.info("adding plugin %s" % plugin.get_name())
+                                plugins["%s" % plugin.get_name()] = {'URL': "%s" % plugin.get_uri(), 'INSTALLED': False}
                         self.all_plugins = OrderedDict(sorted(plugins.items()))
                 except Exception as e:
                         logging.error('Loading list of all lv2 plugins failed: %s' % e)
@@ -86,7 +86,8 @@ class JalvLv2Handler(ZynthianConfigHandler):
                 existing_plugins = self.load_installed_plugins();
 
                 for plugin_name, plugin_properties in result.items():
-                        if existing_plugins[plugin_name]:
+                        if plugin_name in existing_plugins:
+                                logging.info("%s installed" % plugin_name)
                                 plugin_properties['INSTALLED'] = True
 
                 return result
