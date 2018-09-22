@@ -131,6 +131,20 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'title': 'Switch GPIO-pins',
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
 				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
+				'type': 'select',
+				'title': 'MPC23017 INT A PIN',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
+				'options': map(lambda x: str(x).zfill(2), list(range(1, 40))),
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
+				'type': 'select',
+				'title': 'MPC23017 INT B PIN',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
+				'options': map(lambda x: str(x).zfill(2), list(range(1, 40))),
+				'advanced': True
 			}]
 		])
 		if self.genjson:
