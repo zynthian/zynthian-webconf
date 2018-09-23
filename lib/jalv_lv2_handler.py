@@ -37,6 +37,7 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 
 class JalvLv2Handler(ZynthianConfigHandler):
         JALV_LV2_CONFIG_FILE = "%s/jalv_plugins.json" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
+        JALV_ALL_LV2_CONFIG_FILE = "%s/all_jalv_plugins.json" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
 
         all_plugins = None
         @tornado.web.authenticated
@@ -69,16 +70,34 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 
         def load_all_plugins(self):
+                result = {}
+                trials = 0
+                while not result and trials <= 1:
+                        try:
+                                trials = trials + 1
+                                with open(self.JALV_ALL_LV2_CONFIG_FILE) as f:
+                                        result = json.load(f, object_pairs_hook=OrderedDict)
+                        except Exception as e:
+                                logging.info('Loading list of all lv2 plugins failed: %s' % e)
+                        if not result:
+                                self.generate_all_plugins_config_file()
+                self.all_plugins = result
+                return result
+
+        def generate_all_plugins_config_file(self):
                 plugins = OrderedDict([])
                 try:
                         world = lilv.World()
                         world.load_all()
                         for plugin in world.get_all_plugins():
-                                logging.info("adding plugin %s, %s" % (plugin.get_name(), plugin.get_class().get_label()))
+                                logging.info("adding plugin %s" % plugin.get_name())
                                 plugins["%s" % plugin.get_name()] = {'URL': "%s" % plugin.get_uri(), 'INSTALLED': False}
                         self.all_plugins = OrderedDict(sorted(plugins.items()))
+                        with open(self.JALV_ALL_LV2_CONFIG_FILE, 'w') as f:
+                                json.dump(self.all_plugins, f)
+
                 except Exception as e:
-                        logging.error('Loading list of all lv2 plugins failed: %s' % e)
+                        logging.error('Generating list of all lv2 plugins failed: %s' % e)
 
         def load_plugins(self):
                 result = self.all_plugins
@@ -118,3 +137,4 @@ class JalvLv2Handler(ZynthianConfigHandler):
                 except Exception as e:
                         logging.error("Installing jalv plugins failed: %s" % format(e))
                         return format(e)
+
