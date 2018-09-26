@@ -85,7 +85,9 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		["MCP23017_ENCODERS", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
-			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111"
+			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
 		}],
 		["EMULATOR", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "4,5,6,7",
@@ -116,34 +118,56 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_A', {
 				'type': 'text',
-				'title': 'Encoder A GPIO-pins',
+				'title': 'Encoders A GPIOs',
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_B', {
 				'type': 'text',
-				'title': 'Encoder B GPIO-pins',
+				'title': 'Encoders B GPIOs',
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_SWITCHES', {
 				'type': 'text',
-				'title': 'Switch GPIO-pins',
+				'title': 'Switches GPIOs',
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
 				'type': 'select',
-				'title': 'MPC23017 INT A PIN',
+				'title': 'MPC23017 INTA',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': map(lambda x: str(x).zfill(2), list(range(1, 40))),
+				'options': ['' ,'0', '2', '3', '4', '5', '6', '25', '27'],
+				'option_labels': {
+					'': 'Default', 
+					'0': 'GPIO 0 (pin 11)',
+					'2': 'GPIO 2 (pin 13)',
+					'3': 'GPIO 3 (pin 15)',
+					'4': 'GPIO 4 (pin 16)',
+					'5': 'GPIO 5 (pin 18)',
+					'6': 'GPIO 6 (pin 22)',
+					'25': 'GPIO 25 (pin 37)',
+					'27': 'GPIO 27 (pin 36)'
+				},
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
 				'type': 'select',
-				'title': 'MPC23017 INT B PIN',
+				'title': 'MPC23017 INTB',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
-				'options': map(lambda x: str(x).zfill(2), list(range(1, 40))),
+				'options': ['' ,'0', '2', '3', '4', '5', '6', '25', '27'],
+				'option_labels': {
+					'': 'Default', 
+					'0': 'GPIO 0 (pin 11)',
+					'2': 'GPIO 2 (pin 13)',
+					'3': 'GPIO 3 (pin 15)',
+					'4': 'GPIO 4 (pin 16)',
+					'5': 'GPIO 5 (pin 18)',
+					'6': 'GPIO 6 (pin 22)',
+					'25': 'GPIO 25 (pin 37)',
+					'27': 'GPIO 27 (pin 36)'
+				},
 				'advanced': True
 			}]
 		])
