@@ -11,7 +11,7 @@
 
 	  <div class="row">
 		  <div  class="col-md-1 header advanced-view">
-			  Install
+			  Enable
 		  </div>
 		  <div  class="col-md-5 header">
 			  Name
@@ -21,9 +21,9 @@
 	  	</div>
 	  </div>
 	  {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'] %}
-	  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} advanced-view {% end %}" >
+	  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['ENABLED'] %} advanced-view {% end %}" >
 		  <div id="plugin-installed" class="col-md-1 advanced-view">
-			  <input type="checkbox" name="ZYNTHIAN_JALV_INSTALL_{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['INSTALLED'] %} checked="checked" {% end %}>
+			  <input type="checkbox" name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['ENABLED'] %} checked="checked" {% end %}>
 		  </div>
 		  <div id="plugin-name" class="col-md-5">
 			  {{ escape(pluginname) }}
@@ -35,14 +35,17 @@
 	  {% end %}
 
 	</div>
+	
 	<div class="row">
 		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
 	</div>
-
 </div>
-	<div class="container-fluid">
+
+<div class="container-fluid">
+	<div class="row"><br/></div>
 	<div class="row">
-		<button name="ZYNTHIAN_JALV_ACTION" value="INSTALL_LV2_PLUGINS" class="btn btn-lg btn-theme advanced-view">Save</button>
+		<button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme advanced-view">Save</button>
+		<button name="ZYNTHIAN_JALV_ACTION" value="REGENERATE_PLUGIN_LIST" class="btn btn-lg btn-theme advanced-view">Search for new Plugins</button>
 	</div>
 </div>
 
@@ -74,10 +77,10 @@ function restore_advanced_view() {
 function onchange_check_advanced_view() {
 	if ($('input#check_advanced_view').prop("checked")==true) {
 		Cookies.set('advanced_view','1')
-		$('.advanced-view').slideDown(100);
+		$('.advanced-view').show();
 	} else {
 		Cookies.remove('advanced_view')
-		$('.advanced-view').slideUp(100);
+		$('.advanced-view').hide();
 	}
 }
 
