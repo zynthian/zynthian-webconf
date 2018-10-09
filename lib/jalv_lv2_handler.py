@@ -27,6 +27,7 @@ import logging
 import tornado.web
 import json
 import lilv
+
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
@@ -40,6 +41,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 	JALV_ALL_LV2_CONFIG_FILE = "{}/all_jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
 
 	all_plugins = None
+	world = lilv.World()
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -89,12 +91,12 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 	def generate_all_plugins_config_file(self):
 		plugins = OrderedDict()
+		self.world.ns.ev = lilv.Namespace(self.world, 'http://lv2plug.in/ns/ext/event#')
 		try:
-			world = lilv.World()
-			world.load_all()
-			for plugin in world.get_all_plugins():
+			self.world.load_all()
+			for plugin in self.world.get_all_plugins():
 				logging.info("Adding '{}'".format(plugin.get_name()))
-				plugins[str(plugin.get_name())] = {'URL': str(plugin.get_uri()), 'ENABLED': False}
+				plugins[str(plugin.get_name())] = {'URL': str(plugin.get_uri()), 'TYPE': self.get_plugin_type(plugin), 'ENABLED': False}
 			self.all_plugins = OrderedDict(sorted(plugins.items()))
 			with open(self.JALV_ALL_LV2_CONFIG_FILE, 'w') as f:
 				json.dump(self.all_plugins, f)
@@ -133,7 +135,10 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 			for plugin_name, plugin_properties in self.all_plugins.items():
 				if "ZYNTHIAN_JALV_ENABLE_%s" % plugin_name in postedPlugins:
-					pluginJson[plugin_name] = plugin_properties['URL']
+					pp = {}
+					pp['URL'] = plugin_properties['URL']
+					pp['TYPE'] = plugin_properties['TYPE']
+					pluginJson[plugin_name] = pp
 
 			with open(self.JALV_LV2_CONFIG_FILE,'w') as f:
 				json.dump(pluginJson, f)
@@ -145,3 +150,25 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 	def do_regenerate_plugin_list(self):
 		self.generate_all_plugins_config_file()
+
+	def get_plugin_type(self, pl):
+
+		n_audio_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort, self.world.ns.lv2.AudioPort)
+		n_audio_out = pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.lv2.AudioPort)
+		n_midi_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort, self.world.ns.ev.EventPort)
+		n_midi_out = pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.ev.EventPort)
+
+		if n_audio_out > 0 and n_midi_in == n_midi_out == 0:
+			if n_audio_in > 0:
+				return "Audio Effect"
+			else:
+				return "Audio Generator"
+
+		if n_midi_in > 0 and n_midi_out > 0 and n_audio_in == n_audio_out == 0:
+			return "MIDI Tool"
+
+		if n_audio_out > 0 and n_midi_in > 0:
+			return "MIDI Synth"
+
+		return "Unknown"
+

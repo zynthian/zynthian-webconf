@@ -13,10 +13,13 @@
 		  <div  class="col-md-1 header advanced-view">
 			  Enable
 		  </div>
-		  <div  class="col-md-5 header">
+		  <div  class="col-md-4 header">
 			  Name
 		  </div>
-		  <div  class="col-md-6 header">
+		  <div class="col-md-2 header">
+                        Type
+                  </div>
+		  <div  class="col-md-5 header">
 		  URL
 	  	</div>
 	  </div>
@@ -25,10 +28,15 @@
 		  <div id="plugin-installed" class="col-md-1 advanced-view">
 			  <input type="checkbox" name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['ENABLED'] %} checked="checked" {% end %}>
 		  </div>
-		  <div id="plugin-name" class="col-md-5">
+		  <div id="plugin-name" class="col-md-4">
 			  {{ escape(pluginname) }}
 		  </div>
-		  <div id="plugin-url" class="col-md-6">
+		  <div id="plugin-type" class="col-md-2">
+                  {% if 'TYPE' in config['ZYNTHIAN_JALV_PLUGINS'][pluginname] %}
+{{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['TYPE']) }}
+{% end %}
+                  </div>
+		  <div id="plugin-url" class="col-md-5">
 			  {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['URL']) }}
 		  </div>
 	  </div>
