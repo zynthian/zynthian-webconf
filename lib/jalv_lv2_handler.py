@@ -151,24 +151,25 @@ class JalvLv2Handler(ZynthianConfigHandler):
 	def do_regenerate_plugin_list(self):
 		self.generate_all_plugins_config_file()
 
+
 	def get_plugin_type(self, pl):
-
-		n_audio_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort, self.world.ns.lv2.AudioPort)
+		n_audio_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort,  self.world.ns.lv2.AudioPort)
 		n_audio_out = pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.lv2.AudioPort)
-		n_midi_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort, self.world.ns.ev.EventPort)
+		n_midi_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort,  self.world.ns.ev.EventPort)
 		n_midi_out = pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.ev.EventPort)
+		n_midi_in += pl.get_num_ports_of_class(self.world.ns.lv2.InputPort,  self.world.ns.atom.AtomPort)
+		n_midi_out += pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.atom.AtomPort)
 
-		if n_audio_out > 0 and n_midi_in == n_midi_out == 0:
-			if n_audio_in > 0:
+		if n_audio_out>0 and n_midi_in==n_midi_out==0:
+			if n_audio_in>0:
 				return "Audio Effect"
 			else:
 				return "Audio Generator"
 
-		if n_midi_in > 0 and n_midi_out > 0 and n_audio_in == n_audio_out == 0:
+		if n_midi_in>0 and n_midi_out>0 and n_audio_in==n_audio_out==0:
 			return "MIDI Tool"
 
-		if n_audio_out > 0 and n_midi_in > 0:
+		if n_midi_in>0 and n_audio_out>0:
 			return "MIDI Synth"
 
 		return "Unknown"
-
