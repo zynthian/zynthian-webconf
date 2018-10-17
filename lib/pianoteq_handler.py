@@ -98,16 +98,17 @@ class PianoteqHandler(ZynthianConfigHandler):
 				return format(e)
 
 	def do_install_pianoteq(self):
+		errors = None
 		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
 		if filename:
 			logging.info("Installing %s" % filename)
-			errors = None
 
 			# Just to be sure...
 			if os.path.isdir("/tmp/pianoteq"):
 				shutil.rmtree("/tmp/pianoteq")
-				if not os.path.isdir(PIANOTEQ_SW_DIR):
-					os.mkdir(PIANOTEQ_SW_DIR)
+
+			if not os.path.isdir(PIANOTEQ_SW_DIR):
+				os.mkdir(PIANOTEQ_SW_DIR)
 
 			# Install different type of files
 			filename_parts = os.path.splitext(filename)
@@ -126,6 +127,7 @@ class PianoteqHandler(ZynthianConfigHandler):
 				shutil.rmtree("/tmp/pianoteq")
 		else:
 			errors = 'Please select a file'
+
 		return errors
 
 	def do_install_pianoteq_binary(self, filename):
