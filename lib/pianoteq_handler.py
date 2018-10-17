@@ -69,7 +69,8 @@ class PianoteqHandler(ZynthianConfigHandler):
 		if action:
 			errors = {
 				'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
-				'ADD_LICENCE': lambda: self.do_install_licence()
+				'ADD_LICENCE': lambda: self.do_install_licence(),
+				'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache()
 			}[action]()
 		self.get(errors)
 
@@ -164,6 +165,9 @@ class PianoteqHandler(ZynthianConfigHandler):
 		self.ensure_dir(PIANOTEQ_ADDON_DIR)
 		logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
 		shutil.move(filename, PIANOTEQ_ADDON_DIR + "/" + os.path.basename(filename))
+
+	def do_update_presets_cache(self):
+		zynthian_engine_pianoteq(None, True)
 
 
 	# From: https://stackoverflow.com/questions/3397752/copy-multiple-files-in-python
