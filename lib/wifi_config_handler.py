@@ -109,7 +109,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		fo.flush()
 		fo.close()
 
-		check_output("wpa_cli -i wlan0 reconfigure", shell=True)
+		check_output("wpa_cli reconfigure", shell=True)
 		errors=self.get()
 
 
