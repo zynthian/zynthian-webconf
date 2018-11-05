@@ -160,16 +160,24 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		n_midi_in += pl.get_num_ports_of_class(self.world.ns.lv2.InputPort,  self.world.ns.atom.AtomPort)
 		n_midi_out += pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.atom.AtomPort)
 
-		if n_audio_out>0 and n_midi_in==n_midi_out==0:
-			if n_audio_in>0:
-				return "Audio Effect"
+		# Really DIRTY => Should be fixed ASAP!!! TODO!!
+		plugin_name=str(pl.get_name())
+		if plugin_name[-2:]=="v1":
+			return "MIDI Synth"
+
+		if plugin_name[:2]=="EQ":
+			return "Audio Effect"
+		
+		if n_audio_out>0 and n_audio_in==0:
+			if n_midi_in>0:
+				return "MIDI Synth"
 			else:
 				return "Audio Generator"
 
+		if n_audio_out>0 and n_audio_in>0 and n_midi_out==0:
+			return "Audio Effect"
+
 		if n_midi_in>0 and n_midi_out>0 and n_audio_in==n_audio_out==0:
 			return "MIDI Tool"
-
-		if n_midi_in>0 and n_audio_out>0:
-			return "MIDI Synth"
 
 		return "Unknown"
