@@ -24,8 +24,6 @@
 	<link rel="stylesheet" href="/bower_components/seiyria-bootstrap-slider/dist/css/bootstrap-slider.min.css">
 
 	<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
-	<link rel="stylesheet" href="//fonts.googleapis.com/css?family=Lato:400,300,700,900">
-
 
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/default.css">
@@ -91,6 +89,7 @@
 								<ul class="dropdown-menu">
 									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
 									<li {% if request.uri=="/api/sw-pìanoteq" %}class="active"{% end %}><a href="/api/sw-pianoteq">Pianoteq</a></li>
+									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">Jalv Plugins</a></li>
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">

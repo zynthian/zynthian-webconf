@@ -683,3 +683,9 @@ div.log-panel.updating {
   background-color: #606060;
   color: #ffffff;
 }
+div.jalv-lv2-plugin-panel .advanced-view {
+    background-color: transparent;
+}
+div.jalv-lv2-plugin-panel .header {
+    background-color: #d0d0d0;
+}

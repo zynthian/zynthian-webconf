@@ -26,7 +26,7 @@
 		</div>
 
 		<div class="row">
-		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD BINARY / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
+		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="Upload Binary / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
 		</div>
 
 		<div class="row"><br/></div>
@@ -55,6 +55,8 @@
 				<li>Open a X-forwarding session from your computer (ssh -Y root@zynthian.local). You need a X-server running in your computer.</li>
 				<li>Start Pianoteq on your zynthian, selecting any bank &amp; preset. Pianoteq UI should opens in your computer.</li>
 				<li>Follow screen instructions.</li>
+				<li>When activated, close the Pianoteq GUI and reboot your zynthian.</li>
+				<li>In some cases, you may need to click "Update Presets" from the webconf Pianoteq tab.</li>
 			</ul>
 		</div>
 
@@ -68,6 +70,12 @@
 				<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ADD_LICENCE" class="btn btn-lg btn-theme">Add licence</button>
 			</p>
 		-->
+
+		</div>
+	    <div class="row" id="update-cache">
+			<p>
+				<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
+			</p>
 		</div>
 
 	</div>

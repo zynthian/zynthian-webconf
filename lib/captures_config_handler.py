@@ -126,7 +126,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 
 
 					self.set_header('Content-Type', self.get_content_type(filename))
-					self.set_header('Content-Disposition', 'attachment; filename=%s' % filename)
+					self.set_header('Content-Disposition', 'attachment; filename="%s"' % filename)
 					self.finish()
 				except Exception as exc:
 					self.set_header('Content-Type', 'application/json')
