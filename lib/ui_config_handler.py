@@ -51,6 +51,11 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Size',
 				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
 			}],
+			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
+				'type': 'boolean',
+				'title': 'Restore last state on startup',
+				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+			}],
 			['ZYNTHIAN_UI_FONT_FAMILY', {
 				'type': 'select',
 				'title': 'Family',
