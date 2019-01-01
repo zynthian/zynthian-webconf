@@ -56,6 +56,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['AudioInjector', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-wm8731-audio'
 		}],
+		['AudioInjector Ultra', {
+			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra'
+		}],
 		['IQAudio DAC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-dac'
 		}],
