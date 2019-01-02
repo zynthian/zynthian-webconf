@@ -188,31 +188,44 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
 				'type': 'boolean',
-				'title': 'Map external events to Active layer/channel',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL')
+				'title': 'Single Channel Mode (Active Channel receives all external events)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
+			}],
+			['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', {
+				'type': 'boolean',
+				'title': 'ZS3 (Capture Program Change events for SubSnapShots)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')
 			}],
 			['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', {
 				'type': 'boolean',
-				'title': 'Preload Presets on Note',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON')
+				'title': 'Preload Presets with Note-On events',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1')
 			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable MIDI over Network',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED'),
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED','0'),
 				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
 				'type': 'select',
 				'title': 'MIDI fine tuning (Hz)',
-				'value':  self.get_midi_env('ZYNTHIAN_MIDI_FINE_TUNING'),
+				'value':  self.get_midi_env('ZYNTHIAN_MIDI_FINE_TUNING','440'),
 				'options': map(lambda x: str(x).zfill(2), list(range(392, 493)))
 			}],
 			['ZYNTHIAN_MIDI_MASTER_CHANNEL', {
 				'type': 'select',
 				'title': 'Master MIDI channel',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL'),
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','15'),
 				'options': map(lambda x: str(x).zfill(2), list(range(1, 17)))
+			}],
+			['ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE', {
+				'type': 'select',
+				'title': 'Master change type',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE'),
+				'options': list(self.midi_program_change_presets.keys()),
+				'presets': self.midi_program_change_presets,
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_CCNUM', {
 				'type': 'select',
@@ -221,13 +234,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'options': list(self.program_change_mode_labels.keys()),
 				'option_labels': self.program_change_mode_labels,
 				'advanced': True
-			}],
-			['ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE', {
-				'type': 'select',
-				'title': 'Master change type',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE'),
-				'options': list(self.midi_program_change_presets.keys()),
-				'presets': self.midi_program_change_presets
 			}],
 			['ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_UP', {
 				'type': 'text',
