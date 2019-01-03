@@ -145,17 +145,18 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'MPC23017 INTA',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '25', '27'],
+				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
 					'': 'Default', 
-					'0': 'GPIO 0 (pin 11)',
-					'2': 'GPIO 2 (pin 13)',
-					'3': 'GPIO 3 (pin 15)',
-					'4': 'GPIO 4 (pin 16)',
-					'5': 'GPIO 5 (pin 18)',
-					'6': 'GPIO 6 (pin 22)',
-					'25': 'GPIO 25 (pin 37)',
-					'27': 'GPIO 27 (pin 36)'
+					'0': 'WPi-GPIO 0 (pin 11)',
+					'2': 'WPi-GPIO 2 (pin 13)',
+					'3': 'WPi-GPIO 3 (pin 15)',
+					'4': 'WPi-GPIO 4 (pin 16)',
+					'5': 'WPi-GPIO 5 (pin 18)',
+					'6': 'WPi-GPIO 6 (pin 22)',
+					'7': 'WPi-GPIO 7 (pin 7)',
+					'25': 'WPi-GPIO 25 (pin 37)',
+					'27': 'WPi-GPIO 27 (pin 36)'
 				},
 				'advanced': True
 			}],
@@ -163,17 +164,18 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'MPC23017 INTB',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '25', '27'],
+				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
 					'': 'Default', 
-					'0': 'GPIO 0 (pin 11)',
-					'2': 'GPIO 2 (pin 13)',
-					'3': 'GPIO 3 (pin 15)',
-					'4': 'GPIO 4 (pin 16)',
-					'5': 'GPIO 5 (pin 18)',
-					'6': 'GPIO 6 (pin 22)',
-					'25': 'GPIO 25 (pin 37)',
-					'27': 'GPIO 27 (pin 36)'
+					'0': 'WPi-GPIO 0 (pin 11)',
+					'2': 'WPi-GPIO 2 (pin 13)',
+					'3': 'WPi-GPIO 3 (pin 15)',
+					'4': 'WPi-GPIO 4 (pin 16)',
+					'5': 'WPi-GPIO 5 (pin 18)',
+					'6': 'WPi-GPIO 6 (pin 22)',
+					'7': 'WPi-GPIO 7 (pin 7)',
+					'25': 'WPi-GPIO 25 (pin 37)',
+					'27': 'WPi-GPIO 27 (pin 36)'
 				},
 				'advanced': True
 			}]

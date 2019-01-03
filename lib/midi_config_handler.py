@@ -292,6 +292,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
+		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
+		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
@@ -299,7 +301,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		filter_error = self.validate_filter_rules(escaped_request_arguments);
 		errors = {}
 		if not filter_error:
-			# remove fields that sttart with FILTER_ADD from request_args, so that they won't be passed to update_config
+			# remove fields that start with FILTER_ADD from request_args, so that they won't be passed to update_config
 			for filter_add_argument in list(escaped_request_arguments.keys()):
 				if filter_add_argument.startswith('FILTER_ADD'):
 					del escaped_request_arguments[filter_add_argument]
@@ -321,6 +323,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					self.current_midi_profile_script = None;
 				else:
 					errors['zynthian_midi_profile_delete_script'] = 'You can only delete user profiles!'
+    
 			else:
 				#SAVE
 				if self.current_midi_profile_script:
@@ -336,9 +339,12 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					errors = self.update_config(escaped_request_arguments)
 				else:
 					errors['zynthian_midi_profile_new_script_name'] = 'Profile name missing'
+
 			self.restart_ui()
+
 		else:
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
+
 		self.get(errors)
 
 
