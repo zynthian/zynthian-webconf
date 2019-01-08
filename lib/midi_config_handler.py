@@ -311,11 +311,12 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			if new_profile_script_name:
 				#New MIDI profile
 				new_profile_script_path = self.PROFILES_DIRECTORY + '/' + new_profile_script_name + '.sh'
-				self.update_profile(new_profile_script_path, escaped_request_arguments)
+				zynconf.update_midi_profile(escaped_request_arguments, new_profile_script_path)
 				mode = os.stat(new_profile_script_path).st_mode
 				mode |= (mode & 0o444) >> 2	# copy R bits to X
 				os.chmod(new_profile_script_path, mode)
 				self.load_midi_profile_directories()
+
 			elif 'zynthian_midi_profile_delete_script' in self.request.arguments and self.get_argument('zynthian_midi_profile_delete_script') == "1":
 				#DELETE
 				if self.current_midi_profile_script.startswith(self.PROFILES_DIRECTORY):
@@ -335,7 +336,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					for k in updateParameters:
 						del escaped_request_arguments[k]
 
-					self.update_profile(self.current_midi_profile_script, escaped_request_arguments)
+					zynconf.update_midi_profile(escaped_request_arguments, self.current_midi_profile_script)
 					errors = self.update_config(escaped_request_arguments)
 				else:
 					errors['zynthian_midi_profile_new_script_name'] = 'Profile name missing'
@@ -361,8 +362,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				copyfile(default_src, self.current_midi_profile_script)
 			except Exception as e:
 				logging.error(e)
-				#Or create an empty default profile
-				self.update_profile(self.current_midi_profile_script, {})
 		#Else, get active profile
 		else:
 			if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
@@ -486,17 +485,3 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		else:
 			return default
 
-
-	def update_profile(self, script_file_name, request_arguments):
-		with open(script_file_name, 'w+') as f:
-			f.write('#!/bin/bash\n')
-			midiEntries = []
-			for parameter in request_arguments:
-				if parameter.startswith('ZYNTHIAN_MIDI'):
-					value=request_arguments[parameter][0].replace("\n", "\\n")
-					value=value.replace("\r", "")
-					f.write('export %s="%s"\n' % (parameter, value))
-					midiEntries.append(parameter)
-
-			for k in midiEntries:
-				del request_arguments[k]
