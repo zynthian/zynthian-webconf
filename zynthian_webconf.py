@@ -113,6 +113,7 @@ def make_app():
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
 		(r'/(.*\.html)$', tornado.web.StaticFileHandler, {'path': 'html'}),
 		(r'/(favicon\.ico)$', tornado.web.StaticFileHandler, {'path': 'img'}),
+		(r'/fonts/(.*)$', tornado.web.StaticFileHandler, {'path': 'fonts'}),
 		(r'/img/(.*)$', tornado.web.StaticFileHandler, {'path': 'img'}),
 		(r'/css/(.*)$', tornado.web.StaticFileHandler, {'path': 'css'}),
 		(r'/js/(.*)$', tornado.web.StaticFileHandler, {'path': 'js'}),
