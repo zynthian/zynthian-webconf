@@ -46,7 +46,7 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 
 class MidiConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_MY_DATA_DIR")
-	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=MIDI_out"
+	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=ttymidi:MIDI_out\nENABLED_FB="
 
 	midi_program_change_presets=OrderedDict([
 		['Custom', {
@@ -382,7 +382,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 
 	def get_ports_config(self):
-		midi_ports = { 'IN': [], 'OUT': [] }
+		midi_ports = { 'IN': [], 'OUT': [], 'FB': [] }
 		try:
 			#Get MIDI ports list from jack
 			client = jack.Client("ZynthianWebConf")
@@ -405,8 +405,9 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 			disabled_midi_in_ports=zynconf.get_disabled_midi_in_ports(current_midi_ports)
 			enabled_midi_out_ports=zynconf.get_enabled_midi_out_ports(current_midi_ports)
+			enabled_midi_fb_ports=zynconf.get_enabled_midi_fb_ports(current_midi_ports)
 
-			#Generate MIDI_PORTS{IN,OUT} configuration array
+			#Generate MIDI_PORTS{IN,OUT,FB} configuration array
 			for idx,midi_port in enumerate(midi_in_ports):
 				alias=self.get_port_alias(midi_port)
 				port_id=alias.replace(' ','_')
@@ -427,6 +428,17 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					'id': port_id,
 					'checked': 'checked="checked"' if port_id in enabled_midi_out_ports else ''
 				})
+			for idx,midi_port in enumerate(midi_out_ports):
+				alias=self.get_port_alias(midi_port)
+				port_id=alias.replace(' ','_')
+				midi_ports['FB'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': alias,
+					'id': port_id,
+					'checked': 'checked="checked"' if port_id in enabled_midi_fb_ports else ''
+				})
+
 
 		except Exception as e:
 			logging.error("%s" %e)
