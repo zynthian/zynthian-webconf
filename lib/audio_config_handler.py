@@ -98,6 +98,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry Digi', []],
 		['HifiBerry Amp',[]],
 		['AudioInjector', ['Master','Capture']],
+		['AudioInjector Ultra', ['DAC']],
 		['IQAudio DAC', []],
 		['IQAudio DAC+', []],
 		['IQAudio Digi', []],
@@ -142,7 +143,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		])
 
 		self.get_mixer_controls(config)
-
+		logging.info(config)
 		if self.genjson:
 			self.write(config)
 		else:
@@ -211,15 +212,20 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					m = re.match("Simple mixer control '(.*?)'.*", line, re.M | re.I)
 					if m:
 						controlName = m.group(1)
+				elif line.find('Capture channels:')>=0 and not channelType:
+						channelType = 'Capture'
 				elif line.find('Playback channels:')>=0:
 						channelType = 'Playback'
-				elif line.find('Capture channels:')>=0:
-						channelType = 'Capture'
 				else:
 					m = re.match(".*(Playback|Capture).*\[(\d*)%\].*", line, re.M | re.I)
 					if m:
 						volumePercent = m.group(2)
 						channelType = m.group(1)
+					else:
+						m = re.match(".*\[(\d*)%\].*", line, re.M | re.I)
+						if m:
+							volumePercent = m.group(1)
+
 			if controlName and channelType:
 				self.add_mixer_control(config, mixerControl, controlName, volumePercent, channelType)
 		except Exception as err:
@@ -241,3 +247,4 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	def needs_reboot(self):
 		return True
+
