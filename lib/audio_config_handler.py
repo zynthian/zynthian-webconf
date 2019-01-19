@@ -143,7 +143,6 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		])
 
 		self.get_mixer_controls(config)
-		logging.info(config)
 		if self.genjson:
 			self.write(config)
 		else:
