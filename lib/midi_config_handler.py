@@ -311,6 +311,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			if new_profile_script_name:
 				#New MIDI profile
 				new_profile_script_path = self.PROFILES_DIRECTORY + '/' + new_profile_script_name + '.sh'
+				#create file as copy of default:
+				zynconf.get_midi_config_fpath(new_profile_script_path)
 				zynconf.update_midi_profile(escaped_request_arguments, new_profile_script_path)
 				mode = os.stat(new_profile_script_path).st_mode
 				mode |= (mode & 0o444) >> 2	# copy R bits to X
