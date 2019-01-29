@@ -104,8 +104,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['Steinberg UR22 mkII (USB)', {
 			'SOUNDCARD_CONFIG': '',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:1 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
 		}],
+        ['Edirol UA1-EX (USB)', {
+            'SOUNDCARD_CONFIG': '',
+            'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:UA1EX -r 44100 -p 1024 -n 2 -S -X raw'
+        }],
 		['Dummy device', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
@@ -134,6 +138,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['USB device', []],
 		['Behringer UCA222 (USB)', ['PCM']],
 		['Steinberg UR22 mkII (USB)', ['Clock Source 41 Validity']],
+        ['Edirol UA1-EX (USB)', []],
 		['Dummy device', []]
 	])
 
