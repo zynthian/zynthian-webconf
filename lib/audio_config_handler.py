@@ -237,7 +237,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 						if is_capture:
 							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
 						else:
-							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
+							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Playback')
 					mixerControl = {'type': 'slider',
 						'id': idx,
 						'title': '',
