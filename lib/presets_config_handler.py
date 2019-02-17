@@ -109,7 +109,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 			pass
 
 	def do_new_bank(self):
-		if 	self.get_argument('ZYNTHIAN_PRESETS_NEW_BANK_NAME'):
+		if self.get_argument('ZYNTHIAN_PRESETS_NEW_BANK_NAME'):
 			newBank =  self.get_argument('ZYNTHIAN_PRESETS_FULLPATH') + "/" + self.get_argument('ZYNTHIAN_PRESETS_NEW_BANK_NAME')
 			os.mkdir(newBank)
 			self.selected_full_path = newBank
@@ -117,7 +117,7 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 	def do_rename(self):
 		newName = ''
 
-		if 	self.get_argument('ZYNTHIAN_PRESETS_BANK_NAME'):
+		if self.get_argument('ZYNTHIAN_PRESETS_BANK_NAME'):
 			newName = self.get_argument('ZYNTHIAN_PRESETS_BANK_NAME')
 		if self.get_argument('ZYNTHIAN_PRESETS_PRESET_NAME'):
 			newName = self.get_argument('ZYNTHIAN_PRESETS_PRESET_NAME')

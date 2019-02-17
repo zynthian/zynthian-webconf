@@ -22,14 +22,9 @@
 #
 #********************************************************************
 
-import os
-import sys
+
 import logging
-from enum import Enum
-import tornado.web
 import tornado.websocket
-import json
-import datetime
 import jsonpickle
 
 #------------------------------------------------------------------------------

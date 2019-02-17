@@ -1,65 +1,98 @@
-
 <div class="pull-right">
-	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
+    <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
 </div>
 
 <h2>{{ escape(title) }}</h2>
 
 <form id="jalv-lv2-form" action="/api/sw-jalv-lv2" enctype="multipart/form-data" method="post">
-<div class="container-fluid jalv-lv2-plugin-panel">
-  <div class="row">
+    <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="" />
+    <div class="container-fluid sw-jalv">
+        <div class="row">
+            <div class="col-md-10">
+                <input type="text" name="ZYNTHIAN_JALV_FILTER" id="ZYNTHIAN_JALV_FILTER" value="{{config['ZYNTHIAN_JALV_FILTER']}}"/>
+            </div>
+            <div class="col-md-2">
+                <button name="ZYNTHIAN_JALV_ACTION" value="FILTER" class="btn btn-block btn-theme">Filter</button>
+            </div>
+        </div>
 
-	  <div class="row">
-		  <div  class="col-md-1 header advanced-view">
-			  Enable
-		  </div>
-		  <div  class="col-md-4 header">
-			  Name
-		  </div>
-		  <div class="col-md-2 header">
-                        Type
+        <div class="row">
+            <div class="col-md-12">
+                <button name="ZYNTHIAN_JALV_ACTION" value="REGENERATE_PLUGIN_LIST" class="btn btn-theme btn-block advanced-view">Search for new Plugins</button>
+            </div>
+        </div>
+    </div>
+
+
+    <ul class="nav nav-tabs" role="tablist">
+    {% for pluginType in config['ZYNTHIAN_JALV_PLUGINS'] %}
+    <li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == pluginType.replace(' ','_')  %}active{% end %}">
+        <a href="#{{ pluginType.replace(' ','_') }}"
+           onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ pluginType.replace(' ','_') }}')" role="tab" data-toggle="tab">{{ pluginType }}
+            {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %} ({{ len(config['ZYNTHIAN_JALV_PLUGINS'][pluginType])  }}) {% end %}</a></li>
+    {% end %}
+    </ul>
+
+    <div class="tab-content">
+    {% for pluginType in config['ZYNTHIAN_JALV_PLUGINS'] %}
+        <div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == pluginType.replace(' ','_') %}active{% end %}" id="{{ pluginType.replace(' ','_') }}">
+            <div class="container-fluid jalv-lv2-plugin-panel">
+              <div class="row">
+                  <div class="row">
+                      <div  class="col-md-1 header advanced-view">
+                          Enable
+                      </div>
+                      <div  class="col-md-4 header">
+                          Name
+                      </div>
+                      <div class="col-md-2 header">
+                          Type
+                      </div>
+                      <div  class="col-md-5 header">
+                      URL
+                    </div>
                   </div>
-		  <div  class="col-md-5 header">
-		  URL
-	  	</div>
-	  </div>
-	  {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'] %}
-	  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['ENABLED'] %} advanced-view {% end %}" >
-		  <div id="plugin-installed" class="col-md-1 advanced-view">
-			  <input type="checkbox" name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}" {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['ENABLED'] %} checked="checked" {% end %}>
-		  </div>
-		  <div id="plugin-name" class="col-md-4">
-			  {{ escape(pluginname) }}
-		  </div>
-		  <div id="plugin-type" class="col-md-2">
-                  {% if 'TYPE' in config['ZYNTHIAN_JALV_PLUGINS'][pluginname] %}
-{{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['TYPE']) }}
-{% end %}
+                  {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'][pluginType] %}
+                  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} advanced-view {% end %}" >
+                      <div id="plugin-installed" class="col-md-1 advanced-view" >
+                              <input type="checkbox"
+                                     name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}"
+                                     {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} checked="checked" {% end %}
+                                     {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %}DISABLED{% end %}
+                            />
+                      </div>
+                      <div id="plugin-name" class="col-md-4">
+                          {{ escape(pluginname) }}
+                      </div>
+                      <div id="plugin-type" class="col-md-2">
+                          {% if 'TYPE' in config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname] %}
+    {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['TYPE']) }}
+    {% end %}
+                      </div>
+                      <div id="plugin-url" class="col-md-5">
+                              {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}
+                      </div>
                   </div>
-		  <div id="plugin-url" class="col-md-5">
-			  {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginname]['URL']) }}
-		  </div>
-	  </div>
-	  {% end %}
+                  {% end %}
 
-	</div>
-	
-	<div class="row">
-		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
-	</div>
-</div>
+                </div>
 
-<div class="container-fluid">
-	<div class="row"><br/></div>
-	<div class="row">
-		<button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme advanced-view">Save</button>
-		<button name="ZYNTHIAN_JALV_ACTION" value="REGENERATE_PLUGIN_LIST" class="btn btn-lg btn-theme advanced-view">Search for new Plugins</button>
-	</div>
-</div>
+                <div class="row">
+                        {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+                </div>
+            </div>
+        </div>
 
+    {% end %}
+    </div>
+
+    <div class="container-fluid">
+        <div class="row"><br/></div>
+        <div class="row">
+            <button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme btn-block advanced-view" {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %}DISABLED{% end %}>Save</button>
+        </div>
+    </div>
 </form>
-
-
 
 <script type="text/javascript">
 var jalvForm = $('#jalv-lv2-form')[0];
@@ -69,31 +102,34 @@ $(document).ready(function (){
 });
 
 function showProgressAnimation(){
-	$("#loading-div-background").show();
+    $("#loading-div-background").show();
 }
 
 function restore_advanced_view() {
-	if (Cookies.get('advanced_view')) {
-		$('input#check_advanced_view').prop("checked", true);
-		$('.advanced-view').show();
-	} else {
-		$('input#check_advanced_view').prop("checked", false);
-		$('.advanced-view').hide();
-	}
+    if (Cookies.get('advanced_view')) {
+        $('input#check_advanced_view').prop("checked", true);
+        $('.advanced-view').show();
+    } else {
+        $('input#check_advanced_view').prop("checked", false);
+        $('.advanced-view').hide();
+    }
 }
 
 function onchange_check_advanced_view() {
-	if ($('input#check_advanced_view').prop("checked")==true) {
-		Cookies.set('advanced_view','1')
-		$('.advanced-view').show();
-	} else {
-		Cookies.remove('advanced_view')
-		$('.advanced-view').hide();
-	}
+    if ($('input#check_advanced_view').prop("checked")==true) {
+        Cookies.set('advanced_view','1')
+        $('.advanced-view').show();
+    } else {
+        Cookies.remove('advanced_view')
+        $('.advanced-view').hide();
+    }
 }
 
 $(document).ready(function() {
-	restore_advanced_view()
+    restore_advanced_view()
 });
 
 </script>
+
+                                                                                                                                                                                    122,0-1       Bot
+

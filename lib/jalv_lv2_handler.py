@@ -30,6 +30,15 @@ import lilv
 
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
+from enum import Enum
+
+
+class PluginType(Enum):
+	MIDI_SYNTH = "MIDI Synth"
+	MIDI_TOOL = "MIDI Tool"
+	AUDIO_EFFECT = "Audio Effect"
+	AUDIO_GENERATOR = "Audio Generator"
+	UNKNOWN = "Unknown"
 
 
 #------------------------------------------------------------------------------
@@ -41,6 +50,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 	JALV_ALL_LV2_CONFIG_FILE = "{}/all_jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
 
 	all_plugins = None
+	jalv_filter = None
 	world = lilv.World()
 
 	@tornado.web.authenticated
@@ -50,6 +60,18 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 		config=OrderedDict([])
 		config['ZYNTHIAN_JALV_PLUGINS'] = self.load_plugins()
+		try:
+			config['ZYNTHIAN_ACTIVE_TAB'] = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
+		except:
+			pass
+
+		if not config['ZYNTHIAN_ACTIVE_TAB']:
+			config['ZYNTHIAN_ACTIVE_TAB'] = PluginType.MIDI_SYNTH.value.replace(" ", "_")
+
+		if self.jalv_filter:
+			config['ZYNTHIAN_JALV_FILTER'] = self.jalv_filter
+		else:
+			config['ZYNTHIAN_JALV_FILTER'] = ''
 
 		if self.genjson:
 			self.write(config)
@@ -67,6 +89,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		action = self.get_argument('ZYNTHIAN_JALV_ACTION')
 		if action:
 			errors = {
+				'FILTER': lambda: self.do_filter(),
 				'ENABLE_PLUGINS': lambda: self.do_enable_plugins(),
 				'REGENERATE_PLUGIN_LIST': lambda: self.do_regenerate_plugin_list()
 			}[action]()
@@ -104,16 +127,20 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		except Exception as e:
 			logging.error('Generating list of all LV2-Plugins failed: %s' % e)
 
-
 	def load_plugins(self):
-		result = self.all_plugins
+		result = OrderedDict()
+		for pluginType in PluginType:
+			result[pluginType.value] = OrderedDict()
+
+		all_plugins = self.all_plugins
 		enabled_plugins = self.load_enabled_plugins();
 
-		for plugin_name, plugin_properties in result.items():
-			if plugin_name in enabled_plugins:
-				logging.info("Plugin '{}' enabled".format(plugin_name))
-				plugin_properties['ENABLED'] = True
-
+		for plugin_name, plugin_properties in all_plugins.items():
+			if not self.jalv_filter or self.jalv_filter.upper() in plugin_name.upper():
+				result[plugin_properties['TYPE']][plugin_name] = plugin_properties
+				if plugin_name in enabled_plugins:
+					logging.info("Plugin '{}' enabled".format(plugin_name))
+					plugin_properties['ENABLED'] = True
 		return result
 
 
@@ -125,7 +152,6 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		except Exception as e:
 			logging.info('Loading list of enabled LV2-Plugins failed: %s' % e)
 		return result
-
 
 	def do_enable_plugins(self):
 		try:
@@ -163,21 +189,25 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		# Really DIRTY => Should be fixed ASAP!!! TODO!!
 		plugin_name=str(pl.get_name())
 		if plugin_name[-2:]=="v1":
-			return "MIDI Synth"
+			return PluginType.MIDI_SYNTH
 
 		if plugin_name[:2]=="EQ":
-			return "Audio Effect"
-		
+			return PluginType.AUDIO_EFFECT
+
 		if n_audio_out>0 and n_audio_in==0:
 			if n_midi_in>0:
-				return "MIDI Synth"
+				return PluginType.MIDI_SYNTH
 			else:
-				return "Audio Generator"
+				return PluginType.AUDIO_GENERATOR
 
 		if n_audio_out>0 and n_audio_in>0 and n_midi_out==0:
-			return "Audio Effect"
+			return PluginType.AUDIO_EFFECT
 
 		if n_midi_in>0 and n_midi_out>0 and n_audio_in==n_audio_out==0:
-			return "MIDI Tool"
+			return PluginType.MIDI_TOOL
 
-		return "Unknown"
+		return PluginType.UNKNOWN
+
+	def do_filter(self):
+		self.jalv_filter = self.get_argument('ZYNTHIAN_JALV_FILTER')
+
