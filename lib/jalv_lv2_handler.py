@@ -65,7 +65,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		except:
 			pass
 
-		if not config['ZYNTHIAN_ACTIVE_TAB']:
+		if not 'ZYNTHIAN_ACTIVE_TAB' in config or len(config['ZYNTHIAN_ACTIVE_TAB']) == 0:
 			config['ZYNTHIAN_ACTIVE_TAB'] = PluginType.MIDI_SYNTH.value.replace(" ", "_")
 
 		if self.jalv_filter:
