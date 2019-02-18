@@ -119,7 +119,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 			self.world.load_all()
 			for plugin in self.world.get_all_plugins():
 				logging.info("Adding '{}'".format(plugin.get_name()))
-				plugins[str(plugin.get_name())] = {'URL': str(plugin.get_uri()), 'TYPE': self.get_plugin_type(plugin), 'ENABLED': False}
+				plugins[str(plugin.get_name())] = {'URL': str(plugin.get_uri()), 'TYPE': self.get_plugin_type(plugin).value, 'ENABLED': False}
 			self.all_plugins = OrderedDict(sorted(plugins.items()))
 			with open(self.JALV_ALL_LV2_CONFIG_FILE, 'w') as f:
 				json.dump(self.all_plugins, f)
