@@ -376,7 +376,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	def validate_filter_rules(self, escaped_request_arguments):
 		if escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]:
-			newLine = escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0];
+			newLine = escaped_request_arguments['ZYNTHIAN_MIDI_FILTER_RULES'][0]
 			try:
 				mfs = MidiFilterScript(newLine, False)
 			except Exception as e:
