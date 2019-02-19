@@ -53,15 +53,18 @@ class PianoteqHandler(ZynthianConfigHandler):
 		#self.pianoteq_autoconfig()
 		config=OrderedDict([])
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = False
-		config['ZYNTHIAN_PIANOTEQ_LICENCE'] = self.get_licence_key()
+		config['ZYNTHIAN_PIANOTEQ_TRIAL'] = PIANOTEQ_TRIAL
+		config['ZYNTHIAN_PIANOTEQ_VERSION'] = ".".join(str(v) for v in PIANOTEQ_VERSION)
+		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = PIANOTEQ_PRODUCT
+		config['ZYNTHIAN_PIANOTEQ_LICENSE'] = self.get_license_key()
 		if self.genjson:
 			self.write(config)
 		else:
 			if errors:
-				logging.error("Installing pianoteq failed: %s" % format(errors))
+				logging.error("Pianoteq Action Failed: %s" % format(errors))
 				self.clear()
 				self.set_status(400)
-				self.finish("Installing pianoteq failed: %s" % format(errors))
+				self.finish("Pianoteq Action Failed: %s" % format(errors))
 			else:
 				self.render("config.html", body="pianoteq.html", config=config, title="Pianoteq", errors=errors)
 
@@ -72,34 +75,10 @@ class PianoteqHandler(ZynthianConfigHandler):
 		if action:
 			errors = {
 				'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
-				'ADD_LICENCE': lambda: self.do_install_licence(),
+				'ACTIVATE_LICENSE': lambda: self.do_activate_license(),
 				'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache()
 			}[action]()
 		self.get(errors)
-
-
-	def do_install_licence(self):
-		licence = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENCE');
-
-		logging.info(licence)
-		if os.path.isfile(PIANOTEQ_CONFIG_FILE):
-			root = ET.parse(PIANOTEQ_CONFIG_FILE)
-			try:
-				licence_value = None
-				for xml_value in root.iter("VALUE"):
-					logging.info(xml_value.attrib['name'])
-					if xml_value.attrib['name'] == 'serial':
-						licence_value = xml_value
-				if licence_value is None:
-					licence_value = ET.Element('VALUE')
-					root.getroot().append(licence_value)
-					licence_value.set('name','serial')
-				licence_value.set('val', licence)
-				root.write(PIANOTEQ_CONFIG_FILE)
-
-			except Exception as e:
-				logging.error("Installing licence failed: %s" % format(e))
-				return format(e)
 
 
 	def do_install_pianoteq(self):
@@ -141,11 +120,23 @@ class PianoteqHandler(ZynthianConfigHandler):
 		shutil.move(filename, PIANOTEQ_ADDON_DIR + "/" + os.path.basename(filename))
 
 
+	def do_activate_license(self):
+		license_serial = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENSE');
+		logging.info("Configuring Pianoteq License Key: {}".format(license_serial))
+		
+		# Activate the License Key by calling Pianoteq binary
+		command = "{} --activate {}".format(PIANOTEQ_BINARY, license_serial)
+		result = check_output(command, shell=True).decode("utf-8")
+		if result != "Activation Key Saved !\n":
+			logging.error("Pianoteq License Activation Failed: {}".format(result))
+			return result
+
+
 	def do_update_presets_cache(self):
 		zynthian_engine_pianoteq(None, True)
 
 
-	def get_licence_key(self):
+	def get_license_key(self):
 		#xpath with fromstring doesn't work
 		if os.path.exists(PIANOTEQ_ADDON_DIR):
 			root = ET.parse(PIANOTEQ_CONFIG_FILE)
