@@ -27,12 +27,25 @@ import tornado.web
 import logging
 from collections import OrderedDict
 from subprocess import check_output
+from enum import Enum
+
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Wiring Configuration
 #------------------------------------------------------------------------------
+
+
+class CustomSwitchType(Enum):
+	EMPTY = "0"
+	POWER_OFF = "1"
+	REBOOT = "2"
+	ALL_SOUNDS_OFF = "4"
+	ALL_NOTES_OFF = "8"
+	ALL_OFF = "12"
+	UI_RESET = "16"
+	ANALOG = "32"
 
 class WiringConfigHandler(ZynthianConfigHandler):
 
@@ -115,6 +128,10 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+
+		custom_type_list = [c.value for c in CustomSwitchType]
+		custom_type_labels = dict([(c.value, c.name) for c in CustomSwitchType])
+
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
 				'type': 'select',
@@ -177,6 +194,38 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'25': 'WPi-GPIO 25 (pin 37)',
 					'27': 'WPi-GPIO 27 (pin 36)'
 				},
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_A', {
+				'type': 'select',
+				'title': 'Custom switch A',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_A'),
+				'options': custom_type_list,
+				'option_labels': custom_type_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_B', {
+				'type': 'select',
+				'title': 'Custom switch B',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_B'),
+				'options': custom_type_list,
+				'option_labels': custom_type_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_C', {
+				'type': 'select',
+				'title': 'Custom switch C',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_C'),
+				'options': custom_type_list,
+				'option_labels': custom_type_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_D', {
+				'type': 'select',
+				'title': 'Custom switch D',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_D'),
+				'options': custom_type_list,
+				'option_labels': custom_type_labels,
 				'advanced': True
 			}]
 		])
