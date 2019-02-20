@@ -273,7 +273,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_MIDI_PORTS', {
 				'type': 'textarea',
 				'title': 'MIDI Ports',
-				'value':self.get_midi_env('ZYNTHIAN_MIDI_PORTS'),
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_PORTS'),
 				'cols': 50,
 				'rows': 2,
 				'addButton': 'display_midi_ports_panel',
