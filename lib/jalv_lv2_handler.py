@@ -38,7 +38,7 @@ class PluginType(Enum):
 	MIDI_TOOL = "MIDI Tool"
 	AUDIO_EFFECT = "Audio Effect"
 	AUDIO_GENERATOR = "Audio Generator"
-	UNKNOWN = "Unknown"
+	#UNKNOWN = "Unknown"
 
 
 #------------------------------------------------------------------------------
@@ -179,6 +179,32 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 
 	def get_plugin_type(self, pl):
+		lv2_plugin_classes = {
+			"MIDI_SYNTH" : ("Instrument"),
+
+			"AUDIO_EFFECT" : ("Analyser", "Spectral", "Delay", "Compressor", "Distortion", "Filter", "Equaliser",
+				"Modulator", "Expander", "Spatial", "Limiter", "Pitch Shifter", "Reverb", "Simulator", "Envelope",
+				"Gate", "Amplifier", "Chorus", "Flanger", "Phaser", "Highpass", "Lowpass", "Dynamics"),
+
+			"AUDIO_GENERATOR": ("Oscillator", "Generator"),
+
+			"UNKNOWN": ("Utility", "Plugin")
+		}
+
+		# Try to determine the plugin type from the LV2 class ...
+		plugin_class = str(pl.get_class().get_label())
+		if plugin_class in lv2_plugin_classes["MIDI_SYNTH"]:
+			return PluginType.MIDI_SYNTH
+
+		elif plugin_class in lv2_plugin_classes["AUDIO_EFFECT"]:
+			return PluginType.AUDIO_EFFECT
+
+		elif plugin_class in lv2_plugin_classes["AUDIO_GENERATOR"]:
+			return PluginType.AUDIO_GENERATOR
+
+		# If failed to determine the plugin type using the LV2 class, 
+		# inspect the input/output ports ...
+
 		n_audio_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort,  self.world.ns.lv2.AudioPort)
 		n_audio_out = pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.lv2.AudioPort)
 		n_midi_in = pl.get_num_ports_of_class(self.world.ns.lv2.InputPort,  self.world.ns.ev.EventPort)
@@ -187,12 +213,12 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		n_midi_out += pl.get_num_ports_of_class(self.world.ns.lv2.OutputPort, self.world.ns.atom.AtomPort)
 
 		# Really DIRTY => Should be fixed ASAP!!! TODO!!
-		plugin_name=str(pl.get_name())
-		if plugin_name[-2:]=="v1":
-			return PluginType.MIDI_SYNTH
+		#plugin_name=str(pl.get_name())
+		#if plugin_name[-2:]=="v1":
+		#	return PluginType.MIDI_SYNTH
 
-		if plugin_name[:2]=="EQ":
-			return PluginType.AUDIO_EFFECT
+		#if plugin_name[:2]=="EQ":
+		#	return PluginType.AUDIO_EFFECT
 
 		if n_audio_out>0 and n_audio_in==0:
 			if n_midi_in>0:
@@ -206,7 +232,9 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		if n_midi_in>0 and n_midi_out>0 and n_audio_in==n_audio_out==0:
 			return PluginType.MIDI_TOOL
 
-		return PluginType.UNKNOWN
+		#return PluginType.UNKNOWN
+		return PluginType.AUDIO_EFFECT
+
 
 	def do_filter(self):
 		self.jalv_filter = self.get_argument('ZYNTHIAN_JALV_FILTER')

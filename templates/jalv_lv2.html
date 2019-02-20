@@ -23,7 +23,6 @@
         </div>
     </div>
 
-
     <ul class="nav nav-tabs" role="tablist">
     {% for pluginType in config['ZYNTHIAN_JALV_PLUGINS'] %}
     <li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == pluginType.replace(' ','_')  %}active{% end %}">
@@ -61,7 +60,7 @@
                                      {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %}DISABLED{% end %}
                             />
                       </div>
-                      <div id="plugin-name" class="col-md-4">
+                      <div id="plugin-name" class="col-md-4 one-line-truncated">
                           {{ escape(pluginname) }}
                       </div>
                       <div id="plugin-type" class="col-md-2">
@@ -69,7 +68,7 @@
     {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['TYPE']) }}
     {% end %}
                       </div>
-                      <div id="plugin-url" class="col-md-5">
+                      <div id="plugin-url" class="col-md-5 one-line-truncated">
                               {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}
                       </div>
                   </div>

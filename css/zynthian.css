@@ -32,7 +32,7 @@
   Bootstrap Carousel Fade Transition (for Bootstrap 3.3.x)
   CSS from:       http://codepen.io/transportedman/pen/NPWRGq
   and:            http://stackoverflow.com/questions/18548731/bootstrap-3-carousel-fading-to-new-slide-instead-of-sliding-to-new-slide
-  Inspired from:  http://codepen.io/Rowno/pen/Afykb
+  Inspired from:  http://codepen.io/Rowno/pen/Afykb 
 */
 .carousel-fade .carousel-inner .item {
   opacity: 0;
@@ -157,25 +157,25 @@ header#header ul.navbar-nav li a {
 header#header ul.navbar-nav .dropdown a.dropdown-toggle:focus,
 header#header ul.navbar-nav .dropdown a.dropdown-toggle:active {
   background-color: transparent;
-  color: #ffffff;
+  color: #fff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu {
   position: relative;
   background-color: #404040;
-  color: #ffffff;
+  color: #fff;
   opacity: 0.8;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li {
-  color: #ffffff;
+  color: #fff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li a {
   margin-left: 0px;
   padding-left: 1em;
   font-size: 120%;
-  color: #ffffff;
+  color: #fff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li a:hover {
-  color: #50b000;
+  color: #50B000;
   background-color: #606060;
 }
 section#section-home {
@@ -200,7 +200,7 @@ section#section-home #carousel-home .carousel-caption {
 section#section-home #carousel-home .item {
   height: 800px;
   max-height: 1080px;
-  background-color: #000000;
+  background-color: #000;
   text-align: center;
 }
 section#section-home #carousel-home .zynthian_top_slider_01 {
@@ -230,9 +230,9 @@ section#section-home p {
   font-size: 170%;
   font-weight: 400;
   opacity: 0.9;
-  -moz-text-outline: 2px 2px #000000;
-  -webkit-text-outline: 2px 2px #000000;
-  text-outline: 2px 2px #000000;
+  -moz-text-outline: 2px 2px #000;
+  -webkit-text-outline: 2px 2px #000;
+  text-outline: 2px 2px #000;
 }
 section#section-home i {
   opacity: 0.9;
@@ -253,8 +253,8 @@ section#section-home .btn-video {
 	transition: all 0.3s ease 0s;*/
 }
 section#section-home .Xbtn-video:hover {
-  background-color: #ffffff;
-  color: #50b000;
+  background-color: #fff;
+  color: #50B000;
 }
 section#section-home .btn-circle {
   width: 1.2em;
@@ -263,10 +263,10 @@ section#section-home .btn-circle {
   padding: 0em;
   /*padding-top: -1.5em;*/
   line-height: 1.2em;
-  border: 2px solid #ffffff;
+  border: 2px solid #fff;
   border-radius: 0.6em;
   font-size: 3em;
-  color: #ffffff;
+  color: #fff;
   background: transparent;
   opacity: 0.8;
   -webkit-transition: background 0.3s ease-in-out;
@@ -276,8 +276,8 @@ section#section-home .btn-circle {
 section#section-home .btn-circle:hover,
 section#section-home .btn-circle:focus {
   outline: none;
-  color: #50b000;
-  border-color: #50b000;
+  color: #50B000;
+  border-color: #50B000;
   background: rgba(80, 176, 0, 0.1);
   -webkit-transition: all 0.3s ease-in-out;
   -moz-transition: all 0.3s ease-in-out;
@@ -354,17 +354,17 @@ section.bg_logo_wave {
 }
 .modal {
   color: #606060;
-  background-color: #000000;
+  background-color: #000;
   overflow-y: auto;
 }
 .modal-header,
 .modal-footer {
-  color: #ffffff;
+  color: #fff;
   background-color: #606060;
 }
 .modal-body {
-  color: #ffffff;
-  background-color: #000000;
+  color: #fff;
+  background-color: #000;
 }
 .modal-body input,
 .modal-body textarea,
@@ -372,17 +372,17 @@ section.bg_logo_wave {
   color: #303030;
 }
 .modal-body input[type='file'] {
-  color: #ffffff;
+  color: #fff;
 }
 .modal h4 {
   text-transform: none;
-  color: #ffffff;
+  color: #fff;
 }
 .modal p {
   margin-top: 12px;
   margin-bottom: 0px;
   font-size: 100%;
-  color: #ffffff;
+  color: #fff;
 }
 .content-section p {
   line-height: 1.3em;
@@ -409,16 +409,16 @@ ol {
   color: #7d7d7d;
 }
 .content-section li a:hover {
-  color: #50b000;
+  color: #50B000;
 }
 .testimonial h5 {
   font-family: 'Lato', sans-serif;
   font-weight: 500;
   opacity: 0.7;
-  -moz-text-outline: 2px 2px #000000;
-  -webkit-text-outline: 2px 2px #000000;
-  text-outline: 2px 2px #000000;
-  background-color: #000000;
+  -moz-text-outline: 2px 2px #000;
+  -webkit-text-outline: 2px 2px #000;
+  text-outline: 2px 2px #000;
+  background-color: #000;
 }
 section#section-concept p {
   text-align: center;
@@ -440,7 +440,7 @@ section#section-timeline {
   background-color: #e0e2e0;
 }
 .cd-timeline::before {
-  background-color: #50b000;
+  background-color: #50B000;
 }
 .cd-timeline-content h2 {
   font-size: 120%;
@@ -451,7 +451,7 @@ section#section-timeline {
 }
 .cd-timeline-img .fa {
   display: block;
-  color: #ffffff;
+  color: #fff;
   text-align: center;
   line-height: 40px;
   font-size: 18px;
@@ -547,7 +547,7 @@ textarea.input-zynthian {
     padding-bottom: 12px;
   }
   .navbar-collapse.collapse .nav > li > a:hover {
-    color: #50b000;
+    color: #50B000;
     background-color: #535353;
   }
   .navbar-text {
@@ -583,15 +583,14 @@ div.lib-treeview .row {
   padding-bottom: 10px;
 }
 div.sw-jalv .row {
-	padding-bottom: 10px;
+  padding-bottom: 10px;
 }
 div.sw-jalv .col-md-12,
 div.sw-jalv .col-md-10,
 div.sw-jalv .col-md-2 {
-    padding-right: 0px;
-    padding-left: 0px;
+  padding-right: 0px;
+  padding-left: 0px;
 }
-
 div#loading-div-background {
   display: none;
   position: fixed;
@@ -634,14 +633,14 @@ div#drop-zone {
   position: absolute;
   left: 50%;
   margin-left: -150px;
-  border: 2px dashed #ffffff;
+  border: 2px dashed #fff;
   border-radius: 20px;
   font-family: Arial;
   text-align: center;
   position: relative;
   line-height: 180px;
   font-size: 20px;
-  color: #ffffff;
+  color: #fff;
 }
 div#drop-zone input {
   /*Important*/
@@ -654,7 +653,7 @@ div#drop-zone input {
 }
 /*Important*/
 div#drop-zone.mouse-over {
-  border: 2px dashed #ffffff;
+  border: 2px dashed #fff;
   color: rgba(0, 0, 0, 0.5);
 }
 /*If you dont want the button*/
@@ -691,11 +690,20 @@ div.log-panel {
 }
 div.log-panel.updating {
   background-color: #606060;
-  color: #ffffff;
+  color: #fff;
 }
 div.jalv-lv2-plugin-panel .advanced-view {
-    background-color: transparent;
+  background-color: transparent;
 }
 div.jalv-lv2-plugin-panel .header {
-    background-color: #d0d0d0;
+  background-color: #d0d0d0;
+}
+div .nav-tabs li.active a {
+  color: #404040;
+  font-weight: bold;
+}
+div.one-line-truncated {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
 }
