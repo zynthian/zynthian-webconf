@@ -38,14 +38,15 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 
 
 class CustomSwitchType(Enum):
-	EMPTY = "0"
+	NONE = "0"
 	POWER_OFF = "1"
 	REBOOT = "2"
-	ALL_SOUNDS_OFF = "4"
-	ALL_NOTES_OFF = "8"
-	ALL_OFF = "12"
-	UI_RESET = "16"
-	ANALOG = "32"
+	RESTART_UI = "4"
+	ALL_SOUNDS_OFF = "8"
+	ALL_NOTES_OFF = "16"
+	ALL_OFF = "24"
+	MIDI_CC = "32"
+
 
 class WiringConfigHandler(ZynthianConfigHandler):
 
@@ -142,25 +143,25 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_A', {
 				'type': 'text',
-				'title': 'Encoders A GPIOs',
+				'title': "Encoders A-pins (WPi-GPIO)",
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_B', {
 				'type': 'text',
-				'title': 'Encoders B GPIOs',
+				'title': 'Encoders B-pins (WPi-GPIO)',
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_SWITCHES', {
 				'type': 'text',
-				'title': 'Switches GPIOs',
+				'title': 'Switches Pins (WPi-GPIO)',
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
 				'type': 'select',
-				'title': 'MPC23017 INTA',
+				'title': 'MPC23017 INT-A Pin',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
 				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
@@ -179,7 +180,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
 				'type': 'select',
-				'title': 'MPC23017 INTB',
+				'title': 'MPC23017 INT-B Pin',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
 				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
@@ -196,34 +197,34 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				},
 				'advanced': True
 			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_A', {
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01', {
 				'type': 'select',
-				'title': 'Custom switch A',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_A'),
+				'title': 'Custom Switch-1 Action',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'),
 				'options': custom_type_list,
 				'option_labels': custom_type_labels,
 				'advanced': True
 			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_B', {
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02', {
 				'type': 'select',
-				'title': 'Custom switch B',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_B'),
+				'title': 'Custom Switch-2 Action',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'),
 				'options': custom_type_list,
 				'option_labels': custom_type_labels,
 				'advanced': True
 			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_C', {
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03', {
 				'type': 'select',
-				'title': 'Custom switch C',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_C'),
+				'title': 'Custom Switch-3 Action',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'),
 				'options': custom_type_list,
 				'option_labels': custom_type_labels,
 				'advanced': True
 			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_D', {
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04', {
 				'type': 'select',
-				'title': 'Custom switch D',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_D'),
+				'title': 'Custom Switch-4 Action',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'),
 				'options': custom_type_list,
 				'option_labels': custom_type_labels,
 				'advanced': True
