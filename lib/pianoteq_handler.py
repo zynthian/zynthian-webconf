@@ -138,7 +138,7 @@ class PianoteqHandler(ZynthianConfigHandler):
 
 	def get_license_key(self):
 		#xpath with fromstring doesn't work
-		if os.path.exists(PIANOTEQ_ADDON_DIR):
+		if os.path.exists(PIANOTEQ_CONFIG_FILE):
 			root = ET.parse(PIANOTEQ_CONFIG_FILE)
 			try:
 				for xml_value in root.iter("VALUE"):
