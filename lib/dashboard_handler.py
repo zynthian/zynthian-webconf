@@ -50,23 +50,6 @@ class DashboardHandler(ZynthianConfigHandler):
 		sd_info=self.get_sd_info()
 
 		config=OrderedDict([
-			['SYSTEM', OrderedDict([
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
-					'url': "/api/sys-security"
-				}],
-				['RAM', {
-					'title': 'Memory',
-					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
-					'url': ""
-				}],
-				['SD CARD', {
-					'title': 'SD Card',
-					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
-					'url': ""
-				}]
-			])],
 			['HARDWARE', OrderedDict([
 				['SOUNDCARD_NAME', {
 					'title': 'Soundcard',
@@ -82,6 +65,28 @@ class DashboardHandler(ZynthianConfigHandler):
 					'title': 'Wiring',
 					'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 					'url': "/api/hw-wiring"
+				}]
+			])],
+			['SYSTEM', OrderedDict([
+				['HOSTNAME', {
+					'title': 'Hostname',
+					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
+					'url': "/api/sys-security"
+				}],
+				['OS_INFO', {
+					'title': 'OS',
+					'value': "{}".format(self.get_os_info()),
+					'url': ""
+				}],
+				['RAM', {
+					'title': 'Memory',
+					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
+					'url': ""
+				}],
+				['SD CARD', {
+					'title': 'SD Card',
+					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
+					'url': ""
 				}]
 			])],
 			['MIDI', OrderedDict([
@@ -174,6 +179,10 @@ class DashboardHandler(ZynthianConfigHandler):
 			hostname=f.readline()
 			return hostname
 		return ""
+
+
+	def get_os_info(self):
+		return check_output("lsb_release -ds", shell=True).decode()
 
 
 	def get_ip(self):
