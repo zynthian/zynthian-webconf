@@ -161,7 +161,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
 				'type': 'select',
-				'title': 'MPC23017 INT-A Pin',
+				'title': 'MCP23017 INT-A Pin',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
 				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
@@ -180,7 +180,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
 				'type': 'select',
-				'title': 'MPC23017 INT-B Pin',
+				'title': 'MCP23017 INT-B Pin',
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
 				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
