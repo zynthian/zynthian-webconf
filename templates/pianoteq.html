@@ -36,6 +36,9 @@
 			<p>
 				If you installed a new binary, you should <a href="/api/sys-reboot">reboot your zynthian</a> for complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key. Please, reload this page after rebooting.
 			</p>
+			<p>
+				<a href="/api/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
+			</p>
 		</div>
 
 		<div class="row" id='binary-info'>
@@ -84,12 +87,11 @@
 		<hr>
 
 	    <div class="row" id="update-cache">
-			<p>
-				<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
-			</p>
+			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
 		</div>
 
 	</div>
+
 	<div class="row">
 		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
 	</div>
@@ -132,6 +134,7 @@ $(document).ready(function (){
 		$("#binary-info").hide();
 		$("#license-activation").hide();
 		$("#license-key").hide();
+		$("#update-cache").hide();
 
 		var ajaxData = new FormData(pianoteqForm);
 		ajaxData.append('ZYNTHIAN_PIANOTEQ_ACTION','INSTALL_PIANOTEQ')
@@ -158,6 +161,7 @@ $(document).ready(function (){
 				$("#binary-info").hide();
 				$("#license-activation").hide();
 				$("#license-key").hide();
+				$("#update-cache").hide();
 			} 
 			//window.location.href = window.location.href;
 		};
