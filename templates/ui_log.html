@@ -1,0 +1,99 @@
+<div class="pull-right">
+        <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
+</div>
+
+<h2>{{ escape(title) }}</h2>
+
+<form id="ui-log-form" enctype="multipart/form-data" method="post">
+	<button id="button-start" type="button" value="START" class="btn btn-lg btn-theme" onclick="start_logging_view();">START</button>
+	<button id="button-stop" type="button"  value="STOP" class="btn btn-lg btn-theme" onclick="stop_logging_view();">STOP</button>
+
+	<div id="ui-log" class="log-panel"></div>
+</form>
+
+<div id="loading-div-background">
+  <div id="loading-div" class="ui-corner-all">
+    PROCESSING. PLEASE WAIT...
+  </div>
+</div>
+
+<script type="text/javascript">
+
+
+
+function start_logging_view() {
+ 	$('#button-stop').show();
+    $('#button-start').hide();
+	var logDiv = $("#ui-log");
+
+	logDiv.html('');
+	var socketMessage = {"handler_name": "UiLogMessageHandler",
+		"data": 'START'};
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
+
+function stop_logging_view() {
+ 	$('#button-stop').hide();
+
+    var socketMessage = {"handler_name": "UiLogMessageHandler",
+        "data": 'STOP'};
+
+    window.zynthianSocket.send(JSON.stringify(socketMessage));
+
+    $('#button-start').show();
+
+
+}
+
+
+function showProgressAnimation(){
+    $("#loading-div-background").show();
+}
+
+
+function restore_advanced_view() {
+        if (Cookies.get('advanced_view')) {
+                $('input#check_advanced_view').prop("checked", true);
+                $('.advanced-view').show();
+        } else {
+                $('input#check_advanced_view').prop("checked", false);
+                $('.advanced-view').hide;
+        }
+}
+
+function onchange_check_advanced_view() {
+        if ($('input#check_advanced_view').prop("checked")==true) {
+                Cookies.set('advanced_view','1')
+                $('.advanced-view').slideDown(500);
+        } else {
+                Cookies.remove('advanced_view')
+                $('.advanced-view').slideUp(500);
+        }
+}
+
+$(document).ready(function() {
+        restore_advanced_view();
+        $('#button-stop').hide();
+        $('#button-start').hide();
+
+
+    	var deferred = $.Deferred();
+		deferred.done(function(value) {
+			$('#button-start').show();
+			window.zynthianSocket.registerHandler('UiLogMessageHandler', function(data) {
+			if (data){
+				console.log("UiLogMessageHandler:onmessage:", data);
+				var logDiv = $("#ui-log");
+
+				logDiv.append(data + "<br />");
+				logDiv[0].scrollTop = logDiv[0].scrollHeight;
+
+			}
+	});
+		});
+		connectZynthianWebSocket(deferred);
+
+});
+
+
+</script>

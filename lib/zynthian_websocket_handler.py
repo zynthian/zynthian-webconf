@@ -78,7 +78,7 @@ class ZynthianWebSocketHandler(tornado.websocket.WebSocketHandler):
 	def check_origin(self, origin):
 		return True
 
-	 # the client connected
+	# the client connected
 	def open(self):
 		logging.info("New client connected to ZynthianWebSocketHandler")
 
