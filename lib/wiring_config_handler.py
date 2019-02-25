@@ -37,15 +37,20 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 #------------------------------------------------------------------------------
 
 
-class CustomSwitchType(Enum):
-	NONE = "0"
-	POWER_OFF = "1"
-	REBOOT = "2"
-	RESTART_UI = "4"
-	ALL_SOUNDS_OFF = "8"
-	ALL_NOTES_OFF = "16"
-	ALL_OFF = "24"
-	MIDI_CC = "32"
+class CustomSwitchActionType(Enum):
+	NONE = 0
+	UI_ACTION = 1
+	MIDI_CC = 2
+
+
+class CustomUiAction(Enum):
+	NONE = 0
+	POWER_OFF = 1
+	REBOOT = 2
+	RESTART_UI = 3
+	ALL_SOUNDS_OFF = 4
+	ALL_NOTES_OFF = 5
+	ALL_OFF = 6
 
 
 class WiringConfigHandler(ZynthianConfigHandler):
@@ -137,8 +142,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
-		custom_type_list = [c.value for c in CustomSwitchType]
-		custom_type_labels = dict([(c.value, c.name) for c in CustomSwitchType])
+		csat_list = [str(c.value) for c in CustomSwitchActionType]
+		csat_labels = dict([(str(c.value), c.name.replace('_',' ').title()) for c in CustomSwitchActionType])
+
+		cuia_list = [str(c.value) for c in CustomUiAction]
+		cuia_labels = dict([(str(c.value), c.name.replace('_',' ').title()) for c in CustomUiAction])
 
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
@@ -208,32 +216,172 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'Custom Switch-1 Action',
 				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'),
-				'options': custom_type_list,
-				'option_labels': custom_type_labels,
+				'options': csat_list,
+				'option_labels': csat_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#UI_SHORT', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Short-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#UI_SHORT'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#UI_BOLD', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Bold-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#UI_BOLD'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#UI_LONG', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Long-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#UI_LONG'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#CC_NUM', {
+				'enabling_options': CustomSwitchActionType.MIDI_CC.value,
+				'type': 'select',
+				'title': 'CC Number',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01#CC_NUM'),
+				'options': [str(i) for i in range(0,128)],
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02', {
 				'type': 'select',
 				'title': 'Custom Switch-2 Action',
 				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'),
-				'options': custom_type_list,
-				'option_labels': custom_type_labels,
+				'options': csat_list,
+				'option_labels': csat_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#UI_SHORT', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Short-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#UI_SHORT'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#UI_BOLD', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Bold-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#UI_BOLD'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#UI_LONG', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Long-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#UI_LONG'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#CC_NUM', {
+				'enabling_options': CustomSwitchActionType.MIDI_CC.value, 
+				'type': 'select',
+				'title': 'CC Number',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02#CC_NUM'),
+				'options': [str(i) for i in range(0,128)],
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03', {
 				'type': 'select',
 				'title': 'Custom Switch-3 Action',
 				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'),
-				'options': custom_type_list,
-				'option_labels': custom_type_labels,
+				'options': csat_list,
+				'option_labels': csat_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#UI_SHORT', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Short-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#UI_SHORT'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#UI_BOLD', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Bold-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#UI_BOLD'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#UI_LONG', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Long-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#UI_LONG'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#CC_NUM', {
+				'enabling_options': CustomSwitchActionType.MIDI_CC.value, 
+				'type': 'select',
+				'title': 'CC Number',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03#CC_NUM'),
+				'options': [str(i) for i in range(0,128)],
 				'advanced': True
 			}],
 			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04', {
 				'type': 'select',
 				'title': 'Custom Switch-4 Action',
 				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'),
-				'options': custom_type_list,
-				'option_labels': custom_type_labels,
+				'options': csat_list,
+				'option_labels': csat_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#UI_SHORT', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Short-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#UI_SHORT'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#UI_BOLD', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Bold-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#UI_BOLD'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#UI_LONG', {
+				'enabling_options': CustomSwitchActionType.UI_ACTION.value,
+				'type': 'select',
+				'title': 'Long-push',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#UI_LONG'),
+				'options': cuia_list,
+				'option_labels': cuia_labels,
+				'advanced': True
+			}],
+			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#CC_NUM', {
+				'enabling_options': CustomSwitchActionType.MIDI_CC.value, 
+				'type': 'select',
+				'title': 'CC Number',
+				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04#CC_NUM'),
+				'options': [str(i) for i in range(0,128)],
 				'advanced': True
 			}]
 		])
