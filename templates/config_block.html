@@ -5,16 +5,10 @@
 
 <h2>{{ escape(title) }}</h2>
 
-<style>
-div[root_var] {
-	padding-left: 2em;
-}
-</style>
-
 <form id="config_block_form" method="post">
 {% set root_vars = {} %}
 {% for varname in config %}
-	{% set parts = varname.split('#') %}
+	{% set parts = varname.split('__') %}
 	{% if len(parts)>1 %}
 		{% set root_vars[parts[0]] = 1 %}
 		{% set config[varname]['root_var'] = parts[0] %}

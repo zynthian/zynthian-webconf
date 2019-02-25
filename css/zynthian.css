@@ -707,3 +707,6 @@ div.one-line-truncated {
   text-overflow: ellipsis;
   overflow: hidden;
 }
+div[root_var] {
+  padding-left: 2em;
+}
