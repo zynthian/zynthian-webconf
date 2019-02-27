@@ -22,9 +22,8 @@
 #
 #********************************************************************
 
-import time
+
 import logging
-from concurrent.futures import ThreadPoolExecutor
 
 import tornado.web
 from subprocess import check_output
@@ -33,118 +32,146 @@ import jsonpickle
 from collections import OrderedDict
 import threading
 from multiprocessing import Queue
-from tornado.concurrent import run_on_executor
-import concurrent.futures
+
 import asyncio
 
-#in case the blocking process.stdout.readline() is an issue:
-#https://www.stefaanlippens.net/python-asynchronous-subprocess-pipe-reading/
-from tornado.ioloop import IOLoop
-
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
-
-def message_processed_callback(future):
-    logging.info('Callsback(future=%r)' % ( future))
 
 #------------------------------------------------------------------------------
 # UI Configuration
 #------------------------------------------------------------------------------
-
 class UiLogHandler(tornado.web.RequestHandler):
+    def get_current_user(self):
+        return self.get_secure_cookie("user")
+
+    def prepare(self):
+        self.genjson = False
+        try:
+            if self.get_query_argument("json"):
+                self.genjson = True
+        except:
+            pass
+
+    @tornado.web.authenticated
+    def get(self, errors=None):
+        config=OrderedDict([])
+        if self.genjson:
+            self.write(config)
+        else:
+            self.render("config.html", body="ui_log.html", config=config, title="UI Log", errors=errors)\
+
+    @tornado.web.authenticated
+    def post(self):
+        self.get()
 
 
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
+class TailThread(threading.Thread):
+    def __init__(self, websocket, loop):
+        super(TailThread, self).__init__()
+        self.is_logging = True
+        self.websocket = websocket
+        self.loop = loop
+
+    def stop(self):
+        self.is_logging = False
+
+    def run(self):
+        process = subprocess.Popen('journalctl  -f -u zynthian_debug', shell=True, stderr=subprocess.PIPE,
+                                   stdout=subprocess.PIPE)
+
+        stdout_queue = Queue()
+        stdout_reader = AsynchronousFileReader(process.stdout, stdout_queue)
+        stdout_reader.start()
+        stderr_queue = Queue()
+        stderr_reader = AsynchronousFileReader(process.stderr, stderr_queue)
+        stderr_reader.start()
+        asyncio.set_event_loop(self.loop)
 
 
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
+        while self.is_logging and (not stdout_reader.eof() or not stderr_reader.eof()):
+            while not stdout_queue.empty():
+                line = stdout_queue.get()
+                logging.info(line.decode())
 
-	@tornado.web.authenticated
-	def get(self, errors=None):
-		config=OrderedDict([])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="ui_log.html", config=config, title="UI Log", errors=errors)
+                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
+                self.websocket.write_message(jsonpickle.encode(message))
+            while not stderr_queue.empty():
+                line = stderr_queue.get()
+                logging.info(line.decode())
 
-	@tornado.web.authenticated
-	def post(self):
+                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
+                self.websocket.write_message(jsonpickle.encode(message))
 
-		self.get()
-
+        stdout_reader.join()
+        stderr_reader.join()
+        process.stdout.close()
+        process.stderr.close()
 
 
 class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
-    executor = ThreadPoolExecutor(max_workers=10)
-    logging_enabled = False
+    logging_thread = None
+    is_logging = True
 
     @classmethod
     def is_registered_for(cls, handler_name):
         return handler_name == 'UiLogMessageHandler'
 
-    @run_on_executor
-    def background_task(self,  process):
-        while UiLogMessageHandler.logging_enabled:
-            logging.info("while process.stdout.readline()")
-            line = process.stdout.readline()
-            if line:
-                logging.info(line.decode())
-
-                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
-                try:
-                    self.websocket.write_message(jsonpickle.encode(message))
-                except Exception as e:
-                    # I can't fix the  "This event loop is already running" and There is no current event loop in thread 'ThreadPoolExecutor-0_0'
-                    logging.error(e)
-            asyncio.sleep(1)
-
-    @tornado.gen.coroutine
     def do_start_logging(self):
         logging.info("start ui logging")
         UiLogMessageHandler.logging_enabled = True
         message = ZynthianWebSocketMessage('UiLogMessageHandler', 'Restarting UI in debug mode')
         self.websocket.write_message(jsonpickle.encode(message))
 
-        check_output("(systemctl stop zynthian & sleep 1 & systemctl restart zynthian_debug & sleep 1 )&", shell=True)
+        check_output("(systemctl stop zynthian & sleep 5 & systemctl restart zynthian_debug)&", shell=True)
 
-        process = subprocess.Popen('journalctl -f -u zynthian_debug', shell=True, stderr=subprocess.PIPE,
-                                  stdout=subprocess.PIPE)
-
-        logging.info("before run_until_complete")
-
+        logging.info("before starting tail thread")
         loop = asyncio.get_event_loop()
-        loop.run_until_complete(self.background_task(process))
-
+        UiLogMessageHandler.logging_thread = TailThread(self.websocket, loop)
+        UiLogMessageHandler.logging_thread.start()
 
         logging.info('after run_until_complete')
-
-
-
 
     def do_stop_logging(self):
         logging.info("stop ui logging")
         UiLogMessageHandler.logging_enabled = False
         message = ZynthianWebSocketMessage('UiLogMessageHandler', 'Restarting UI in normal mode')
         self.websocket.write_message(jsonpickle.encode(message))
-        check_output("(systemctl stop zynthian_debug & sleep 10 & systemctl start zynthian)&", shell=True)
+        check_output("(systemctl stop zynthian_debug & sleep 5 & systemctl start zynthian)&", shell=True)
+        if UiLogMessageHandler.logging_thread:
+            UiLogMessageHandler.logging_thread.stop()
+            UiLogMessageHandler.logging_thread = None
 
     def on_websocket_message(self, action):
         logging.info(action)
         if action == 'START':
             self.do_start_logging()
             logging.info("after do_start_logging")
-
-
         else:
             self.do_stop_logging()
         logging.info("message handled.")  # this needs to show up early to get the socket working again.
 
+
+class AsynchronousFileReader(threading.Thread):
+    '''
+    Helper class to implement asynchronous reading of a file
+    in a separate thread. Pushes read lines on a queue to
+    be consumed in another thread.
+    '''
+
+    def __init__(self, fd, queue):
+        assert callable(fd.readline)
+        threading.Thread.__init__(self)
+        self._fd = fd
+        self._queue = queue
+
+    def run(self):
+        '''The body of the tread: read lines and put them on the queue.'''
+        for line in iter(self._fd.readline, ''):
+            self._queue.put(line)
+
+    def eof(self):
+        '''Check whether there is no more content to expect.'''
+        return not self.is_alive() and self._queue.empty()
 
 
 
