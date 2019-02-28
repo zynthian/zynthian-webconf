@@ -5,8 +5,8 @@
 <h2>{{ escape(title) }}</h2>
 
 <form id="ui-log-form" enctype="multipart/form-data" method="post">
-	<button id="button-start" type="button" value="START" class="btn btn-lg btn-theme" onclick="start_logging_view();">START</button>
-	<button id="button-stop" type="button"  value="STOP" class="btn btn-lg btn-theme" onclick="stop_logging_view();">STOP</button>
+	<button id="button-show-debug" type="button" value="SHOW_DEBUG" class="btn btn-lg btn-theme" onclick="show_debug_logging();">SHOW DEBUG LOGGING</button>
+	<button id="button-hide-debug" type="button"  value="HIDE_DEBUG" class="btn btn-lg btn-theme" onclick="hide_debug_logging();">HIDE_DEBUG_LOGGING</button>
 
 	<div id="ui-log" class="log-panel"></div>
 </form>
@@ -21,26 +21,30 @@
 
 
 
-function start_logging_view() {
- 	$('#button-stop').show();
-    $('#button-start').hide();
+function show_debug_logging() {
+ 	$('#button-show-debug').hide();
 	var logDiv = $("#ui-log");
 
 	logDiv.html('');
 	var socketMessage = {"handler_name": "UiLogMessageHandler",
-		"data": 'START'};
+		"data": 'SHOW_DEBUG_LOGGING'};
 	window.zynthianSocket.send(JSON.stringify(socketMessage));
+	$('#button-hide-debug').show();
+
 }
 
-function stop_logging_view() {
- 	$('#button-stop').hide();
+function hide_debug_logging() {
+ 	$('#button-hide-debug').hide();
+ 	var logDiv = $("#ui-log");
+
+	logDiv.html('');
 
     var socketMessage = {"handler_name": "UiLogMessageHandler",
-        "data": 'STOP'};
+        "data": 'HIDE_DEBUG_LOGGING'};
 
     window.zynthianSocket.send(JSON.stringify(socketMessage));
 
-    $('#button-start').show();
+    $('#button-show-debug').show();
 
 
 }
@@ -73,23 +77,27 @@ function onchange_check_advanced_view() {
 
 $(document).ready(function() {
         restore_advanced_view();
-        $('#button-stop').hide();
-        $('#button-start').hide();
+        $('#button-show-debug').hide();
+        $('#button-hide-debug').hide();
 
 
     	var deferred = $.Deferred();
 		deferred.done(function(value) {
-			$('#button-start').show();
+			$('#button-show-debug').show();
 			window.zynthianSocket.registerHandler('UiLogMessageHandler', function(data) {
-			if (data){
-				console.log("UiLogMessageHandler:onmessage:", data);
-				var logDiv = $("#ui-log");
+                if (data){
+                    console.log("UiLogMessageHandler:onmessage:", data);
+                    var logDiv = $("#ui-log");
 
-				logDiv.append(data + "<br />");
-				logDiv[0].scrollTop = logDiv[0].scrollHeight;
+                    logDiv.append(data + "<br />");
+                    logDiv[0].scrollTop = logDiv[0].scrollHeight;
 
-			}
-	});
+                }
+	        });
+	        var socketMessage = {"handler_name": "UiLogMessageHandler",
+                 "data": 'SHOW_DEFAULT'};
+
+            window.zynthianSocket.send(JSON.stringify(socketMessage));
 		});
 		connectZynthianWebSocket(deferred);
 
