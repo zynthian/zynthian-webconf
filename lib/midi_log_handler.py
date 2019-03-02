@@ -24,15 +24,12 @@
 
 
 import logging
-import subprocess
 
-import time
 
 import tornado.web
-from subprocess import check_output
 import jsonpickle
 from collections import OrderedDict
-
+import mido
 
 import asyncio
 
@@ -61,44 +58,42 @@ class MidiLogHandler(tornado.web.RequestHandler):
         if self.genjson:
             self.write(config)
         else:
-            self.render("config.html", body="midi_log.html", config=config, title="MIDI Log", errors=errors)\
+            self.render("config.html", body="midi_log.html", config=config, title="MIDI Log", errors=errors)
 
     @tornado.web.authenticated
     def post(self):
         self.get()
 
 
-class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
+class MidiTailThread(TailThread):
+
+    def run(self):
+        mido.set_backend('mido.backends.rtmidi/UNIX_JACK')
+        with mido.open_input("ZynMidiRouter:main_out") as inport:
+            for msg in inport:
+                message = ZynthianWebSocketMessage('MidiLogMessageHandler', msg)
+                self.websocket.write_message(jsonpickle.encode(message))
+
+
+class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
     logging_thread = None
-    is_logging = True
 
     @classmethod
     def is_registered_for(cls, handler_name):
         return handler_name == 'MidiLogMessageHandler'
 
-    def get_process_command(self, debug_logging):
-        service_name = ('zynthian_debug' if debug_logging else 'zynthian')
-        logging.info("journalctl -f -u %s" % service_name)
-        return "journalctl  -f -u %s" % service_name
-
-    def spawn_tail_thread(self, debug_level):
+    def spawn_tail_thread(self):
         logging.info("spawn_tail_thread")
         loop = asyncio.get_event_loop()
-        UiLogMessageHandler.logging_thread = TailThread(self.websocket, loop, self.get_process_command(debug_level))
-        UiLogMessageHandler.logging_thread.start()
-
-
+        MidiLogMessageHandler.logging_thread = MidiTailThread(self.websocket, loop)
+        MidiLogMessageHandler.logging_thread.start()
 
     def do_start_logging(self):
         logging.info("start midi logging")
-        UiLogMessageHandler.logging_enabled = True
-        message = ZynthianWebSocketMessage('MidiLogMessageHandler', 'Restarting UI in debug mode')
-        self.websocket.write_message(jsonpickle.encode(message))
-        if UiLogMessageHandler.logging_thread:
-            UiLogMessageHandler.logging_thread.stop()
+        if MidiLogMessageHandler.logging_thread:
+            MidiLogMessageHandler.logging_thread.stop()
 
-        self.spawn_tail_thread(True)
-
+        self.spawn_tail_thread()
 
     def on_websocket_message(self, action):
         logging.debug("action: %s " % action)
@@ -109,11 +104,5 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
 
     def on_close(self):
         logging.info("stopping tail threads")
-        if UiLogMessageHandler.logging_thread:
-            UiLogMessageHandler.logging_thread.stop()
-
-
-
-
-
-
+        if MidiLogMessageHandler.logging_thread:
+            MidiLogMessageHandler.logging_thread.stop()

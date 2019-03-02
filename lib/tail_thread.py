@@ -1,55 +1,17 @@
-import abc
-import logging
-import subprocess
 import threading
-from multiprocessing import Queue
-import jsonpickle
 import asyncio
-
-from lib.zynthian_websocket_handler import ZynthianWebSocketMessage
 
 
 class TailThread(threading.Thread):
-    def __init__(self, websocket, loop, process_command):
+    def __init__(self, websocket, loop):
         super(TailThread, self).__init__()
-        self.is_logging = True
+        self.is_running = True
         self.websocket = websocket
-        self.loop = loop
-        self.process_command = process_command
+        asyncio.set_event_loop(loop)
 
     def stop(self):
-        self.is_logging = False
+        self.is_running = False
 
-    def run(self):
-        process = subprocess.Popen(self.process_command, shell=True, stderr=subprocess.PIPE,
-                                   stdout=subprocess.PIPE)
-
-        stdout_queue = Queue()
-        stdout_reader = AsynchronousFileReader(process.stdout, stdout_queue)
-        stdout_reader.start()
-        stderr_queue = Queue()
-        stderr_reader = AsynchronousFileReader(process.stderr, stderr_queue)
-        stderr_reader.start()
-        asyncio.set_event_loop(self.loop)
-
-        while self.is_logging and (not stdout_reader.eof() or not stderr_reader.eof()):
-            while self.is_logging and not stdout_queue.empty() and not stdout_reader.eof():
-                line = stdout_queue.get()
-                logging.info("stdout: %s" % line.decode())
-
-                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
-                self.websocket.write_message(jsonpickle.encode(message))
-            while self.is_logging and not stderr_queue.empty() and not stderr_reader.eof():
-                line = stderr_queue.get()
-                logging.info("stderr: %s" %line.decode())
-
-                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
-                self.websocket.write_message(jsonpickle.encode(message))
-
-        stdout_reader.join()
-        stderr_reader.join()
-        process.stdout.close()
-        process.stderr.close()
 
 class AsynchronousFileReader(threading.Thread):
     '''

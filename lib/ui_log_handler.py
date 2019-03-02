@@ -32,11 +32,12 @@ import tornado.web
 from subprocess import check_output
 import jsonpickle
 from collections import OrderedDict
+from multiprocessing import Queue
 
 
 import asyncio
 
-from lib.tail_thread import TailThread
+from lib.tail_thread import TailThread, AsynchronousFileReader
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 
@@ -61,16 +62,52 @@ class UiLogHandler(tornado.web.RequestHandler):
         if self.genjson:
             self.write(config)
         else:
-            self.render("config.html", body="ui_log.html", config=config, title="UI Log", errors=errors)\
+            self.render("config.html", body="ui_log.html", config=config, title="UI Log", errors=errors)
 
     @tornado.web.authenticated
     def post(self):
         self.get()
 
 
+class UiTailThread(TailThread):
+
+    def __init__(self, websocket, loop, process_command):
+        super(websocket, loop)
+        self.process_command = process_command
+
+    def run(self):
+        process = subprocess.Popen(self.process_command, shell=True, stderr=subprocess.PIPE,
+                                   stdout=subprocess.PIPE)
+
+        stdout_queue = Queue()
+        stdout_reader = AsynchronousFileReader(process.stdout, stdout_queue)
+        stdout_reader.start()
+        stderr_queue = Queue()
+        stderr_reader = AsynchronousFileReader(process.stderr, stderr_queue)
+        stderr_reader.start()
+
+        while self.is_running and (not stdout_reader.eof() or not stderr_reader.eof()):
+            while self.is_running and not stdout_queue.empty() and not stdout_reader.eof():
+                line = stdout_queue.get()
+                logging.info("stdout: %s" % line.decode())
+
+                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
+                self.websocket.write_message(jsonpickle.encode(message))
+            while self.is_running and not stderr_queue.empty() and not stderr_reader.eof():
+                line = stderr_queue.get()
+                logging.info("stderr: %s" % line.decode())
+
+                message = ZynthianWebSocketMessage('UiLogMessageHandler', line.decode())
+                self.websocket.write_message(jsonpickle.encode(message))
+
+        stdout_reader.join()
+        stderr_reader.join()
+        process.stdout.close()
+        process.stderr.close()
+
+
 class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
     logging_thread = None
-    is_logging = True
 
     @classmethod
     def is_registered_for(cls, handler_name):
@@ -84,7 +121,7 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
     def spawn_tail_thread(self, debug_level):
         logging.info("spawn_tail_thread")
         loop = asyncio.get_event_loop()
-        UiLogMessageHandler.logging_thread = TailThread(self.websocket, loop, self.get_process_command(debug_level))
+        UiLogMessageHandler.logging_thread = UiTailThread(self.websocket, loop, self.get_process_command(debug_level))
         UiLogMessageHandler.logging_thread.start()
 
     def toggle_service(self, running_service, next_service):
@@ -108,7 +145,6 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
 
     def do_start_debug_logging(self):
         logging.info("start debug logging")
-        UiLogMessageHandler.logging_enabled = True
         message = ZynthianWebSocketMessage('UiLogMessageHandler', 'Restarting UI in debug mode')
         self.websocket.write_message(jsonpickle.encode(message))
         if UiLogMessageHandler.logging_thread:
@@ -120,7 +156,6 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
 
     def do_stop_debug_logging(self):
         logging.info("stop debug logging")
-        UiLogMessageHandler.logging_enabled = False
         message = ZynthianWebSocketMessage('UiLogMessageHandler', 'Restarting UI in normal mode')
         self.websocket.write_message(jsonpickle.encode(message))
         if UiLogMessageHandler.logging_thread:
