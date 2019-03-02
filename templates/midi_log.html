@@ -66,8 +66,15 @@ $(document).ready(function() {
                 if (data){
                     console.log("MidiLogMessageHandler:onmessage:", data);
                     var logDiv = $("#midi-log");
-
-                    logDiv.append(data + "<br />");
+                    dataPayload = "";
+                    if (data['type'] == 'note_on' || data['type'] == 'note_off'){
+                        dataPayload = ", Velocity:" + data['velocity'] + ", Note: " + data['note'];
+                    } else if (data['type'] == "pitchwheel"){
+                        dataPayload = ", Pitch: " + data['pitch'];
+                    } else if (data['type'] == "control_change"){
+                        dataPayload = ", Control: " + data['control'] + ", Value: " + data['value']
+                    }
+                    logDiv.append("Channel: " + data['channel'] + ", Type:" + data['type'] + ", Time: " + data['time'] +  dataPayload + "<br />");
                     logDiv[0].scrollTop = logDiv[0].scrollHeight;
 
                 }
