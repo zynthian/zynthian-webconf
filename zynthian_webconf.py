@@ -53,6 +53,8 @@ from lib.pianoteq_handler import PianoteqHandler
 from lib.captures_config_handler import CapturesConfigHandler
 from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
+from lib.midi_log_handler import MidiLogHandler
+
 
 #------------------------------------------------------------------------------
 
@@ -133,6 +135,7 @@ def make_app():
 		(r"/api/ui-style$", UiConfigHandler),
 		(r"/api/ui-log$", UiLogHandler),
 		(r"/api/ui-midi$", MidiConfigHandler),
+		(r"/api/ui-midi-log$", MidiLogHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),
 		(r"/api/sys-backup$", SystemBackupHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),
