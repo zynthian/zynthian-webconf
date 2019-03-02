@@ -22,16 +22,10 @@
 #
 #********************************************************************
 
-import os
-import re
 import logging
-import base64
-import json
-import shutil
+
 import tornado.web
 import tornado.websocket
-import zipfile
-from io import BytesIO
 from collections import OrderedDict
 import subprocess
 import jsonpickle
@@ -78,12 +72,12 @@ class SoftwareUpdateMessageHandler(ZynthianWebSocketMessageHandler):
 	def is_registered_for(cls, handler_name):
 		return handler_name == 'SoftwareUpdateMessageHandler'
 
-
 	def on_websocket_message(self, update_command):
 		p = subprocess.Popen(UPDATE_COMMANDS[update_command], shell=True, stderr=subprocess.STDOUT, stdout=subprocess.PIPE)
 		for line in p.stdout:
 			logging.info(line.decode())
 			message = ZynthianWebSocketMessage('SoftwareUpdateMessageHandler', line.decode())
 			self.websocket.write_message(jsonpickle.encode(message))
-			message = ZynthianWebSocketMessage('SoftwareUpdateMessageHandler', "EOCOMMAND")
+
+		message = ZynthianWebSocketMessage('SoftwareUpdateMessageHandler', "EOCOMMAND")
 		self.websocket.write_message(jsonpickle.encode(message))

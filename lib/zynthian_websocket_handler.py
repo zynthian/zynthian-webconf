@@ -43,6 +43,9 @@ class ZynthianWebSocketMessageHandler(object):
 		self.handler_name = handler_name
 		self.websocket = websocket
 
+	def on_open(self):
+		pass
+
 	def on_websocket_message(self, message):
 		raise NotImplementedError("Please Implement on_websocket_message")
 
@@ -78,7 +81,7 @@ class ZynthianWebSocketHandler(tornado.websocket.WebSocketHandler):
 	def check_origin(self, origin):
 		return True
 
-	 # the client connected
+	# the client connected
 	def open(self):
 		logging.info("New client connected to ZynthianWebSocketHandler")
 
