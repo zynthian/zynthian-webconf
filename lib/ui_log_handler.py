@@ -99,7 +99,7 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
                 for byte_line in e.output.splitlines():
                     line = byte_line.decode("utf-8")
                     logging.info(line)
-                    if "Active:" in line and "inactive" in line:
+                    if "Active:" in line and ("inactive" in line or "inactive" in line):
                         is_active = False
 
             time.sleep(1)
