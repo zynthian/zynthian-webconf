@@ -93,9 +93,14 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
         is_active = True
         while is_active:
             logging.info("getting status of %s" % running_service)
-            for byte_line in check_output("systemctl status apache2", shell=True).splitlines():
-                if "Active:" in byte_line and "inactive" in byte_line:
-                    is_active = False
+            try:
+                check_output("systemctl status %s" % running_service, shell=True)
+            except subprocess.CalledProcessError as e:
+                for byte_line in e.output.splitlines():
+                    line = byte_line.decode("utf-8")
+                    logging.info(line)
+                    if "Active:" in line and "inactive" in line:
+                        is_active = False
 
             time.sleep(1)
 
