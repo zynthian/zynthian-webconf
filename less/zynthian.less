@@ -1,7 +1,6 @@
 
 @import "variables.less";
 @import "elements.less";
-@import "carousel-fade.less";
 
 //-----------------------------------------------------------------------------
 // Style "Mi Primer Bitcoin"
@@ -115,193 +114,6 @@ header#header ul.navbar-nav .dropdown .dropdown-menu li a:hover {
 
 //-----------------------------------------------------------------------------
 
-section#section-home {
-	width: 100%;
-	height: 100%;
-	padding: 0;
-	background-color: transparent;
-}
-
-/* Declare heights because of positioning of img element */
-section#section-home #carousel-home {
-	height: 100%;
-}
-section#section-home #carousel-home .carousel-inner {
-	height: 100%;
-	background-color: #000;
-}
-/* Since positioning the image, we need to help out the caption */
-section#section-home #carousel-home .carousel-caption {
-	/*z-index: 10;*/
-	bottom: 25%;
-}
-section#section-home #carousel-home .item {
-	height: 800px;
-	max-height: 1080px;
-	background-color: @dark;
-	text-align: center;
-}
-
-section#section-home #carousel-home .zynthian_top_slider_01 {
-	background: url('../img/photos/zynthian_top_slider_01.jpg') no-repeat center center;
-	background-size: cover;
-}
-
-section#section-home #carousel-home .zynthian_top_slider_02 {
-	background: url('../img/photos/zynthian_top_slider_02.jpg') no-repeat center center;
-	background-size: cover;
-}
-
-section#section-home #carousel-home .zynthian_top_slider_03 {
-	background: url('../img/photos/zynthian_top_slider_03.jpg') no-repeat center center;
-	background-size: cover;
-}
-
-section#section-home #carousel-home .zynthian_top_slider_04 {
-	background: url('../img/photos/zynthian_top_slider_04.jpg') no-repeat center center;
-	background-size: cover;
-}
-
-section#section-home h2 {
-	margin-bottom: 1.5em;
-	font-size: 250%;
-	font-weight: 400;
-	opacity: 0.9;
-}
-
-section#section-home p {
-	margin-bottom: 2em;
-	font-size: 170%;
-	font-weight: 400;
-	opacity: 0.9;
-	-moz-text-outline: 2px 2px @dark;
-	-webkit-text-outline: 2px 2px @dark;
-	text-outline: 2px 2px @dark;
-}
-
-section#section-home i {
-	opacity: 0.9;
-}
-
-section#section-home a,
-section#section-home a:visited {
-	color: #FFFFFF;
-	text-decoration: none;
-}
-section#section-home a:hover,
-section#section-home a:active {
-	color: #FFFFFF;
-	text-decoration: none;
-}
-
-section#section-home .btn-video {
-	font-size: 70%;
-	/*background-color: @primary;
-	transition: all 0.3s ease 0s;*/
-}
-section#section-home .Xbtn-video:hover {
-	background-color: @light;
-	color: @primary;
-}
-
-
-section#section-home .btn-circle {
-	width: 1.2em;
-	height: 1.2em;
-	margin-top: 1em;
-	padding: 0em;
-	/*padding-top: -1.5em;*/
-	line-height: 1.2em;
-	border: 2px solid @light;
-	border-radius: 0.6em;
-	font-size: 3em;
-	color: @light;
-	background: transparent;
-	opacity: 0.8;
-	-webkit-transition: background .3s ease-in-out;
-	-moz-transition: background .3s ease-in-out;
-	transition: background .3s ease-in-out;
-	&:hover,
-	&:focus {
-		outline: none;
-		color: @primary;
-		border-color: @primary;
-		background: fade(@primary, 10%);
-		-webkit-transition: all .3s ease-in-out;
-		-moz-transition: all .3s ease-in-out;
-		transition: all .3s ease-in-out;
-	}
-	i.animated {
-		-webkit-transition-property: -webkit-transform;
-		-webkit-transition-duration: 1s;
-		-moz-transition-property: -moz-transform;
-		-moz-transition-duration: 1s;
-	}
-	&:hover {
-		i.animated {
-			-webkit-animation-name: pulse;
-			-moz-animation-name: pulse;
-			-webkit-animation-duration: 1.5s;
-			-moz-animation-duration: 1.5s;
-			-webkit-animation-iteration-count: infinite;
-			-moz-animation-iteration-count: infinite;
-			-webkit-animation-timing-function: linear;
-			-moz-animation-timing-function: linear;
-		}
-	}
-}
-
-@-webkit-keyframes pulse {
-	0 {	margin-bottom: 2em;
-		-webkit-transform: scale(1);
-		transform: scale(1);
-	}
-	50% {
-		-webkit-transform: scale(1.2);
-		transform: scale(1.2);
-	}
-	100% {
-		-webkit-transform: scale(1);
-		transform: scale(1);
-	}
-}
-@-moz-keyframes pulse {
-	0 {
-		-moz-transform: scale(1);
-		transform: scale(1);
-	}
-	50% {
-		-moz-transform: scale(1.2);
-		transform: scale(1.2);
-	}
-	100% {
-		-moz-transform: scale(1);
-		transform: scale(1);
-	}
-}
-
-//-----------------------------------------------------------------------------
-
-section#spacer-phrase1 {
-	background: url("../img/photos/zynthian_parallax_07.jpg") no-repeat center center;
-	background-size: cover;
-}
-
-section#spacer-boxes {
-	background: url("../img/photos/zynthian_side_bg_trans.jpg") no-repeat center center;
-	background-size: contain;
-}
-
-section#spacer-devel {
-	background: url("../img/photos/zynthian_parallax_11.jpg") no-repeat center center;
-	background-size: cover;
-}
-
-section#spacer-end {
-	background: url("../img/photos/zynthian_parallax_04.jpg") no-repeat center center;
-	background-size: cover;
-}
-
 section.bg_logo_z {
 	background: url("../img/logo/zynthian_logo_z_big_tenue.png") no-repeat center center;
 	background-size: contain;
@@ -311,6 +123,8 @@ section.bg_logo_z {
 section.bg_logo_wave {
 	background: url("../img/logo/zynthian_logo_square_big_tenue.png") no-repeat center center;
 	background-size: cover;
+	background-attachment: fixed;
+	min-height: 100%;
 }
 
 //-----------------------------------------------------------------------------
@@ -398,88 +212,6 @@ section.bg_logo_wave {
 	background-color: @dark;
 }
 
-//-----------------------------------------------------------------------------
-
-section#section-concept {
-}
-
-section#section-concept p {
-	text-align: center;
-}
-
-//-----------------------------------------------------------------------------
-
-section#section-features {
-	background-color: @bg1;
-}
-
-//-----------------------------------------------------------------------------
-
-section#section-team {
-	padding-right: 15px;
-	padding-left: 15px;
-	background-color: @bg2;
-}
-
-section#section-team .member-photo img {
-	margin-top: 20px;
-	width: 200px;
-	height: 200px;
-}
-
-//-----------------------------------------------------------------------------
-
-section#section-timeline {
-	background-color: @bg2;
-}
-
-.cd-timeline::before {
-	background-color: @primary;
-}
-
-.cd-timeline {
-}
-
-.cd-timeline-content h2 {
-  font-size: 120%;
-}
-
-.cd-timeline-content p, .cd-timeline-content .cd-date {
-  font-size: 100%;
-}
-
-.cd-timeline-img .fa {
-	display: block;
-	color: @light;
-	text-align: center;
-	line-height: 40px;
-	font-size: 18px;
-}
-
-.cd-read-more {
-	display: block;
-}
-
-@media only screen and (min-width: 1170px) {
-	.cd-timeline-img .fa {
-		line-height: 60px;
-		font-size: 24px;
-	}
-}
-
-//-----------------------------------------------------------------------------
-
-section#section-contact {
-	padding-right: 15px;
-	padding-left: 15px;
-	background-color: @bg3;
-}
-
-section#section-contact .alert,
-section#section-contact .help-block,
-section#section-contact .help-inline {
-	/*display: none;*/
-}
 
 //-----------------------------------------------------------------------------
 
@@ -575,25 +307,12 @@ textarea.input-zynthian {
 
 @media (max-width: 767px) {
 
-	section#section-home #carousel-home .item {
-		height: 620px;
-	}
-
-	section#section-home h2 {
-		margin-bottom: 1.5em;
-		font-size: 170%;
-	}
-
-	section#section-home p {
-		margin-bottom: 1.5em;
-		font-size: 140%;
-	}
-
-	section#spacer-boxes {
-		background: url("../img/photos/zynthian_side_bg_trans.jpg") no-repeat right center;
-		background-size: cover;
-	}
 }
+
+//-----------------------------------------------------------------------------
+// Webconf specific CSS
+//-----------------------------------------------------------------------------
+
 
 div.lib-treeview .row {
 	padding-bottom: 10px;
