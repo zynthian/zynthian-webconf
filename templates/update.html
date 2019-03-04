@@ -38,7 +38,7 @@ function executeUpdate(update_action){
 			} else {
 				console.log("socket:onmessage:",data);
 				logDiv.append(data + "<br />");
-				logDiv[0].scrollTop = logDiv[0].scrollHeight;
+				window.scrollTo(0,document.body.scrollHeight);
 			}
 		}
 	});
