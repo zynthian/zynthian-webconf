@@ -343,7 +343,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				else:
 					errors['zynthian_midi_profile_new_script_name'] = 'Profile name missing'
 
-			self.restart_ui()
+			#self.restart_ui()
+			self.reload_midi_config()
 
 		else:
 			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};

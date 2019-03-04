@@ -25,6 +25,7 @@
 import os
 import re
 import sys
+import liblo
 import logging
 import tornado.web
 from subprocess import check_output
@@ -33,23 +34,56 @@ sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
 
 #------------------------------------------------------------------------------
-# Zynthian Config Handler
+# Zynthian-UI OSC Address
 #------------------------------------------------------------------------------
 
-class ZynthianConfigHandler(tornado.web.RequestHandler):
+zynthian_ui_osc_addr = liblo.Address('localhost',1370,liblo.UDP)
+
+#------------------------------------------------------------------------------
+# Zynthian Basic Handler
+#------------------------------------------------------------------------------
+
+class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
+
 	def prepare(self):
-		zynconf.load_config()
-		zynconf.load_midi_config()
 		self.genjson=False
 		try:
 			if self.get_query_argument("json"):
 				self.genjson=True
 		except:
 			pass
+
+
+	def restart_ui(self):
+		try:
+			check_output("systemctl daemon-reload;systemctl stop zynthian;systemctl start zynthian", shell=True)
+		except Exception as e:
+			logging.error("Restarting UI: %s" % e)
+
+
+	def reload_midi_config(self):
+		liblo.send(zynthian_ui_osc_addr, "RELOAD_MIDI_CONFIG")
+
+
+	def needs_reboot(self):
+		return False
+
+
+#------------------------------------------------------------------------------
+# Zynthian Config Handler
+#------------------------------------------------------------------------------
+
+class ZynthianConfigHandler(ZynthianBasicHandler):
+
+	def prepare(self):
+		zynconf.load_config()
+		zynconf.load_midi_config()
+		super().prepare()
+
 
 	def update_config(self, config):
 		sconfig={}
@@ -58,11 +92,3 @@ class ZynthianConfigHandler(tornado.web.RequestHandler):
 
 		zynconf.save_config(sconfig, update_sys=True)
 
-	def restart_ui(self):
-		try:
-			check_output("systemctl daemon-reload;systemctl stop zynthian;systemctl start zynthian", shell=True)
-		except Exception as e:
-			logging.error("Restarting UI: %s" % e)
-
-	def needs_reboot(self):
-		return False
