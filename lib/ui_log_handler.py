@@ -72,10 +72,12 @@ class UiLogHandler(tornado.web.RequestHandler):
 class UiTailThread(TailThread):
 
     def __init__(self, websocket, loop, process_command):
-        super(websocket, loop)
+        TailThread.__init__(self, websocket, loop)
         self.process_command = process_command
+        self.loop = loop
 
     def run(self):
+        asyncio.set_event_loop(self.loop)
         process = subprocess.Popen(self.process_command, shell=True, stderr=subprocess.PIPE,
                                    stdout=subprocess.PIPE)
 
