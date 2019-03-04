@@ -93,22 +93,22 @@ class DashboardHandler(ZynthianConfigHandler):
 				['PROFILE', {
 					'title': 'Profile',
 					'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}],
 				['FINE_TUNING', {
 					'title': 'Fine Tuning',
 					'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}],
 				['MASTER_CHANNEL', {
 					'title': 'Master Channel',
 					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}],
 				['QMIDINET', {
 					'title': 'QMidiNet',
 					'value': str(self.is_service_active("qmidinet")),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}]
 			])],
 			['SOFTWARE', OrderedDict([

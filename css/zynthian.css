@@ -683,9 +683,9 @@ div#drop-zone.has-advanced-upload .box__dragndrop {
 }
 div.log-panel {
   margin-top: 10px;
-  height: 600px;
-  overflow-y: hidden;
-  overflow: auto;
+  /*	height: 600px;
+	overflow-y: hidden;
+	overflow: auto;*/
   white-space: nowrap;
 }
 div.log-panel.updating {

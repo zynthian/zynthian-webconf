@@ -1,92 +1,54 @@
-<div class="pull-right">
-        <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
-</div>
 
 <h2>{{ escape(title) }}</h2>
 
 <form id="ui-log-form" enctype="multipart/form-data" method="post">
-
 	<div id="midi-log" class="log-panel"></div>
 </form>
 
 <div id="loading-div-background">
-  <div id="loading-div" class="ui-corner-all">
-    PROCESSING. PLEASE WAIT...
-  </div>
+	<div id="loading-div" class="ui-corner-all">
+		CONNECTING. PLEASE WAIT...
+	</div>
 </div>
 
 <script type="text/javascript">
 
-
-
 function show_logging() {
- 	var logDiv = $("#midi-log");
+	var logDiv = $("#midi-log");
 
 	logDiv.html('');
 	var socketMessage = {"handler_name": "MidiLogMessageHandler",
 		"data": 'SHOW_LOGGING'};
 	window.zynthianSocket.send(JSON.stringify(socketMessage));
-
 }
-
-
-
 
 function showProgressAnimation(){
-    $("#loading-div-background").show();
-}
-
-
-function restore_advanced_view() {
-        if (Cookies.get('advanced_view')) {
-                $('input#check_advanced_view').prop("checked", true);
-                $('.advanced-view').show();
-        } else {
-                $('input#check_advanced_view').prop("checked", false);
-                $('.advanced-view').hide;
-        }
-}
-
-function onchange_check_advanced_view() {
-        if ($('input#check_advanced_view').prop("checked")==true) {
-                Cookies.set('advanced_view','1')
-                $('.advanced-view').slideDown(500);
-        } else {
-                Cookies.remove('advanced_view')
-                $('.advanced-view').slideUp(500);
-        }
+	$("#loading-div-background").show();
 }
 
 $(document).ready(function() {
-        restore_advanced_view();
-
-    	var deferred = $.Deferred();
-		deferred.done(function(value) {
-			window.zynthianSocket.registerHandler('MidiLogMessageHandler', function(data) {
-                if (data){
-                    console.log("MidiLogMessageHandler:onmessage:", data);
-                    var logDiv = $("#midi-log");
-                    dataPayload = "";
-                    if (data['type'] == 'note_on' || data['type'] == 'note_off'){
-                        dataPayload = ", Velocity:" + data['velocity'] + ", Note: " + data['note'];
-                    } else if (data['type'] == "pitchwheel"){
-                        dataPayload = ", Pitch: " + data['pitch'];
-                    } else if (data['type'] == "control_change"){
-                        dataPayload = ", Control: " + data['control'] + ", Value: " + data['value']
-                    }
-                    logDiv.append("Channel: " + data['channel'] + ", Type:" + data['type'] + ", Time: " + data['time'] +  dataPayload + "<br />");
-                    logDiv[0].scrollTop = logDiv[0].scrollHeight;
-
-                }
-	        });
-	        var socketMessage = {"handler_name": "MidiLogMessageHandler",
-                 "data": 'SHOW_LOGGING'};
-
-            window.zynthianSocket.send(JSON.stringify(socketMessage));
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		window.zynthianSocket.registerHandler('MidiLogMessageHandler', function(data) {
+			if (data) {
+				console.log("MidiLogMessageHandler:onmessage:", data);
+				var logDiv = $("#midi-log");
+				dataPayload = "";
+				if (data['type'] == 'note_on' || data['type'] == 'note_off') {
+					dataPayload = ", Velocity:" + data['velocity'] + ", Note: " + data['note'];
+				} else if (data['type'] == "pitchwheel") {
+					dataPayload = ", Pitch: " + data['pitch'];
+				} else if (data['type'] == "control_change") {
+					dataPayload = ", Control: " + data['control'] + ", Value: " + data['value']
+				}
+				logDiv.append("Channel: " + data['channel'] + ", Type:" + data['type'] + ", Time: " + data['time'] +  dataPayload + "<br />");
+				window.scrollTo(0,document.body.scrollHeight);
+			}
 		});
-		connectZynthianWebSocket(deferred);
-
+		var socketMessage = {"handler_name": "MidiLogMessageHandler", "data": 'SHOW_LOGGING'};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	});
+	connectZynthianWebSocket(deferred);
 });
-
 
 </script>
