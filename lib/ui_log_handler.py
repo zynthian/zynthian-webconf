@@ -130,7 +130,8 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
         check_output("(systemctl stop %s)&" % running_service, shell=True)
 
         is_active = True
-        while is_active:
+        max_trials = 20
+        while is_active and max_trials > 0:
             logging.info("getting status of %s" % running_service)
             try:
                 check_output("systemctl status %s" % running_service, shell=True)
@@ -142,6 +143,7 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
                         is_active = False
 
             time.sleep(1)
+            max_trials -= 1
 
         check_output("(systemctl start %s)&" % next_service, shell=True)
 
