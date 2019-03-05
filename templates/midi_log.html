@@ -33,15 +33,35 @@ $(document).ready(function() {
 			if (data) {
 				console.log("MidiLogMessageHandler:onmessage:", data);
 				var logDiv = $("#midi-log");
-				dataPayload = "";
-				if (data['type'] == 'note_on' || data['type'] == 'note_off') {
-					dataPayload = ", Velocity:" + data['velocity'] + ", Note: " + data['note'];
+
+				var dataPayload = "";
+				var fgcolor = "";
+				if (data['type'] == 'note_on') {
+					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
+					fgcolor = "#008000"
+				} else if (data['type'] == 'note_off') {
+					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
+					fgcolor = "#C00000"
 				} else if (data['type'] == "pitchwheel") {
-					dataPayload = ", Pitch: " + data['pitch'];
+					dataPayload = " " + data['pitch'];
+					fgcolor = "#C07000"
 				} else if (data['type'] == "control_change") {
-					dataPayload = ", Control: " + data['control'] + ", Value: " + data['value']
+					dataPayload = " " + data['control'] + " => " + data['value']
+					fgcolor = "#0000C0"
+				} else if (data['type'] == "program_change") {
+					dataPayload = " " + data['program']
+					fgcolor = "#800080"
+				} else {
+					fgcolor = "#404040"
 				}
-				logDiv.append("Channel: " + data['channel'] + ", Type:" + data['type'] + ", Time: " + data['time'] +  dataPayload + "<br />");
+
+				if (data['time']>0) {
+					dataPayLoad += "  [Time: " + data['time'] + "]"
+				}
+
+				var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
+				logDiv.append(row);
+				console.log(row);
 				window.scrollTo(0,document.body.scrollHeight);
 			}
 		});
