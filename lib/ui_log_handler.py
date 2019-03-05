@@ -131,7 +131,6 @@ class UiLogMessageHandler(ZynthianWebSocketMessageHandler):
 		UiLogMessageHandler.logging_thread.start()
 
 
-<<<<<<< HEAD
 	def toggle_service(self, running_service, next_service):
 		check_output("(systemctl stop %s)&" % running_service, shell=True)
 
