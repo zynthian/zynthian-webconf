@@ -55,8 +55,9 @@ $(document).ready(function() {
 			if (data){
 				console.log("UiLogMessageHandler:onmessage:", data);
 				var logDiv = $("#ui-log");
+				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
 				logDiv.append(data + "<br />");
-				window.scrollTo(0,document.body.scrollHeight);
+				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		});
 		var socketMessage = {"handler_name": "UiLogMessageHandler", "data": 'SHOW_DEFAULT'};

@@ -59,10 +59,12 @@ $(document).ready(function() {
 					dataPayLoad += "  [Time: " + data['time'] + "]"
 				}
 
+				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
+
 				var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
 				logDiv.append(row);
-				console.log(row);
-				window.scrollTo(0,document.body.scrollHeight);
+
+				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		});
 		var socketMessage = {"handler_name": "MidiLogMessageHandler", "data": 'SHOW_LOGGING'};
