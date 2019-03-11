@@ -2,6 +2,18 @@
 <h2>{{ escape(title) }}</h2>
 
 <form id="ui-log-form" enctype="multipart/form-data" method="post">
+
+	<select name="MIDI_PORT" onchange="start_logging(this.value)"><br>
+		{% for mp in config['MIDI_PORTS'] %}
+			<option value="{{ escape(mp['name']) }}"
+				{% if config['MIDI_PORT']==mp['name'] %}selected=1{% end %}>
+				{{ escape(mp['alias'].split(':')[-1]) }}
+			</option>
+		{% end %}
+	</select>
+	
+	<!--<button type="button" class="btn btn-lg btn-theme" onclick="stop_logging()">Stop</button>-->
+
 	<div id="midi-log" class="log-panel"></div>
 </form>
 
@@ -13,12 +25,20 @@
 
 <script type="text/javascript">
 
-function show_logging() {
-	var logDiv = $("#midi-log");
+function start_logging(midi_port) {
+	$("#midi-log").html('');
+	var socketMessage = {
+		"handler_name": "MidiLogMessageHandler",
+		"data": 'START_LOGGING ' + midi_port
+	};
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
 
-	logDiv.html('');
-	var socketMessage = {"handler_name": "MidiLogMessageHandler",
-		"data": 'SHOW_LOGGING'};
+function stop_logging() {
+	var socketMessage = {
+		"handler_name": "MidiLogMessageHandler",
+		"data": 'STOP_LOGGING'
+	};
 	window.zynthianSocket.send(JSON.stringify(socketMessage));
 }
 
@@ -67,8 +87,7 @@ $(document).ready(function() {
 				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		});
-		var socketMessage = {"handler_name": "MidiLogMessageHandler", "data": 'SHOW_LOGGING'};
-		window.zynthianSocket.send(JSON.stringify(socketMessage));
+		start_logging("{{ config['MIDI_PORT'] }}")
 	});
 	connectZynthianWebSocket(deferred);
 });

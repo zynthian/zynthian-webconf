@@ -41,7 +41,86 @@ from zyngine.zynthian_midi_filter import MidiFilterScript
 #import mod.utils
 
 #------------------------------------------------------------------------------
-# System Menu
+# Module Methods
+#------------------------------------------------------------------------------
+
+def get_ports_config(current_midi_ports=""):
+	midi_ports = { 'IN': [], 'OUT': [], 'FB': [] }
+	try:
+		#Get MIDI ports list from jack
+		client = jack.Client("ZynthianWebConf")
+		#For jack, output/input convention are reversed => output=readable, input=writable
+		midi_in_ports = client.get_ports(is_midi=True, is_physical=True, is_output=True)
+		midi_out_ports = client.get_ports(is_midi=True, is_physical=True, is_input=True)
+		#Add QMidiNet ports
+		qmidinet_in_ports=client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_output=True )
+		qmidinet_out_ports=client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_input=True )
+		try:
+			midi_in_ports.append(qmidinet_in_ports[0])
+			midi_out_ports.append(qmidinet_out_ports[0])
+		except:
+			pass
+
+		disabled_midi_in_ports=zynconf.get_disabled_midi_in_ports(current_midi_ports)
+		enabled_midi_out_ports=zynconf.get_enabled_midi_out_ports(current_midi_ports)
+		enabled_midi_fb_ports=zynconf.get_enabled_midi_fb_ports(current_midi_ports)
+
+		#Generate MIDI_PORTS{IN,OUT,FB} configuration array
+		for idx,midi_port in enumerate(midi_in_ports):
+			alias=get_port_alias(midi_port)
+			port_id=alias.replace(' ','_')
+			midi_ports['IN'].append({
+				'name': midi_port.name,
+				'shortname': midi_port.shortname,
+				'alias': alias,
+				'id': port_id,
+				'checked': 'checked="checked"' if port_id not in disabled_midi_in_ports else ''
+			})
+		for idx,midi_port in enumerate(midi_out_ports):
+			alias=get_port_alias(midi_port)
+			port_id=alias.replace(' ','_')
+			midi_ports['OUT'].append({
+				'name': midi_port.name,
+				'shortname': midi_port.shortname,
+				'alias': alias,
+				'id': port_id,
+				'checked': 'checked="checked"' if port_id in enabled_midi_out_ports else ''
+			})
+		for idx,midi_port in enumerate(midi_out_ports):
+			alias=get_port_alias(midi_port)
+			port_id=alias.replace(' ','_')
+			midi_ports['FB'].append({
+				'name': midi_port.name,
+				'shortname': midi_port.shortname,
+				'alias': alias,
+				'id': port_id,
+				'checked': 'checked="checked"' if port_id in enabled_midi_fb_ports else ''
+			})
+
+
+	except Exception as e:
+		logging.error("%s" %e)
+
+	#logging.debug("MIDI_PORTS => %s" % midi_ports)
+	return midi_ports
+
+
+def get_port_alias(midi_port):
+	try:
+		alias=midi_port.aliases[0]
+		logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
+		#Each returned alias string is something like that:
+		# in-hw-1-0-0-LPK25-MIDI-1
+		#or
+		# out-hw-2-0-0-MK-249C-USB-MIDI-keyboard-MIDI-
+		alias=' '.join(alias.split('-')[5:])
+	except:
+		alias=midi_port.name.replace('_',' ')
+	return alias
+
+
+#------------------------------------------------------------------------------
+# Midi Config Handler
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
@@ -144,7 +223,13 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		self.load_midi_profiles()
-		ports_config=self.get_ports_config()
+
+		#Get current MIDI ports configuration
+		current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS',self.DEFAULT_MIDI_PORTS)
+		current_midi_ports = current_midi_ports.replace("\\n","\n")
+		#logging.debug("MIDI_PORTS = %s" % current_midi_ports)
+		ports_config = { 'MIDI_PORTS': get_ports_config(current_midi_ports) }
+
 
 		mfr_config=OrderedDict([
 			['RULE_EVENT_TYPES', {
@@ -384,86 +469,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				return "ERROR parsing MIDI filter rule: " + str(e)
 
 
-	def get_ports_config(self):
-		midi_ports = { 'IN': [], 'OUT': [], 'FB': [] }
-		try:
-			#Get MIDI ports list from jack
-			client = jack.Client("ZynthianWebConf")
-			#For jack, output/input convention are reversed => output=readable, input=writable
-			midi_in_ports = client.get_ports(is_midi=True, is_physical=True, is_output=True)
-			midi_out_ports = client.get_ports(is_midi=True, is_physical=True, is_input=True)
-			#Add QMidiNet ports
-			qmidinet_in_ports=client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_output=True )
-			qmidinet_out_ports=client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_input=True )
-			try:
-				midi_in_ports.append(qmidinet_in_ports[0])
-				midi_out_ports.append(qmidinet_out_ports[0])
-			except:
-				pass
-
-			#Get current MIDI ports configuration
-			current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS',self.DEFAULT_MIDI_PORTS)
-			current_midi_ports=current_midi_ports.replace("\\n","\n")
-			#logging.debug("MIDI_PORTS = %s" % current_midi_ports)
-
-			disabled_midi_in_ports=zynconf.get_disabled_midi_in_ports(current_midi_ports)
-			enabled_midi_out_ports=zynconf.get_enabled_midi_out_ports(current_midi_ports)
-			enabled_midi_fb_ports=zynconf.get_enabled_midi_fb_ports(current_midi_ports)
-
-			#Generate MIDI_PORTS{IN,OUT,FB} configuration array
-			for idx,midi_port in enumerate(midi_in_ports):
-				alias=self.get_port_alias(midi_port)
-				port_id=alias.replace(' ','_')
-				midi_ports['IN'].append({
-					'name': midi_port.name,
-					'shortname': midi_port.shortname,
-					'alias': alias,
-					'id': port_id,
-					'checked': 'checked="checked"' if port_id not in disabled_midi_in_ports else ''
-				})
-			for idx,midi_port in enumerate(midi_out_ports):
-				alias=self.get_port_alias(midi_port)
-				port_id=alias.replace(' ','_')
-				midi_ports['OUT'].append({
-					'name': midi_port.name,
-					'shortname': midi_port.shortname,
-					'alias': alias,
-					'id': port_id,
-					'checked': 'checked="checked"' if port_id in enabled_midi_out_ports else ''
-				})
-			for idx,midi_port in enumerate(midi_out_ports):
-				alias=self.get_port_alias(midi_port)
-				port_id=alias.replace(' ','_')
-				midi_ports['FB'].append({
-					'name': midi_port.name,
-					'shortname': midi_port.shortname,
-					'alias': alias,
-					'id': port_id,
-					'checked': 'checked="checked"' if port_id in enabled_midi_fb_ports else ''
-				})
-
-
-		except Exception as e:
-			logging.error("%s" %e)
-
-		#logging.debug("MIDI_PORTS => %s" % midi_ports)
-		return {'MIDI_PORTS': midi_ports}
-
-
-	def get_port_alias(self, midi_port):
-		try:
-			alias=midi_port.aliases[0]
-			logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
-			#Each returned alias string is something like that:
-			# in-hw-1-0-0-LPK25-MIDI-1
-			#or
-			# out-hw-2-0-0-MK-249C-USB-MIDI-keyboard-MIDI-
-			alias=' '.join(alias.split('-')[5:])
-		except:
-			alias=midi_port.name.replace('_',' ')
-		return alias
-
-
 	def load_midi_profiles(self):
 		self.midi_profile_presets=OrderedDict([])
 		p = re.compile("export (\w*)=\"(.*)\"")
@@ -492,6 +497,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			self.midi_envs = self.midi_profile_presets[self.current_midi_profile_script]
 		else:
 			self.midi_envs = {}
+
 
 
 	def get_midi_env(self, key, default=''):
