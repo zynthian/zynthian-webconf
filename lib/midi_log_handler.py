@@ -141,9 +141,6 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 		if MidiLogMessageHandler.mido_port:
 			logging.info("stop midi logging")
 			MidiLogMessageHandler.mido_port.close()
-			MidiLogMessageHandler.mido_port.callback = None
-		else:
-			logging.info("No MIDO to Stop!!??")
 
 
 	def on_websocket_message(self, message):

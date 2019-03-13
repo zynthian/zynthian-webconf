@@ -3,15 +3,26 @@
 
 <form id="ui-log-form" enctype="multipart/form-data" method="post">
 
-	<select name="MIDI_PORT" onchange="start_logging(this.value)"><br>
-		{% for mp in config['MIDI_PORTS'] %}
-			<option value="{{ escape(mp['name']) }}"
-				{% if config['MIDI_PORT']==mp['name'] %}selected=1{% end %}>
-				{{ escape(mp['alias'].split(':')[-1]) }}
-			</option>
-		{% end %}
-	</select>
-	
+	<div class="row">
+		<div class="col-lg-6">
+			<select name="MIDI_PORT" onchange="start_logging(this.value)"><br>
+				{% for mp in config['MIDI_PORTS'] %}
+					<option value="{{ escape(mp['name']) }}"
+						{% if config['MIDI_PORT']==mp['name'] %}selected=1{% end %}>
+						{{ escape(mp['alias'].split(':')[-1]) }}
+					</option>
+				{% end %}
+			</select>
+		</div>
+
+		<div class="col-lg-6">
+			<select name="MIDI_LOG_FILTER" onchange="set_log_filter(this.value)"><br>
+				<option value="0">Show All Messages</option>
+				<option value="1">Hide System Messages</option>
+			</select>
+		</div>
+	</div>
+
 	<!--<button type="button" class="btn btn-lg btn-theme" onclick="stop_logging()">Stop</button>-->
 
 	<div id="midi-log" class="log-panel"></div>
@@ -40,6 +51,13 @@ function stop_logging() {
 		"data": 'STOP_LOGGING'
 	};
 	window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
+
+
+var log_filter=0;
+
+function set_log_filter(v) {
+	log_filter=parseInt(v);
 }
 
 function showProgressAnimation(){
@@ -79,12 +97,14 @@ $(document).ready(function() {
 					dataPayLoad += "  [Time: " + data['time'] + "]"
 				}
 
-				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
+				if (log_filter==0 || data['channel']>=0) {
+					var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
 
-				var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
-				logDiv.append(row);
+					var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
+					logDiv.append(row);
 
-				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
+					if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
+				}
 			}
 		});
 		start_logging("{{ config['MIDI_PORT'] }}")
