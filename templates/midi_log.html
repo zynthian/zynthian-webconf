@@ -19,6 +19,7 @@
 			<select name="MIDI_LOG_FILTER" onchange="set_log_filter(this.value)"><br>
 				<option value="0">Show All Messages</option>
 				<option value="1">Hide System Messages</option>
+				<option value="2">Stop Logging</option>
 			</select>
 		</div>
 	</div>
@@ -97,7 +98,7 @@ $(document).ready(function() {
 					dataPayLoad += "  [Time: " + data['time'] + "]"
 				}
 
-				if (log_filter==0 || data['channel']>=0) {
+				if (log_filter==0 || (log_filter==1 && data['channel']>=0)) {
 					var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
 
 					var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
