@@ -233,7 +233,14 @@ textarea.input-zynthian {
 .input-zynthian::-ms-input-placeholder {
   color: #606060;
 }
-@media (max-width: 800px) {
+@media (max-width: 1200px) {
+  header#header ul.navbar-nav li a {
+    font-size: 12px;
+    padding-left: 1.2em;
+    padding-right: 0.8em;
+  }
+}
+@media (max-width: 990px) {
   .navbar-header {
     float: none;
   }

@@ -70,7 +70,7 @@ $(document).ready(function() {
 	deferred.done(function(value) {
 		window.zynthianSocket.registerHandler('MidiLogMessageHandler', function(data) {
 			if (data) {
-				console.log("MidiLogMessageHandler:onmessage:", data);
+				//console.log("MidiLogMessageHandler:onmessage:", data);
 				var logDiv = $("#midi-log");
 
 				var dataPayload = "";
