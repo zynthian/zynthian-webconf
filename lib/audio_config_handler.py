@@ -210,7 +210,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					call(amixer_command, shell=True)
 				except Exception as err:
 					logging.error(format(err))
-		if self.get_argument('SOUNDCARD_NAME') == 'AudioInjector':
+		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
 			try:
 				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
 			except Exception as err:
