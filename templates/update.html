@@ -37,8 +37,9 @@ function executeUpdate(update_action){
 				logDiv.removeClass("updating");
 			} else {
 				console.log("socket:onmessage:",data);
+				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
 				logDiv.append(data + "<br />");
-				logDiv[0].scrollTop = logDiv[0].scrollHeight;
+				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		}
 	});

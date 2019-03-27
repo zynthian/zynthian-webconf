@@ -52,6 +52,9 @@ from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.pianoteq_handler import PianoteqHandler
 from lib.captures_config_handler import CapturesConfigHandler
 from lib.jalv_lv2_handler import JalvLv2Handler
+from lib.ui_log_handler import UiLogHandler
+from lib.midi_log_handler import MidiLogHandler
+
 
 #------------------------------------------------------------------------------
 
@@ -113,6 +116,7 @@ def make_app():
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
 		(r'/(.*\.html)$', tornado.web.StaticFileHandler, {'path': 'html'}),
 		(r'/(favicon\.ico)$', tornado.web.StaticFileHandler, {'path': 'img'}),
+		(r'/fonts/(.*)$', tornado.web.StaticFileHandler, {'path': 'fonts'}),
 		(r'/img/(.*)$', tornado.web.StaticFileHandler, {'path': 'img'}),
 		(r'/css/(.*)$', tornado.web.StaticFileHandler, {'path': 'css'}),
 		(r'/js/(.*)$', tornado.web.StaticFileHandler, {'path': 'js'}),
@@ -127,9 +131,11 @@ def make_app():
 		(r"/api/hw-wiring$", WiringConfigHandler),
 		(r"/api/sw-update$", SoftwareUpdateHandler),
 		(r"/api/sw-pianoteq$", PianoteqHandler),
-		(r"/api/sw-jalv-lv2", JalvLv2Handler),
-		(r"/api/ui-style$", UiConfigHandler),
-		(r"/api/ui-midi$", MidiConfigHandler),
+		(r"/api/sw-jalv-lv2$", JalvLv2Handler),
+		(r"/api/ui-options$", UiConfigHandler),
+		(r"/api/ui-log$", UiLogHandler),
+		(r"/api/ui-midi-options$", MidiConfigHandler),
+		(r"/api/ui-midi-log$", MidiLogHandler),
 		(r"/api/sys-wifi$", WifiConfigHandler),
 		(r"/api/sys-backup$", SystemBackupHandler),
 		(r"/api/sys-security$", SecurityConfigHandler),

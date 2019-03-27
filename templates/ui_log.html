@@ -1,0 +1,70 @@
+
+<h2>{{ escape(title) }}</h2>
+
+<form id="ui-log-form" enctype="multipart/form-data" method="post">
+	<button id="button-show-debug" type="button" value="SHOW_DEBUG" class="btn btn-lg btn-theme" onclick="show_debug_logging();">SHOW DEBUG LOGGING</button>
+	<button id="button-hide-debug" type="button"  value="HIDE_DEBUG" class="btn btn-lg btn-theme" onclick="hide_debug_logging();">HIDE DEBUG LOGGING</button>
+
+	<div id="ui-log" class="log-panel"></div>
+</form>
+
+<div id="loading-div-background">
+	<div id="loading-div" class="ui-corner-all">
+		CONNECTING. PLEASE WAIT...
+	</div>
+</div>
+
+<script type="text/javascript">
+
+function show_debug_logging() {
+	$('#button-show-debug').hide();
+
+	var logDiv = $("#ui-log");
+	logDiv.html('');
+
+	var socketMessage = {"handler_name": "UiLogMessageHandler", "data": 'SHOW_DEBUG_LOGGING'};
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+
+	$('#button-hide-debug').show();
+}
+
+function hide_debug_logging() {
+	$('#button-hide-debug').hide();
+
+	var logDiv = $("#ui-log");
+	logDiv.html('');
+
+	var socketMessage = {"handler_name": "UiLogMessageHandler", "data": 'HIDE_DEBUG_LOGGING'};
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+
+	$('#button-show-debug').show();
+}
+
+function showProgressAnimation(){
+	$("#loading-div-background").show();
+}
+
+$(document).ready(function() {
+	$('#button-show-debug').hide();
+	$('#button-hide-debug').hide();
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$('#button-show-debug').show();
+		window.zynthianSocket.registerHandler('UiLogMessageHandler', function(data) {
+			if (data){
+				console.log("UiLogMessageHandler:onmessage:", data);
+				var logDiv = $("#ui-log");
+				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
+				logDiv.append(data + "<br />");
+				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
+			}
+		});
+		var socketMessage = {"handler_name": "UiLogMessageHandler", "data": 'SHOW_DEFAULT'};
+
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	});
+	connectZynthianWebSocket(deferred);
+});
+
+</script>

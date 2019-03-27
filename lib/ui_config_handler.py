@@ -46,39 +46,44 @@ class UiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
+			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
+				'type': 'boolean',
+				'title': 'Restore last state on startup',
+				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+			}],
 			['ZYNTHIAN_UI_FONT_SIZE', {
 				'type': 'text',
-				'title': 'Size',
+				'title': 'Font Size',
 				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
 			}],
 			['ZYNTHIAN_UI_FONT_FAMILY', {
 				'type': 'select',
-				'title': 'Family',
+				'title': 'Font Family',
 				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
 				'options': self.font_families,
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_BG', {
 				'type': 'text',
-				'title': 'Background',
+				'title': 'Background Color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_TX', {
 				'type': 'text',
-				'title': 'Text',
+				'title': 'Text Color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_ON', {
 				'type': 'text',
-				'title': 'Light',
+				'title': 'Light Color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_COLOR_PANEL_BG', {
 				'type': 'text',
-				'title': 'Panel Background',
+				'title': 'Panel Background Color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
 				'advanced': True
 			}],
@@ -96,6 +101,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE','0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR','0')
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.restart_ui()

@@ -6,25 +6,41 @@
 <h2>{{ escape(title) }}</h2>
 
 <form id="config_block_form" method="post">
+{% set root_vars = {} %}
 {% for varname in config %}
-	<div {% try %} {% if config[varname]['advanced'] %}class="advanced-view"{% end %} {% except %} {% end %}>
+	{% set parts = varname.split('__') %}
+	{% if len(parts)>1 %}
+		{% set root_vars[parts[0]] = 1 %}
+		{% set config[varname]['root_var'] = parts[0] %}
+	{% end %}
+{% end %}
 
-		{% if config[varname]['type']!='button' and config[varname]['type']!='hidden'%}
+{% for varname in config %}
+	<div {% try %} {% if config[varname]['advanced'] %}class="advanced-view"{% end %} {% except %} {% end %}
+		{% try %} {{ "root_var={}".format(config[varname]['root_var']) }} {% except %} {% end %}
+		{% try %} {{ "enabling_options={}".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
+
+		{% if config[varname]['type']!='button' and config[varname]['type']!='hidden' %}
 			<label>{{ escape(config[varname]['title']) }}:</label>
 			{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 		{% end %}
 
+		{% set value = '' %}
+		{% if 'value' in config[varname] and config[varname]['value'] is not None %}
+			{% set value = config[varname]['value'] %}
+		{% end %}
+
 		{% if config[varname]['type']=='text' %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" value="{{ escape(config[varname]['value']) }}" />
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" value="{{ escape(value) }}" />
 
 		{% elif config[varname]['type']=='password' %}
 			<input name="{{ escape(varname) }}" type="password" />
 
 		{% elif config[varname]['type']=='boolean' %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(config[varname]['value'])=='1' %}checked{% end %} value="1" />
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" />
 
 		{% elif config[varname]['type']=='hidden' %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(config[varname]['value']) }}" />
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
 
 		{% elif config[varname]['type']=='button' %}
 			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn btn-lg {{ config[varname]['class'] }}" >
@@ -41,13 +57,13 @@
 			{% if 'addPanel' in config[varname] %}
 				{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
 			{% end %}
-			<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ config[varname]['value'].replace("\\n","\n") }}</textarea>
+			<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ value.replace("\\n","\n") }}</textarea>
 
 		{% elif config[varname]['type']=='select' %}
-			<select name="{{ escape(varname) }}" onchange="set_presets(this)"><br>
+			<select name="{{ escape(varname) }}" onchange="{{ 'refresh_select_subvars(this)' if varname in root_vars else 'set_presets(this)' }}"><br>
 			{% for option in config[varname]['options'] %}
 				<option value="{{ escape(option) }}"
-					{% if config[varname]['value']==option %}selected=1{% end %}
+					{% if value==option %}selected=1{% end %}
 					{% if 'presets' in config[varname] %}
 						{% for fn,preset in list(config[varname]['presets'][option].items()) %}
 							data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
@@ -57,7 +73,7 @@
 				{% if 'option_labels' in config[varname] %}
 					{{ escape(config[varname]['option_labels'][option]) }}
 				{% else %}
-					{{ escape(option) }}
+					{{ escape(option.replace('_', ' ').title()) }}
 				{% end %}
 				</option>
 			{% end %}
@@ -68,7 +84,7 @@
 				data-slider-min="{{ config[varname]['min'] }}"
 				data-slider-max="{{ config[varname]['max'] }}"
 				data-slider-step="{{ config[varname]['step'] }}"
-				data-slider-value="{{ config[varname]['value'] }}"
+				data-slider-value="{{ value }}"
 				data-slider-tooltip="show"
 			/>
 		{% end %}
@@ -108,6 +124,20 @@ function set_presets(sel) {
 	});
 }
 
+function refresh_select_subvars(sel) {
+	if (!(sel instanceof jQuery)) sel=$(sel);
+	$("div[root_var="+sel.attr('name')+"][enabling_options]").hide();
+	if (sel.val()) {
+		$("div[root_var="+sel.attr('name')+"][enabling_options~='"+sel.val()+"']").show();
+	}
+}
+
+function refresh_all_subvars() {
+	{% for varname in root_vars %}
+	$("select[name='{{ varname }}']").each(function () { refresh_select_subvars(this) })
+	{% end %}
+}
+
 function restore_advanced_view() {
 	if (Cookies.get('advanced_view')) {
 		$('input#check_advanced_view').prop("checked", true);
@@ -116,6 +146,7 @@ function restore_advanced_view() {
 		$('input#check_advanced_view').prop("checked", false);
 		$('.advanced-view').hide();
 	}
+	refresh_all_subvars()
 }
 
 function onchange_check_advanced_view() {
@@ -126,6 +157,7 @@ function onchange_check_advanced_view() {
 		Cookies.remove('advanced_view')
 		$('.advanced-view').slideUp(500);
 	}
+	refresh_all_subvars()
 }
 
 $(document).ready(function() {

@@ -22,9 +22,9 @@
 	<link rel="stylesheet" href="/bower_components/bootstrap/dist/css/bootstrap-theme.min.css">
 	<link rel="stylesheet" href="/bower_components/bootstrap-treeview/dist/bootstrap-treeview.min.css">
 	<link rel="stylesheet" href="/bower_components/seiyria-bootstrap-slider/dist/css/bootstrap-slider.min.css">
-
 	<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
 
+	<link rel="stylesheet" href="/css/lato_font.css">
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/default.css">
 	<link rel="stylesheet" href="/css/zynthian.css">
@@ -95,8 +95,10 @@
 							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
 								<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Interface <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/ui-style" %}class="active"{% end %}><a href="/api/ui-style">UI Style</a></li>
-									<li {% if request.uri=="/api/ui-midi" %}class="active"{% end %}><a href="/api/ui-midi">MIDI</a></li>
+									<li {% if request.uri=="/api/ui-options" %}class="active"{% end %}><a href="/api/ui-options">UI Options</a></li>
+									<li {% if request.uri=="/api/ui-log" %}class="active"{% end %}><a href="/api/ui-log">UI Log</a></li>
+									<li {% if request.uri=="/api/ui-midi-options" %}class="active"{% end %}><a href="/api/ui-midi-options">MIDI Options</a></li>
+									<li {% if request.uri=="/api/ui-midi-log" %}class="active"{% end %}><a href="/api/ui-midi-log">MIDI Log</a></li>
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:9]=="/api/sys-" %}active{% end %}">
@@ -129,7 +131,7 @@
 
 	<section id="section-config" class="content-section container pad-top80 pad-bot80 clearfix bg_logo_wave">
 		<div class="row">
-			<div class="col-lg-10 col-lg-offset-1 col-xs-12 col-md-offset-0">
+			<div class="col-lg-10 col-lg-offset-1 col-xs-12 col-xs-offset-0">
 				{% module Template(body, config=config, title=title, errors=errors) %}
 			</div>
 		</div>

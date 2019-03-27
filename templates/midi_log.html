@@ -1,0 +1,116 @@
+
+<h2>{{ escape(title) }}</h2>
+
+<form id="ui-log-form" enctype="multipart/form-data" method="post">
+
+	<div class="row">
+		<div class="col-lg-6">
+			<select name="MIDI_PORT" onchange="start_logging(this.value)"><br>
+				{% for mp in config['MIDI_PORTS'] %}
+					<option value="{{ escape(mp['name']) }}"
+						{% if config['MIDI_PORT']==mp['name'] %}selected=1{% end %}>
+						{{ escape(mp['alias'].split(':')[-1]) }}
+					</option>
+				{% end %}
+			</select>
+		</div>
+
+		<div class="col-lg-6">
+			<select name="MIDI_LOG_FILTER" onchange="set_log_filter(this.value)"><br>
+				<option value="0">Show All Messages</option>
+				<option value="1">Hide System Messages</option>
+				<option value="2">Stop Logging</option>
+			</select>
+		</div>
+	</div>
+
+	<!--<button type="button" class="btn btn-lg btn-theme" onclick="stop_logging()">Stop</button>-->
+
+	<div id="midi-log" class="log-panel"></div>
+</form>
+
+<div id="loading-div-background">
+	<div id="loading-div" class="ui-corner-all">
+		CONNECTING. PLEASE WAIT...
+	</div>
+</div>
+
+<script type="text/javascript">
+
+function start_logging(midi_port) {
+	$("#midi-log").html('');
+	var socketMessage = {
+		"handler_name": "MidiLogMessageHandler",
+		"data": 'START_LOGGING ' + midi_port
+	};
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
+
+function stop_logging() {
+	var socketMessage = {
+		"handler_name": "MidiLogMessageHandler",
+		"data": 'STOP_LOGGING'
+	};
+	window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
+
+
+var log_filter=0;
+
+function set_log_filter(v) {
+	log_filter=parseInt(v);
+}
+
+function showProgressAnimation(){
+	$("#loading-div-background").show();
+}
+
+$(document).ready(function() {
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		window.zynthianSocket.registerHandler('MidiLogMessageHandler', function(data) {
+			if (data) {
+				//console.log("MidiLogMessageHandler:onmessage:", data);
+				var logDiv = $("#midi-log");
+
+				var dataPayload = "";
+				var fgcolor = "";
+				if (data['type'] == 'note_on') {
+					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
+					fgcolor = "#008000"
+				} else if (data['type'] == 'note_off') {
+					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
+					fgcolor = "#C00000"
+				} else if (data['type'] == "pitchwheel") {
+					dataPayload = " " + data['pitch'];
+					fgcolor = "#C07000"
+				} else if (data['type'] == "control_change") {
+					dataPayload = " " + data['control'] + " => " + data['value']
+					fgcolor = "#0000C0"
+				} else if (data['type'] == "program_change") {
+					dataPayload = " " + data['program']
+					fgcolor = "#800080"
+				} else {
+					fgcolor = "#404040"
+				}
+
+				if (data['time']>0) {
+					dataPayLoad += "  [Time: " + data['time'] + "]"
+				}
+
+				if (log_filter==0 || (log_filter==1 && data['channel']>=0)) {
+					var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
+
+					var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
+					logDiv.append(row);
+
+					if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
+				}
+			}
+		});
+		start_logging("{{ config['MIDI_PORT'] }}")
+	});
+	connectZynthianWebSocket(deferred);
+});
+
+</script>

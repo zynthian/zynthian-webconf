@@ -50,23 +50,6 @@ class DashboardHandler(ZynthianConfigHandler):
 		sd_info=self.get_sd_info()
 
 		config=OrderedDict([
-			['SYSTEM', OrderedDict([
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
-					'url': "/api/sys-security"
-				}],
-				['RAM', {
-					'title': 'Memory',
-					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
-					'url': ""
-				}],
-				['SD CARD', {
-					'title': 'SD Card',
-					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
-					'url': ""
-				}]
-			])],
 			['HARDWARE', OrderedDict([
 				['SOUNDCARD_NAME', {
 					'title': 'Soundcard',
@@ -84,26 +67,48 @@ class DashboardHandler(ZynthianConfigHandler):
 					'url': "/api/hw-wiring"
 				}]
 			])],
+			['SYSTEM', OrderedDict([
+				['HOSTNAME', {
+					'title': 'Hostname',
+					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
+					'url': "/api/sys-security"
+				}],
+				['OS_INFO', {
+					'title': 'OS',
+					'value': "{}".format(self.get_os_info()),
+					'url': ""
+				}],
+				['RAM', {
+					'title': 'Memory',
+					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
+					'url': ""
+				}],
+				['SD CARD', {
+					'title': 'SD Card',
+					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
+					'url': ""
+				}]
+			])],
 			['MIDI', OrderedDict([
 				['PROFILE', {
 					'title': 'Profile',
 					'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}],
 				['FINE_TUNING', {
 					'title': 'Fine Tuning',
 					'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}],
 				['MASTER_CHANNEL', {
 					'title': 'Master Channel',
 					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}],
 				['QMIDINET', {
 					'title': 'QMidiNet',
 					'value': str(self.is_service_active("qmidinet")),
-					'url': "/api/ui-midi"
+					'url': "/api/ui-midi-options"
 				}]
 			])],
 			['SOFTWARE', OrderedDict([
@@ -174,6 +179,10 @@ class DashboardHandler(ZynthianConfigHandler):
 			hostname=f.readline()
 			return hostname
 		return ""
+
+
+	def get_os_info(self):
+		return check_output("lsb_release -ds", shell=True).decode()
 
 
 	def get_ip(self):

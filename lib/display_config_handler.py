@@ -36,6 +36,13 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class DisplayConfigHandler(ZynthianConfigHandler):
 
 	display_presets=OrderedDict([
+		['ZynScreen 3.5 (v1)', {
+			'DISPLAY_CONFIG': 'dtoverlay=piscreen2r-notouch,rotate=270\n'+
+				'dtoverlay=ads7846,speed=2000000,cs=1,penirq=17,penirq_pull=2,swapxy=1,xohms=100,pmax=255',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
+			'FRAMEBUFFER': '/dev/fb1'
+		}],
 		['PiTFT 2.8 Resistive', {
 			'DISPLAY_CONFIG': 'dtoverlay=pitft28-resistive,rotate=90,speed=32000000,fps=20',
 			'DISPLAY_WIDTH': '320',
