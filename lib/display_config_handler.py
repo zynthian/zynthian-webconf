@@ -81,42 +81,140 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['WaveShare 3.2B', {
-			'DISPLAY_CONFIG': 'dtoverlay=waveshare32b:rotate=270,swapxy=1\n'+
-				'#dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
-			'DISPLAY_WIDTH': '',
-			'DISPLAY_HEIGHT': '',
+			'DISPLAY_CONFIG':
+				'dtoverlay=waveshare32b:rotate=270,swapxy=1\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
+			'FRAMEBUFFER': '/dev/fb1'
+		}],
+		['WaveShare 3.2C', {
+			'DISPLAY_CONFIG':
+				'dtoverlay=waveshare32c:rotate=270,swapxy=1\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['WaveShare 3.5A', {
-			'DISPLAY_CONFIG': 'dtoverlay=waveshare35a\n'+
-				'dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
-			'DISPLAY_WIDTH': '',
-			'DISPLAY_HEIGHT': '',
+			'DISPLAY_CONFIG':
+				'dtoverlay=waveshare35a:rotate=270,swapxy=1\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2\n'+
+				'display_rotate=0',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['WaveShare 3.5B', {
-			'DISPLAY_CONFIG': 'dtoverlay=waveshare35b\n'+
-				'dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
-			'DISPLAY_WIDTH': '',
-			'DISPLAY_HEIGHT': '',
+			'DISPLAY_CONFIG': 
+				'dtoverlay=waveshare35b\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2\n'+
+				'display_rotate=0',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
+			'FRAMEBUFFER': '/dev/fb1'
+		}],
+		['WaveShare 3.5B V2', {
+			'DISPLAY_CONFIG': 
+				'dtoverlay=waveshare35b-v2\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2\n'+
+				'display_rotate=0',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['WaveShare 3.5C', {
-			'DISPLAY_CONFIG': 'dtoverlay=waveshare35c\n'+
-				'dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
-			'DISPLAY_WIDTH': '',
-			'DISPLAY_HEIGHT': '',
+			'DISPLAY_CONFIG':
+				'dtoverlay=waveshare35c:rotate=90\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2\n'+
+				'display_rotate=0',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['WaveShare 4 GPIO-only', {
-			'DISPLAY_CONFIG': 'dtoverlay=waveshare35a:rotate=90\n'+
-				'dtoverlay=ads7846,cs=1,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
-			'DISPLAY_WIDTH': '',
-			'DISPLAY_HEIGHT': '',
+			'DISPLAY_CONFIG': 
+				'dtoverlay=waveshare35a:rotate=90\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2\n'+
+				'display_rotate=0',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
-		['WaveShare 4 HDMI/GPIO', {
-			'DISPLAY_CONFIG': 'hdmi_drive=1\n'+
+		['WaveShare 4.3 HDMI+GPIO', {
+			'DISPLAY_CONFIG': 
+				'display_rotate=2'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_drive=1\n'+
+				'hdmi_timings=480 0 1 41 2 272 0 2 10 2 0 0 0 60 0 9009000 3\n'+
+				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['WaveShare 4c GPIO-only', {
+			'DISPLAY_CONFIG': 
+				'dtoverlay=waveshare4c:rotate=90\n'+
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 480 320 60 6 0 0 0\n'+
+				'hdmi_drive=2\n'+
+				'display_rotate=2',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
+			'FRAMEBUFFER': '/dev/fb1'
+		}],
+		['WaveShare 5 HDMI+GPIO', {
+			'DISPLAY_CONFIG':
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_drive=1\n'+
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
@@ -126,19 +224,10 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['WaveShare 5 HDMI/GPIO', {
-			'DISPLAY_CONFIG': 'hdmi_drive=1\n'+
-				'hdmi_group=2\n'+
-				'hdmi_mode=1\n'+
-				'hdmi_mode=87\n'+
-				'hdmi_cvt 800 480 60 6 0 0 0\n'+
-				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
-			'DISPLAY_WIDTH': '800',
-			'DISPLAY_HEIGHT': '480',
-			'FRAMEBUFFER': '/dev/fb0'
-		}],
-		['WaveShare 5 HDMI/USB', {
-			'DISPLAY_CONFIG': 'hdmi_drive=1\n'+
+		['WaveShare 5 HDMI+USB', {
+			'DISPLAY_CONFIG': 
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_drive=1\n'+
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
@@ -147,8 +236,10 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['WaveShare 7 HDMI/GPIO', {
-			'DISPLAY_CONFIG': 'hdmi_drive=1\n'+
+		['WaveShare 7 HDMI+GPIO 1024x600', {
+			'DISPLAY_CONFIG':
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_drive=2\n'+
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
@@ -158,8 +249,23 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '600',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['WaveShare 7 HDMI/USB', {
-			'DISPLAY_CONFIG': 'hdmi_drive=1\n'+
+		['WaveShare 7 HDMI+GPIO 800x480', {
+			'DISPLAY_CONFIG':
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_drive=2\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 800 480 60 6 0 0 0\n'+
+				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['WaveShare 7 HDMI+USB', {
+			'DISPLAY_CONFIG':
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_drive=1\n'+
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
@@ -168,13 +274,13 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '600',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['Generic HDMI display', {
+		['Generic HDMI Display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['Custom device', {
+		['Custom Device', {
 			'DISPLAY_CONFIG': '',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',

@@ -128,7 +128,9 @@ function refresh_select_subvars(sel) {
 	if (!(sel instanceof jQuery)) sel=$(sel);
 	$("div[root_var="+sel.attr('name')+"][enabling_options]").hide();
 	if (sel.val()) {
-		$("div[root_var="+sel.attr('name')+"][enabling_options~='"+sel.val()+"']").show();
+		var res=$("div[root_var="+sel.attr('name')+"][enabling_options~='"+sel.val()+"']");
+		if (!Cookies.get('advanced_view')) res.not(".advanced-view").show()
+		else res.show()
 	}
 }
 
