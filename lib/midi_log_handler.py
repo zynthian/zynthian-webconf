@@ -92,6 +92,11 @@ class MidiLogHandler(tornado.web.RequestHandler):
 			'alias': "ZynMidiRouter Main",
 		})
 		midi_in_ports.append({
+			'name': "ZynMidiRouter:midi_out",
+			'shortname': "midi_out",
+			'alias': "ZynMidiRouter MIDI-OUT",
+		})
+		midi_in_ports.append({
 			'name': "ZynMidiRouter:net_out",
 			'shortname': "net_out",
 			'alias': "ZynMidiRouter Network" 
