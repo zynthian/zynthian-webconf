@@ -126,7 +126,13 @@ class PianoteqHandler(ZynthianConfigHandler):
 		
 		# Activate the License Key by calling Pianoteq binary
 		command = "{} --activate {}".format(PIANOTEQ_BINARY, license_serial)
-		result = check_output(command, shell=True).decode("utf-8")
+		result = ""
+		try:
+			result = check_output(command, shell=True).decode("utf-8")
+		except Exception as e:
+			logging.error("Pianoteq License Activation Failed: {}".format(e))
+			result = format(e)
+
 		if result != "Activation Key Saved !\n":
 			logging.error("Pianoteq License Activation Failed: {}".format(result))
 			return result
