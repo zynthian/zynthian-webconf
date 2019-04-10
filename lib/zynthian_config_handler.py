@@ -58,6 +58,30 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 			pass
 
 
+	def render(self, tpl, **kwargs):
+		info = {
+			'host_name': self.request.host
+		}
+
+		# If MOD-UI is enabled, add access URI to info
+		if self.is_service_active("mod-ui"):
+			info['modui_uri']="http://{}:8888".format(self.request.host)
+
+		super().render(tpl, info=info, **kwargs)
+
+
+	def is_service_active(self, service):
+		cmd="systemctl is-active "+str(service)
+
+		try:
+			result=check_output(cmd, shell=True).decode('utf-8','ignore')
+		except Exception as e:
+			result="ERROR: "+str(e)
+	
+		if result.strip()=='active': return True
+		else: return False
+
+
 	def restart_ui(self):
 		try:
 			check_output("systemctl daemon-reload;systemctl stop zynthian;systemctl start zynthian", shell=True)

@@ -28,8 +28,9 @@ import sys
 import string
 import random
 import logging
-import tornado.ioloop
 import tornado.web
+import tornado.ioloop
+
 from lib.login_handler import LoginHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
@@ -54,7 +55,6 @@ from lib.captures_config_handler import CapturesConfigHandler
 from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
-
 
 #------------------------------------------------------------------------------
 
