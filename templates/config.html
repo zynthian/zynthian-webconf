@@ -90,9 +90,9 @@
 									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
 									<li {% if request.uri=="/api/sw-pìanoteq" %}class="active"{% end %}><a href="/api/sw-pianoteq">Pianoteq</a></li>
 									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">Jalv Plugins</a></li>
-									{% if 'modui_uri' in info %}
+									{% try %}{% if 'modui_uri' in info %}
 									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
-									{% end %}
+									{% end %}{% except %}{% end %}
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
