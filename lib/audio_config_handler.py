@@ -216,8 +216,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			except Exception as err:
 				logging.error(format(err))
 
-		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
-			self.redirect('/api/sys-reboot')
+		#if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
+		self.redirect('/api/sys-reboot')
 		self.get(errors)
 
 	def get_mixer_controls(self, config):
