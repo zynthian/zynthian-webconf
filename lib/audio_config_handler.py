@@ -177,6 +177,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'title': 'Aubionotes Options',
 				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 				'advanced': True
+			}],
+			['ZYNTHIAN_LIMIT_USB_SPEED', {
+				'type': 'boolean',
+				'title': 'Limit USB speed to 12Mb/s (USB-1)',
+				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED'),
+				'advanced': True
 			}]
 		])
 
