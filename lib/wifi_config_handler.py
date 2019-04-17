@@ -27,6 +27,7 @@ import re
 import logging
 import base64
 import tornado.web
+from os.path import isfile
 from collections import OrderedDict
 from subprocess import check_output
 
@@ -94,23 +95,41 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		#Remove CR characters added by x-www-form-urlencoded
-		wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT').replace("\r\n", "\n")
+		errors = []
+		
+		try:
+			#Remove CR characters added by x-www-form-urlencoded
+			wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT').replace("\r\n", "\n")
 
-		#Apply changes: delete network, change password, ...
-		wpa_supplicant_data = self.apply_updated_fields(wpa_supplicant_data, ["ZYNTHIAN_WIFI_PRIORITY"])
+			#Apply changes: delete network, change password, ...
+			wpa_supplicant_data = self.apply_updated_fields(wpa_supplicant_data, ["ZYNTHIAN_WIFI_PRIORITY"])
 
-		newSSID = self.get_argument('ZYNTHIAN_WIFI_NEW_SSID')
-		if newSSID:
-			wpa_supplicant_data = self.add_new_network(wpa_supplicant_data, newSSID)
+			newSSID = self.get_argument('ZYNTHIAN_WIFI_NEW_SSID')
+			if newSSID:
+				wpa_supplicant_data = self.add_new_network(wpa_supplicant_data, newSSID)
 
-		fo = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
-		fo.write(wpa_supplicant_data)
-		fo.flush()
-		fo.close()
+			fo = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
+			fo.write(wpa_supplicant_data)
+			fo.flush()
+			fo.close()
 
-		check_output("wpa_cli reconfigure", shell=True)
-		errors=self.get()
+		except Exception as e:
+			errors.append(e)
+
+		try:
+			check_output("wpa_cli reconfigure", shell=True)
+
+		except Exception as e:
+			errors.append(e)
+
+		if isfile("/usr/bin/autohotspotN"):
+			try:
+				check_output("/usr/bin/autohotspotN", shell=True)
+
+			except Exception as e:
+				errors.append(e)
+
+		self.get(errors)
 
 
 	def read_supplicant_data(self):

@@ -46,9 +46,13 @@ class WifiListHandler(tornado.web.RequestHandler):
 
 			for interface_byte in check_output("ifconfig -a | sed 's/[ \t].*//;/^$/d'", shell=True).splitlines():
 				interface = interface_byte.decode("utf-8")
-				logging.info(interface)
-				
+
 				if interface.startswith("wlan"):
+					if interface[-1:]==":":
+						interface=interface[:-1]
+
+					logging.info("Scanning wifi networks on {}...".format(interface))
+
 					network = None
 					ssid = None
 					encryption = False
