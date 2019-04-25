@@ -180,7 +180,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_LIMIT_USB_SPEED', {
 				'type': 'boolean',
-				'title': 'Limit USB speed to 12Mb/s (USB-1)',
+				'title': 'Limit USB speed to 12Mb/s',
 				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
 				'advanced': True
 			}]
