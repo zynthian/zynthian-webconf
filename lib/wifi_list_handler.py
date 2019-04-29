@@ -46,14 +46,19 @@ class WifiListHandler(tornado.web.RequestHandler):
 
 			for interface_byte in check_output("ifconfig -a | sed 's/[ \t].*//;/^$/d'", shell=True).splitlines():
 				interface = interface_byte.decode("utf-8")
-				logging.info(interface)
-				
+
 				if interface.startswith("wlan"):
+					if interface[-1:]==":":
+						interface=interface[:-1]
+
+					logging.info("Scanning wifi networks on {}...".format(interface))
+
 					network = None
 					ssid = None
 					encryption = False
 					quality = 0
 					signal_level = 0	
+
 					for line_byte in check_output("iwlist {0} scan | grep -e ESSID -e Encryption -e Quality".format(interface), shell=True).splitlines():
 						line = line_byte.decode("utf-8")
 						if line.find('ESSID')>=0:
@@ -72,11 +77,13 @@ class WifiListHandler(tornado.web.RequestHandler):
 							if m:
 								quality = round(int(m.group(1)) / int(m.group(2)) * 100,2)
 								signal_level = m.group(3)
+
 			wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
 			wifiList = OrderedDict(reversed(list(wifiList.items())))
 
-		except:
-			pass
+		except Exceptios as e:
+			logging.error(e)
+
 		self.write(wifiList)
 
 
