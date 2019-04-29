@@ -193,12 +193,14 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="config_block.html", config=config, title="Audio", errors=errors)
 
+
 	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
 		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
 		errors=self.update_config(postedConfig)
+
 		for varname in postedConfig:
 			if varname.find('ALSA_VOLUME_')>=0:
 				channelName = varname[12:]
@@ -217,6 +219,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					call(amixer_command, shell=True)
 				except Exception as err:
 					logging.error(format(err))
+
 		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
 			try:
 				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
@@ -225,6 +228,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 		self.redirect('/api/sys-reboot')
 		self.get(errors)
+
 
 	def get_mixer_controls(self, config):
 		mixerControl = None
@@ -284,6 +288,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Playback')
 				else:
 					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
+
 		except Exception as err:
 			logging.error(format(err))
 
@@ -300,6 +305,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			mixerControl['value'] = volumePercent
 
 			config[configKey] = mixerControl
+
 
 	def needs_reboot(self):
 		return True
