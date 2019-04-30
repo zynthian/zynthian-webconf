@@ -198,7 +198,6 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
-		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
 		errors=self.update_config(postedConfig)
 
 		for varname in postedConfig:

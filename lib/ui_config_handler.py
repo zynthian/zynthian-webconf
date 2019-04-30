@@ -92,6 +92,16 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Enable cursor',
 				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
 				'advanced': True
+			}],
+			['ZYNTHIAN_UI_METER_SELECTION', {
+				'type': 'select',
+				'title': 'Meter',
+				'value':  'CPU Usage' if os.environ.get('ZYNTHIAN_UI_SHOW_CPU_STATUS')=='1' else 'Audio Level',
+				'options': ['Audio Level', 'CPU Usage'],
+				'option_labels': {
+					'Audio Level': 'Audio Level',
+					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
+				}
 			}]
 		])
 		if self.genjson:
@@ -101,8 +111,18 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE','0')
-		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR','0')
-		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = \
+			self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
+		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
+
+		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
+
+		if 'CPU Usage' == escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]:
+			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
+		else:
+			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
+
+		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
+		errors=self.update_config(escaped_arguments)
 		self.restart_ui()
 		self.get(errors)
