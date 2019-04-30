@@ -223,6 +223,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
 			try:
 				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
+				call("amixer -c 1 cset numid=10,iface=MIXER,name='Line Capture Switch' 1", shell=True)
 			except Exception as err:
 				logging.error(format(err))
 
