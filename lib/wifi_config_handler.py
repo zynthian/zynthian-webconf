@@ -98,6 +98,9 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		errors = []
 
 		try:
+			self.request.arguments['ZYNTHIAN_WIFI_HOTSPOT'] = self.request.arguments.get('ZYNTHIAN_WIFI_HOTSPOT', '0')
+			#TODO enable/disable hotspot
+
 			#Remove CR characters added by x-www-form-urlencoded
 			wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT').replace("\r\n", "\n")
 
