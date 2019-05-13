@@ -70,6 +70,11 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 				'rows': 20,
 				'title': 'Advanced Config',
 				'value': supplicant_data
+			}],
+			['ZYNTHIAN_WIFI_HOTSPOT', {
+				'type': 'boolean',
+				'title': 'Enable Hotspot',
+				'value': os.environ.get('ZYNTHIAN_WIFI_HOTSPOT', '0')
 			}]
 		])
 

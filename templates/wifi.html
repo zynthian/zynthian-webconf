@@ -28,8 +28,8 @@
 	</div>
 
 	<div>
-		<label>Enable Hotspot</label>
-		<input id="ZYNTHIAN_WIFI_HOTSPOT" name="ZYNTHIAN_WIFI_HOTSPOT" type="checkbox" {% if config['ZYNTHIAN_WIFI_HOTSPOT']=='1' %}checked{% end %} value="1" />
+		<label>{{ config['ZYNTHIAN_WIFI_HOTSPOT']['title'] }}</label>
+		<input id="ZYNTHIAN_WIFI_HOTSPOT" name="ZYNTHIAN_WIFI_HOTSPOT" type="checkbox" {% if config['ZYNTHIAN_WIFI_HOTSPOT']['value']=='1' %}checked{% end %} value="1" />
 	</div>
 	<ul class="nav nav-tabs" role="tablist">
 		{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
