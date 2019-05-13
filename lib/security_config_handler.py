@@ -98,7 +98,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			return { 'PASSWORD': "Password must have at least 6 characters" }
 		if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
 			return { 'REPEAT_PASSWORD': "Passwords does not match!" }
-		check_output("echo root:%s | chpasswd" % config['PASSWORD'][0], shell=True)
+		check_output("echo 'root:{}' | chpasswd".format(config['PASSWORD'][0]), shell=True)
 
 		#Update Hostname
 		newHostname = config['HOSTNAME'][0]
