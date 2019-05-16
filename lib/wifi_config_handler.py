@@ -43,7 +43,7 @@ import zynconf
 
 class WifiConfigHandler(ZynthianBasicHandler):
 
-	wpa_supplicant_config_fpath = "/etc/wpa_supplicant/wpa_supplicant.conf"
+	wpa_supplicant_config_fpath = os.environ.get('ZYNTHIAN_CONFIG_DIR', "/zynthian/config") + "/wpa_supplicant.conf"
 	passwordMask = "*****"
 	fieldMap = { "ZYNTHIAN_WIFI_PRIORITY": "priority" }
 

@@ -3,6 +3,28 @@
 
 <form method="post">
 
+	<!-- Modal HTML -->
+	<div id="newNetworkModal" class="modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+					<h4 class="modal-title">Add network</h4>
+				</div>
+				<div class="modal-body">
+					<label>SSID:</label><br />
+					<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
+						onclick="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = this.value">
+					</select>
+					<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
+				</div>
+				<div class="modal-footer">
+				 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme btn-block">Add new network</button><br />
+				</div>
+			</div>
+		</div>
+	</div>
+
 	<div id="wifi_mode">
 		<label>{{ config['ZYNTHIAN_WIFI_MODE']['title'] }}</label>
 		<select id="ZYNTHIAN_WIFI_MODE" name="ZYNTHIAN_WIFI_MODE" onchange="onchange_wifi_mode(this.value)"><br>
@@ -45,7 +67,7 @@
 			</div>
 		</div>
 
-		<button class="btn btn-lg btn-primary btn-block btn-new-network">Add Network</button>
+		<button type="button" class="btn btn-lg btn-primary btn-block btn-new-network">Add Network</button>
 	</div>
 	
 	<br>
@@ -59,28 +81,6 @@
 		{% end %}
 	</div>
 	{% end %}
-
-	<!-- Modal HTML -->
-	<div id="newNetworkModal" class="modal fade">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-					<h4 class="modal-title">Add network</h4>
-				</div>
-				<div class="modal-body">
-					<label>SSID:</label><br />
-					<select id="ZYNTHIAN_WIFI_NEW_SSID_SELECT" name="ZYNTHIAN_WIFI_NEW_SSID_SELECT" class="form-control"
-						onclick="document.getElementById('ZYNTHIAN_WIFI_NEW_SSID').value = this.value">
-					</select>
-					<input id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" />
-				</div>
-				<div class="modal-footer">
-				 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD" class="btn btn-lg btn-theme btn-block">Add new network</button><br />
-				</div>
-			</div>
-		</div>
-	</div>
 
 </form>
 
