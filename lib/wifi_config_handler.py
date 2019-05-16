@@ -66,7 +66,7 @@ class WifiConfigHandler(ZynthianBasicHandler):
 			['ZYNTHIAN_WIFI_MODE', {
 				'type': 'select',
 				'title': 'Mode',
-				'value': os.environ.get('ZYNTHIAN_WIFI_MODE', 'off'),
+				'value': zynconf.get_current_wifi_mode(),
 				'options': ["off", "on", "hotspot"],
 			}]
 		])
