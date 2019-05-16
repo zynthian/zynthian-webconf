@@ -2,8 +2,63 @@
 <h2>{{ escape(title) }}</h2>
 
 <form method="post">
-	<!-- Button HTML (to Trigger Modal) -->
-	<a href="#" class="btn btn-lg btn-primar btn-new-network">Add network</a>
+
+	<div id="wifi_mode">
+		<label>{{ config['ZYNTHIAN_WIFI_MODE']['title'] }}</label>
+		<select id="ZYNTHIAN_WIFI_MODE" name="ZYNTHIAN_WIFI_MODE" onchange="onchange_wifi_mode(this.value)"><br>
+		{% for option in config['ZYNTHIAN_WIFI_MODE']['options'] %}
+			<option value="{{ escape(option) }}" {% if config['ZYNTHIAN_WIFI_MODE']['value']==option %}selected=1{% end %}>
+			{{ escape(option.replace('_', ' ').title()) }}
+			</option>
+		{% end %}
+		</select>
+	</div>
+
+	<div id="wifi_network_config">
+		<ul class="nav nav-tabs" role="tablist">
+			{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
+			<li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid64'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
+			{% end %}
+			<li ><a href="#wpa_supplicant" role="tab" data-toggle="tab">{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['title'] }}</a></li>
+		</ul>
+
+		<div class="tab-content">
+			{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
+			<div class="tab-pane {% if network['idx']==0 %}active{% end %}" id="{{ network['ssid64'] }}">
+				<label>Passphrase:</label><br />
+					<input name="ZYNTHIAN_WIFI_PSK_{{ network['ssid'] }}" /><br />
+					<span class="label label-info">This field is always empty, because no passwords will be displayed for security reasons.</span><br />
+					<span class="label label-info">If you want to change the password, enter the new passphrase.</span><br />
+
+					<label>Priority:</label><br />
+					<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" onchange="document.getElementById('ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED').value='1';" />
+					<input type="hidden" id="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" /><br /><br />
+					<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">Remove Network</button><br />
+
+			</div>
+			{% end %}
+
+			<div class="tab-pane" id="wpa_supplicant">
+				<textarea name="ZYNTHIAN_WIFI_WPA_SUPPLICANT" cols="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['cols'] }}" rows="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['rows'] }}">
+					{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['value'].replace("\\n","\n") }}
+				</textarea>
+			</div>
+		</div>
+
+		<button class="btn btn-lg btn-primary btn-block btn-new-network">Add Network</button>
+	</div>
+	
+	<br>
+	<button name="ZYNTHIAN_WIFI_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block">Save</button>
+
+	{% if errors %}
+	<br>
+	<div class="row">
+		{% for error in errors %}
+		<div class="alert alert-danger">{{ str(error) }}</div>
+		{% end %}
+	</div>
+	{% end %}
 
 	<!-- Modal HTML -->
 	<div id="newNetworkModal" class="modal fade">
@@ -27,44 +82,19 @@
 		</div>
 	</div>
 
-	<div>
-		<label>{{ config['ZYNTHIAN_WIFI_HOTSPOT']['title'] }}</label>
-		<input id="ZYNTHIAN_WIFI_HOTSPOT" name="ZYNTHIAN_WIFI_HOTSPOT" type="checkbox" {% if config['ZYNTHIAN_WIFI_HOTSPOT']['value']=='1' %}checked{% end %} value="1" />
-	</div>
-	<ul class="nav nav-tabs" role="tablist">
-		{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
-		<li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid64'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
-		{% end %}
-		<li ><a href="#wpa_supplicant" role="tab" data-toggle="tab">{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['title'] }}</a></li>
-	</ul>
-
-	<div class="tab-content">
-	  {% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
-		<div class="tab-pane {% if network['idx']==0 %}active{% end %}" id="{{ network['ssid64'] }}">
-			<label>Passphrase:</label><br />
-			  <input name="ZYNTHIAN_WIFI_PSK_{{ network['ssid'] }}" /><br />
- 				<span class="label label-info">This field is always empty, because no passwords will be displayed for security reasons.</span><br />
- 				<span class="label label-info">If you want to change the password, enter the new passphrase.</span><br />
-
-				<label>Priority:</label><br />
-				<input name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}" value="{{ escape(network['priority']) }}" onchange="document.getElementById('ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED').value='1';" />
-				<input type="hidden" id="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" name="ZYNTHIAN_WIFI_PRIORITY_{{ network['ssid'] }}_UPDATED" /><br /><br />
-				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">Remove Network</button><br />
-
-		</div>
-		{% end %}
-	  <div class="tab-pane" id="wpa_supplicant">
-			<textarea name="ZYNTHIAN_WIFI_WPA_SUPPLICANT" cols="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['cols'] }}" rows="{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['rows'] }}">
-				{{ config['ZYNTHIAN_WIFI_WPA_SUPPLICANT']['value'].replace("\\n","\n") }}
-			</textarea>
-		</div>
-	</div>
-	<br>
-	<button name="ZYNTHIAN_WIFI_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block">Save</button>
 </form>
 
 
 <script type="text/javascript">
+function onchange_wifi_mode(mode) {
+	if (mode=="on") {
+		$("div#wifi_network_config").show(500);
+	}
+	else {
+		$("div#wifi_network_config").hide(500);
+	}
+}
+
 function wifiListLoaded(data) {
 	var i;
 	if ($("#ZYNTHIAN_WIFI_NEW_SSID_SELECT")[0].options) {
@@ -89,5 +119,6 @@ $(document).ready(function(){
 	$(".btn-new-network").click(function(){
 		$.getJSON( '/api/wifi/list' , {}, wifiListLoaded );
 	});
+	onchange_wifi_mode("{{ config['ZYNTHIAN_WIFI_MODE']['value'] }}")
 });
 </script>

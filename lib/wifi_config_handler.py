@@ -24,6 +24,7 @@
 
 import os
 import re
+import sys
 import logging
 import base64
 import tornado.web
@@ -31,29 +32,20 @@ from os.path import isfile
 from collections import OrderedDict
 from subprocess import check_output
 
+from lib.zynthian_config_handler import ZynthianBasicHandler
+
+sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+import zynconf
 
 #------------------------------------------------------------------------------
 # Wifi Config Handler
 #------------------------------------------------------------------------------
 
-class WifiConfigHandler(tornado.web.RequestHandler):
+class WifiConfigHandler(ZynthianBasicHandler):
 
-	wpa_supplicant_fpath = "/etc/wpa_supplicant/wpa_supplicant.conf"
+	wpa_supplicant_config_fpath = "/etc/wpa_supplicant/wpa_supplicant.conf"
 	passwordMask = "*****"
 	fieldMap = { "ZYNTHIAN_WIFI_PRIORITY": "priority" }
-
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
 
 
 	@tornado.web.authenticated
@@ -71,10 +63,11 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 				'title': 'Advanced Config',
 				'value': supplicant_data
 			}],
-			['ZYNTHIAN_WIFI_HOTSPOT', {
-				'type': 'boolean',
-				'title': 'Enable Hotspot',
-				'value': os.environ.get('ZYNTHIAN_WIFI_HOTSPOT', '0')
+			['ZYNTHIAN_WIFI_MODE', {
+				'type': 'select',
+				'title': 'Mode',
+				'value': os.environ.get('ZYNTHIAN_WIFI_MODE', 'off'),
+				'options': ["off", "on", "hotspot"],
 			}]
 		])
 
@@ -103,9 +96,6 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 		errors = []
 
 		try:
-			self.request.arguments['ZYNTHIAN_WIFI_HOTSPOT'] = self.request.arguments.get('ZYNTHIAN_WIFI_HOTSPOT', '0')
-			#TODO enable/disable hotspot
-
 			#Remove CR characters added by x-www-form-urlencoded
 			wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT').replace("\r\n", "\n")
 
@@ -116,7 +106,7 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 			if newSSID:
 				wpa_supplicant_data = self.add_new_network(wpa_supplicant_data, newSSID)
 
-			fo = open("/etc/wpa_supplicant/wpa_supplicant.conf", "w")
+			fo = open(self.wpa_supplicant_config_fpath, "w")
 			fo.write(wpa_supplicant_data)
 			fo.flush()
 			fo.close()
@@ -125,23 +115,28 @@ class WifiConfigHandler(tornado.web.RequestHandler):
 			errors.append(e)
 
 		try:
-			check_output("wpa_cli reconfigure", shell=True)
+			wifi_mode = self.get_argument('ZYNTHIAN_WIFI_MODE')
+			if wifi_mode == "on":
+				if not zynconf.start_wifi():
+					errors.append("Can't start WIFI network!")
+
+			elif wifi_mode == "hotspot":
+				if not zynconf.start_wifi_hotspot():
+					errors.append("Can't start WIFI Hotspot!")
+
+			else:
+				if not zynconf.stop_wifi():
+					errors.append("Can't stop WIFI!")
+
 		except Exception as e:
 			errors.append(e)
-
-		if isfile("/usr/bin/autohotspotN"):
-			try:
-				check_output("/usr/bin/autohotspotN", shell=True)
-			except Exception as e:
-				errors.append(e)
-
 
 		self.get(errors)
 
 
 	def read_supplicant_data(self):
 		try:
-			fo = open(self.wpa_supplicant_fpath, "r")
+			fo = open(self.wpa_supplicant_config_fpath, "r")
 			wpa_supplicant_data = "".join(fo.readlines())
 			fo.close()
 			return wpa_supplicant_data

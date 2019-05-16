@@ -50,6 +50,9 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	def prepare(self):
+		zynconf.load_config()
+		zynconf.load_midi_config()
+
 		self.genjson=False
 		try:
 			if self.get_query_argument("json"):
@@ -71,20 +74,12 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	def is_service_active(self, service):
-		cmd="systemctl is-active "+str(service)
-
-		try:
-			result=check_output(cmd, shell=True).decode('utf-8','ignore')
-		except Exception as e:
-			result="ERROR: "+str(e)
-	
-		if result.strip()=='active': return True
-		else: return False
+		return zynconf.is_service_active(service)
 
 
 	def restart_ui(self):
 		try:
-			check_output("systemctl daemon-reload;systemctl stop zynthian;systemctl start zynthian", shell=True)
+			check_output("systemctl daemon-reload;systemctl restart zynthian", shell=True)
 		except Exception as e:
 			logging.error("Restarting UI: %s" % e)
 
@@ -102,12 +97,6 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 #------------------------------------------------------------------------------
 
 class ZynthianConfigHandler(ZynthianBasicHandler):
-
-	def prepare(self):
-		zynconf.load_config()
-		zynconf.load_midi_config()
-		super().prepare()
-
 
 	def update_config(self, config):
 		sconfig={}

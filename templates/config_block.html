@@ -90,7 +90,7 @@
 		{% end %}
 
 		<br>
-		{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
+		{% if errors and varname in errors %}<div class="alert alert-danger">{{ errors[varname] }}</div>{% end %}
 		<br>
 	</div>
 {% end %}
