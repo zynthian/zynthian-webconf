@@ -107,6 +107,10 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CODEC -r 48000 -p 256 -n 3 -s -S -X raw'
 		}],
+		['Behringer UMC404HD (USB)', {
+			'SOUNDCARD_CONFIG': '',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CARD=U192k -r 48000 -p 256 -n 3 -s -S -X raw'
+		}],
 		['Steinberg UR22 mkII (USB)', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
@@ -143,6 +147,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['Fe-Pi Audio', []],
 		['USB device', []],
 		['Behringer UCA222 (USB)', ['PCM']],
+		['Behringer UMC404HD (USB)', ['UMC404HD_192k_Output', 'Mic']],
 		['Steinberg UR22 mkII (USB)', ['Clock Source 41 Validity']],
 		['Edirol UA1-EX (USB)', []],
 		['Dummy device', []]
