@@ -274,6 +274,12 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '600',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
+		['Sainsmart 1.8', {
+			'DISPLAY_CONFIG': 'dtoverlay=sainsmart18,rotate=90',
+			'DISPLAY_WIDTH': '160',
+			'DISPLAY_HEIGHT': '128',
+			'FRAMEBUFFER': '/dev/fb1'
+		}],
 		['Generic HDMI Display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
