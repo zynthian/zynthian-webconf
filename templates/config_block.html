@@ -43,7 +43,7 @@
 			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
 
 		{% elif config[varname]['type']=='button' %}
-			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn btn-lg {{ config[varname]['class'] }}" >
+			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn {{ config[varname]['class'] }}" >
 			{{ config[varname]['title'] }}
 			</button>
 			{% if 'script_file' in config[varname] %}
@@ -89,9 +89,11 @@
 			/>
 		{% end %}
 
+		{% if config[varname]['type']!='hidden' %}
 		<br>
 		{% if errors and varname in errors %}<div class="alert alert-danger">{{ errors[varname] }}</div>{% end %}
 		<br>
+		{% end %}
 	</div>
 {% end %}
 
