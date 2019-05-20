@@ -28,9 +28,7 @@ import sys
 import logging
 import base64
 import tornado.web
-from os.path import isfile
 from collections import OrderedDict
-from subprocess import check_output
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
@@ -44,46 +42,28 @@ import zynconf
 class WifiConfigHandler(ZynthianBasicHandler):
 
 	wpa_supplicant_config_fpath = os.environ.get('ZYNTHIAN_CONFIG_DIR', "/zynthian/config") + "/wpa_supplicant.conf"
-	passwordMask = "*****"
-	fieldMap = { "ZYNTHIAN_WIFI_PRIORITY": "priority" }
-
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		supplicant_data = re.sub(r'psk=".*?"', 'psk="' + WifiConfigHandler.passwordMask + '"',
-			self.read_supplicant_data(),
-			re.I | re.M | re.S )
-		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?priority=(\d*).*?\\}.*?', re.I | re.M | re.S )
-		iterator = p.finditer(supplicant_data)
-		config=OrderedDict([
-			['ZYNTHIAN_WIFI_WPA_SUPPLICANT', {
-				'type': 'textarea',
-				'cols': 50,
-				'rows': 20,
-				'title': 'Advanced Config',
-				'value': supplicant_data
-			}],
-			['ZYNTHIAN_WIFI_MODE', {
-				'type': 'select',
-				'title': 'Mode',
-				'value': zynconf.get_current_wifi_mode(),
-				'options': ["off", "on", "hotspot"],
-			}]
-		])
 
-		networks = []
 		idx = 0
+		networks = []
+		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\"\n?(.*?)\\}.*?', re.I | re.M | re.S )
+		iterator = p.finditer(self.read_wpa_supplicant_config())
 		for m in iterator:
 			networks.append({
 				'idx': idx,
 				'ssid': m.group(1),
 				'ssid64': base64.b64encode(m.group(1).encode())[:5],
 				'psk': m.group(2),
-				'priority': m.group(3)
+				'options': m.group(3)
 			})
 			idx+=1
 
-		config['ZYNTHIAN_WIFI_NETWORKS'] = networks
+		config=OrderedDict([
+			['ZYNTHIAN_WIFI_MODE', zynconf.get_current_wifi_mode()],
+			['ZYNTHIAN_WIFI_NETWORKS', networks]
+		])
 
 		if self.genjson:
 			self.write(config)
@@ -96,37 +76,43 @@ class WifiConfigHandler(ZynthianBasicHandler):
 		errors = []
 
 		try:
-			#Remove CR characters added by x-www-form-urlencoded
-			wpa_supplicant_data = self.get_argument('ZYNTHIAN_WIFI_WPA_SUPPLICANT').replace("\r\n", "\n")
-
-			#Apply changes: delete network, change password, ...
-			wpa_supplicant_data = self.apply_updated_fields(wpa_supplicant_data, ["ZYNTHIAN_WIFI_PRIORITY"])
-
-			newSSID = self.get_argument('ZYNTHIAN_WIFI_NEW_SSID')
-			if newSSID:
-				wpa_supplicant_data = self.add_new_network(wpa_supplicant_data, newSSID)
-
-			fo = open(self.wpa_supplicant_config_fpath, "w")
-			fo.write(wpa_supplicant_data)
-			fo.flush()
-			fo.close()
-
-		except Exception as e:
-			errors.append(e)
+			action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
+			logging.debug("ACTION: {}".format(action))
+		except:
+			action="SET_MODE"
 
 		try:
-			wifi_mode = self.get_argument('ZYNTHIAN_WIFI_MODE')
-			if wifi_mode == "on":
-				if not zynconf.start_wifi():
-					errors.append("Can't start WIFI network!")
+			if action=="ADD_NETWORK":
+				newSSID = self.get_argument('ZYNTHIAN_WIFI_NEW_SSID')
+				newPassword = self.get_argument('ZYNTHIAN_WIFI_NEW_PASSWORD')
+				if newSSID and newPassword:
+					self.add_new_network(newSSID, newPassword)
 
-			elif wifi_mode == "hotspot":
-				if not zynconf.start_wifi_hotspot():
-					errors.append("Can't start WIFI Hotspot!")
+			elif action[:7]=="REMOVE_":
+				delSSID = action[7:]
+				self.remove_network(delSSID)
 
-			else:
-				if not zynconf.stop_wifi():
-					errors.append("Can't stop WIFI!")
+			elif action[:7]=="UPDATE_":
+				updSSID = action[7:]
+				updOptions = self.get_argument('ZYNTHIAN_WIFI_OPTIONS_{}'.format(updSSID))
+				self.update_network_options(updSSID, updOptions)
+
+			elif action=="SET_MODE":
+				wifi_mode = self.get_argument('ZYNTHIAN_WIFI_MODE')
+				current_wifi_mode = zynconf.get_current_wifi_mode()
+				if wifi_mode != current_wifi_mode:
+
+					if wifi_mode == "on":
+						if not zynconf.start_wifi():
+							errors.append("Can't start WIFI network!")
+
+					elif wifi_mode == "hotspot":
+						if not zynconf.start_wifi_hotspot():
+							errors.append("Can't start WIFI Hotspot!")
+
+					else:
+						if not zynconf.stop_wifi():
+							errors.append("Can't stop WIFI!")
 
 		except Exception as e:
 			errors.append(e)
@@ -134,53 +120,80 @@ class WifiConfigHandler(ZynthianBasicHandler):
 		self.get(errors)
 
 
-	def read_supplicant_data(self):
+	def read_wpa_supplicant_config(self):
 		try:
 			fo = open(self.wpa_supplicant_config_fpath, "r")
-			wpa_supplicant_data = "".join(fo.readlines())
+			wpa_supplicant_config = "".join(fo.readlines())
 			fo.close()
-			return wpa_supplicant_data
-		except:
-			pass
-		return ""
+			return wpa_supplicant_config
+
+		except Exception as e:
+			logging.error("Can't read WIFI network configuration: {}".format(e))
+			return ""
 
 
-	def apply_updated_fields(self, wpa_supplicant_data, fieldNames):
-		previous_supplicant_data = self.read_supplicant_data()
+	def save_wpa_supplicant_config(self, data):
+		try:
+			fo = open(self.wpa_supplicant_config_fpath, "w")
+			fo.write(data)
+			fo.flush()
+			fo.close()
 
-		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\".*?\\}.*?', re.I | re.M | re.S )
-		iterator = p.finditer(previous_supplicant_data)
+		except Exception as e:
+			logging.error("Can't save WIFI network configuration: {}".format(e))
+
+
+	def add_new_network(self, newSSID, newPassword):
+		logging.info("Add Network: {}".format(newSSID))
+		wpa_supplicant_data = self.read_wpa_supplicant_config()
+		wpa_supplicant_data += '\nnetwork={\n'
+		wpa_supplicant_data += '\tssid="{}"\n'.format(newSSID)
+		wpa_supplicant_data += '\tpsk="{}"\n'.format(newPassword)
+		wpa_supplicant_data += '\tscan_ssid=1\n'
+		wpa_supplicant_data += '\tkey_mgmt=WPA-PSK\n'
+		wpa_supplicant_data += '\tpriority=10\n'
+		wpa_supplicant_data += '}\n'
+		self.save_wpa_supplicant_config(wpa_supplicant_data)
+
+
+	def remove_network(self, delSSID):
+		logging.info("Remove Network: {}".format(delSSID))
+
+		wpa_supplicant_data = self.read_wpa_supplicant_config()
+
+		i = wpa_supplicant_data.find("network={")
+		wpa_supplicant_header = wpa_supplicant_data[:i]
+
+		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\"\n?(.*?)\\}.*?', re.I | re.M | re.S )
+		iterator = p.finditer(wpa_supplicant_data[i:])
+
 		for m in iterator:
-			action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
-			if action and action == 'REMOVE_' + m.group(1):
-				print('Removing network')
-				pRemove =  re.compile('(.*)network={.*?ssid=\\"' + m.group(1) + '\\".*?}(.*)', re.I | re.M | re.S )
-				wpa_supplicant_data = pRemove.sub(r'\1\2', wpa_supplicant_data)
+			if m.group(1)!=delSSID:
+				wpa_supplicant_header += m.group(0)
+
+		self.save_wpa_supplicant_config(wpa_supplicant_header)
+
+
+	def update_network_options(self, updSSID, options):
+		logging.info("Update Network Options: {}".format(updSSID))
+
+		wpa_supplicant_data = self.read_wpa_supplicant_config()
+
+		i = wpa_supplicant_data.find("network={")
+		wpa_supplicant_header = wpa_supplicant_data[:i]
+
+		p = re.compile('.*?network=\\{.*?ssid=\\"(.*?)\\".*?psk=\\"(.*?)\\"\n?(.*?)\\}.*?', re.I | re.M | re.S )
+		iterator = p.finditer(wpa_supplicant_data[i:])
+
+		for m in iterator:
+			if m.group(1)!=updSSID:
+				wpa_supplicant_header += m.group(0)
 			else:
-				newPassword =  self.get_argument('ZYNTHIAN_WIFI_PSK_' + m.group(1))
+				wpa_supplicant_header += '\nnetwork={\n'
+				wpa_supplicant_header += '\tssid="{}"\n'.format(m.group(1))
+				wpa_supplicant_header += '\tpsk="{}"\n'.format(m.group(2))
+				wpa_supplicant_header += '\t{}\n'.format(options)
+				wpa_supplicant_header += '}\n'
 
-				mNewSupplicantData = re.match('.*ssid="' + m.group(1) + '".*?psk="(.*?)".*', wpa_supplicant_data, re.I | re.M | re.S)
-				if mNewSupplicantData:
-					if not newPassword and  not mNewSupplicantData.group(1) == WifiConfigHandler.passwordMask:
-						newPassword = mNewSupplicantData.group(1)
-				if not newPassword: newPassword = m.group(2)
+		self.save_wpa_supplicant_config(wpa_supplicant_header)
 
-				pReplacePasswordVeil = re.compile('ssid=\\"' + m.group(1) + '\\"(.*?psk=)\\".*?\\"', re.I | re.M | re.S )
-				wpa_supplicant_data = pReplacePasswordVeil.sub('ssid="' + m.group(1) + r'"\1"' + newPassword + '"', wpa_supplicant_data)
-
-				for fieldName in fieldNames:
-					fieldUpdated =  self.get_argument(fieldName + '_' + m.group(1) + '_UPDATED')
-					if fieldUpdated:
-						fieldValue =  self.get_argument(fieldName + '_' + m.group(1))
-						regexp = 'ssid=\\"' + m.group(1) + '\\"(?P<pre>.*?' + self.fieldMap[fieldName] + '=)\\S+(?P<post>.*\\})'
-						pReplacement = re.compile(regexp, re.I | re.M | re.S )
-						wpa_supplicant_data = pReplacement.sub("ssid=\"" + m.group(1) + "\"" + r'\g<pre>' + str(fieldValue) + r'\g<post> ', wpa_supplicant_data)
-
-		return wpa_supplicant_data
-
-
-	def add_new_network(self, wpa_supplicant_data, newSSID):
-		wpa_supplicant_data += '\nnetwork={\n\tssid="'
-		wpa_supplicant_data += newSSID
-		wpa_supplicant_data += '"\n\tscan_ssid=1\n\tkey_mgmt=WPA-PSK\n\tpsk=""\n\tpriority=10\n}'
-		return wpa_supplicant_data

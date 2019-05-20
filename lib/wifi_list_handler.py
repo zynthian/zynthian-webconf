@@ -24,10 +24,14 @@
 
 import os
 import re
+import sys
 import logging
 import tornado.web
 from subprocess import check_output
 from collections import OrderedDict
+
+sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+import zynconf
 
 #------------------------------------------------------------------------------
 # Wifi List Handler
@@ -42,8 +46,8 @@ class WifiListHandler(tornado.web.RequestHandler):
 	@tornado.web.authenticated
 	def get(self):
 		wifiList = OrderedDict()
+		zynconf.wifi_up()
 		try:
-
 			for interface_byte in check_output("ifconfig -a | sed 's/[ \t].*//;/^$/d'", shell=True).splitlines():
 				interface = interface_byte.decode("utf-8")
 
@@ -81,7 +85,7 @@ class WifiListHandler(tornado.web.RequestHandler):
 			wifiList = OrderedDict(sorted(wifiList.items(), key=lambda x: x[1]['quality']))
 			wifiList = OrderedDict(reversed(list(wifiList.items())))
 
-		except Exceptios as e:
+		except Exception as e:
 			logging.error(e)
 
 		self.write(wifiList)
