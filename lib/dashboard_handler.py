@@ -51,6 +51,9 @@ class DashboardHandler(ZynthianConfigHandler):
 
 		config=OrderedDict([
 			['HARDWARE', OrderedDict([
+				['RBPI_VERSION', {
+					'title': os.environ.get('RBPI_VERSION')
+				}],
 				['SOUNDCARD_NAME', {
 					'title': 'Soundcard',
 					'value': os.environ.get('SOUNDCARD_NAME'),
@@ -75,18 +78,15 @@ class DashboardHandler(ZynthianConfigHandler):
 				}],
 				['OS_INFO', {
 					'title': 'OS',
-					'value': "{}".format(self.get_os_info()),
-					'url': ""
+					'value': "{}".format(self.get_os_info())
 				}],
 				['RAM', {
 					'title': 'Memory',
-					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total']),
-					'url': ""
+					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total'])
 				}],
 				['SD CARD', {
 					'title': 'SD Card',
-					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total']),
-					'url': ""
+					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
 				}]
 			])],
 			['MIDI', OrderedDict([
@@ -156,8 +156,13 @@ class DashboardHandler(ZynthianConfigHandler):
 				}],
 				['AUDIO_CAPTURES', {
 					'title': 'Audio Captures',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture"),
-					'url': "/api/lib-captures"
+					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav"),
+					'url': "/api/lib-audio-captures"
+				}],
+				['MIDI_CAPTURES', {
+					'title': 'MIDI Captures',
+					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid"),
+					'url': "/api/lib-midi-captures"
 				}]
 			])]
 		])
@@ -205,8 +210,12 @@ class DashboardHandler(ZynthianConfigHandler):
 			return { 'total': 'NA', 'used': 'NA', 'free': 'NA', 'usage': 'NA' }
 
 
-	def get_num_of_files(self, path):
-		n=check_output("find %s -type f -follow | wc -l" % path, shell=True).decode()
+	def get_num_of_files(self, path, pattern=None):
+		if pattern:
+			pattern = "-name \"{}\"".format(pattern)
+		else:
+			pattern = ""
+		n=check_output("find {} -type f {} -follow | wc -l".format(path, pattern), shell=True).decode()
 		return n
 
 
