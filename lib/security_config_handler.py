@@ -25,6 +25,7 @@
 import os
 import logging
 import tornado.web
+from crypt import crypt
 from collections import OrderedDict
 from subprocess import check_output
 
@@ -104,6 +105,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			try:
 				check_output(['usermod', '-p', crypt(config['PASSWORD'][0]), 'root'])
 			except Exception as e:
+				logging.error("Can't set new password! => {}".format(e))
 				return { 'REPEAT_PASSWORD': "Can't set new password!" }
 			
 
