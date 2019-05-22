@@ -102,8 +102,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
 				return { 'REPEAT_PASSWORD': "Passwords does not match!" }
 			try:
-				esc_passwd=config['PASSWORD'][0].replace('"','\\"').replace('$','\\$').replace('`','\\`')
-				check_output("echo -e \"root:{}\" | chpasswd".format(esc_passwd), shell=True, executable="/bin/bash")
+				check_output(['usermod', '-p', crypt(config['PASSWORD'][0]), 'root'])
 			except Exception as e:
 				return { 'REPEAT_PASSWORD': "Can't set new password!" }
 			
