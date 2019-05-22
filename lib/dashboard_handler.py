@@ -157,12 +157,12 @@ class DashboardHandler(ZynthianConfigHandler):
 				['AUDIO_CAPTURES', {
 					'title': 'Audio Captures',
 					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav"),
-					'url': "/api/lib-audio-captures"
+					'url': "/api/lib-captures"
 				}],
 				['MIDI_CAPTURES', {
 					'title': 'MIDI Captures',
 					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid"),
-					'url': "/api/lib-midi-captures"
+					'url': "/api/lib-captures"
 				}]
 			])]
 		])
