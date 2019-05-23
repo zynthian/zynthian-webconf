@@ -85,7 +85,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	def reload_midi_config(self):
-		liblo.send(zynthian_ui_osc_addr, "RELOAD_MIDI_CONFIG")
+		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_MIDI_CONFIG")
 
 
 	def needs_reboot(self):
