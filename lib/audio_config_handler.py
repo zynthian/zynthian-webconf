@@ -148,7 +148,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['USB device', []],
 		['Behringer UCA222 (USB)', ['PCM']],
 		['Behringer UMC404HD (USB)', ['UMC404HD_192k_Output', 'Mic']],
-		['Steinberg UR22 mkII (USB)', ['Clock Source 41 Validity']],
+		['Steinberg UR22 mkII (USB)', ['Clock_Source_41_Validity']],
 		['Edirol UA1-EX (USB)', []],
 		['Dummy device', []]
 	])
