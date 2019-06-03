@@ -60,7 +60,8 @@
 			<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ value.replace("\\n","\n") }}</textarea>
 
 		{% elif config[varname]['type']=='select' %}
-			<select name="{{ escape(varname) }}" onchange="{{ 'refresh_select_subvars(this)' if varname in root_vars else 'set_presets(this)' }}"><br>
+			<select name="{{ escape(varname) }}" onchange="{{ 'refresh_select_subvars(this)' if varname in root_vars else 'set_presets(this)' }}"
+					{% if 'disabled' in config[varname] %} disabled="disabled" {% end %}><br>
 			{% for option in config[varname]['options'] %}
 				<option value="{{ escape(option) }}"
 					{% if value==option %}selected=1{% end %}
@@ -69,6 +70,7 @@
 							data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
 						{% end %}
 					{% end %}
+
 					>
 				{% if 'option_labels' in config[varname] %}
 					{{ escape(config[varname]['option_labels'][option]) }}

@@ -299,10 +299,11 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		config=OrderedDict([
 			['DISPLAY_NAME', {
 				'type': 'select',
-				'title': 'Display',
+				'title': 'Display (disabled if no custom kit)' if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom' else 'Display',
 				'value': os.environ.get('DISPLAY_NAME'),
 				'options': list(self.display_presets.keys()),
-				'presets': self.display_presets
+				'presets': self.display_presets,
+				'disabled': os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom'
 			}],
 			['DISPLAY_CONFIG', {
 				'type': 'textarea',

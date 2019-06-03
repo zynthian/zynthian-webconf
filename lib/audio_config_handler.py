@@ -158,10 +158,11 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		config=OrderedDict([
 			['SOUNDCARD_NAME', {
 				'type': 'select',
-				'title': 'Soundcard',
+				'title': 'Soundcard (disabled if no custom kit)' if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom' else 'Soundcard',
 				'value': os.environ.get('SOUNDCARD_NAME'),
 				'options': list(self.soundcard_presets.keys()),
-				'presets': self.soundcard_presets
+				'presets': self.soundcard_presets,
+				'disabled': os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom'
 			}],
 			['SOUNDCARD_CONFIG', {
 				'type': 'textarea',

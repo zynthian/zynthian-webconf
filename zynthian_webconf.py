@@ -39,6 +39,7 @@ from lib.reboot_handler import RebootHandler
 from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
+from lib.kit_config_handler import KitConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
 from lib.wifi_list_handler import WifiListHandler
@@ -126,6 +127,7 @@ def make_app():
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
 		(r"/api/lib-captures$", CapturesConfigHandler),
+		(r"/api/hw-kit$", KitConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),

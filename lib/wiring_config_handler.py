@@ -136,10 +136,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
 				'type': 'select',
-				'title': 'Wiring Layout',
+				'title': 'Wiring Layout (disabled if no custom kit)' if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom' else 'Wiring Layout',
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 				'options': list(self.wiring_presets.keys()),
-				'presets': self.wiring_presets
+				'presets': self.wiring_presets,
+				'disabled': os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom'
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_A', {
 				'type': 'text',
