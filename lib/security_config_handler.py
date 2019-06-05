@@ -23,6 +23,7 @@
 #********************************************************************
 
 import os
+import re
 import logging
 import tornado.web
 from crypt import crypt
@@ -107,7 +108,6 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			except Exception as e:
 				logging.error("Can't set new password! => {}".format(e))
 				return { 'REPEAT_PASSWORD': "Can't set new password!" }
-			
 
 		#Update Hostname
 		newHostname = config['HOSTNAME'][0]
@@ -123,10 +123,13 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 			with open("/etc/hosts", "r+") as f:
 				contents = f.read()
-				contents = contents.replace(previousHostname, newHostname)
-				contents = contents.replace("zynthian", newHostname) # for the ppl that have already changed their hostname
+				#contents = contents.replace(previousHostname, newHostname)
+				contents = re.sub(r"127\.0\.1\.1.*$", "127.0.1.1\t{}".format(newHostname), contents)
 				f.seek(0)
 				f.truncate()
 				f.write(contents)
 				f.close()
 
+			check_output(["hostnamectl", "set-hostname", newHostname])
+
+			#self.reboot_flag=True

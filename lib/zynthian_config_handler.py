@@ -45,6 +45,8 @@ zynthian_ui_osc_addr = liblo.Address('localhost',1370,liblo.UDP)
 
 class ZynthianBasicHandler(tornado.web.RequestHandler):
 
+	reboot_flag = False
+
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
@@ -89,7 +91,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	def needs_reboot(self):
-		return False
+		return self.reboot_flag
 
 
 #------------------------------------------------------------------------------

@@ -18,33 +18,23 @@
 			<div id="captures-tree"></div>
 		</div>
 
-		<div id="captures-panel-main" class="col-md-7">
-			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH" />
-			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE" />
-			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" />
+		<div id="captures-panel" class="col-md-7">
+			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH">
+			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE">
+			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE">
 
 
-			<div id="captures-panel">
-				<div id="captures-rename-panel">
-					<div class="row">
-						<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
-						<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME" />
-					</div>
-
-					<div class="row">
-						<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-lg btn-theme">RENAME</button>
-					</div>
-
-				</div>
-
-				<div class="row">
-					<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme">DOWNLOAD</button>
-				</div>
-
-				<div class="row" id="captures-remove-panel">
-					<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
-				</div>
+			<div id="captures-input" class="row">
+				<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
+				<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME">
 			</div>
+
+			<div id="captures-buttons" class="row">
+				<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme">RENAME</button>
+				<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme">DOWNLOAD</button>
+				<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+			</div>
+
 		</div>
 
 	</div>
