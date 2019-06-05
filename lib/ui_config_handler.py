@@ -104,25 +104,25 @@ class UiConfigHandler(ZynthianConfigHandler):
 				}
 			}]
 		])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="User Interface", errors=errors)
+
+		super().get("User Interface", config, errors)
+
 
 	@tornado.web.authenticated
 	def post(self):
-		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = \
-			self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
+		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
-		if 'CPU Usage' == escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]:
+		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]=='CPU Usage':
 			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
 		else:
 			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
 
 		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
+
 		errors=self.update_config(escaped_arguments)
-		self.restart_ui()
+
+		self.restart_ui_flag = True
 		self.get(errors)

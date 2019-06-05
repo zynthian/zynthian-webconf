@@ -368,10 +368,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}]
 		])
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="MIDI", errors=errors)
+		super().get("MIDI Options", config, errors)
 
 
 	@tornado.web.authenticated
@@ -428,11 +425,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				else:
 					errors['zynthian_midi_profile_new_script_name'] = 'Profile name missing'
 
-			#self.restart_ui()
-			self.reload_midi_config()
+			self.reload_midi_config_flag = True
 
 		else:
-			errors = {'ZYNTHIAN_MIDI_FILTER_RULES':filter_error};
+			errors = { 'ZYNTHIAN_MIDI_FILTER_RULES': filter_error };
 
 		self.get(errors)
 

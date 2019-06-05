@@ -28,7 +28,11 @@ import logging
 import tornado.web
 from collections import OrderedDict
 from subprocess import check_output, call
+
 from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.audio_config_handler import AudioConfigHandler
+from lib.display_config_handler import DisplayConfigHandler
+from lib.wiring_config_handler import WiringConfigHandler
 
 #------------------------------------------------------------------------------
 # Kit Configuration
@@ -36,64 +40,75 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 
 class KitConfigHandler(ZynthianConfigHandler):
 
-	kit_presets=OrderedDict([
-		['V3', {
-			'KIT_DESCRIPTION': 'Description V3'
-		}],
-		['V2+', {
-			'KIT_DESCRIPTION': 'Description V2+'
-		}],
-		['V2', {
-			'KIT_DESCRIPTION': 'Description V2'
-		}],
-		['V1', {
-			'KIT_DESCRIPTION': 'Description V1'
-		}],
-		['Custom', {
-			'KIT_DESCRIPTION': 'Description Custom'
-		}]
-	])
+	kit_options = [
+		'V3',
+		'V2+',
+		'V2',
+		'V1',
+		'Custom'
+	]
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		selected_kit = os.environ.get('ZYNTHIAN_KIT_VERSION')
-		if not selected_kit:
-			selected_kit = 'V2+'
 
 		config=OrderedDict([
 			['ZYNTHIAN_KIT_VERSION', {
 				'type': 'select',
 				'title': 'Kit',
-				'value': selected_kit,
-				'options': list(self.kit_presets.keys()),
-				'presets': self.kit_presets
-			}],
-			['KIT_DESCRIPTION', {
-				'type': 'textarea',
-				'value': self.kit_presets[selected_kit]['KIT_DESCRIPTION'],
-				'title': 'Description',
-				'cols': 50,
-				'rows': 5
-
+				'value': os.environ.get('ZYNTHIAN_KIT_VERSION', 'V2+'),
+				'options': self.kit_options
 			}]
-
 		])
 
-		logging.info(config)
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="Kit", errors=errors)
+		super().get("Kit", config, errors)
 
 
 	@tornado.web.authenticated
 	def post(self):
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
-		del postedConfig['KIT_DESCRIPTION']
-		errors=self.update_config(postedConfig)
-		self.redirect('/api/sys-reboot')
+		current_kit_version = os.environ.get('ZYNTHIAN_KIT_VERSION')
+
+		errors={}
+		if postedConfig['ZYNTHIAN_KIT_VERSION'][0]!=current_kit_version:
+			errors = self.configure_kit(postedConfig)
+			self.reboot_flag = True
+
 		self.get(errors)
 
 
-	def needs_reboot(self):
-		return True
+	def configure_kit(self, pconfig):
+		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
+
+		if kit_version=="V3":
+			soundcard_name = "HifiBerry DAC+ ADC"
+			display_name = "ZynScreen 3.5 (v1)"
+			wiring_layout = "MCP23017_ZynScreen"
+		elif kit_version=="V2+":
+			soundcard_name = "HifiBerry DAC+ ADC"
+			display_name = "PiScreen 3.5 (v2)"
+			wiring_layout = "MCP23017_EXTRA"
+		elif kit_version=="V2":
+			soundcard_name = "HifiBerry DAC+"
+			display_name = "PiScreen 3.5 (v2)"
+			wiring_layout = "MCP23017_EXTRA"
+		elif kit_version=="V1":
+			soundcard_name = "HifiBerry DAC+"
+			display_name = "PiTFT 2.8 Resistive"
+			wiring_layout = "PROTOTYPE-4"
+
+		pconfig['SOUNDCARD_NAME']=[soundcard_name]
+		for k,v in AudioConfigHandler.soundcard_presets[soundcard_name].items():
+			pconfig[k]=[v]
+
+		pconfig['DISPLAY_NAME']=[display_name]
+		for k,v in DisplayConfigHandler.display_presets[display_name].items():
+			pconfig[k]=[v]
+
+		pconfig['ZYNTHIAN_WIRING_LAYOUT']=[wiring_layout]
+		for k,v in WiringConfigHandler.wiring_presets[wiring_layout].items():
+			pconfig[k]=[v]
+
+		errors = self.update_config(pconfig)
+		WiringConfigHandler.rebuild_zyncoder()
+		
+		return errors

@@ -8,6 +8,8 @@ else
 	source "$ZYNTHIAN_SYS_DIR/scripts/zynthian_envars.sh"
 fi
 
+export LD_LIBRARY_PATH=/usr/local/lib
+
 # 10=DEBUG, 20=INFO, 30=WARNING, 40=ERROR, 50=CRITICAL
 export ZYNTHIAN_WEBCONF_LOG_LEVEL=10
 

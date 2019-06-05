@@ -155,49 +155,54 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			enable_custom_text = " (select custom kit for enable)"
+		else:
+			enable_custom_text = None
+
 		config=OrderedDict([
 			['SOUNDCARD_NAME', {
 				'type': 'select',
-				'title': 'Soundcard (disabled if no custom kit)' if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom' else 'Soundcard',
+				'title': "Soundcard{}".format(enable_custom_text),
 				'value': os.environ.get('SOUNDCARD_NAME'),
 				'options': list(self.soundcard_presets.keys()),
 				'presets': self.soundcard_presets,
-				'disabled': os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom'
+				'disabled': enable_custom_text!=None
 			}],
 			['SOUNDCARD_CONFIG', {
 				'type': 'textarea',
-				'title': 'Config',
+				'title': "Config{}".format(enable_custom_text),
 				'cols': 50,
 				'rows': 4,
 				'value': os.environ.get('SOUNDCARD_CONFIG'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['JACKD_OPTIONS', {
 				'type': 'text',
-				'title': 'Jackd Options',
+				'title': "Jackd Options{}".format(enable_custom_text),
 				'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
 				'type': 'text',
-				'title': 'Aubionotes Options',
+				'title': "Aubionotes Options",
 				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 				'advanced': True
 			}],
 			['ZYNTHIAN_LIMIT_USB_SPEED', {
 				'type': 'boolean',
-				'title': 'Limit USB speed to 12Mb/s',
+				'title': "Limit USB speed to 12Mb/s",
 				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
 				'advanced': True
 			}]
 		])
 
 		self.get_mixer_controls(config)
-		logging.info(config)
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="Audio", errors=errors)
+
+		super().get("Audio", config, errors)
 
 
 	@tornado.web.authenticated
@@ -223,16 +228,18 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					logging.info(amixer_command)
 					call(amixer_command, shell=True)
 				except Exception as err:
-					logging.error(format(err))
+					logging.error("Alsa Mixer => {}".format(err))
+					errors["ALSAMIXER_{}".format(varname)] = str(err)
 
 		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
 			try:
 				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
 				call("amixer -c 1 cset numid=10,iface=MIXER,name='Line Capture Switch' 1", shell=True)
 			except Exception as err:
-				logging.error(format(err))
+				logging.error("AudioInjector Alsa Mixer => {}".format(err))
+				errors["ALSAMIXER_AUDIOINJECTOR"] = err
 
-		self.redirect('/api/sys-reboot')
+		self.reboot_flag = True
 		self.get(errors)
 
 

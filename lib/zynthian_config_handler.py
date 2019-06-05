@@ -46,6 +46,8 @@ zynthian_ui_osc_addr = liblo.Address('localhost',1370,liblo.UDP)
 class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	reboot_flag = False
+	restart_ui_flag = False
+	reload_midi_config_flag = False
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -75,6 +77,27 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		super().render(tpl, info=info, **kwargs)
 
 
+	@tornado.web.authenticated
+	def get(self, title, config, errors=None):
+		logging.debug(config)
+
+		if self.reboot_flag:
+			self.redirect('/api/sys-reboot')
+			return
+
+		elif self.restart_ui_flag:
+			self.restart_ui()
+
+		elif self.reload_midi_config_flag:
+			self.reload_midi_config()
+
+		if self.genjson:
+			self.write(config)
+
+		else:
+			self.render("config.html", body="config_block.html", config=config, title=title, errors=errors)
+
+
 	def is_service_active(self, service):
 		return zynconf.is_service_active(service)
 
@@ -92,6 +115,14 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	def needs_reboot(self):
 		return self.reboot_flag
+
+
+	def needs_restart_ui(self):
+		return self.restart_ui_flag
+
+
+	def needs_reload_midi_config(self):
+		return self.reload_midi_config_flag
 
 
 #------------------------------------------------------------------------------

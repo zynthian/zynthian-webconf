@@ -296,54 +296,64 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			enable_custom_text = " (select custom kit for enable)"
+		else:
+			enable_custom_text = None
+
 		config=OrderedDict([
 			['DISPLAY_NAME', {
 				'type': 'select',
-				'title': 'Display (disabled if no custom kit)' if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom' else 'Display',
+				'title': "Display{}".format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_NAME'),
 				'options': list(self.display_presets.keys()),
 				'presets': self.display_presets,
-				'disabled': os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom'
+				'disabled': enable_custom_text!=None
 			}],
 			['DISPLAY_CONFIG', {
 				'type': 'textarea',
 				'rows': 4,
 				'cols': 50,
-				'title': 'Config',
+				'title': 'Config{}'.format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_CONFIG'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['DISPLAY_WIDTH', {
 				'type': 'text',
-				'title': 'Width',
+				'title': 'Width{}'.format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_WIDTH'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['DISPLAY_HEIGHT', {
 				'type': 'text',
-				'title': 'Height',
+				'title': 'Height{}'.format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_HEIGHT'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['FRAMEBUFFER', {
 				'type': 'text',
-				'title': 'Frambuffer',
+				'title': 'Frambuffer{}'.format(enable_custom_text),
 				'value': os.environ.get('FRAMEBUFFER'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}]
 		])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="Display", errors=errors)
+
+		super().get("Display", config, errors)
+
 
 	@tornado.web.authenticated
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.delete_fb_splash() # New splash-screens will be generated on next boot
-		#self.restart_ui()
-		self.redirect('/api/sys-reboot')
+
+		self.reboot_flag = True
 		self.get(errors)
+
 
 	def delete_fb_splash(self):
 		try:
@@ -352,5 +362,3 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		except Exception as e:
 			logging.error("Deleting FrameBuffer Splash Screens: %s" % e)
 
-	def needs_reboot(self):
-		return True
