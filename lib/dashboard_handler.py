@@ -141,27 +141,27 @@ class DashboardHandler(ZynthianConfigHandler):
 			['LIBRARY', OrderedDict([
 				['SNAPSHOTS', {
 					'title': 'Snapshots',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots"),
+					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots")),
 					'url': "/api/lib-snapshot"
 				}],
 				['USER_PRESETS', {
 					'title': 'User Presets',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets"),
+					'value': str(self.get_num_of_presets(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets")),
 					'url': "/api/lib-presets"
 				}],
 				['USER_SOUNDFONTS', {
 					'title': 'User Soundfonts',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts"),
+					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts")),
 					'url': "/api/lib-soundfont"
 				}],
 				['AUDIO_CAPTURES', {
 					'title': 'Audio Captures',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav"),
+					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav")),
 					'url': "/api/lib-captures"
 				}],
 				['MIDI_CAPTURES', {
 					'title': 'MIDI Captures',
-					'value': self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid"),
+					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid")),
 					'url': "/api/lib-captures"
 				}]
 			])]
@@ -215,8 +215,24 @@ class DashboardHandler(ZynthianConfigHandler):
 			pattern = "-name \"{}\"".format(pattern)
 		else:
 			pattern = ""
-		n=check_output("find {} -type f {} -follow | wc -l".format(path, pattern), shell=True).decode()
+		n=check_output("find {} -type f -follow {} | wc -l".format(path, pattern), shell=True).decode()
 		return n
+
+
+	def get_num_of_presets(self, path):
+		# LV2 presets
+		n1 = int(check_output("find {}/lv2 -type f -prune -name manifest.ttl | wc -l".format(path), shell=True).decode())
+		logging.debug("LV2 presets => {}".format(n1))
+		# Pianoteq presets
+		n2 = int(check_output("find {}/pianoteq -type f -prune | wc -l".format(path), shell=True).decode())
+		logging.debug("Pianoteq presets => {}".format(n2))
+		# Puredata presets
+		n3 = int(check_output("find {}/puredata/*/* -type d -prune | wc -l".format(path), shell=True).decode())
+		logging.debug("Puredata presets => {}".format(n3))
+		# ZynAddSubFX presets
+		n4 = int(check_output("find {}/zynaddsubfx -type f -name *.xiz | wc -l".format(path), shell=True).decode())
+		logging.debug("ZynAddSubFX presets => {}".format(n4))
+		return n1 + n2 + n3 + n4
 
 
 	def is_service_active(self, service):
