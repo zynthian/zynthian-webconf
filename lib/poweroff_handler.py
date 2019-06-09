@@ -22,7 +22,6 @@
 #
 #********************************************************************
 
-import os
 import logging
 import tornado.web
 from subprocess import check_output
@@ -30,7 +29,7 @@ from subprocess import check_output
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
-# Poweroff Hadler
+# Poweroff Handler
 #------------------------------------------------------------------------------
 
 class PoweroffHandler(ZynthianConfigHandler):

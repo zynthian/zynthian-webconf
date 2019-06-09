@@ -31,7 +31,7 @@ from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
-# Dashboard Hadler
+# Dashboard Handler
 #------------------------------------------------------------------------------
 
 class DashboardHandler(ZynthianConfigHandler):

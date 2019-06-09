@@ -22,7 +22,6 @@
 #
 #********************************************************************
 
-import os
 import logging
 import tornado.web
 from subprocess import check_output
@@ -30,13 +29,18 @@ from subprocess import check_output
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
-# Reboot Hadler
+# Reboot Handler
 #------------------------------------------------------------------------------
+
+
 
 class RebootHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self):
+		self.render("config.html", body="reboot_confirm_block.html", config=None, title="Reboot", errors=None)
+
+	def post(self):
 		if self.genjson:
 			self.write("REBOOT")
 		else:
