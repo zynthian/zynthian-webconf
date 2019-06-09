@@ -298,7 +298,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 	def get(self, errors=None):
 
 		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
-			enable_custom_text = " (select custom kit for enable)"
+			enable_custom_text = " (select Custom kit to enable)"
 		else:
 			enable_custom_text = None
 
