@@ -48,6 +48,11 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 	def get(self, errors=None):
 		#Get Hostname
 		config=OrderedDict([
+			['CURRENT_PASSWORD', {
+				'type': 'password',
+				'title': 'Current password',
+				'value': '*'
+			}],
 			['PASSWORD', {
 				'type': 'password',
 				'title': 'Password',
@@ -98,6 +103,18 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 	def update_system_config(self, config):
 		#Update Password
+		current_passwd = self.get_argument("CURRENT_PASSWORD")
+		try:
+			root_crypt = check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
+			rcparts = root_crypt.split('$')
+			current_crypt = crypt.crypt(current_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
+
+			logging.debug("PASSWD: %s <=> %s" % (root_crypt, current_crypt))
+			if current_crypt != root_crypt:
+				return {'CURRENT_PASSWORD': "Current password is not correct"}
+		except:
+			return {'CURRENT_PASSWORD': "Current password is not correct"}
+
 		if len(config['PASSWORD'][0])>0:
 			if len(config['PASSWORD'][0])<6:
 				return { 'PASSWORD': "Password must have at least 6 characters" }
