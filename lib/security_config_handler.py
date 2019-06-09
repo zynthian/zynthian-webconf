@@ -26,7 +26,7 @@ import os
 import re
 import logging
 import tornado.web
-from crypt import crypt
+import crypt
 from collections import OrderedDict
 from subprocess import check_output
 
