@@ -78,35 +78,35 @@ class KitConfigHandler(ZynthianConfigHandler):
 
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
+		if kit_version!="Custom":
+			if kit_version=="V3":
+				soundcard_name = "HifiBerry DAC+ ADC"
+				display_name = "ZynScreen 3.5 (v1)"
+				wiring_layout = "MCP23017_ZynScreen"
+			elif kit_version=="V2+":
+				soundcard_name = "HifiBerry DAC+ ADC"
+				display_name = "PiScreen 3.5 (v2)"
+				wiring_layout = "MCP23017_EXTRA"
+			elif kit_version=="V2":
+				soundcard_name = "HifiBerry DAC+"
+				display_name = "PiScreen 3.5 (v2)"
+				wiring_layout = "MCP23017_EXTRA"
+			elif kit_version=="V1":
+				soundcard_name = "HifiBerry DAC+"
+				display_name = "PiTFT 2.8 Resistive"
+				wiring_layout = "PROTOTYPE-4"
 
-		if kit_version=="V3":
-			soundcard_name = "HifiBerry DAC+ ADC"
-			display_name = "ZynScreen 3.5 (v1)"
-			wiring_layout = "MCP23017_ZynScreen"
-		elif kit_version=="V2+":
-			soundcard_name = "HifiBerry DAC+ ADC"
-			display_name = "PiScreen 3.5 (v2)"
-			wiring_layout = "MCP23017_EXTRA"
-		elif kit_version=="V2":
-			soundcard_name = "HifiBerry DAC+"
-			display_name = "PiScreen 3.5 (v2)"
-			wiring_layout = "MCP23017_EXTRA"
-		elif kit_version=="V1":
-			soundcard_name = "HifiBerry DAC+"
-			display_name = "PiTFT 2.8 Resistive"
-			wiring_layout = "PROTOTYPE-4"
+			pconfig['SOUNDCARD_NAME']=[soundcard_name]
+			for k,v in AudioConfigHandler.soundcard_presets[soundcard_name].items():
+				pconfig[k]=[v]
 
-		pconfig['SOUNDCARD_NAME']=[soundcard_name]
-		for k,v in AudioConfigHandler.soundcard_presets[soundcard_name].items():
-			pconfig[k]=[v]
+			pconfig['DISPLAY_NAME']=[display_name]
+			for k,v in DisplayConfigHandler.display_presets[display_name].items():
+				pconfig[k]=[v]
 
-		pconfig['DISPLAY_NAME']=[display_name]
-		for k,v in DisplayConfigHandler.display_presets[display_name].items():
-			pconfig[k]=[v]
-
-		pconfig['ZYNTHIAN_WIRING_LAYOUT']=[wiring_layout]
-		for k,v in WiringConfigHandler.wiring_presets[wiring_layout].items():
-			pconfig[k]=[v]
+			pconfig['ZYNTHIAN_WIRING_LAYOUT']=[wiring_layout]
+			for k,v in WiringConfigHandler.wiring_presets[wiring_layout].items():
+				pconfig[k]=[v]
 
 		errors = self.update_config(pconfig)
 		WiringConfigHandler.rebuild_zyncoder()
