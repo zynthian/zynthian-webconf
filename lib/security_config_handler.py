@@ -26,7 +26,7 @@ import os
 import re
 import logging
 import tornado.web
-import crypt
+from crypt import crypt
 from collections import OrderedDict
 from subprocess import check_output
 
@@ -107,7 +107,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 		try:
 			root_crypt = check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
 			rcparts = root_crypt.split('$')
-			current_crypt = crypt.crypt(current_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
+			current_crypt = crypt(current_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
 
 			logging.debug("PASSWD: %s <=> %s" % (root_crypt, current_crypt))
 			if current_crypt != root_crypt:
