@@ -3,11 +3,13 @@
 <div class="col-lg-4 col-sm-6">
 	<h3>{{ escape(group) }}</h3>
 	{% for varname in config[group] %}
-	<label>{{ escape(config[group][varname]['title']) }}:</label>
-	{% if config[group][varname]['url'] %}
+	<label>{{ escape(config[group][varname]['title']) }}{% if 'value' in config[group][varname] %}:{% end %}</label>
+	{% if 'value' in config[group][varname] %}
+	{% if 'url' in config[group][varname] %}
 		<a href="{{ config[group][varname]['url'] }}">{{ escape(config[group][varname]['value']) }}</a>
 	{% else %}
 		{{ escape(config[group][varname]['value']) }}
+	{% end %}
 	{% end %}
 	<br>
 	{% end %}

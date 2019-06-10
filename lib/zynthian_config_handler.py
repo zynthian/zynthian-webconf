@@ -45,11 +45,18 @@ zynthian_ui_osc_addr = liblo.Address('localhost',1370,liblo.UDP)
 
 class ZynthianBasicHandler(tornado.web.RequestHandler):
 
+	reboot_flag = False
+	restart_ui_flag = False
+	reload_midi_config_flag = False
+
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
 
 	def prepare(self):
+		zynconf.load_config()
+		zynconf.load_midi_config()
+
 		self.genjson=False
 		try:
 			if self.get_query_argument("json"):
@@ -58,19 +65,64 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 			pass
 
 
+	def render(self, tpl, **kwargs):
+		info = {
+			'host_name': self.request.host
+		}
+
+		# If MOD-UI is enabled, add access URI to info
+		if self.is_service_active("mod-ui"):
+			info['modui_uri']="http://{}:8888".format(self.request.host)
+
+		super().render(tpl, info=info, **kwargs)
+
+
+	@tornado.web.authenticated
+	def get(self, title, config, errors=None):
+		logging.debug(config)
+
+		if self.reboot_flag:
+			self.redirect('/api/sys-reboot')
+			return
+
+		elif self.restart_ui_flag:
+			self.restart_ui()
+
+		elif self.reload_midi_config_flag:
+			self.reload_midi_config()
+
+		if self.genjson:
+			self.write(config)
+
+		else:
+			self.render("config.html", body="config_block.html", config=config, title=title, errors=errors)
+
+
+	def is_service_active(self, service):
+		return zynconf.is_service_active(service)
+
+
 	def restart_ui(self):
 		try:
-			check_output("systemctl daemon-reload;systemctl stop zynthian;systemctl start zynthian", shell=True)
+			check_output("systemctl daemon-reload;systemctl restart zynthian", shell=True)
 		except Exception as e:
 			logging.error("Restarting UI: %s" % e)
 
 
 	def reload_midi_config(self):
-		liblo.send(zynthian_ui_osc_addr, "RELOAD_MIDI_CONFIG")
+		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_MIDI_CONFIG")
 
 
 	def needs_reboot(self):
-		return False
+		return self.reboot_flag
+
+
+	def needs_restart_ui(self):
+		return self.restart_ui_flag
+
+
+	def needs_reload_midi_config(self):
+		return self.reload_midi_config_flag
 
 
 #------------------------------------------------------------------------------
@@ -78,12 +130,6 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 #------------------------------------------------------------------------------
 
 class ZynthianConfigHandler(ZynthianBasicHandler):
-
-	def prepare(self):
-		zynconf.load_config()
-		zynconf.load_midi_config()
-		super().prepare()
-
 
 	def update_config(self, config):
 		sconfig={}

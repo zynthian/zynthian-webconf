@@ -23,8 +23,10 @@
 #********************************************************************
 
 import os
+import re
 import logging
 import tornado.web
+from crypt import crypt
 from collections import OrderedDict
 from subprocess import check_output
 
@@ -46,10 +48,10 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 	def get(self, errors=None):
 		#Get Hostname
 		config=OrderedDict([
-			['HOSTNAME', {
-				'type': 'text',
-				'title': 'Hostname',
-				'value': SecurityConfigHandler.get_host_name()
+			['CURRENT_PASSWORD', {
+				'type': 'password',
+				'title': 'Current password',
+				'value': '*'
 			}],
 			['PASSWORD', {
 				'type': 'password',
@@ -61,12 +63,19 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 				'title': 'Repeat password',
 				'value': '*'
 			}],
+			['HOSTNAME', {
+				'type': 'text',
+				'title': 'Hostname',
+				'value': SecurityConfigHandler.get_host_name(),
+				'advanced': True
+			}],
 			['REGENERATE_KEYS', {
 				'type': 'button',
 				'title': 'Regenerate Keys',
 				'script_file': 'regenerate_keys.js',
 				'button_type': 'button',
-				'class': 'btn-warning',
+				'class': 'btn-warning btn-block',
+				'advanced': True
 			}],
 			['_command', {
 				'type': 'hidden',
@@ -94,11 +103,28 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 	def update_system_config(self, config):
 		#Update Password
-		if len(config['PASSWORD'][0])<6:
-			return { 'PASSWORD': "Password must have at least 6 characters" }
-		if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
-			return { 'REPEAT_PASSWORD': "Passwords does not match!" }
-		check_output("echo root:%s | chpasswd" % config['PASSWORD'][0], shell=True)
+		current_passwd = self.get_argument("CURRENT_PASSWORD")
+		try:
+			root_crypt = check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
+			rcparts = root_crypt.split('$')
+			current_crypt = crypt(current_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
+
+			logging.debug("PASSWD: %s <=> %s" % (root_crypt, current_crypt))
+			if current_crypt != root_crypt:
+				return {'CURRENT_PASSWORD': "Current password is not correct"}
+		except:
+			return {'CURRENT_PASSWORD': "Current password is not correct"}
+
+		if len(config['PASSWORD'][0])>0:
+			if len(config['PASSWORD'][0])<6:
+				return { 'PASSWORD': "Password must have at least 6 characters" }
+			if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
+				return { 'REPEAT_PASSWORD': "Passwords does not match!" }
+			try:
+				check_output(['usermod', '-p', crypt(config['PASSWORD'][0]), 'root'])
+			except Exception as e:
+				logging.error("Can't set new password! => {}".format(e))
+				return { 'REPEAT_PASSWORD': "Can't set new password!" }
 
 		#Update Hostname
 		newHostname = config['HOSTNAME'][0]
@@ -107,15 +133,20 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			previousHostname=f.readline()
 			f.close()
 
-		with open("/etc/hostname",'w') as f:
-			f.write(newHostname)
-			f.close()
+		if previousHostname!=newHostname:
+			with open("/etc/hostname",'w') as f:
+				f.write(newHostname)
+				f.close()
 
-		with open("/etc/hosts", "r+") as f:
-			contents = f.read()
-			contents = contents.replace(previousHostname, newHostname)
-			contents = contents.replace("zynthian", newHostname) # for the ppl that have already changed their hostname
-			f.seek(0)
-			f.truncate()
-			f.write(contents)
-			f.close()
+			with open("/etc/hosts", "r+") as f:
+				contents = f.read()
+				#contents = contents.replace(previousHostname, newHostname)
+				contents = re.sub(r"127\.0\.1\.1.*$", "127.0.1.1\t{}".format(newHostname), contents)
+				f.seek(0)
+				f.truncate()
+				f.write(contents)
+				f.close()
+
+			check_output(["hostnamectl", "set-hostname", newHostname])
+
+			#self.reboot_flag=True

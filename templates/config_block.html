@@ -30,21 +30,26 @@
 			{% set value = config[varname]['value'] %}
 		{% end %}
 
+		{% set disabled = "" %}
+		{% if 'disabled' in config[varname] and config[varname]['disabled'] %}
+			{% set disabled = "disabled=\"disabled\"" %}
+		{% end %}
+		
 		{% if config[varname]['type']=='text' %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" value="{{ escape(value) }}" />
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" value="{{ escape(value) }}" {{ disabled }}>
 
 		{% elif config[varname]['type']=='password' %}
-			<input name="{{ escape(varname) }}" type="password" />
+			<input name="{{ escape(varname) }}" type="password" {{ disabled }}>
 
 		{% elif config[varname]['type']=='boolean' %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" />
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }}>
 
 		{% elif config[varname]['type']=='hidden' %}
 			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
 
 		{% elif config[varname]['type']=='button' %}
-			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn btn-lg {{ config[varname]['class'] }}" >
-			{{ config[varname]['title'] }}
+			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn {{ config[varname]['class'] }}" {{ disabled }}>
+				{{ config[varname]['title'] }}
 			</button>
 			{% if 'script_file' in config[varname] %}
 				<script src="../js/{{ config[varname]['script_file'] }}" ></script>
@@ -57,26 +62,27 @@
 			{% if 'addPanel' in config[varname] %}
 				{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
 			{% end %}
-			<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}">{{ value.replace("\\n","\n") }}</textarea>
+			<textarea id="{{ escape(varname) }}" name="{{ escape(varname) }}" cols="{{ config[varname]['cols'] }}" rows="{{ config[varname]['rows'] }}" {{ disabled }}>
+				{{ value.replace("\\n","\n") }}
+			</textarea>
 
 		{% elif config[varname]['type']=='select' %}
-			<select name="{{ escape(varname) }}" onchange="{{ 'refresh_select_subvars(this)' if varname in root_vars else 'set_presets(this)' }}"><br>
-			{% for option in config[varname]['options'] %}
+			<select name="{{ escape(varname) }}" onchange="{{ 'refresh_select_subvars(this)' if varname in root_vars else 'set_presets(this)' }}" {{ disabled }}>
+				{% for option in config[varname]['options'] %}
 				<option value="{{ escape(option) }}"
 					{% if value==option %}selected=1{% end %}
 					{% if 'presets' in config[varname] %}
 						{% for fn,preset in list(config[varname]['presets'][option].items()) %}
 							data-{{ escape(fn) }}="{{ url_escape(preset,False) }}"
 						{% end %}
+					{% end %}>
+					{% if 'option_labels' in config[varname] %}
+						{{ escape(config[varname]['option_labels'][option]) }}
+					{% else %}
+						{{ escape(option.replace('_', ' ').title()) }}
 					{% end %}
-					>
-				{% if 'option_labels' in config[varname] %}
-					{{ escape(config[varname]['option_labels'][option]) }}
-				{% else %}
-					{{ escape(option.replace('_', ' ').title()) }}
-				{% end %}
 				</option>
-			{% end %}
+				{% end %}
 			</select>
 
 		{% elif config[varname]['type']=='slider' %}
@@ -89,9 +95,11 @@
 			/>
 		{% end %}
 
+		{% if config[varname]['type']!='hidden' %}
 		<br>
-		{% if errors and varname in errors %}<div class="alert alert-danger">{{ escape(errors[varname]) }}</div>{% end %}
+		{% if errors and varname in errors %}<div class="alert alert-danger">{{ errors[varname] }}</div>{% end %}
 		<br>
+		{% end %}
 	</div>
 {% end %}
 

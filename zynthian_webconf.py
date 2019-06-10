@@ -28,8 +28,9 @@ import sys
 import string
 import random
 import logging
-import tornado.ioloop
 import tornado.web
+import tornado.ioloop
+
 from lib.login_handler import LoginHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
@@ -38,6 +39,7 @@ from lib.reboot_handler import RebootHandler
 from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
+from lib.kit_config_handler import KitConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
 from lib.wifi_list_handler import WifiListHandler
@@ -54,7 +56,6 @@ from lib.captures_config_handler import CapturesConfigHandler
 from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
-
 
 #------------------------------------------------------------------------------
 
@@ -126,6 +127,7 @@ def make_app():
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
 		(r"/api/lib-captures$", CapturesConfigHandler),
+		(r"/api/hw-kit$", KitConfigHandler),
 		(r"/api/hw-audio$", AudioConfigHandler),
 		(r"/api/hw-display$", DisplayConfigHandler),
 		(r"/api/hw-wiring$", WiringConfigHandler),

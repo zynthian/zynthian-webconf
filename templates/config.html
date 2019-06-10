@@ -45,6 +45,10 @@
 	<script src="/bower_components/seiyria-bootstrap-slider/dist/bootstrap-slider.min.js"></script>
 	<script src="/bower_components/websocket/build/websocket.min.js"></script>
 	<script src="/js/zynthian-websocket.js"></script>
+
+	<!-- Preload some images for avoiding problems when rebooting -->
+	<link rel="preload" href="/img/loading.gif" as="image">
+	<link rel="preload" href="/img/logo/zynthian_logo_black_trans_320.png" as="image">
 </head>
 
 <body>
@@ -79,6 +83,7 @@
 							<li class="dropdown {% if request.uri[0:8]=="/api/hw-" %}active{% end %}">
 								<a href="#menu-hw" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Hardware <span class="caret"></span></a>
 								<ul class="dropdown-menu">
+									<li {% if request.uri=="/api/hw-kit" %}class="active"{% end %}><a href="/api/hw-kit">Kit</a></li>
 									<li {% if request.uri=="/api/hw-audio" %}class="active"{% end %}><a href="/api/hw-audio">Audio</a></li>
 									<li {% if request.uri=="/api/hw-display" %}class="active"{% end %}><a href="/api/hw-display">Display</a></li>
 									<li {% if request.uri=="/api/hw-wiring" %}class="active"{% end %}><a href="/api/hw-wiring">Wiring</a></li>
@@ -90,6 +95,9 @@
 									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
 									<li {% if request.uri=="/api/sw-pìanoteq" %}class="active"{% end %}><a href="/api/sw-pianoteq">Pianoteq</a></li>
 									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">Jalv Plugins</a></li>
+									{% try %}{% if 'modui_uri' in info %}
+									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
+									{% end %}{% except %}{% end %}
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">

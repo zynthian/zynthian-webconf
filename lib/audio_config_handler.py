@@ -107,14 +107,18 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CODEC -r 48000 -p 256 -n 3 -s -S -X raw'
 		}],
+		['Behringer UMC404HD (USB)', {
+			'SOUNDCARD_CONFIG': '',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CARD=U192k -r 48000 -p 256 -n 3 -s -S -X raw'
+		}],
 		['Steinberg UR22 mkII (USB)', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
 		}],
-        ['Edirol UA1-EX (USB)', {
-            'SOUNDCARD_CONFIG': '',
-            'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:UA1EX -r 44100 -p 1024 -n 2 -S -X raw'
-        }],
+		['Edirol UA1-EX (USB)', {
+			'SOUNDCARD_CONFIG': '',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:UA1EX -r 44100 -p 1024 -n 2 -S -X raw'
+		}],
 		['Dummy device', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
@@ -143,55 +147,70 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['Fe-Pi Audio', []],
 		['USB device', []],
 		['Behringer UCA222 (USB)', ['PCM']],
-		['Steinberg UR22 mkII (USB)', ['Clock Source 41 Validity']],
-        ['Edirol UA1-EX (USB)', []],
+		['Behringer UMC404HD (USB)', ['UMC404HD_192k_Output', 'Mic']],
+		['Steinberg UR22 mkII (USB)', ['Clock_Source_41_Validity']],
+		['Edirol UA1-EX (USB)', []],
 		['Dummy device', []]
 	])
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			enable_custom_text = " (select Custom kit to enable)"
+		else:
+			enable_custom_text = None
+
 		config=OrderedDict([
 			['SOUNDCARD_NAME', {
 				'type': 'select',
-				'title': 'Soundcard',
+				'title': "Soundcard{}".format(enable_custom_text),
 				'value': os.environ.get('SOUNDCARD_NAME'),
 				'options': list(self.soundcard_presets.keys()),
-				'presets': self.soundcard_presets
+				'presets': self.soundcard_presets,
+				'disabled': enable_custom_text!=None
 			}],
 			['SOUNDCARD_CONFIG', {
 				'type': 'textarea',
-				'title': 'Config',
+				'title': "Config{}".format(enable_custom_text),
 				'cols': 50,
 				'rows': 4,
 				'value': os.environ.get('SOUNDCARD_CONFIG'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['JACKD_OPTIONS', {
 				'type': 'text',
-				'title': 'Jackd Options',
+				'title': "Jackd Options{}".format(enable_custom_text),
 				'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
 				'type': 'text',
-				'title': 'Aubionotes Options',
+				'title': "Aubionotes Options",
 				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_LIMIT_USB_SPEED', {
+				'type': 'boolean',
+				'title': "Limit USB speed to 12Mb/s",
+				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
 				'advanced': True
 			}]
 		])
 
 		self.get_mixer_controls(config)
-		logging.info(config)
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="Audio", errors=errors)
+
+		super().get("Audio", config, errors)
+
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
-		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
 		errors=self.update_config(postedConfig)
+
 		for varname in postedConfig:
 			if varname.find('ALSA_VOLUME_')>=0:
 				channelName = varname[12:]
@@ -209,16 +228,20 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					logging.info(amixer_command)
 					call(amixer_command, shell=True)
 				except Exception as err:
-					logging.error(format(err))
+					logging.error("Alsa Mixer => {}".format(err))
+					errors["ALSAMIXER_{}".format(varname)] = str(err)
+
 		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
 			try:
 				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
+				call("amixer -c 1 cset numid=10,iface=MIXER,name='Line Capture Switch' 1", shell=True)
 			except Exception as err:
-				logging.error(format(err))
+				logging.error("AudioInjector Alsa Mixer => {}".format(err))
+				errors["ALSAMIXER_AUDIOINJECTOR"] = err
 
-		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
-			self.redirect('/api/sys-reboot')
+		self.reboot_flag = True
 		self.get(errors)
+
 
 	def get_mixer_controls(self, config):
 		mixerControl = None
@@ -278,6 +301,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Playback')
 				else:
 					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
+
 		except Exception as err:
 			logging.error(format(err))
 
@@ -294,6 +318,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			mixerControl['value'] = volumePercent
 
 			config[configKey] = mixerControl
+
 
 	def needs_reboot(self):
 		return True

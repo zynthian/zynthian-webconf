@@ -40,30 +40,31 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class WiringConfigHandler(ZynthianConfigHandler):
 
 	wiring_presets=OrderedDict([
-		["PROTOTYPE-1", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,3,7",
-			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,4,0",
-			'ZYNTHIAN_WIRING_SWITCHES': "23,None,2,None"
+		["MCP23017_ZynScreen", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
+			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
+			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "2",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "7"
 		}],
-		["PROTOTYPE-2", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,0",
-			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,3,7",
-			'ZYNTHIAN_WIRING_SWITCHES': "23,107,2,106"
+		["MCP23017_EXTRA", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
+			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
+			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
 		}],
-		["PROTOTYPE-KEES", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,5",
-			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,31,7",
-			'ZYNTHIAN_WIRING_SWITCHES': "23,107,6,106"
+		["MCP23017_ENCODERS", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
+			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
+			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
 		}],
-		["PROTOTYPE-3", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,3,7",
-			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,4,0",
-			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2"
-		}],
-		["PROTOTYPE-3H", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "21,27,7,3",
-			'ZYNTHIAN_WIRING_ENCODER_B': "26,25,0,4",
-			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2"
+		["PROTOTYPE-5", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,0,4",
+			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,3",
+			'ZYNTHIAN_WIRING_SWITCHES': "107,105,106,104"
 		}],
 		["PROTOTYPE-4", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,0,4",
@@ -80,31 +81,37 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,31",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,6"
 		}],
-		["PROTOTYPE-5", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,0,4",
-			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,3",
-			'ZYNTHIAN_WIRING_SWITCHES': "107,105,106,104"
+		["PROTOTYPE-3", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,3,7",
+			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,4,0",
+			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2"
 		}],
-		["MCP23017_ENCODERS", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
-			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
-			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111",
-			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
-			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
+		["PROTOTYPE-3H", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "21,27,7,3",
+			'ZYNTHIAN_WIRING_ENCODER_B': "26,25,0,4",
+			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2"
 		}],
-		["MCP23017_EXTRA", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
-			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
-			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
-			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
-			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
+		["PROTOTYPE-KEES", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,5",
+			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,31,7",
+			'ZYNTHIAN_WIRING_SWITCHES': "23,107,6,106"
 		}],
-		["MCP23017_ZynScreen", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
-			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
-			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
+		["PROTOTYPE-2", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,0",
+			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,3,7",
+			'ZYNTHIAN_WIRING_SWITCHES': "23,107,2,106"
+		}],
+		["PROTOTYPE-1", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,3,7",
+			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,4,0",
+			'ZYNTHIAN_WIRING_SWITCHES': "23,None,2,None"
+		}],
+		["I2C_HWC", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "1,2,3,4",
+			'ZYNTHIAN_WIRING_ENCODER_B': "0,0,0,0",
+			'ZYNTHIAN_WIRING_SWITCHES': "1,2,3,4",
 			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "7",
-			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "2"
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "0"
 		}],
 		["EMULATOR", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "4,5,6,7",
@@ -126,35 +133,44 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			enable_custom_text = " (select Custom kit to enable)"
+		else:
+			enable_custom_text = None
+
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
 				'type': 'select',
-				'title': 'Wiring Layout',
+				'title': 'Wiring Layout{}'.format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 				'options': list(self.wiring_presets.keys()),
-				'presets': self.wiring_presets
+				'presets': self.wiring_presets,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_A', {
 				'type': 'text',
-				'title': "Encoders A-pins (WPi-GPIO)",
+				'title': "Encoders A-pins{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_B', {
 				'type': 'text',
-				'title': 'Encoders B-pins (WPi-GPIO)',
+				'title': "Encoders B-pins{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_WIRING_SWITCHES', {
 				'type': 'text',
-				'title': 'Switches Pins (WPi-GPIO)',
+				'title': "Switches Pins{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
 				'type': 'select',
-				'title': 'MCP23017 INT-A Pin',
+				'title': "MCP23017 INT-A Pin{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
 				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
@@ -169,11 +185,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'25': 'WPi-GPIO 25 (pin 37)',
 					'27': 'WPi-GPIO 27 (pin 36)'
 				},
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
 				'type': 'select',
-				'title': 'MCP23017 INT-B Pin',
+				'title': "MCP23017 INT-B Pin{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
 				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
@@ -188,7 +205,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'25': 'WPi-GPIO 25 (pin 37)',
 					'27': 'WPi-GPIO 27 (pin 36)'
 				},
-				'advanced': True
+				'advanced': True,
+				'disabled': enable_custom_text!=None
 			}],
 			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01', {
 				'type': 'select',
@@ -347,20 +365,19 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'advanced': True
 			}]
 		])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="Wiring", errors=errors)
+
+		super().get("Wiring", config, errors)
 
 
 	@tornado.web.authenticated
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.rebuild_zyncoder()
-		self.restart_ui()
-		errors=self.get()
 
+		self.restart_ui_flag = True
+		self.get(errors)
 
+	@classmethod
 	def rebuild_zyncoder(self):
 		try:
 			cmd="cd %s/zyncoder/build;cmake ..;make" % os.environ.get('ZYNTHIAN_DIR')
