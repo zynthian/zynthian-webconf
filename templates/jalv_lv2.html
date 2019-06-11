@@ -69,7 +69,8 @@
     {% end %}
                       </div>
                       <div id="plugin-url" class="col-md-5 one-line-truncated">
-                              {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}
+			<a href="{{ config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL'] }}" target="_blank">
+                              {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}</a>
                       </div>
                   </div>
                   {% end %}
