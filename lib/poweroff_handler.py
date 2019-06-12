@@ -36,10 +36,14 @@ class PoweroffHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self):
+		self.render("config.html", body="poweroff_confirm_block.html", config=None, title="Power Off", errors=None)
+
+	@tornado.web.authenticated
+	def post(self):
 		if self.genjson:
 			self.write("POWEROFF")
 		else:
-			self.render("config.html", body="poweroff_block.html", config=None, title="Poweroff", errors=None)
+			self.render("config.html", body="poweroff_block.html", config=None, title="Power Off", errors=None)
 		try:
 			check_output("poweroff", shell=True)
 		except Exception as e:

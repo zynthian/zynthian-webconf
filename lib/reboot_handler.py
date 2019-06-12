@@ -40,6 +40,7 @@ class RebootHandler(ZynthianConfigHandler):
 	def get(self):
 		self.render("config.html", body="reboot_confirm_block.html", config=None, title="Reboot", errors=None)
 
+	@tornado.web.authenticated
 	def post(self):
 		if self.genjson:
 			self.write("REBOOT")
