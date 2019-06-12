@@ -97,10 +97,18 @@ function wifiListLoaded(data) {
 	});
 }
 
+function renameTabs(){
+	$("div .nav-tabs li a").each(function(i, ahref) {
+		ahref.innerText=decodeURIComponent(ahref.innerText.replace(/\\x/g,"%"));
+	});
+}
+
 $(document).ready(function(){
 	$(".btn-new-network").click(function(){
 		openWifiListModal()
 	});
+
+	renameTabs();
 });
 
 </script>
