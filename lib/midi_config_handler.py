@@ -288,8 +288,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
-				'title': 'Enable MIDI over Network',
+				'title': 'Enable QmidiNet (MIDI over Network)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED','0'),
+				'advanced': False
+			}],
+			['ZYNTHIAN_TOUCHOSC', {
+				'type': 'boolean',
+				'title': 'Enable TouchOSC',
+				'value': self.get_midi_env('ZYNTHIAN_TOUCHOSC','0'),
 				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
@@ -377,6 +383,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
+		self.request.arguments['ZYNTHIAN_TOUCHOSC'] = self.request.arguments.get('ZYNTHIAN_TOUCHOSC','0')
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
