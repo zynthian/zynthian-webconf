@@ -32,8 +32,6 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 # Reboot Handler
 #------------------------------------------------------------------------------
 
-
-
 class RebootHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
@@ -47,6 +45,7 @@ class RebootHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="reboot_block.html", config=None, title="Reboot", errors=None)
 		try:
-			check_output("(sleep 1 & reboot)&", shell=True)
+			check_output("killall -SIGINT zynthian_gui.py", shell=True)
+			check_output("(sleep 4; reboot)&", shell=True)
 		except Exception as e:
 			logging.error(e)
