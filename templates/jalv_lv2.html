@@ -31,8 +31,9 @@
     <ul class="nav nav-tabs" role="tablist">
     {% for pluginType in config['ZYNTHIAN_JALV_PLUGINS'] %}
     <li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == pluginType.replace(' ','_')  %}active{% end %}">
-        <a id="{{ pluginType.replace(' ','_') }}_TAB_ANCHOR"
+        <a id="#{{ pluginType.replace(' ','_') }}"
            href="#{{ pluginType.replace(' ','_') }}"
+           class="tab_anchor"
            onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ pluginType.replace(' ','_') }}')" role="tab" data-toggle="tab">{{ pluginType }}
             <span id="plugin_type_count_{{ pluginType }}">({{ len(config['ZYNTHIAN_JALV_PLUGINS'][pluginType])  }})</span></a></li>
     {% end %}
@@ -159,8 +160,13 @@ function filter_plugins() {
 	     panel_count += 1;
           }
        });
-       var tab_anchor = $("#" + plugin_panel_div.parentElement.id + "_TAB_ANCHOR")[0];
-       tab_anchor.innerText = plugin_panel_div.parentElement.id.replace("_", " ") + " (" + panel_count + ")";
+       var tab_anchor = 
+       $(".tab_anchor").each(function(idx,tab_anchor){
+          if(tab_anchor.id.indexOf(plugin_panel_div.parentElement.id)>=0){
+             tab_anchor.innerText = plugin_panel_div.parentElement.id.replace("_", " ") + " (" + panel_count + ")";	  
+          }
+       });
+
    });
 }
 
