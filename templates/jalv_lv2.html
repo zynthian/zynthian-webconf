@@ -160,13 +160,11 @@ function filter_plugins() {
 	     panel_count += 1;
           }
        });
-       var tab_anchor = 
        $(".tab_anchor").each(function(idx,tab_anchor){
           if(tab_anchor.id.indexOf(plugin_panel_div.parentElement.id)>=0){
              tab_anchor.innerText = plugin_panel_div.parentElement.id.replace("_", " ") + " (" + panel_count + ")";	  
           }
        });
-
    });
 }
 
