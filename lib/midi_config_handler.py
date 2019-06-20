@@ -289,16 +289,23 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
-				'title': 'Enable QmidiNet (MIDI over Network)',
+				'title': 'Enable QmidiNet (MIDI over IP)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED','0'),
 				'advanced': False
 			}],
-			['ZYNTHIAN_MIDI_TOUCHOSC', {
+			['ZYNTHIAN_MIDI_TOUCHOSC_ENABLED', {
 				'type': 'boolean',
-				'title': 'Enable TouchOSC',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_TOUCHOSC','0'),
+				'title': 'Enable TouchOSC MIDI Bridge',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_TOUCHOSC_ENABLED','0'),
 				'advanced': False
 			}],
+			['ZYNTHIAN_MIDI_AUBIONOTES_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable AubioNotes (Audio2MIDI)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0'),
+				'advanced': False
+			}],
+
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
 				'type': 'select',
 				'title': 'MIDI fine tuning (Hz)',
@@ -384,7 +391,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
-		self.request.arguments['ZYNTHIAN_MIDI_TOUCHOSC'] = self.request.arguments.get('ZYNTHIAN_MIDI_TOUCHOSC','0')
+		self.request.arguments['ZYNTHIAN_MIDI_TOUCHOSC_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_TOUCHOSC_ENABLED','0')
+		self.request.arguments['ZYNTHIAN_MIDI_AUBIONOTES_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0')
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
