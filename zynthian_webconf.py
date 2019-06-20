@@ -56,6 +56,7 @@ from lib.captures_config_handler import CapturesConfigHandler
 from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
+from lib.repository_handler import RepositoryHandler
 
 #------------------------------------------------------------------------------
 
@@ -134,6 +135,7 @@ def make_app():
 		(r"/api/sw-update$", SoftwareUpdateHandler),
 		(r"/api/sw-pianoteq$", PianoteqHandler),
 		(r"/api/sw-jalv-lv2$", JalvLv2Handler),
+		(r"/api/sw-repos$", RepositoryHandler),
 		(r"/api/ui-options$", UiConfigHandler),
 		(r"/api/ui-log$", UiLogHandler),
 		(r"/api/ui-midi-options$", MidiConfigHandler),
