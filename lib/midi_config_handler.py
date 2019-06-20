@@ -217,6 +217,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	def prepare(self):
 		super().prepare()
+		self.current_midi_profile_script = None
 		self.load_midi_profile_directories()
 
 
@@ -399,20 +400,26 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 			if new_profile_script_name:
 				#New MIDI profile
-				new_profile_script_path = self.PROFILES_DIRECTORY + '/' + new_profile_script_name + '.sh'
-				#create file as copy of default:
-				zynconf.get_midi_config_fpath(new_profile_script_path)
-				zynconf.update_midi_profile(escaped_request_arguments, new_profile_script_path)
-				mode = os.stat(new_profile_script_path).st_mode
-				mode |= (mode & 0o444) >> 2	# copy R bits to X
-				os.chmod(new_profile_script_path, mode)
-				self.load_midi_profile_directories()
+				self.current_midi_profile_script = self.PROFILES_DIRECTORY + '/' + new_profile_script_name + '.sh'
+				try:
+					#create file as copy of default:
+					zynconf.get_midi_config_fpath(self.current_midi_profile_script)
+					zynconf.update_midi_profile(escaped_request_arguments, self.current_midi_profile_script)
+					mode = os.stat(self.current_midi_profile_script).st_mode
+					mode |= (mode & 0o444) >> 2	# copy R bits to X
+					os.chmod(self.current_midi_profile_script, mode)
+					errors = zynconf.save_config({'ZYNTHIAN_SCRIPT_MIDI_PROFILE':self.current_midi_profile_script})
+					self.load_midi_profile_directories()
+				except:
+					errors['zynthian_midi_profile_new_script_name'] = "Can't create new profile!"
 
 			elif 'zynthian_midi_profile_delete_script' in self.request.arguments and self.get_argument('zynthian_midi_profile_delete_script') == "1":
 				#DELETE
 				if self.current_midi_profile_script.startswith(self.PROFILES_DIRECTORY):
 					os.remove(self.current_midi_profile_script)
-					self.current_midi_profile_script = None;
+					self.current_midi_profile_script = "{}/default.sh".format(self.PROFILES_DIRECTORY)
+					errors = zynconf.save_config({'ZYNTHIAN_SCRIPT_MIDI_PROFILE':self.current_midi_profile_script})
+					self.load_midi_profile_directories()
 				else:
 					errors['zynthian_midi_profile_delete_script'] = 'You can only delete user profiles!'
     
@@ -430,7 +437,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					zynconf.update_midi_profile(escaped_request_arguments, self.current_midi_profile_script)
 					errors = self.update_config(escaped_request_arguments)
 				else:
-					errors['zynthian_midi_profile_new_script_name'] = 'Profile name missing'
+					errors['zynthian_midi_profile_new_script_name'] = 'No profile name!'
 
 			self.reload_midi_config_flag = True
 
@@ -455,10 +462,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				logging.error(e)
 		#Else, get active profile
 		else:
-			if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
-				self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
-			else:
-				self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
+			if not self.current_midi_profile_script:
+				if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
+					self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
+				else:
+					self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE',self.midi_profile_scripts[0])
 			if self.current_midi_profile_script not in self.midi_profile_scripts:
 				self.current_midi_profile_script=self.midi_profile_scripts[0]
 
