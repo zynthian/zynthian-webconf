@@ -33,6 +33,7 @@
 				<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme">RENAME</button>
 				<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme">DOWNLOAD</button>
 				<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+				<audio id="ZYNTHIAN_CAPTURES_PLAYER" controls src="">Browser does not support audio playback</audio>
 			</div>
 
 		</div>
@@ -80,6 +81,7 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 		} else {
 			$("#loading-div-background").css({ opacity: 1.0 });
 			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
+			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src="/captures"+data.fullpath;
 			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
 			$('#captures-panel').show();
 		}

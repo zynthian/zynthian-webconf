@@ -122,6 +122,7 @@ def make_app():
 		(r'/img/(.*)$', tornado.web.StaticFileHandler, {'path': 'img'}),
 		(r'/css/(.*)$', tornado.web.StaticFileHandler, {'path': 'css'}),
 		(r'/js/(.*)$', tornado.web.StaticFileHandler, {'path': 'js'}),
+		(r'/captures/(.*)$', tornado.web.StaticFileHandler, {'path': 'captures'}),
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
