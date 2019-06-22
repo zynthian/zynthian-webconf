@@ -82,6 +82,8 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			$("#loading-div-background").css({ opacity: 1.0 });
 			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
 			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src="/captures"+data.fullpath;
+			isMidi=(data.name.substr(data.name.length-3))=="mid";
+			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].style.display=isMidi?"none":"block";
 			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
 			$('#captures-panel').show();
 		}
