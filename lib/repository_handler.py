@@ -55,13 +55,13 @@ class RepositoryHandler(ZynthianConfigHandler):
 		config = OrderedDict([])
 
 		for repitem in self.repository_list:
-			tag_list = self.get_repo_branch_list(repitem[0])
+			options = self.get_repo_branch_list(repitem[0])
 			config["ZYNTHIAN_REPO_{}".format(repitem[0])] = {
 				'type': 'select',
 				'title': repitem[0],
 				'value': self.get_repo_current_branch(repitem[0]),
-				'options': tag_list,
-				'option_labels': OrderedDict([(tag_name, tag_name) for tag_name in tag_list]),
+				'options': options,
+				'option_labels': OrderedDict([(opt, opt) for opt in options]),
 				'advanced': repitem[1]
 			}
 
@@ -87,29 +87,31 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 
 	def get_repo_tag_list(self, repo_name):
-		result = []
-		result.append('master')
+		result = ["master"]
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
 
 		check_output("cd {}; git remote update origin --prune".format(repo_dir), shell=True)
 		for byteLine in check_output("cd {}; git tag".format(repo_dir), shell=True).splitlines():
-			result.append(byteLine.decode("utf-8"))
+			result.append(byteLine.decode("utf-8").strip())
 
 		return result
 
 
 	def get_repo_branch_list(self, repo_name):
-		result = []
+		result = ["master"]
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
 
 		check_output("cd {}; git remote update origin --prune".format(repo_dir), shell=True)
 		for byteLine in check_output("cd {}; git branch -a".format(repo_dir), shell=True).splitlines():
-			branch_name=byteLine.decode("utf-8")
-			if branch_name.startswith("*"):
-				branch_name = branch_name[2:]
-			if "->" in branch_name:
+			bname=byteLine.decode("utf-8").strip()
+			if bname.startswith("*"):
+				bname = bname[2:]
+			if bname.startswith("remotes/origin/"):
+				bname = bname[15:]
+			if "->" in bname:
 				continue
-			result.append(branch_name)
+			if bname not in result:
+				result.append(bname)
 
 		return result
 
