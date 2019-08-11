@@ -106,8 +106,13 @@ class DashboardHandler(ZynthianConfigHandler):
 					'url': "/api/ui-midi-options"
 				}],
 				['QMIDINET', {
-					'title': 'QMidiNet',
+					'title': 'QmidiNet',
 					'value': str(self.is_service_active("qmidinet")),
+					'url': "/api/ui-midi-options"
+				}],
+				['TOUCHOSC', {
+					'title': 'TouchOSC',
+					'value': str(self.is_service_active("touchosc2midi")),
 					'url': "/api/ui-midi-options"
 				}]
 			])],

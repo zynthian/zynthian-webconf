@@ -124,7 +124,7 @@ function set_presets(sel) {
 			if (input[0].type=="checkbox"){
 				input.prop("checked",v=="1"?true:false);
 			} else {
-				input.val(decodeURIComponent(v).replace("\\n","\n"))
+				input.val(decodeURIComponent(v).replace(/\\n/g,"\n"))
 			}
 			//console.log(field.name+' => ' + v)
 			//console.log(field.name+' => ' + decodeURIComponent(v))

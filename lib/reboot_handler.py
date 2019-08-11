@@ -32,20 +32,20 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 # Reboot Handler
 #------------------------------------------------------------------------------
 
-
-
 class RebootHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self):
 		self.render("config.html", body="reboot_confirm_block.html", config=None, title="Reboot", errors=None)
 
+	@tornado.web.authenticated
 	def post(self):
 		if self.genjson:
 			self.write("REBOOT")
 		else:
 			self.render("config.html", body="reboot_block.html", config=None, title="Reboot", errors=None)
 		try:
-			check_output("(sleep 1 & reboot)&", shell=True)
+			check_output("killall -SIGINT zynthian_gui.py", shell=True)
+			check_output("(sleep 4; reboot)&", shell=True)
 		except Exception as e:
 			logging.error(e)

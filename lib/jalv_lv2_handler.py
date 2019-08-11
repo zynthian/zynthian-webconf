@@ -27,6 +27,7 @@ import logging
 import tornado.web
 import json
 import lilv
+import time
 
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
@@ -50,7 +51,6 @@ class JalvLv2Handler(ZynthianConfigHandler):
 	JALV_ALL_LV2_CONFIG_FILE = "{}/all_jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
 
 	all_plugins = None
-	jalv_filter = None
 	world = lilv.World()
 
 	@tornado.web.authenticated
@@ -68,9 +68,9 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		if not 'ZYNTHIAN_ACTIVE_TAB' in config or len(config['ZYNTHIAN_ACTIVE_TAB']) == 0:
 			config['ZYNTHIAN_ACTIVE_TAB'] = PluginType.MIDI_SYNTH.value.replace(" ", "_")
 
-		if self.jalv_filter:
-			config['ZYNTHIAN_JALV_FILTER'] = self.jalv_filter
-		else:
+		try:
+			config['ZYNTHIAN_JALV_FILTER'] = self.get_argument('ZYNTHIAN_JALV_FILTER')
+		except:
 			config['ZYNTHIAN_JALV_FILTER'] = ''
 
 		if self.genjson:
@@ -89,7 +89,6 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		action = self.get_argument('ZYNTHIAN_JALV_ACTION')
 		if action:
 			errors = {
-				'FILTER': lambda: self.do_filter(),
 				'ENABLE_PLUGINS': lambda: self.do_enable_plugins(),
 				'REGENERATE_PLUGIN_LIST': lambda: self.do_regenerate_plugin_list()
 			}[action]()
@@ -115,6 +114,8 @@ class JalvLv2Handler(ZynthianConfigHandler):
 	def generate_all_plugins_config_file(self):
 		plugins = OrderedDict()
 		self.world.ns.ev = lilv.Namespace(self.world, 'http://lv2plug.in/ns/ext/event#')
+
+		start = int(round(time.time() * 1000))
 		try:
 			self.world.load_all()
 			for plugin in self.world.get_all_plugins():
@@ -126,6 +127,8 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 		except Exception as e:
 			logging.error('Generating list of all LV2-Plugins failed: %s' % e)
+		end = int(round(time.time() * 1000))
+		logging.info('config file generation took %d' % (end-start))
 
 	def load_plugins(self):
 		result = OrderedDict()
@@ -136,11 +139,10 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		enabled_plugins = self.load_enabled_plugins();
 
 		for plugin_name, plugin_properties in all_plugins.items():
-			if not self.jalv_filter or self.jalv_filter.upper() in plugin_name.upper():
-				result[plugin_properties['TYPE']][plugin_name] = plugin_properties
-				if plugin_name in enabled_plugins:
-					logging.info("Plugin '{}' enabled".format(plugin_name))
-					plugin_properties['ENABLED'] = True
+			result[plugin_properties['TYPE']][plugin_name] = plugin_properties
+			if plugin_name in enabled_plugins:
+				logging.info("Plugin '{}' enabled".format(plugin_name))
+				plugin_properties['ENABLED'] = True
 		return result
 
 
@@ -235,7 +237,4 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		#return PluginType.UNKNOWN
 		return PluginType.AUDIO_EFFECT
 
-
-	def do_filter(self):
-		self.jalv_filter = self.get_argument('ZYNTHIAN_JALV_FILTER')
 

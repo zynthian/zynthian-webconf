@@ -5,15 +5,20 @@
 <h2>{{ escape(title) }}</h2>
 
 <form id="jalv-lv2-form" action="/api/sw-jalv-lv2" enctype="multipart/form-data" method="post">
-    <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="" />
+    <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
     <div class="container-fluid sw-jalv">
         <div class="row">
-            <div class="col-md-10">
+            <div class="col-md-2">
+                <input type="button" name="ZYNTHIAN_JALV_ALL_ACTION" value="ALL" class="btn btn-block btn-theme" onclick="javascript:reset_filter();" />
+            </div>
+
+            <div class="col-md-8">
                 <input type="text" name="ZYNTHIAN_JALV_FILTER" id="ZYNTHIAN_JALV_FILTER" value="{{config['ZYNTHIAN_JALV_FILTER']}}"/>
             </div>
             <div class="col-md-2">
-                <button name="ZYNTHIAN_JALV_ACTION" value="FILTER" class="btn btn-block btn-theme">Filter</button>
+                <input type="button" name="ZYNTHIAN_JALV_FILTER_ACTION" value="FILTER" class="btn btn-block btn-theme" onclick="javascript:filter_plugins();" />
             </div>
+
         </div>
 
         <div class="row">
@@ -26,9 +31,11 @@
     <ul class="nav nav-tabs" role="tablist">
     {% for pluginType in config['ZYNTHIAN_JALV_PLUGINS'] %}
     <li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == pluginType.replace(' ','_')  %}active{% end %}">
-        <a href="#{{ pluginType.replace(' ','_') }}"
+        <a id="#{{ pluginType.replace(' ','_') }}"
+           href="#{{ pluginType.replace(' ','_') }}"
+           class="tab_anchor"
            onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ pluginType.replace(' ','_') }}')" role="tab" data-toggle="tab">{{ pluginType }}
-            {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %} ({{ len(config['ZYNTHIAN_JALV_PLUGINS'][pluginType])  }}) {% end %}</a></li>
+            <span id="plugin_type_count_{{ pluginType }}">({{ len(config['ZYNTHIAN_JALV_PLUGINS'][pluginType])  }})</span></a></li>
     {% end %}
     </ul>
 
@@ -52,24 +59,24 @@
                     </div>
                   </div>
                   {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'][pluginType] %}
-                  <div class="row {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} advanced-view {% end %}" >
-                      <div id="plugin-installed" class="col-md-1 advanced-view" >
+                  <div class="rowi hide {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} advanced-view {% end %}" >
+                      <div class="col-md-1 advanced-view plugin-installed" >
                               <input type="checkbox"
                                      name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}"
                                      {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} checked="checked" {% end %}
-                                     {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %}DISABLED{% end %}
                             />
                       </div>
-                      <div id="plugin-name" class="col-md-4 one-line-truncated">
+                      <div class="col-md-4 one-line-truncated plugin-name">
                           {{ escape(pluginname) }}
                       </div>
-                      <div id="plugin-type" class="col-md-2">
+                      <div class="col-md-2 plugin-type">
                           {% if 'TYPE' in config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname] %}
     {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['TYPE']) }}
     {% end %}
                       </div>
-                      <div id="plugin-url" class="col-md-5 one-line-truncated">
-                              {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}
+                      <div class="col-md-5 one-line-truncated plugin-url">
+			<a href="{{ config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL'] }}" target="_blank">
+                              {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}</a>
                       </div>
                   </div>
                   {% end %}
@@ -88,17 +95,13 @@
     <div class="container-fluid">
         <div class="row"><br/></div>
         <div class="row">
-            <button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme btn-block advanced-view" {% if len(config['ZYNTHIAN_JALV_FILTER']) > 0 %}DISABLED{% end %}>Save</button>
+            <button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
         </div>
     </div>
 </form>
 
 <script type="text/javascript">
 var jalvForm = $('#jalv-lv2-form')[0];
-
-$(document).ready(function (){
-
-});
 
 function showProgressAnimation(){
     $("#loading-div-background").show();
@@ -124,9 +127,52 @@ function onchange_check_advanced_view() {
     }
 }
 
-$(document).ready(function() {
-    restore_advanced_view()
+$("#ZYNTHIAN_JALV_FILTER").on('keydown', function(e) {
+    if (e.which == 13) {
+        e.preventDefault();
+	filter_plugins();
+    }
 });
 
+$(document).ready(function() {
+    restore_advanced_view();
+    filter_plugins();
+});
+
+function reset_filter() {
+   $("#ZYNTHIAN_JALV_FILTER")[0].value = "";
+   filter_plugins();
+}
+
+function filter_plugins() {
+    filter_value=$("#ZYNTHIAN_JALV_FILTER")[0].value.toUpperCase();
+    $(".plugin-name").each(function(index,plugin_type_div) {
+	if (plugin_type_div.innerText.toUpperCase().includes(filter_value)){
+            plugin_type_div.parentElement.classList.remove("hide");    
+        } else {
+            plugin_type_div.parentElement.classList.add("hide");    
+        }
+    });
+
+    //recalc plugin count
+   $(".jalv-lv2-plugin-panel").each(function(index,plugin_panel_div) {
+       var panel_divs = plugin_panel_div.getElementsByClassName('plugin-name');
+       var panel_count = 0;
+       Array.from(panel_divs).forEach((plugin_type_div) => {
+          if (!plugin_type_div.parentElement.classList.contains("hide")){
+	     panel_count += 1;
+          }
+       });
+       $(".tab_anchor").each(function(idx,tab_anchor){
+          if(tab_anchor.id.indexOf(plugin_panel_div.parentElement.id)>=0){
+             tab_anchor.innerText = plugin_panel_div.parentElement.id.replace("_", " ") + " (" + panel_count + ")";	  
+          }
+       });
+   });
+}
+
+
+
 </script>
+
 

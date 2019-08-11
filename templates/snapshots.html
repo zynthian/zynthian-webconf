@@ -77,15 +77,15 @@
 
 $('#snapshot-panel').hide();
 $('#zynthian-selection-customized-panel').hide();
-$('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOTS'] %}'), bootstrap2: true ,
+$('#snapshot-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_SNAPSHOTS'].replace("'", "&#39;") %}'), bootstrap2: true ,
 	emptyIcon: "glyphicon glyphicon-floppy-disk",
 	expandIcon: "glyphicon glyphicon-folder-close",
 	collapseIcon: "glyphicon glyphicon-folder-open",
 	onNodeSelected: function(event, data) {
-		$("#ZYNTHIAN_SNAPSHOT_NAME")[0].value = data.name;
+		$("#ZYNTHIAN_SNAPSHOT_NAME")[0].value = data.name.replace("&#39;","'");
 		$("#ZYNTHIAN_SNAPSHOT_FULLPATH")[0].value = data.fullpath;
 		$("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO")[0].value = data.bank;
-		$("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].value = data.bank + (data.bankName? '-' + data.bankName : '');
+		$("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].value = data.bank + (data.bankName? '-' + data.bankName.replace("&#39;","'") : '');
 		$("#ZYNTHIAN_SNAPSHOT_SELECTION_BANK")[0].disabled = data.nodes;
 		$("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].value = data.program;
 		$("#ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM")[0].disabled = data.nodes;
