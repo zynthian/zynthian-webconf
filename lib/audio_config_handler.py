@@ -231,14 +231,6 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					logging.error("Alsa Mixer => {}".format(err))
 					errors["ALSAMIXER_{}".format(varname)] = str(err)
 
-		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
-			try:
-				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
-				call("amixer -c 1 cset numid=10,iface=MIXER,name='Line Capture Switch' 1", shell=True)
-			except Exception as err:
-				logging.error("AudioInjector Alsa Mixer => {}".format(err))
-				errors["ALSAMIXER_AUDIOINJECTOR"] = err
-
 		self.reboot_flag = True
 		self.get(errors)
 
