@@ -158,7 +158,7 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 			if m:
 				destinationFile = self.selected_full_path + "/" + m.group(2)
 				downloadedFile = self.musical_artifacts.download_artifact(sourceFile, destinationFile, self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE'), self.selected_full_path)
-				self.cleanup_download(self.selected_full_path, self.selected_full_path)
+				self.cleanup_download(self.selected_full_path)
 				self.selected_full_path = downloadedFile
 
 	def do_backup(self):
@@ -170,12 +170,18 @@ class SoundfontConfigHandler(tornado.web.RequestHandler):
 				self.write(backup_file.read())
 			self.finish()
 
-	def cleanup_download(self, currentDirectory, targetDirectory):
+	def cleanup_download(self, currentDirectory):
+		try:
+			shutil.rmtree(currentDirectory + "/__MACOSX")
+		except:
+			pass
+
+	def _cleanup_download(self, currentDirectory, targetDirectory):
 		fileList =  os.listdir(currentDirectory)
 		for f in fileList:
 			sourcePath = os.path.join(currentDirectory, f)
 			if os.path.isdir(sourcePath):
-				self.cleanup_download(sourcePath, targetDirectory)
+				self._cleanup_download(sourcePath, targetDirectory)
 				shutil.rmtree(sourcePath)
 			else:
 				if not f.startswith(".") and  f.endswith("." + self.get_argument('ZYNTHIAN_SOUNDFONT_SOUNDFONT_TYPE')):

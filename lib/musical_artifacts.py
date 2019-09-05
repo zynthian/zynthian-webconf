@@ -80,17 +80,25 @@ class MusicalArtifacts:
 
 	def download_tar_bz2(self, destinationFile, fileType, destinationFolder):
 		tar = tarfile.open(destinationFile, "r:bz2")
-		for member in tar.getmembers():
-			if member.isfile():
-				if member.name.endswith("." + fileType):
-					member.name = os.path.basename(member.name)
-					tar.extract(member, destinationFolder)
+		
+		if fileType=="sfz":
+			tar.extractall(destinationFolder)
+		else:
+			for member in tar.getmembers():
+				if member.isfile():
+					if member.name.endswith("." + fileType):
+						member.name = os.path.basename(member.name)
+						tar.extract(member, destinationFolder)
+
 		tar.close()
 
 
 	def download_zip(self, destinationFile, fileType, destinationFolder):
 		with zipfile.ZipFile(destinationFile,'r') as soundfontZip:
-			for member in soundfontZip.namelist():
-				if member.endswith("." + fileType):
-					soundfontZip.extract(member, destinationFolder)
+			if fileType=="sfz":
+				soundfontZip.extractall(destinationFolder)
+			else:
+				for member in soundfontZip.namelist():
+					if member.endswith("." + fileType):
+						soundfontZip.extract(member, destinationFolder)
 			soundfontZip.close()
