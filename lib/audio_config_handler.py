@@ -65,7 +65,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['AudioInjector', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-wm8731-audio',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorpi -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['AudioInjector Ultra', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
