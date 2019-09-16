@@ -39,29 +39,29 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	soundcard_presets=OrderedDict([
 		['HifiBerry DAC+', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ ADC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc\n',
 			#+'kernel=kernel7-hb.img',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ light', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ RTC', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\n'+
 				'dtoverlay=i2c-rtc,ds130',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry Digi', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry Amp', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-amp',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['AudioInjector', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-wm8731-audio',
