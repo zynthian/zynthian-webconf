@@ -57,7 +57,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['HifiBerry Digi', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -P -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry Amp', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-amp',
