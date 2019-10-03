@@ -113,11 +113,11 @@
 							<li class="dropdown {% if request.uri[0:9]=="/api/sys-" %}active{% end %}">
 								<a href="#menu-sys" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/sys-wifi" %}class="active"{% end %}><a href="/api/sys-wifi">Wifi</a></li>
+									<li {% if request.uri=="/api/sys-wifi" %}class="active"{% end %}><a href="/api/sys-wifi">Wi-Fi</a></li>
 									<li {% if request.uri=="/api/sys-security" %}class="active"{% end %}><a href="/api/sys-security">Security / Access</a></li>
 									<li {% if request.uri=="/api/sys-backup" %}class="active"{% end %}><a href="/api/sys-backup">Backup / Restore</a></li>
 									<li {% if request.uri=="/api/sys-reboot" %}class="active"{% end %}><a href="/api/sys-reboot">Reboot</a></li>
-									<li {% if request.uri=="/api/sys-poweroff" %}class="active"{% end %}><a href="/api/sys-poweroff">Poweroff</a></li>
+									<li {% if request.uri=="/api/sys-poweroff" %}class="active"{% end %}><a href="/api/sys-poweroff">Power Off</a></li>
 								</ul>
 							</li>
 							<li class="dropdown">
