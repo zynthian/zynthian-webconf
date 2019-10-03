@@ -336,7 +336,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			}],
 			['FRAMEBUFFER', {
 				'type': 'text',
-				'title': 'Frambuffer{}'.format(enable_custom_text),
+				'title': 'Framebuffer{}'.format(enable_custom_text),
 				'value': os.environ.get('FRAMEBUFFER'),
 				'advanced': True,
 				'disabled': enable_custom_text!=None
