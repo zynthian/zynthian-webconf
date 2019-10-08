@@ -69,7 +69,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['AudioInjector Ultra', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorul -r 48000 -p 256 -n 2 -X raw'
 		}],
 		['IQAudio DAC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-dac',
