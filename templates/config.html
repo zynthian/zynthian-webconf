@@ -92,9 +92,9 @@
 							<li class="dropdown {% if request.uri[0:8]=="/api/sw-" %}active{% end %}">
 								<a href="#menu-hw" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Software <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
+									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">LV2-Plugins</a></li>
 									<li {% if request.uri=="/api/sw-pìanoteq" %}class="active"{% end %}><a href="/api/sw-pianoteq">Pianoteq</a></li>
-									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">Jalv Plugins</a></li>
+									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
 									<li {% if request.uri=="/api/sw-repos" %}class="active"{% end %}><a href="/api/sw-repos">Repositories</a></li>
 									{% try %}{% if 'modui_uri' in info %}
 									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>

@@ -82,7 +82,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 				self.set_status(400)
 				self.finish("Configuring JALV LV2-Plugins failed: %s" % format(errors))
 			else:
-				self.render("config.html", body="jalv_lv2.html", config=config, title="JALV Plugins", errors=errors)
+				self.render("config.html", body="jalv_lv2.html", config=config, title="LV2-Plugins", errors=errors)
 
 	@tornado.web.authenticated
 	def post(self):
