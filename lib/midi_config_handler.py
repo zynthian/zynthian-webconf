@@ -124,7 +124,7 @@ def get_port_alias(midi_port):
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
-	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_MY_DATA_DIR")
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=ttymidi:MIDI_out\nENABLED_FB="
 
 	midi_program_change_presets=OrderedDict([
