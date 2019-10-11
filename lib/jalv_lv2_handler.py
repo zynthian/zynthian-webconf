@@ -47,8 +47,8 @@ class PluginType(Enum):
 #------------------------------------------------------------------------------
 
 class JalvLv2Handler(ZynthianConfigHandler):
-	JALV_LV2_CONFIG_FILE = "{}/jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
-	JALV_ALL_LV2_CONFIG_FILE = "{}/all_jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
+	JALV_LV2_CONFIG_FILE = "{}/jalv/plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
+	JALV_ALL_LV2_CONFIG_FILE = "{}/jalv/all_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
 
 	all_plugins = None
 	world = lilv.World()
