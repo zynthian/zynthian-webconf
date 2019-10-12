@@ -190,7 +190,6 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_drive=1\n'+
 				'hdmi_force_hotplug=1\n'+
 				'hdmi_group=2\n'+
-				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
 				'hdmi_timings=480 0 40 10 80 800 0 13 3 32 0 0 0 60 0 32000000 3',
 			'DISPLAY_WIDTH': '800',
