@@ -183,9 +183,22 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
+		['WaveShare 4 HDMI+GPIO', {
+			'DISPLAY_CONFIG':
+				'display_rotate=3\n'+
+				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=983,xmax=63241,ymin=3015,ymax=62998\n'+
+				'hdmi_drive=1\n'+
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_timings=480 0 40 10 80 800 0 13 3 32 0 0 0 60 0 32000000 3',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
 		['WaveShare 4.3 HDMI+GPIO', {
 			'DISPLAY_CONFIG': 
-				'display_rotate=2'+
+				'display_rotate=2\n'+
 				'hdmi_force_hotplug=1\n'+
 				'hdmi_group=2\n'+
 				'hdmi_mode=87\n'+
