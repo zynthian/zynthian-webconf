@@ -209,33 +209,33 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 				prog_details = ""
 				name = bank_name
 			else:
-				parts = f.split(".", 1)
-				if len(parts)==2:
-					fname = parts[0]
-					fext =parts[1]
-					if fext=="zss":
-						if _bank_num is not None:
-							bank_num = _bank_num.zfill(SnapshotConfigHandler.BANK_LEADING_ZEROS)
-							bank_name = _bank_name
-							parts = fname.split("-")
-							prog_num = parts[0]
-							if len(parts)==2:
-								prog_name = parts[1]
-							else:
-								prog_name = ""
+				fname = f[:-4]
+				fext = f[-4:]
+				if fext==".zss":
+					if _bank_num is not None:
+						bank_num = _bank_num.zfill(SnapshotConfigHandler.BANK_LEADING_ZEROS)
+						bank_name = _bank_name
+						parts = fname.split("-", 1)
+						prog_num = parts[0]
+						if len(parts)==2:
+							prog_name = fname[len(prog_num)+1:]
 						else:
-							bank_num = ''
-							bank_name = ''
-							prog_num = ''
-							prog_name = fname
-						name = prog_name
+							prog_name = ""
+					else:
+						bank_num = ''
+						bank_name = ''
+						prog_num = ''
+						prog_name = fname
+					name = prog_name
 
-						with open(fullpath) as ssfile:
-							try:
-								prog_details = json.load(ssfile)
-							except:
-								pass
-							ssfile.close()
+					with open(fullpath) as ssfile:
+						try:
+							prog_details = json.load(ssfile)
+						except:
+							pass
+						ssfile.close()
+				else:
+					continue
 
 			snapshot = {
 				'id': idx,

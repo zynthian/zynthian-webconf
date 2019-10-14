@@ -50,7 +50,7 @@
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-					<textarea id="SEL_PROG_DETAILS" name="SEL_PROG_DETAILS" rows="6"></textarea>
+					<textarea id="SEL_PROG_DETAILS" name="SEL_PROG_DETAILS" rows="6" readonly></textarea>
 				</div>
 			</div>
 			
@@ -95,9 +95,9 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 		$("#SEL_PROG_NUM")[0].value = data.prog_num;
 		$("#SEL_PROG_NUM")[0].disabled = data.nodes;
 		$("#SEL_PROG_DETAILS")[0].disabled = false;
-		if (data.program_details){
+		if (data.prog_details){
 			$("#SEL_PROG_DETAILS").show();
-			$("#SEL_PROG_DETAILS")[0].value = formatSnapshotDetails(data.program_details);
+			$("#SEL_PROG_DETAILS")[0].value = formatSnapshotDetails(data.prog_details);
 		} else {
 			$("#SEL_PROG_DETAILS").hide();
 		}
@@ -107,10 +107,21 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 $('#snapshot-tree').treeview('selectNode',{% raw config['SEL_NODE_ID'] %});
 
 function formatSnapshotDetails(snapshotDetails){
-	var result = '';
-	for (idx in snapshotDetails.layers){
-		layer = snapshotDetails.layers[idx]
-		result += layer.engine_nick + (layer.midi_chan + 1) + "-" + layer.bank_name + "/" + layer.preset_name + "\n";
+	var result = "";
+	for (var ch=0; ch<16; ch++) {
+		ch_layout = "";
+		for (idx in snapshotDetails.layers) {
+			layer = snapshotDetails.layers[idx]
+			if (ch==layer.midi_chan) {
+				if (ch_layout!="") ch_layout += "  ->";
+				else  ch_layout += (layer.midi_chan + 1) + '#';
+				ch_layout += layer.engine_nick + ">"
+				if (layer.bank_name) ch_layout += layer.bank_name + "/";
+				if (layer.preset_name) ch_layout += layer.preset_name;
+				ch_layout += "\n";
+			}
+		}
+		result += ch_layout;
 	}
 	return result;
 }
