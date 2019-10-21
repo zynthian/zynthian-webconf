@@ -61,6 +61,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		# Try to maintain selection after a POST action...
 		selected_node = 0
 		try:
+			action = self.get_argument('ACTION', '')
 			for ssbank in snapshots:
 				try:
 					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
@@ -75,7 +76,10 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 							except:
 								pass
 				except:
-					pass
+					if action == 'SAVE_AS_DEFAULT' and ssbank['name'] == 'default':
+						selected_node = ssbank['id']
+					if action == 'SAVE_AS_LAST_STATE' and ssbank['name'] == 'last_state':
+						selected_node = ssbank['id']
 
 		except Exception as e:
 			logging.debug("ERROR:" + str(e))
@@ -96,8 +100,10 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			errors = {
         		'NEW_BANK': lambda: self.do_new_bank(),
         		'REMOVE': lambda: self.do_remove(),
-				'SAVE': lambda: self.do_save()
-    		}[action]()
+				'SAVE': lambda: self.do_save(),
+				'SAVE_AS_DEFAULT': lambda: self.do_save_as_default(),
+				'SAVE_AS_LAST_STATE': lambda: self.do_save_as_last_state()
+			}[action]()
 
 		self.get(errors)
 
@@ -133,7 +139,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		if os.path.isdir(fullPath):
 			newFullPath += self.get_argument('SEL_BANK_NUM')
 			if self.get_argument('SEL_NAME'):
-				 newFullPath +=  '-' +  self.get_argument('SEL_NAME')
+				newFullPath += '-' + self.get_argument('SEL_NAME')
 			if os.path.exists(newFullPath):
 				return "Bank exists already!"
 		# Save Program
@@ -166,6 +172,18 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		except OSError:
 			return 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
 
+	def do_save_as_default(self):
+		dest = self.SNAPSHOTS_DIRECTORY + "/default.zss"
+		src = self.get_argument('SEL_FULLPATH')
+		logging.info("copy %s to %s" % (src, dest))
+		shutil.copyfile(src, dest)
+
+	def do_save_as_last_state(self):
+		dest = self.SNAPSHOTS_DIRECTORY + "/last_state.zss"
+		src = self.get_argument('SEL_FULLPATH')
+		logging.info(dest)
+		logging.info("copy %s to %s" % (src, dest))
+		shutil.copyfile(src, dest)
 
 	def get_existing_banks(self, snapshots, incl_name):
 		existing_banks = []

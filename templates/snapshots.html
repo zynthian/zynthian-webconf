@@ -72,6 +72,16 @@
 					<button name="ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block">Save</button>
 				</div>
 			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<button id="ACTION_SAVE_AS_DEFAULT" name="ACTION" value="SAVE_AS_DEFAULT" class="btn btn-lg btn-block">Save as default</button>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<button id="ACTION_SAVE_AS_LAST_STATE" name="ACTION" value="SAVE_AS_LAST_STATE" class="btn btn-lg btn-block">Save as last state</button>
+				</div>
+			</div>
 
 		</div>
 	</div>
@@ -98,8 +108,12 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 		if (data.prog_details){
 			$("#SEL_PROG_DETAILS").show();
 			$("#SEL_PROG_DETAILS")[0].value = formatSnapshotDetails(data.prog_details);
+			$("#ACTION_SAVE_AS_DEFAULT").show();
+			$("#ACTION_SAVE_AS_LAST_STATE").show();
 		} else {
 			$("#SEL_PROG_DETAILS").hide();
+			$("#ACTION_SAVE_AS_DEFAULT").hide();
+			$("#ACTION_SAVE_AS_LAST_STATE").hide();
 		}
 		$('#snapshot-panel').show();
 	}
