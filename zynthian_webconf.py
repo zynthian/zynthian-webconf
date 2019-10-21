@@ -31,7 +31,7 @@ import logging
 import tornado.web
 import tornado.ioloop
 
-from lib.login_handler import LoginHandler
+from lib.login_handler import LoginHandler, LogoutHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.display_config_handler import DisplayConfigHandler
@@ -125,6 +125,7 @@ def make_app():
 		(r'/captures/(.*)$', tornado.web.StaticFileHandler, {'path': 'captures'}),
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
+		(r"/logout", LogoutHandler),
 		(r"/api/lib-snapshot$", SnapshotConfigHandler),
 		(r"/api/lib-soundfont$", SoundfontConfigHandler),
 		(r"/api/lib-presets$", PresetsConfigHandler),
