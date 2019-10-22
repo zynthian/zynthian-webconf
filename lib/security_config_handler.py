@@ -95,7 +95,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 		if params['_command'][0]=="REGENERATE_KEYS":
 			cmd=os.environ.get('ZYNTHIAN_SYS_DIR') + "/sbin/regenerate_keys.sh"
 			check_output(cmd, shell=True)
-			self.redirect('/api/sys-reboot')
+			self.redirect('/sys-reboot')
 		else:
 			errors=self.update_system_config(params)
 			self.get(errors)

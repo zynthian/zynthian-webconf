@@ -2,9 +2,9 @@
     <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
 </div>
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
-<form id="jalv-lv2-form" action="/api/sw-jalv-lv2" enctype="multipart/form-data" method="post">
+<form id="jalv-lv2-form" action="/sw-jalv-lv2" enctype="multipart/form-data" method="post">
     <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
     <div class="container-fluid sw-jalv">
         <div class="row">

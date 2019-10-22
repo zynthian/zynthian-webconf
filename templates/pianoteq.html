@@ -1,11 +1,11 @@
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
-<form id="pianoteq-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
+<form id="pianoteq-upload-form" action="/upload" enctype="multipart/form-data" method="post">
 	{% module Template('upload.html', config=config) %}
 </form>
 
-<form id="pianoteq-form" action="/api/sw-pianoteq" enctype="multipart/form-data" method="post">
+<form id="pianoteq-form" action="/sw-pianoteq" enctype="multipart/form-data" method="post">
 <div class="container-fluid">
   <div class="row">
 		<div class="row">
@@ -15,7 +15,7 @@
 		</div>
 
 		<div class="row">
-		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="Upload Binary / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/api/upload?redirectUrl=/api/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
+		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="Upload Binary / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/upload?redirectUrl=/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
 		</div>
 
 		<div class="row"><br/></div>
@@ -34,10 +34,10 @@
 				If you installed PTQ files, you should restart the Pianoteq engine by removing any Pianoteq layer before having access to the new installed instruments and presets.
 			</p>
 			<p>
-				If you installed a new binary, you should <a href="/api/sys-reboot">reboot your zynthian</a> for complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key. Please, reload this page after rebooting.
+				If you installed a new binary, you should <a href="/sys-reboot">reboot your zynthian</a> for complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key. Please, reload this page after rebooting.
 			</p>
 			<p>
-				<a href="/api/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
+				<a href="/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
 			</p>
 		</div>
 

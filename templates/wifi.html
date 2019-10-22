@@ -1,5 +1,5 @@
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
 <form method="post">
 
@@ -86,7 +86,7 @@ function openWifiListModal() {
 		}
 	}
 	$("#newNetworkModal").modal('show');
-	$.getJSON( '/api/wifi/list' , {}, wifiListLoaded );
+	$.getJSON( '/wifi/list' , {}, wifiListLoaded );
 }
 
 function wifiListLoaded(data) {
