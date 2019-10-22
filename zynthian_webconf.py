@@ -125,7 +125,7 @@ def make_app():
 		(r'/captures/(.*)$', tornado.web.StaticFileHandler, {'path': 'captures'}),
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
-<<<<<<< HEAD
+		(r"/logout", LogoutHandler),
 		(r"/lib-snapshot$", SnapshotConfigHandler),
 		(r"/lib-soundfont$", SoundfontConfigHandler),
 		(r"/lib-presets$", PresetsConfigHandler),
@@ -151,34 +151,7 @@ def make_app():
 		(r"/sys-poweroff$", PoweroffHandler),
 		(r"/wifi/list$", WifiListHandler),
 		(r'/upload$', UploadHandler),
-		(r"/ws$", ZynthianWebSocketHandler),
-=======
-		(r"/logout", LogoutHandler),
-		(r"/api/lib-snapshot$", SnapshotConfigHandler),
-		(r"/api/lib-soundfont$", SoundfontConfigHandler),
-		(r"/api/lib-presets$", PresetsConfigHandler),
-		(r"/api/lib-captures$", CapturesConfigHandler),
-		(r"/api/hw-kit$", KitConfigHandler),
-		(r"/api/hw-audio$", AudioConfigHandler),
-		(r"/api/hw-display$", DisplayConfigHandler),
-		(r"/api/hw-wiring$", WiringConfigHandler),
-		(r"/api/sw-update$", SoftwareUpdateHandler),
-		(r"/api/sw-pianoteq$", PianoteqHandler),
-		(r"/api/sw-jalv-lv2$", JalvLv2Handler),
-		(r"/api/sw-repos$", RepositoryHandler),
-		(r"/api/ui-options$", UiConfigHandler),
-		(r"/api/ui-log$", UiLogHandler),
-		(r"/api/ui-midi-options$", MidiConfigHandler),
-		(r"/api/ui-midi-log$", MidiLogHandler),
-		(r"/api/sys-wifi$", WifiConfigHandler),
-		(r"/api/sys-backup$", SystemBackupHandler),
-		(r"/api/sys-security$", SecurityConfigHandler),
-		(r"/api/sys-reboot$", RebootHandler),
-		(r"/api/sys-poweroff$", PoweroffHandler),
-		(r"/api/wifi/list$", WifiListHandler),
-		(r'/api/upload$', UploadHandler),
-		(r"/api/ws$", ZynthianWebSocketHandler),
->>>>>>> master
+		(r"/ws$", ZynthianWebSocketHandler)
 	], **settings)
 
 
