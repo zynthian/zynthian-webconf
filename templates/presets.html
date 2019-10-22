@@ -76,7 +76,7 @@
 						<input type="text" id="NEW_BANK_NAME" name="NEW_BANK_NAME">
 					</div>
 					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="do_action('new_bank')">CREATE</button>
+						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="return do_action('new_bank')">CREATE</button>
 						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -89,12 +89,12 @@
 						<input type="text" id="SEL_BANK_NAME" name="SEL_BANK_NAME">
 					</div>
 					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-rename_bank" class="btn btn-theme btn-block" onclick="do_action('rename_bank')">RENAME</button>
+						<button id="button-rename_bank" class="btn btn-theme btn-block" onclick="return do_action('rename_bank')">RENAME</button>
 						<span id="loading-action-rename_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 					<br><br>
 					<div class="col-md-12 col-sm-12 text-center">
-						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) do_action('remove_bank')" class="btn btn-danger btn-block">DELETE</button>
+						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank')" class="btn btn-danger btn-block">DELETE</button>
 						<span id="loading-action-remove_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -108,12 +108,12 @@
 						<input type="text" id="SEL_PRESET_NAME" name="SEL_PRESET_NAME">
 					</div>
 					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-rename_preset" class="btn btn-theme btn-block" onclick="do_action('rename_preset')">RENAME</button>
+						<button id="button-rename_preset" class="btn btn-theme btn-block" onclick="return do_action('rename_preset')">RENAME</button>
 						<span id="loading-action-rename_preset" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 					<br><br>
 					<div class="col-md-12 col-sm-12 text-center">
-						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) do_action('remove_preset')" class="btn btn-danger btn-block">DELETE</button>
+						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset')" class="btn btn-danger btn-block">DELETE</button>
 						<span id="loading-action-remove_preset" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -122,7 +122,7 @@
 			<br>
 
 			<div id="download-panel">
-				<button id="button-download" class="btn btn-lg btn-theme btn-block" onclick="do_action('download')">DOWNLOAD</button>
+				<button id="button-download" class="btn btn-lg btn-theme btn-block" onclick="do_download()">DOWNLOAD</button>
 			</div>
 
 			<div class="row">
@@ -150,9 +150,11 @@ $(document).ready(function () {
 
 	load_preset_tree()
 
+/*
 	$("#presets-form").submit(function(e) {
 		return false
 	})
+*/
 	
 	$('#MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
 		// Enter pressed?
@@ -247,10 +249,12 @@ function load_preset_tree() {
 					renderPresetsTree(data['presets'])
 				}
 			} else {
-				alert("Can't get Presets Tree data: " + status)
+				$("#error-message-tree").html("Can't do " + action + ": " + status)
+				$("#error-message-tree").show(600)
 			}
 		}
 	)
+	return false
 }
 
 function do_action(action=null) {
@@ -275,10 +279,16 @@ function do_action(action=null) {
 					renderPresetsTree(data['presets'])
 				}
 			} else {
-				alert("Can't do " + action + ": " + status)
+				$("#error-message-action").html("Can't do " + action + ": " + status)
+				$("#error-message-action").show(600)
 			}
 		}
 	)
+	return false
+}
+
+function do_download() {
+	$("#presets-form").get(0).action="/lib-presets/download"
 }
 
 function renderPresetsTree(data) {

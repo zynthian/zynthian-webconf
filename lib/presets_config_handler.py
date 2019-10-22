@@ -23,8 +23,8 @@
 #********************************************************************
 
 import os
-import uuid
 import re
+import uuid
 import logging
 import tornado.web
 import json
@@ -76,15 +76,16 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				'rename_bank': lambda: self.do_rename_bank(),
 				'remove_preset': lambda: self.do_remove_preset(),
 				'rename_preset': lambda: self.do_rename_preset(),
+				'download': lambda: self.do_download(),
 				'search': lambda: self.do_search(),
-				'downlaod': lambda: self.do_download(),
 				'upload': lambda: self.do_upload()
 			}[action]()
 		except:
 			result = {}
 
 		# JSON Ouput
-		self.write(result)
+		if result:
+			self.write(result)
 
 
 	def do_get_tree(self):
@@ -161,6 +162,56 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		return result
 
 
+	def do_download(self):
+		result = {}
+		try:
+			fpath=self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
+			dname, fname = os.path.split(fpath)
+			if os.path.isdir(fpath):
+				zfpath = "/tmp/" + fname
+				shutil.make_archive(zfpath, 'zip', fpath)
+				fpath = zfpath + ".zip"
+				fname += ".zip"
+				delete = True
+				mime_type = "application/zip"
+			else:
+				delete = False
+				mime_type = "application/octet-stream"
+
+			self.set_header('Content-Type', mime_type)
+			self.set_header("Content-Description", "File Transfer")
+			self.set_header('Content-Disposition', 'attachment; filename="{}"'.format(fname))
+			with open(fpath, 'rb') as f:
+				while True:
+					data = f.read(4096)
+					if not data:
+						break
+					self.write(data)
+				self.finish()
+	
+			if delete:
+				os.remove(fpath)
+
+			return None
+
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't download file: {}".format(e)
+
+		return result
+
+
+	def do_upload(self):
+		try:
+			new_upload_file = self.get_argument('UPLOAD_FILE','')
+			if new_upload_file:
+				filename_parts = os.path.splitext(new_upload_file)
+				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
+		except OSError as err:
+			logging.error(format(err))
+			return format(err)
+
+
 	def do_search(self):
 		try:
 			self.searchResult = self.musical_artifacts.search_artifacts(self.get_argument('SEL_BANK_TYPE'), self.get_argument('MUSICAL_ARTIFACT_TAGS'))
@@ -169,7 +220,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			return format(err)
 
 
-	def do_download(self):
+	def install_artifact(self):
 		if self.get_argument('DOWNLOAD_FILE'):
 			source_file = self.get_argument('DOWNLOAD_FILE')
 			logging.debug("downloading: " + source_file)
@@ -183,17 +234,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				self.cleanup_download(self.selected_full_path, self.selected_full_path)
 
 				self.selected_full_path = self.revise_filename(self.selected_full_path, downloaded_file, file_type)
-
-
-	def do_upload(self):
-		try:
-			new_upload_file = self.get_argument('UPLOAD_FILE','')
-			if new_upload_file:
-				filename_parts = os.path.splitext(new_upload_file)
-				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
-		except OSError as err:
-			logging.error(format(err))
-			return format(err)
 
 
 	def revise_filename(self, selected_full_path, downloaded_file, file_type):
