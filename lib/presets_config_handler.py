@@ -26,10 +26,11 @@ import os
 import re
 import uuid
 import logging
-import tornado.web
 import json
 import shutil
 import requests
+import copy
+import tornado.web
 from collections import OrderedDict
 from subprocess import check_output, call
 
@@ -51,7 +52,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 	def get(self):
 		config=OrderedDict([])
 
-		config['engines'] = zynthian_gui_engine.engine_info
+		config['engines'] = self.get_engine_info()
 		config['engine'] = self.get_argument('ENGINE', 'ZY')
 		config['sel_node_id'] = self.get_argument('SEL_NODE_ID', -1)
 		config['musical_artifact_tags'] = self.get_argument('MUSICAL_ARTIFACT_TAGS', '')
@@ -270,18 +271,12 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			shutil.move(downloaded_file,selected_full_path + "/" + str(current_index).zfill(4 + "-" + filename))
 
 
-	def cleanup_download(self, currentDirectory, targetDirectory):
-		fileList =  os.listdir(currentDirectory)
-		for f in fileList:
-			sourcePath = os.path.join(currentDirectory, f)
-
-			if os.path.isdir(sourcePath):
-				self.cleanup_download(sourcePath, targetDirectory)
-				shutil.rmtree(sourcePath)
-			else:
-				if not f.startswith(".") and  f.endswith("." + self.get_argument('SEL_BANK_TYPE')):
-					targetPath = os.path.join(targetDirectory, f)
-					shutil.move(sourcePath, targetPath)
+	def get_engine_info(self):
+		engine_info = copy.copy(zynthian_gui_engine.engine_info)
+		for e in zynthian_gui_engine.engine_info:
+			if not hasattr(engine_info[e][3], "zynapi_get_banks"):
+				del engine_info[e]
+		return engine_info
 
 
 	def get_presets_data(self):

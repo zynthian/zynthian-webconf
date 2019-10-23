@@ -94,7 +94,7 @@
 					</div>
 					<br><br>
 					<div class="col-md-12 col-sm-12 text-center">
-						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank')" class="btn btn-danger btn-block">DELETE</button>
+						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block">DELETE</button>
 						<span id="loading-action-remove_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -113,7 +113,7 @@
 					</div>
 					<br><br>
 					<div class="col-md-12 col-sm-12 text-center">
-						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset')" class="btn btn-danger btn-block">DELETE</button>
+						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset'); else return false" class="btn btn-danger btn-block">DELETE</button>
 						<span id="loading-action-remove_preset" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
