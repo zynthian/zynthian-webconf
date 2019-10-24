@@ -29,45 +29,14 @@
 		<div id="presets-panel" class="col-md-7">
 			<input type="hidden" id="SEL_NODE_ID" name="SEL_NODE_ID" value="{{ escape(str(config['sel_node_id'])) }}">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH">
+			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
+			<input type="hidden" id="INSTALL_URL" name="INSTALL_URL">
 
 			<div id="upload-panel">
 				<button id="upload_show" class="btn btn-lg btn-theme btn-block">UPLOAD</button>
 			</div>
 
 			<br>
-
-			<div id="presets-search-panel">
-				<label for="MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts:</label>
-				<div class="row">
-					<div class="col-md-9 col-sm-12">
-						<input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
-					</div>
-					<div class="col-md-3 col-sm-12">
-						<button id="ACTION_SEARCH" name="ACTION" value="SEARCH" class="btn btn-theme btn-block" onclick="showProgressAnimation()" >SEARCH</button>
-					</div>
-				</div>
-				
-				{% if 'SEARCH_RESULT' in config %}
-				<table class="table table-striped table-bordered table-condensed">
-				{% for row in config['SEARCH_RESULT'] %}
-					<tr>
-						<td title="{{ escape(row['description']) }}">
-							{% if len(row['more_info'])>0 %}
-								<a href="{{ row['more_info'][0] }}" target="_blank" >
-									{{ row['name'] }}
-								</a>
-							{% else %}
-								{{ row['name'] }}
-							{% end %}
-						</td>
-						<td>
-							<button name="ACTION" value="DOWNLOAD" class="btn btn-theme btn-block" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
-						</td>
-					</tr>
-				{% end %}
-				</table>
-				{% end %}
-			</div>
 
 			<div id="presets-new-bank-panel">
 				<label>New Bank:</label>
@@ -119,8 +88,6 @@
 				</div>
 			</div>
 
-			<br>
-
 			<div id="download-panel">
 				<button id="button-download" class="btn btn-lg btn-theme btn-block" onclick="do_download()">DOWNLOAD</button>
 			</div>
@@ -129,20 +96,31 @@
 				<div id="error-message-action" class="alert alert-danger" style="display:none"></div>
 			</div>
 
+			<br>
+
+			<div id="presets-search-panel">
+				<label for="MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts:</label>
+				<div class="row">
+					<div class="col-md-9 col-sm-12">
+						<input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
+					</div>
+					<div class="col-md-3 col-sm-12 text-center">
+						<button id="button-search" class="btn btn-theme btn-block" onclick="return do_action('search')" >SEARCH</button>
+						<span id="loading-action-search" style="display:none;"><img src="/img/loading.gif"></span>
+					</div>
+				</div>
+				<div class="row" id="presets-search-result" style="display:none"></div>
+			</div>
+
 		</div>
 	</div>
 
 </div>
 </form>
 
-<div id="loading-div-background">
-  <div id="loading-div" class="ui-corner-all">
-    PROCESSING. PLEASE WAIT...
-  </div>
-</div>
+<div id="loading-action-install" style="display:none;"><img src="/img/loading.gif"></div>
 
 <script type="text/javascript">
-
 var presetsForm = $('#presets-form')[0];
 
 $(document).ready(function () {
@@ -261,6 +239,8 @@ function do_action(action=null) {
 	$("#button-" + action).hide()
 	$("#loading-action-" + action).show()
 	$("#error-message-action").hide()
+	
+	if (action=="search") $("#presets-search-result").hide()
 
 	$.post("lib-presets/" + action, 
 		$('#presets-form').serialize(),
@@ -277,6 +257,9 @@ function do_action(action=null) {
 				}
 				if ("presets" in data) {
 					renderPresetsTree(data['presets'])
+				}
+				if ("search_results" in data) {
+					renderSearchResults(data['search_results'])
 				}
 			} else {
 				$("#error-message-action").html("Can't do " + action + ": " + status)
@@ -302,8 +285,6 @@ function renderPresetsTree(data) {
 		collapseIcon: "glyphicon glyphicon-folder-open",
 		onNodeSelected: function(event, data) {
 			$("#loading-div-background").css({ opacity: 1.0 });
-			$('#presets-search-panel').show();
-			$('#presets-new-bank-panel').hide();
 			$('#presets-bank-panel').hide();
 			$('#presets-file-panel').hide();
 			$('#download-panel').hide();
@@ -313,15 +294,22 @@ function renderPresetsTree(data) {
 			$("#SEL_FULLPATH").val(data.fullpath);
 			//$("#presets-upload-form").attr("action", "/upload?redirectUrl=/lib-presets&destinationPath=" + data.full_path + "&clientId=" + $('#input-uploadfile-session')[0].value);
 
+			if (engine_methods.includes("zynapi_new_bank")) $('#presets-new-bank-panel').show();
+			else $('#presets-new-bank-panel').hide();
+
+			if (engine_methods.includes("zynapi_martifact_formats")) $('#presets-search-panel').show();
+			else $('#presets-search-panel').hide();
+
 			if (data.node_type == 'BANK') {
+				$("#SEL_BANK_FULLPATH").val(data.fullpath);
 				$('#SEL_BANK_NAME').val(data.name);
-				if (engine_methods.includes("zynapi_new_bank")) $('#presets-new-bank-panel').show();
 				if (engine_methods.includes("zynapi_rename_bank")) {
 					$('#presets-bank-panel').show();
 					$('#download-panel').show();
 				}
 				//$('#input-uploadfile-type')[0].value = data.bankType;
 			} else if (data.node_type == 'PRESET') {
+				$("#SEL_BANK_FULLPATH").val(data.bank_fullpath);
 				$('#SEL_PRESET_NAME').val(data.name);
 				if (engine_methods.includes("zynapi_rename_preset")) {
 					$('#presets-file-panel').show();
@@ -337,5 +325,32 @@ function renderPresetsTree(data) {
 	$('#presets-tree').treeview('selectNode', node_id);
 }
 
+function renderSearchResults(data) {
+	html = "<div class='col-md-12 col-sm-12'>\n"
+	for (i in data) {
+		html += "<div class='row'>"
+		html += "<div class='col-md-10 col-sm-10 font-weight-bold'><b>" + data[i].name + "</b></div>"
+		html += "<div class='action-buttons col-md-2 col-sm-2 text-right'>"
+		html += "<span class='fa fa-info-circle' onclick=\"$('#martifact-desc-" + data[i].id + "').toggle(200);\"></span>&nbsp;"
+		html += "<span class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "')\"></span>"
+		html += "</div>"
+		html += "<div class='col-sm-12' id='martifact-desc-" + data[i].id + "' style='display:none'>"
+		html += data[i].description + "(by <em>" + data[i].author + "</em>)"
+		html += "</div>\n"
+		html += "</div>"
+	}
+	html += "</div>"
+
+	$("#presets-search-result").html(html)
+	$("#presets-search-result").show()
+}
+
+function installMArtifact(name, url) {
+	if (confirm("Do you really want to install '" + name + "'?")) {
+		$('#INSTALL_URL').val(url);
+		return do_action("install")
+	}
+	return false
+}
 
 </script>

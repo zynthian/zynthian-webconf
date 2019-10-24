@@ -24,19 +24,19 @@
 
 import os
 import re
+import json
+import copy
 import uuid
 import logging
-import json
 import shutil
 import requests
-import copy
+import bz2
+import zipfile
+import tarfile
 import tornado.web
 from collections import OrderedDict
-from subprocess import check_output, call
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
-from lib.musical_artifacts import MusicalArtifacts
-
 from zyngui.zynthian_gui_engine import *
 
 #------------------------------------------------------------------------------
@@ -44,9 +44,6 @@ from zyngui.zynthian_gui_engine import *
 #------------------------------------------------------------------------------
 
 class PresetsConfigHandler(ZynthianConfigHandler):
-
-	musical_artifacts = MusicalArtifacts()
-
 
 	@tornado.web.authenticated
 	def get(self):
@@ -79,6 +76,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				'rename_preset': lambda: self.do_rename_preset(),
 				'download': lambda: self.do_download(),
 				'search': lambda: self.do_search(),
+				'install': lambda: self.do_install(),
 				'upload': lambda: self.do_upload()
 			}[action]()
 		except:
@@ -202,39 +200,101 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		return result
 
 
+	def do_search(self):
+		result = {}
+
+		try:
+			maformats = self.engine_cls.zynapi_martifact_formats()
+			result['search_results'] = self.search_artifacts(maformats, self.get_argument('MUSICAL_ARTIFACT_TAGS'))
+		except OSError as e:
+			logging.error(e)
+			result['errors'] = "Can't search Musical Artifacts: {}".format(e)
+
+		return result
+
+
+	def do_install(self):
+		result = {}
+
+		try:
+			self.install_url(self.get_argument('INSTALL_URL'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install URL: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def search_artifacts(self, formats, tags):
+		query_url = "https://musical-artifacts.com/artifacts.json"
+		sep = '?'
+		if formats:
+			query_url += sep + 'formats=' + formats
+			sep = "&"
+		if tags:
+			query_url += sep + 'tags=' + tags
+			sep = "&"
+
+		result = requests.get(query_url, verify=False).json()
+		for row in result:
+			if not "file" in row and "mirrors" in row and len(row['mirrors'])>0:
+				row['file'] = row['mirrors'][0]
+			if not "file" in row:
+				row['file'] = ''
+
+		return result
+
+
+	def install_file(self, fpath):
+		logging.info("Unpacking '{}' ...".format(fpath))
+		if fpath.endswith('.tar.bz2'):
+			dpath = fpath[:-8]
+			tar = tarfile.open(fpath, "r:bz2")
+			tar.extractall(dpath)
+			os.remove(fpath)
+		elif fpath.endswith('.tar.gz'):
+			dpath = fpath[:-7]
+			tar = tarfile.open(fpath, "r:gz")
+			tar.extractall(dpath)
+			os.remove(fpath)
+		elif fpath.endswith('.tgz'):
+			dpath = fpath[:-4]
+			tar = tarfile.open(fpath, "r:gz")
+			tar.extractall(dpath)
+			os.remove(fpath)
+		elif fpath.endswith('.zip'):
+			dpath = fpath[:-4]
+			with zipfile.ZipFile(fpath,'r') as soundfontZip:
+				soundfontZip.extractall(dpath)
+			os.remove(fpath)
+		else:
+			dpath = fpath
+
+		logging.info("Installing '{}' ...".format(dpath))
+		self.engine_cls.zynapi_install(dpath, self.get_argument('SEL_BANK_FULLPATH'))
+
+
+	def install_url(self, url):
+		logging.info("Downloading '{}' ...".format(url))
+		res = requests.get(url, verify=False)
+		head, tail = os.path.split(url)
+		fpath = "/tmp/" + tail
+		with open(fpath , "wb") as df:
+			df.write(res.content)
+			df.close()
+			self.install_file(fpath)
+
+
 	def do_upload(self):
 		try:
 			new_upload_file = self.get_argument('UPLOAD_FILE','')
 			if new_upload_file:
 				filename_parts = os.path.splitext(new_upload_file)
 				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
-		except OSError as err:
+		except Exception as err:
 			logging.error(format(err))
 			return format(err)
-
-
-	def do_search(self):
-		try:
-			self.searchResult = self.musical_artifacts.search_artifacts(self.get_argument('SEL_BANK_TYPE'), self.get_argument('MUSICAL_ARTIFACT_TAGS'))
-		except OSError as err:
-			logging.error(format(err))
-			return format(err)
-
-
-	def install_artifact(self):
-		if self.get_argument('DOWNLOAD_FILE'):
-			source_file = self.get_argument('DOWNLOAD_FILE')
-			logging.debug("downloading: " + source_file)
-
-			m = re.match('(.*/)(.*)', source_file, re.M | re.I | re.S)
-			if m:
-				destination_file = self.selected_full_path + "/" + m.group(2)
-				file_type = self.get_argument('SEL_BANK_TYPE')
-				downloaded_file = self.musical_artifacts.download_artifact(source_file, destination_file, file_type, self.selected_full_path)
-
-				self.cleanup_download(self.selected_full_path, self.selected_full_path)
-
-				self.selected_full_path = self.revise_filename(self.selected_full_path, downloaded_file, file_type)
 
 
 	def revise_filename(self, selected_full_path, downloaded_file, file_type):
@@ -284,7 +344,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
 
 		try:
-			i=0
+			i = 0
 			banks_data = []
 			for b in self.engine_cls.zynapi_get_banks():
 				brow = {
@@ -304,6 +364,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 							'text': p['text'],
 							'name': p['name'],
 							'fullpath': p['fullpath'],
+							'bank_fullpath' : b['fullpath'],
 							'node_type': 'PRESET',
 						}
 						i += 1
