@@ -1,6 +1,6 @@
 {
   "name": "bootstrap-slider",
-  "version": "9.8.0",
+  "version": "9.10.0",
   "description": "Slider view component for Twitter Bootstrap.",
   "main": "dist/bootstrap-slider.js",
   "style": "dist/css/bootstrap-slider.css",
@@ -76,7 +76,7 @@
       "variables": "src/less/variables.less"
     },
     "css": {
-      "bootstrap": "dependencies/css/bootstrap.min.css",
+      "bootstrap": "node_modules/bootstrap/dist/css/bootstrap.min.css",
       "highlightjs": "dependencies/css/highlightjs-github-theme.css"
     },
     "tpl": {
