@@ -56,7 +56,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		config['SNAPSHOTS'] = json.dumps(snapshots)
 		config['BANKS'] = self.get_existing_banks(snapshots, True)
 		config['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(snapshots, False))
-		config['PROGS_NUM'] = map(lambda x: str(x).zfill(SnapshotConfigHandler.PROG_LEADING_ZEROS), list(range(1, 129)))
+		config['PROGS_NUM'] = map(lambda x: str(x).zfill(SnapshotConfigHandler.PROG_LEADING_ZEROS), list(range(0, 128)))
 
 		# Try to maintain selection after a POST action...
 		selected_node = 0
@@ -200,7 +200,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 
 	def calculate_next_bank(self, existing_banks):
-		for i in range(1, 65536):
+		for i in range(0, 65535):
 			if str(i).zfill(SnapshotConfigHandler.BANK_LEADING_ZEROS) not in existing_banks:
 				return i
 		return ''
