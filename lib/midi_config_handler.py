@@ -265,7 +265,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'button',
 				'title': 'Delete MIDI profile',
 				'button_type': 'submit',
-				'class': 'btn-danger',
+				'class': 'btn-danger btn-block',
+				'icon' : 'fa fa-trash-o',
 				'script_file': 'midi_profile_delete.js'
 			}],
 			['zynthian_midi_profile_new_script_name', {
@@ -277,7 +278,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'button',
 				'title': 'New MIDI profile',
 				'button_type': 'button',
-				'class': 'btn-success',
+				'class': 'btn-success btn-block',
+				'icon' : 'fa fa-plus',
 				'script_file': 'midi_profile_new.js'
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {

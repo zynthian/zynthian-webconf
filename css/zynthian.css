@@ -426,3 +426,12 @@ div#presets-search-result .action-buttons span:hover {
   color: #50B000;
   cursor: pointer;
 }
+.no-gutters {
+  margin-right: 1px;
+  margin-left: 1px;
+}
+.no-gutters > .col,
+.no-gutters > [class*="col-"] {
+  padding-right: 1px;
+  padding-left: 1px;
+}

@@ -32,20 +32,14 @@
 			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
 			<input type="hidden" id="INSTALL_URL" name="INSTALL_URL">
 
-			<div id="upload-panel">
-				<button id="upload_show" class="btn btn-lg btn-theme btn-block">UPLOAD</button>
-			</div>
-
-			<br>
-
 			<div id="presets-new-bank-panel">
 				<label>New Bank:</label>
-				<div class="row">
-					<div class="col-md-9 col-sm-12">
+				<div class="row no-gutters">
+					<div class="col-xs-11">
 						<input type="text" id="NEW_BANK_NAME" name="NEW_BANK_NAME">
 					</div>
-					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="return do_action('new_bank')">CREATE</button>
+					<div class="col-xs-1 text-center">
+						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="return do_action('new_bank')" title="Create New Bank"><i class="fa fa-plus"></i></button>
 						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -53,17 +47,16 @@
 
 			<div id="presets-bank-panel">
 				<label for="SEL_BANK_NAME">Bank:</label>
-				<div class="row">
-					<div class="col-md-9 col-sm-12">
+				<div class="row no-gutters">
+					<div class="col-xs-10">
 						<input type="text" id="SEL_BANK_NAME" name="SEL_BANK_NAME">
 					</div>
-					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-rename_bank" class="btn btn-theme btn-block" onclick="return do_action('rename_bank')">RENAME</button>
+					<div class="col-xs-1 text-right">
+						<button id="button-rename_bank" class="btn btn-theme btn-block" onclick="return do_action('rename_bank')" title="Rename Bank"><i class="fa fa-check"></i></button>
 						<span id="loading-action-rename_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
-					<br><br>
-					<div class="col-md-12 col-sm-12 text-center">
-						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block">DELETE</button>
+					<div class="col-xs-1 text-right">
+						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block" title="Delete Bank"><i class="fa fa-trash-o"></i></button>
 						<span id="loading-action-remove_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -72,40 +65,46 @@
 
 			<div id="presets-file-panel">
 				<label for="SEL_PRESET_NAME">Preset:</label>
-				<div class="row">
-					<div class="col-md-9 col-sm-12">
+				<div class="row no-gutters">
+					<div class="col-xs-10">
 						<input type="text" id="SEL_PRESET_NAME" name="SEL_PRESET_NAME">
 					</div>
-					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-rename_preset" class="btn btn-theme btn-block" onclick="return do_action('rename_preset')">RENAME</button>
+					<div class="col-xs-1 text-right">
+						<button id="button-rename_preset" class="btn btn-theme btn-block" onclick="return do_action('rename_preset')" title="Rename Preset"><i class="fa fa-check"></i></button>
 						<span id="loading-action-rename_preset" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
-					<br><br>
-					<div class="col-md-12 col-sm-12 text-center">
-						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset'); else return false" class="btn btn-danger btn-block">DELETE</button>
+					<div class="col-xs-1 text-right">
+						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset'); else return false" class="btn btn-danger btn-block" title="Delete Preset"><i class="fa fa-trash-o"></i></button>
 						<span id="loading-action-remove_preset" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
 			</div>
 
 			<div id="download-panel">
-				<button id="button-download" class="btn btn-lg btn-theme btn-block" onclick="do_download()">DOWNLOAD</button>
+				<div class="row"><div class="col-md-12 col-sm-12 text-center">
+					<button id="button-download" class="btn btn-theme btn-block" onclick="do_download()" title="Download Preset/Bundle"><i class="fa fa-download"></i> Download
+					</button>
+				</div></div>
+			</div>
+
+			<div id="upload-panel">
+				<div class="row"><div class="col-md-12 col-sm-12 text-center">
+					<button id="upload_show" class="btn btn-theme btn-block" title="Upload Preset/Bundle"><i class="fa fa-upload"></i> Upload</button>
+				</div></div>
 			</div>
 
 			<div class="row">
 				<div id="error-message-action" class="alert alert-danger" style="display:none"></div>
 			</div>
 
-			<br>
-
 			<div id="presets-search-panel">
 				<label for="MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts:</label>
-				<div class="row">
-					<div class="col-md-9 col-sm-12">
+				<div class="row no-gutters">
+					<div class="col-xs-11">
 						<input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
 					</div>
-					<div class="col-md-3 col-sm-12 text-center">
-						<button id="button-search" class="btn btn-theme btn-block" onclick="return do_action('search')" >SEARCH</button>
+					<div class="col-xs-1 text-center">
+						<button id="button-search" class="btn btn-theme btn-block" onclick="return do_action('search')" title="Search"><i class="fa fa-search"></i></button>
 						<span id="loading-action-search" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>

@@ -49,6 +49,9 @@
 
 		{% elif config[varname]['type']=='button' %}
 			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn {{ config[varname]['class'] }}" {{ disabled }}>
+				{% if 'icon' in config[varname] %}
+					<i class="{{ config[varname]['icon'] }}"></i>
+				{% end %}
 				{{ config[varname]['title'] }}
 			</button>
 			{% if 'script_file' in config[varname] %}
@@ -103,7 +106,7 @@
 	</div>
 {% end %}
 
-<input type="submit" value="Save" class="btn btn-lg btn-theme" />
+<button id="button-save-config" class="btn btn-lg btn-theme btn-block" title="Save Config"><i class="fa fa-check"></i> Save</button>
 
 </form>
 
