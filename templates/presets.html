@@ -20,6 +20,19 @@
 			<div id="loading-tree" class="text-center" style="display:none;">
 				<br><br>
 				<img src="/img/loading.gif">
+				<br><br>
+			</div>
+			<div id="presets-new-bank-panel">
+				<div class="input-group">
+					<span class="input-group-addon">
+						<label>New bank</label>
+					</span>
+					<input id="NEW_BANK_NAME" name="NEW_BANK_NAME" aria-label="New Bank" class="form-control">
+					<span class="input-group-btn">
+						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="return do_action('new_bank')" title="Create New Bank"><i class="fa fa-plus"></i></button>
+						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
+					</span>
+				</div>
 			</div>
 			<div class="row">
 				<div id="error-message-tree" class="alert alert-danger" style="display:none">{{ errors }}</div>
@@ -32,19 +45,6 @@
 			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
 			<input type="hidden" id="INSTALL_URL" name="INSTALL_URL">
 
-			<div id="presets-new-bank-panel">
-				<label>New Bank:</label>
-				<div class="row no-gutters">
-					<div class="col-xs-11">
-						<input type="text" id="NEW_BANK_NAME" name="NEW_BANK_NAME">
-					</div>
-					<div class="col-xs-1 text-center">
-						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="return do_action('new_bank')" title="Create New Bank"><i class="fa fa-plus"></i></button>
-						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
-					</div>
-				</div>
-			</div>
-
 			<div id="presets-bank-panel">
 				<label for="SEL_BANK_NAME">Bank:</label>
 				<div class="row no-gutters">
@@ -56,7 +56,7 @@
 						<span id="loading-action-rename_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 					<div class="col-xs-1 text-right">
-						<button name="ACTION" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block" title="Delete Bank"><i class="fa fa-trash-o"></i></button>
+						<button id="button-remove_bank" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block" title="Delete Bank"><i class="fa fa-trash-o"></i></button>
 						<span id="loading-action-remove_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
@@ -201,10 +201,12 @@ function setDownloadFile(filename){
 var engine_methods=[]
 
 function load_preset_tree() {
-	$('#presets-search-panel').show();
-	$('#presets-new-bank-panel').show();
+	$('#presets-new-bank-panel').hide();
 	$('#presets-bank-panel').hide();
 	$('#presets-file-panel').hide();
+	$('#download-panel').hide();
+	$('#upload-panel').hide();
+	$('#presets-search-panel').hide();
 
 	$('#presets-tree').hide()
 	$("#loading-tree").show()
@@ -293,12 +295,6 @@ function renderPresetsTree(data) {
 			$("#SEL_FULLPATH").val(data.fullpath);
 			//$("#presets-upload-form").attr("action", "/upload?redirectUrl=/lib-presets&destinationPath=" + data.full_path + "&clientId=" + $('#input-uploadfile-session')[0].value);
 
-			if (engine_methods.includes("zynapi_new_bank")) $('#presets-new-bank-panel').show();
-			else $('#presets-new-bank-panel').hide();
-
-			if (engine_methods.includes("zynapi_martifact_formats")) $('#presets-search-panel').show();
-			else $('#presets-search-panel').hide();
-
 			if (data.node_type == 'BANK') {
 				$("#SEL_BANK_FULLPATH").val(data.fullpath);
 				$('#SEL_BANK_NAME').val(data.name);
@@ -317,6 +313,14 @@ function renderPresetsTree(data) {
 			}
 		}
 	});
+
+	if (engine_methods.includes("zynapi_new_bank")) $('#presets-new-bank-panel').show();
+	else $('#presets-new-bank-panel').hide();
+
+	$('#upload-panel').show();
+
+	if (engine_methods.includes("zynapi_martifact_formats")) $('#presets-search-panel').show();
+	else $('#presets-search-panel').hide();
 
 	var node_id = parseInt($("#SEL_NODE_ID").val())
 	$('#presets-tree').treeview('collapseAll', { silent: true });
