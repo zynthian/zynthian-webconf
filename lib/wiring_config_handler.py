@@ -136,7 +136,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
 			enable_custom_text = " (select Custom kit to enable)"
 		else:
-			enable_custom_text = None
+			enable_custom_text = ""
 
 		config=OrderedDict([
 			['ZYNTHIAN_WIRING_LAYOUT', {
@@ -145,28 +145,28 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 				'options': list(self.wiring_presets.keys()),
 				'presets': self.wiring_presets,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_A', {
 				'type': 'text',
 				'title': "Encoders A-pins{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_WIRING_ENCODER_B', {
 				'type': 'text',
 				'title': "Encoders B-pins{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_WIRING_SWITCHES', {
 				'type': 'text',
 				'title': "Switches Pins{}".format(enable_custom_text),
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
 				'type': 'select',
@@ -186,7 +186,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'27': 'WPi-GPIO 27 (pin 36)'
 				},
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
 				'type': 'select',
@@ -206,7 +206,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'27': 'WPi-GPIO 27 (pin 36)'
 				},
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01', {
 				'type': 'select',
