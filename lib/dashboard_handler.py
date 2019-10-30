@@ -68,14 +68,14 @@ class DashboardHandler(ZynthianConfigHandler):
 					'title': 'Wiring',
 					'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 					'url': "/hw-wiring"
+				}],
+				['GPIO_EXPANDER', {
+					'title': 'GPIO Expander',
+					'value': self.get_gpio_expander(),
+					'url': "/hw-wiring"
 				}]
 			])],
 			['SYSTEM', OrderedDict([
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
-					'url': "/sys-security"
-				}],
 				['OS_INFO', {
 					'title': 'OS',
 					'value': "{}".format(self.get_os_info())
@@ -87,6 +87,16 @@ class DashboardHandler(ZynthianConfigHandler):
 				['SD CARD', {
 					'title': 'SD Card',
 					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
+				}],
+				['HOSTNAME', {
+					'title': 'Hostname',
+					'value': self.get_host_name(),
+					'url': "/sys-security"
+				}],
+				['IP', {
+					'title': 'IP',
+					'value': self.get_ip(),
+					'url': "/sys-wifi"
 				}]
 			])],
 			['MIDI', OrderedDict([
@@ -196,8 +206,16 @@ class DashboardHandler(ZynthianConfigHandler):
 
 
 	def get_ip(self):
-		out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
+		#out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
+		out=check_output("hostname -I", shell=True).decode()
 		return out
+
+
+	def get_gpio_expander(self):
+		out=check_output("gpio i2cd", shell=True).decode().split("\n")
+		if out[3].startswith("20: 20"):
+			return "MCP23017"
+		return "No detected"
 
 
 	def get_ram_info(self):
