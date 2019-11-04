@@ -5,9 +5,9 @@
 }
 </style>
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
-<form id="captures-form" action="/api/lib-captures" enctype="multipart/form-data" method="post">
+<form id="captures-form" action="/lib-captures" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
 	<div id="no-captures-panel" class="row">
 		No captures have been made yet.
@@ -26,17 +26,24 @@
 
 			<div id="captures-input" class="row">
 				<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
-				<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME">
-			</div>
-
-			<div id="captures-buttons" class="row">
-				<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme">RENAME</button>
-				<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme">DOWNLOAD</button>
-				<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger">DELETE</button>
+				<div class="row no-gutters">
+					<div class="col-xs-9">	
+						<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME">
+					</div>
+					<div class="col-xs-1">	
+						<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme btn-block" title="Rename"><i class="fa fa-check"></i></button>
+					</div>
+					<div class="col-xs-1">	
+						<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme btn-block" title="Download"><i class="fa fa-download"></i></button>
+					</div>
+					<div class="col-xs-1">	
+						<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block"><i class="fa fa-trash-o"></i></button>
+					</div>
+				</div>
 			</div>
 
 			<div id="captures-player" class="row">
-				<audio id="ZYNTHIAN_CAPTURES_PLAYER" controls src="">Browser does not support audio playback</audio>
+				<audio id="ZYNTHIAN_CAPTURES_PLAYER" style="width:100%;" controls src="">Browser does not support audio playback</audio>
 			</div>
 
 		</div>

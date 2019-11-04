@@ -2,7 +2,7 @@
         <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
 </div>
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
 <form id="restore-upload-form" action="#" enctype="multipart/form-data" method="post">
 {% module Template('upload.html', config=config) %}
@@ -127,7 +127,7 @@ $(document).ready(function (){
 
 		var url = window.location.href
 		var parts = url.split("/");
-		$("#restore-upload-form").attr("action", "http://" + parts[2] + "/api/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
+		$("#restore-upload-form").attr("action", "http://" + parts[2] + "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
 
 
 		$('#upload_panel')[0].onuploadend = function(response){

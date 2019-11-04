@@ -57,25 +57,25 @@ class DashboardHandler(ZynthianConfigHandler):
 				['SOUNDCARD_NAME', {
 					'title': 'Soundcard',
 					'value': os.environ.get('SOUNDCARD_NAME'),
-					'url': "/api/hw-audio"
+					'url': "/hw-audio"
 				}],
 				['DISPLAY_NAME', {
 					'title': 'Display',
 					'value': os.environ.get('DISPLAY_NAME'),
-					'url': "/api/hw-display"
+					'url': "/hw-display"
 				}],
 				['WIRING_LAYOUT', {
 					'title': 'Wiring',
 					'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
-					'url': "/api/hw-wiring"
+					'url': "/hw-wiring"
+				}],
+				['GPIO_EXPANDER', {
+					'title': 'GPIO Expander',
+					'value': self.get_gpio_expander(),
+					'url': "/hw-wiring"
 				}]
 			])],
 			['SYSTEM', OrderedDict([
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': "{} ({})".format(self.get_host_name(),self.get_ip()),
-					'url': "/api/sys-security"
-				}],
 				['OS_INFO', {
 					'title': 'OS',
 					'value': "{}".format(self.get_os_info())
@@ -87,33 +87,43 @@ class DashboardHandler(ZynthianConfigHandler):
 				['SD CARD', {
 					'title': 'SD Card',
 					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
+				}],
+				['HOSTNAME', {
+					'title': 'Hostname',
+					'value': self.get_host_name(),
+					'url': "/sys-security"
+				}],
+				['IP', {
+					'title': 'IP',
+					'value': self.get_ip(),
+					'url': "/sys-wifi"
 				}]
 			])],
 			['MIDI', OrderedDict([
 				['PROFILE', {
 					'title': 'Profile',
 					'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
-					'url': "/api/ui-midi-options"
+					'url': "/ui-midi-options"
 				}],
 				['FINE_TUNING', {
 					'title': 'Fine Tuning',
 					'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
-					'url': "/api/ui-midi-options"
+					'url': "/ui-midi-options"
 				}],
 				['MASTER_CHANNEL', {
 					'title': 'Master Channel',
 					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
-					'url': "/api/ui-midi-options"
+					'url': "/ui-midi-options"
 				}],
 				['QMIDINET', {
 					'title': 'QmidiNet',
 					'value': str(self.is_service_active("qmidinet")),
-					'url': "/api/ui-midi-options"
+					'url': "/ui-midi-options"
 				}],
 				['TOUCHOSC', {
 					'title': 'TouchOSC',
 					'value': str(self.is_service_active("touchosc2midi")),
-					'url': "/api/ui-midi-options"
+					'url': "/ui-midi-options"
 				}]
 			])],
 			['SOFTWARE', OrderedDict([
@@ -147,27 +157,27 @@ class DashboardHandler(ZynthianConfigHandler):
 				['SNAPSHOTS', {
 					'title': 'Snapshots',
 					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots")),
-					'url': "/api/lib-snapshot"
+					'url': "/lib-snapshot"
 				}],
 				['USER_PRESETS', {
 					'title': 'User Presets',
 					'value': str(self.get_num_of_presets(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets")),
-					'url': "/api/lib-presets"
+					'url': "/lib-presets"
 				}],
 				['USER_SOUNDFONTS', {
 					'title': 'User Soundfonts',
 					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts")),
-					'url': "/api/lib-soundfont"
+					'url': "/lib-soundfont"
 				}],
 				['AUDIO_CAPTURES', {
 					'title': 'Audio Captures',
 					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav")),
-					'url': "/api/lib-captures"
+					'url': "/lib-captures"
 				}],
 				['MIDI_CAPTURES', {
 					'title': 'MIDI Captures',
 					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid")),
-					'url': "/api/lib-captures"
+					'url': "/lib-captures"
 				}]
 			])]
 		])
@@ -196,8 +206,16 @@ class DashboardHandler(ZynthianConfigHandler):
 
 
 	def get_ip(self):
-		out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
+		#out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
+		out=check_output("hostname -I", shell=True).decode()
 		return out
+
+
+	def get_gpio_expander(self):
+		out=check_output("gpio i2cd", shell=True).decode().split("\n")
+		if out[3].startswith("20: 20"):
+			return "MCP23017"
+		return "No detected"
 
 
 	def get_ram_info(self):

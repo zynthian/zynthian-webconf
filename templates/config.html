@@ -62,7 +62,7 @@
 						<span class="fa fa-bars color-white"></span>
 					</button>
 					<h1>
-						<a class="navbar-brand" href="/" title="Inicio">
+						<a class="navbar-brand" href="/" title="Start">
 							<img src="/img/logo/zynthian_logo_black_trans_320.png" data-0="height:64px;" data-300="height:50px;">
 						</a>
 					</h1>
@@ -71,53 +71,54 @@
 					<ul class="nav navbar-nav" data-0="margin-top:12px;" data-300="margin-top:0px;">
 					{% if current_user is not None %}
 
-							<li class="dropdown {% if request.uri[0:9]=="/api/lib-" %}active{% end %}">
+							<li class="dropdown {% if request.uri[0:9]=="/lib-" %}active{% end %}">
 								<a href="#menu-lib" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Library <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/lib-snapshot" %}class="active"{% end %}><a href="/api/lib-snapshot">Snapshots</a></li>
-									<li {% if request.uri=="/api/lib-soundfont" %}class="active"{% end %}><a href="/api/lib-soundfont">Soundfonts</a></li>
-									<li {% if request.uri=="/api/lib-presets" %}class="active"{% end %}><a href="/api/lib-presets">Presets</a></li>
-									<li {% if request.uri=="/api/lib-captures" %}class="active"{% end %}><a href="/api/lib-captures">Captures</a></li>
+									<li {% if request.uri=="/lib-snapshot" %}class="active"{% end %}><a href="/lib-snapshot">Snapshots</a></li>
+									<li {% if request.uri=="/lib-captures" %}class="active"{% end %}><a href="/lib-captures">Captures</a></li>
+									<!--<li {% if request.uri=="/lib-soundfont" %}class="active"{% end %}><a href="/lib-soundfont">Soundfonts</a></li>-->
+									<li {% if request.uri=="/lib-presets" %}class="active"{% end %}><a href="/lib-presets">Presets &amp; Soundfonts</a></li>
 								</ul>
 							</li>
-							<li class="dropdown {% if request.uri[0:8]=="/api/hw-" %}active{% end %}">
+							<li class="dropdown {% if request.uri[0:8]=="/hw-" %}active{% end %}">
 								<a href="#menu-hw" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Hardware <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/hw-kit" %}class="active"{% end %}><a href="/api/hw-kit">Kit</a></li>
-									<li {% if request.uri=="/api/hw-audio" %}class="active"{% end %}><a href="/api/hw-audio">Audio</a></li>
-									<li {% if request.uri=="/api/hw-display" %}class="active"{% end %}><a href="/api/hw-display">Display</a></li>
-									<li {% if request.uri=="/api/hw-wiring" %}class="active"{% end %}><a href="/api/hw-wiring">Wiring</a></li>
+									<li {% if request.uri=="/hw-kit" %}class="active"{% end %}><a href="/hw-kit">Kit</a></li>
+									<li {% if request.uri=="/hw-audio" %}class="active"{% end %}><a href="/hw-audio">Audio</a></li>
+									<li {% if request.uri=="/hw-display" %}class="active"{% end %}><a href="/hw-display">Display</a></li>
+									<li {% if request.uri=="/hw-wiring" %}class="active"{% end %}><a href="/hw-wiring">Wiring</a></li>
 								</ul>
 							</li>
-							<li class="dropdown {% if request.uri[0:8]=="/api/sw-" %}active{% end %}">
+							<li class="dropdown {% if request.uri[0:8]=="/sw-" %}active{% end %}">
 								<a href="#menu-hw" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Software <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/sw-update" %}class="active"{% end %}><a href="/api/sw-update">Update</a></li>
-									<li {% if request.uri=="/api/sw-pìanoteq" %}class="active"{% end %}><a href="/api/sw-pianoteq">Pianoteq</a></li>
-									<li {% if request.uri=="/api/sw-jalv-lv2" %}class="active"{% end %}><a href="/api/sw-jalv-lv2">Jalv Plugins</a></li>
-									<li {% if request.uri=="/api/sw-repos" %}class="active"{% end %}><a href="/api/sw-repos">Repositories</a></li>
+									<li {% if request.uri=="/sw-jalv-lv2" %}class="active"{% end %}><a href="/sw-jalv-lv2">LV2-Plugins</a></li>
+									<li {% if request.uri=="/sw-pìanoteq" %}class="active"{% end %}><a href="/sw-pianoteq">Pianoteq</a></li>
+									<li {% if request.uri=="/sw-update" %}class="active"{% end %}><a href="/sw-update">Update</a></li>
+									<li {% if request.uri=="/sw-repos" %}class="active"{% end %}><a href="/sw-repos">Repositories</a></li>
 									{% try %}{% if 'modui_uri' in info %}
 									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
 									{% end %}{% except %}{% end %}
 								</ul>
 							</li>
-							<li class="dropdown {% if request.uri[0:8]=="/api/ui-" %}active{% end %}">
+							<li class="dropdown {% if request.uri[0:8]=="/ui-" %}active{% end %}">
 								<a href="#menu-ui" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">Interface <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/ui-options" %}class="active"{% end %}><a href="/api/ui-options">UI Options</a></li>
-									<li {% if request.uri=="/api/ui-log" %}class="active"{% end %}><a href="/api/ui-log">UI Log</a></li>
-									<li {% if request.uri=="/api/ui-midi-options" %}class="active"{% end %}><a href="/api/ui-midi-options">MIDI Options</a></li>
-									<li {% if request.uri=="/api/ui-midi-log" %}class="active"{% end %}><a href="/api/ui-midi-log">MIDI Log</a></li>
+									<li {% if request.uri=="/ui-options" %}class="active"{% end %}><a href="/ui-options">UI Options</a></li>
+									<li {% if request.uri=="/ui-log" %}class="active"{% end %}><a href="/ui-log">UI Log</a></li>
+									<li {% if request.uri=="/ui-midi-options" %}class="active"{% end %}><a href="/ui-midi-options">MIDI Options</a></li>
+									<li {% if request.uri=="/ui-midi-log" %}class="active"{% end %}><a href="/ui-midi-log">MIDI Log</a></li>
 								</ul>
 							</li>
-							<li class="dropdown {% if request.uri[0:9]=="/api/sys-" %}active{% end %}">
+							<li class="dropdown {% if request.uri[0:9]=="/sys-" %}active{% end %}">
 								<a href="#menu-sys" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/api/sys-wifi" %}class="active"{% end %}><a href="/api/sys-wifi">Wifi</a></li>
-									<li {% if request.uri=="/api/sys-security" %}class="active"{% end %}><a href="/api/sys-security">Security / Access</a></li>
-									<li {% if request.uri=="/api/sys-backup" %}class="active"{% end %}><a href="/api/sys-backup">Backup / Restore</a></li>
-									<li {% if request.uri=="/api/sys-reboot" %}class="active"{% end %}><a href="/api/sys-reboot">Reboot</a></li>
-									<li {% if request.uri=="/api/sys-poweroff" %}class="active"{% end %}><a href="/api/sys-poweroff">Poweroff</a></li>
+									<li {% if request.uri=="/sys-wifi" %}class="active"{% end %}><a href="/sys-wifi">Wi-Fi</a></li>
+									<li {% if request.uri=="/sys-security" %}class="active"{% end %}><a href="/sys-security">Security / Access</a></li>
+									<li {% if request.uri=="/sys-backup" %}class="active"{% end %}><a href="/sys-backup">Backup / Restore</a></li>
+									<li {% if request.uri=="/sys-reboot" %}class="active"{% end %}><a href="/sys-reboot">Reboot</a></li>
+									<li {% if request.uri=="/sys-poweroff" %}class="active"{% end %}><a href="/sys-poweroff">Power Off</a></li>
+									<li><a href="/logout">Logout</a></li>
 								</ul>
 							</li>
 							<li class="dropdown">

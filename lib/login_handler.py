@@ -45,19 +45,25 @@ class LoginHandler(tornado.web.RequestHandler):
 			rcparts = root_crypt.split('$')
 			input_crypt = crypt.crypt(input_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
 		except:
-			logging.info("OPENING DEVELOPERS BACKDOOR ...")
+			logging.info("OPENING DEVELOPERS BACKDOOR ...")  # only open when running on pc
 			root_crypt = "webconfdeveloper"
 			input_crypt = input_passwd
 		try:
-			logging.debug("PASSWD: %s <=> %s" % (root_crypt,input_crypt))
-			if input_crypt==root_crypt:
+			logging.debug("PASSWD: %s <=> %s" % (root_crypt, input_crypt))
+			if input_crypt == root_crypt:
 				self.set_secure_cookie("user", "root")
 				if self.get_argument("next"):
 					self.redirect(self.get_argument("next"))
 				else:
 					self.redirect("/")
 			else:
-				self.get({"PASSWORD":"Incorrect Password"})
+				self.get({"PASSWORD": "Incorrect Password"})
 		except Exception as e:
-				logging.error(e)
-				self.get({"PASSWORD":"Authentication Failure"})
+			logging.error(e)
+			self.get({"PASSWORD": "Authentication Failure"})
+
+
+class LogoutHandler(tornado.web.RequestHandler):
+    def get(self):
+        self.clear_cookie('user')
+        self.redirect(self.get_argument('next', '/'))

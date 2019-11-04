@@ -47,8 +47,8 @@ class PluginType(Enum):
 #------------------------------------------------------------------------------
 
 class JalvLv2Handler(ZynthianConfigHandler):
-	JALV_LV2_CONFIG_FILE = "{}/jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
-	JALV_ALL_LV2_CONFIG_FILE = "{}/all_jalv_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
+	JALV_LV2_CONFIG_FILE = "{}/jalv/plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
+	JALV_ALL_LV2_CONFIG_FILE = "{}/jalv/all_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
 
 	all_plugins = None
 	world = lilv.World()
@@ -82,7 +82,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 				self.set_status(400)
 				self.finish("Configuring JALV LV2-Plugins failed: %s" % format(errors))
 			else:
-				self.render("config.html", body="jalv_lv2.html", config=config, title="JALV Plugins", errors=errors)
+				self.render("config.html", body="jalv_lv2.html", config=config, title="LV2-Plugins", errors=errors)
 
 	@tornado.web.authenticated
 	def post(self):

@@ -1,136 +1,143 @@
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
-<form id="presets-upload-form" action="/api/upload" enctype="multipart/form-data" method="post">
+<form id="presets-upload-form" action="/upload" enctype="multipart/form-data" method="post">
 	{% module Template('upload.html', config=config) %}
 </form>
 
-<form id="presets-form" action="/api/lib-presets" enctype="multipart/form-data" method="post">
+<form id="presets-form" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
 
 	<div class="row">
 
 		<div class="col-md-5">
+			<select id="ENGINE" name="ENGINE" onchange="load_preset_tree()">
+				{% for key in config['engines'] %}
+					<option value="{{key}}" {{ 'selected' if config['engine']==key else '' }}>{{config['engines'][key][1]}}</option>
+				{% end %}
+			</select>
 			<div id="presets-tree"></div>
+			<div id="loading-tree" class="text-center" style="display:none;">
+				<br><br>
+				<img src="/img/loading.gif">
+				<br><br>
+			</div>
+			<div id="presets-new-bank-panel">
+				<div class="input-group">
+					<span class="input-group-addon">
+						<label>New bank</label>
+					</span>
+					<input id="NEW_BANK_NAME" name="NEW_BANK_NAME" aria-label="New Bank" class="form-control">
+					<span class="input-group-btn">
+						<button id="button-new_bank" class="btn btn-theme btn-block" onclick="return do_action('new_bank')" title="Create New Bank"><i class="fa fa-plus"></i></button>
+						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
+					</span>
+				</div>
+			</div>
+			<div class="row">
+				<div id="error-message-tree" class="alert alert-danger" style="display:none">{{ errors }}</div>
+			</div>
 		</div>
 
 		<div id="presets-panel" class="col-md-7">
-			<input type="hidden" id="ZYNTHIAN_PRESETS_FULLPATH" name="ZYNTHIAN_PRESETS_FULLPATH" />
-			<input type="hidden" id="ZYNTHIAN_PRESETS_BANK_TYPE" name="ZYNTHIAN_PRESETS_BANK_TYPE" />
-			<input type="hidden" id="ZYNTHIAN_PRESETS_DOWNLOAD_FILE" name="ZYNTHIAN_PRESETS_DOWNLOAD_FILE" />
-
-			<div id="presets-new-bank-panel">
-				<div class="row">
-					<label>Bank:</label>
-				</div>
-				<div class="row">
-					<input type="text" id="ZYNTHIAN_PRESETS_NEW_BANK_NAME" name="ZYNTHIAN_PRESETS_NEW_BANK_NAME" />
-				</div>
-				<div class="row">
-					<button name="ZYNTHIAN_PRESETS_ACTION" value="NEW" class="btn btn-lg btn-theme btn-block">New bank</button>
-				</div>
-			</div>
+			<input type="hidden" id="SEL_NODE_ID" name="SEL_NODE_ID" value="{{ escape(str(config['sel_node_id'])) }}">
+			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH">
+			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
+			<input type="hidden" id="INSTALL_URL" name="INSTALL_URL">
 
 			<div id="presets-bank-panel">
-				<div id="presets-bank-rename-panel">
-					<div class="row">
-						<label for="ZYNTHIAN_PRESETS_BANK_NAME">Bank:</label>
-						<input type="text" id="ZYNTHIAN_PRESETS_BANK_NAME" name="ZYNTHIAN_PRESETS_BANK_NAME" />
+				<label for="SEL_BANK_NAME">Bank:</label>
+				<div class="row no-gutters">
+					<div class="col-xs-10">
+						<input type="text" id="SEL_BANK_NAME" name="SEL_BANK_NAME">
 					</div>
-
-					<div class="row">
-						<button name="ZYNTHIAN_PRESETS_ACTION" value="RENAME" class="btn btn-lg btn-theme btn-block">RENAME</button>
+					<div class="col-xs-1 text-right">
+						<button id="button-rename_bank" class="btn btn-theme btn-block" onclick="return do_action('rename_bank')" title="Rename Bank"><i class="fa fa-check"></i></button>
+						<span id="loading-action-rename_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
-				</div>
-
-				<div class="row">
-					<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="UPLOAD"></input>
-				</div>
-
-				<div id="presets-search-panel">
-					<div class="row">
-						<label for="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts</label>
-						<input type="text" id="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS" name="ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS']) }}" />
+					<div class="col-xs-1 text-right">
+						<button id="button-remove_bank" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block" title="Delete Bank"><i class="fa fa-trash-o"></i></button>
+						<span id="loading-action-remove_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
-
-					<div class="row">
-						<button id="ZYNTHIAN_PRESETS_ACTION_SEARCH" name="ZYNTHIAN_PRESETS_ACTION" value="SEARCH" class="btn btn-lg btn-theme btn-block" onclick="showProgressAnimation()" >SEARCH</button>
-					</div>
-
-					<div class="row">
-						<table class="table table-striped table-bordered table-condensed">
-						{% if config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] %}
-						{% for row in config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] %}
-							<tr>
-								<td title="{{ escape(row['description']) }}">
-									{% if len(row['more_info'])>0 %}
-										<a href="{{ row['more_info'][0] }}" target="_blank" >
-											{{ row['name'] }}
-										</a>
-									{% else %}
-										{{ row['name'] }}
-									{% end %}
-							</td>
-								<td>
-									<button name="ZYNTHIAN_PRESETS_ACTION" value="DOWNLOAD" class="btn btn-lg btn-theme btn-block" onclick="showProgressAnimation();setDownloadFile('{{ escape(row['file']) }}')">+</button>
-								</td>
-							</tr>
-						{% end %}
-						{% end %}
-						</table>
-					</div>
-				</div>
-
-				<div class="row" id="presets-bank-remove-panel">
-					<button name="ZYNTHIAN_PRESETS_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">DELETE</button>
 				</div>
 			</div>
 
+
 			<div id="presets-file-panel">
-				<div id="presets-rename-panel">
-					<div class="row">
-						<label for="ZYNTHIAN_PRESETS_PRESET_NAME">Preset:</label>
-						<input type="text" id="ZYNTHIAN_PRESETS_PRESET_NAME" name="ZYNTHIAN_PRESETS_PRESET_NAME" />
+				<label for="SEL_PRESET_NAME">Preset:</label>
+				<div class="row no-gutters">
+					<div class="col-xs-10">
+						<input type="text" id="SEL_PRESET_NAME" name="SEL_PRESET_NAME">
 					</div>
-
-					<div class="row">
-						<button name="ZYNTHIAN_PRESETS_ACTION" value="RENAME" class="btn btn-lg btn-theme btn-block">RENAME</button>
+					<div class="col-xs-1 text-right">
+						<button id="button-rename_preset" class="btn btn-theme btn-block" onclick="return do_action('rename_preset')" title="Rename Preset"><i class="fa fa-check"></i></button>
+						<span id="loading-action-rename_preset" style="display:none;"><img src="/img/loading.gif"></span>
+					</div>
+					<div class="col-xs-1 text-right">
+						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset'); else return false" class="btn btn-danger btn-block" title="Delete Preset"><i class="fa fa-trash-o"></i></button>
+						<span id="loading-action-remove_preset" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>
 				</div>
+			</div>
 
-				<div class="row">
-					<button name="ZYNTHIAN_PRESETS_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">DELETE</button>
+			<div id="download-panel">
+				<div class="row"><div class="col-md-12 col-sm-12 text-center">
+					<button id="button-download" class="btn btn-theme btn-block" onclick="do_download()" title="Download Preset/Bundle"><i class="fa fa-download"></i> Download
+					</button>
+				</div></div>
+			</div>
+
+			<div id="upload-panel">
+				<div class="row"><div class="col-md-12 col-sm-12 text-center">
+					<button id="upload_show" class="btn btn-theme btn-block" title="Upload Preset/Bundle"><i class="fa fa-upload"></i> Upload</button>
+				</div></div>
+			</div>
+
+			<div class="row">
+				<div id="error-message-action" class="alert alert-danger" style="display:none"></div>
+			</div>
+
+			<div id="presets-search-panel">
+				<label for="MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts:</label>
+				<div class="row no-gutters">
+					<div class="col-xs-11">
+						<input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
+					</div>
+					<div class="col-xs-1 text-center">
+						<button id="button-search" class="btn btn-theme btn-block" onclick="return do_action('search')" title="Search"><i class="fa fa-search"></i></button>
+						<span id="loading-action-search" style="display:none;"><img src="/img/loading.gif"></span>
+					</div>
 				</div>
+				<div class="row" id="presets-search-result" style="display:none"></div>
 			</div>
 
 		</div>
-	</div>
-
-	<div class="row">
-		{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
 	</div>
 
 </div>
 </form>
 
-<div id="loading-div-background">
-  <div id="loading-div" class="ui-corner-all">
-    PROCESSING. PLEASE WAIT...
-  </div>
-</div>
+<div id="loading-action-install" style="display:none;"><img src="/img/loading.gif"></div>
 
 <script type="text/javascript">
-
 var presetsForm = $('#presets-form')[0];
 
-$(document).ready(function (){
-	$("#loading-div-background").hide();
+$(document).ready(function () {
+	hideProgressAnimation()
 
-	$('#ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
+	load_preset_tree()
+
+/*
+	$("#presets-form").submit(function(e) {
+		return false
+	})
+*/
+	
+	$('#MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
 		// Enter pressed?
 		if(e.which == 13) {
 			e.preventDefault();
-			$('#ZYNTHIAN_PRESETS_ACTION_SEARCH').click();
+			$('#ACTION_SEARCH').click();
 		}
 	});
 
@@ -143,13 +150,12 @@ $(document).ready(function (){
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
 	});
-
 	connectZynthianWebSocket(deferred);
 
 	$('#upload_panel')[0].onuploadend = function(response){
 		console.log("upload succeded: " + response);
 		var ajaxData = new FormData(presetsForm);
-		ajaxData.append('ZYNTHIAN_PRESETS_ACTION','REVISE_UPLOAD')
+		ajaxData.append('ACTION','REVISE_UPLOAD')
 		var ajax = new XMLHttpRequest();
 
 		ajax.open( presetsForm.getAttribute( 'method' ), presetsForm.getAttribute( 'action' ), true );
@@ -177,47 +183,177 @@ $(document).ready(function (){
 
 });
 
-function showProgressAnimation(){
+function showProgressAnimation() {
 	$("#loading-div-background").show();
 }
 
-$('#presets-panel').hide();
-$('#presets-tree').treeview({data: JSON.parse('{% raw config['ZYNTHIAN_PRESETS'] %}'), bootstrap2: true ,
-	levels: 3,
-	emptyIcon: "glyphicon glyphicon-floppy-disk",
-	expandIcon: "glyphicon glyphicon-folder-close",
-	collapseIcon: "glyphicon glyphicon-folder-open",
-	onNodeSelected: function(event, data) {
-		$("#loading-div-background").css({ opacity: 1.0 });
-		$('#presets-new-bank-panel').hide();
-		$('#presets-bank-panel').hide();
-		$('#presets-file-panel').hide();
-		$('#presets-bank-remove-panel').hide();
-		$('#presets-bank-rename-panel').hide();
-		$('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value='';
-		$('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value='';
-		$("#ZYNTHIAN_PRESETS_FULLPATH")[0].value = data.fullpath;
-		$("#presets-upload-form").attr("action", "/api/upload?redirectUrl=/api/lib-presets&destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value);
-		$("#ZYNTHIAN_PRESETS_BANK_TYPE")[0].value = data.bankType;
+function hideProgressAnimation() {
+	$("#loading-div-background").hide();
+}
 
-		if (data.nodeType == 'BANK_TYPE') {
-			$('#presets-new-bank-panel').show();
-		} else if (data.nodeType == 'BANK') {
-			$('#presets-bank-panel').show();
-			$('#ZYNTHIAN_PRESETS_BANK_NAME')[0].value=data.text;
-			$('#input-uploadfile-type')[0].value = data.bankType;
-		
-		} else if (data.nodeType == 'PRESET') {
-			$('#ZYNTHIAN_PRESETS_PRESET_NAME')[0].value=data.text;
-			$('#presets-file-panel').show();
-		}
-		$('#presets-panel').show();
-	}
-});
-
-$('#presets-tree').treeview('selectNode',{% raw config['ZYNTHIAN_PRESETS_SELECTION_NODE_ID'] %});
 
 function setDownloadFile(filename){
-	$('#ZYNTHIAN_PRESETS_DOWNLOAD_FILE')[0].value=filename;
+	$('#DOWNLOAD_FILE')[0].value=filename;
 }
+
+// Get Presets Data 
+
+var engine_methods=[]
+
+function load_preset_tree() {
+	$('#presets-new-bank-panel').hide();
+	$('#presets-bank-panel').hide();
+	$('#presets-file-panel').hide();
+	$('#download-panel').hide();
+	$('#upload-panel').hide();
+	$('#presets-search-panel').hide();
+
+	$('#presets-tree').hide()
+	$("#loading-tree").show()
+	$("#error-message-tree").hide()
+
+	$.post("lib-presets/get_tree", 
+		$('#presets-form').serialize(),
+		function(data, status) {
+			$("#loading-tree").hide()
+				if (status=="success") {
+				if ("errors" in data) {
+					$("#error-message-tree").html(data["errors"])
+					$("#error-message-tree").show(600)
+				}
+				if ("methods" in data) {
+					engine_methods = data['methods']
+				}
+				if ("presets" in data) {
+					renderPresetsTree(data['presets'])
+				}
+			} else {
+				$("#error-message-tree").html("Can't do " + action + ": " + status)
+				$("#error-message-tree").show(600)
+			}
+		}
+	)
+	return false
+}
+
+function do_action(action=null) {
+	$("#button-" + action).hide()
+	$("#loading-action-" + action).show()
+	$("#error-message-action").hide()
+	
+	if (action=="search") $("#presets-search-result").hide()
+
+	$.post("lib-presets/" + action, 
+		$('#presets-form').serialize(),
+		function(data, status) {
+			$("#button-" + action).show()
+			$("#loading-action-" + action).hide()
+			if (status=="success") {
+				if ("errors" in data) {
+					$("#error-message-action").html(data["errors"])
+					$("#error-message-action").show(600)
+				}
+				if ("methods" in data) {
+					engine_methods = data['methods']
+				}
+				if ("presets" in data) {
+					renderPresetsTree(data['presets'])
+				}
+				if ("search_results" in data) {
+					renderSearchResults(data['search_results'])
+				}
+			} else {
+				$("#error-message-action").html("Can't do " + action + ": " + status)
+				$("#error-message-action").show(600)
+			}
+		}
+	)
+	return false
+}
+
+function do_download() {
+	$("#presets-form").get(0).action="/lib-presets/download"
+}
+
+function renderPresetsTree(data) {
+	$('#presets-tree').show()
+	$('#presets-tree').treeview({
+		data: data,
+		bootstrap2: true,
+		levels: 2,
+		emptyIcon: "glyphicon glyphicon-floppy-disk",
+		expandIcon: "glyphicon glyphicon-folder-close",
+		collapseIcon: "glyphicon glyphicon-folder-open",
+		onNodeSelected: function(event, data) {
+			$("#loading-div-background").css({ opacity: 1.0 });
+			$('#presets-bank-panel').hide();
+			$('#presets-file-panel').hide();
+			$('#download-panel').hide();
+			$('#SEL_BANK_NAME').val('');
+			$('#SEL_PRESET_NAME').val('');
+			$('#SEL_NODE_ID').val(data.id);
+			$("#SEL_FULLPATH").val(data.fullpath);
+			//$("#presets-upload-form").attr("action", "/upload?redirectUrl=/lib-presets&destinationPath=" + data.full_path + "&clientId=" + $('#input-uploadfile-session')[0].value);
+
+			if (data.node_type == 'BANK') {
+				$("#SEL_BANK_FULLPATH").val(data.fullpath);
+				$('#SEL_BANK_NAME').val(data.name);
+				if (engine_methods.includes("zynapi_rename_bank")) {
+					$('#presets-bank-panel').show();
+					$('#download-panel').show();
+				}
+				//$('#input-uploadfile-type')[0].value = data.bankType;
+			} else if (data.node_type == 'PRESET') {
+				$("#SEL_BANK_FULLPATH").val(data.bank_fullpath);
+				$('#SEL_PRESET_NAME').val(data.name);
+				if (engine_methods.includes("zynapi_rename_preset")) {
+					$('#presets-file-panel').show();
+					$('#download-panel').show();
+				}
+			}
+		}
+	});
+
+	if (engine_methods.includes("zynapi_new_bank")) $('#presets-new-bank-panel').show();
+	else $('#presets-new-bank-panel').hide();
+
+	$('#upload-panel').show();
+
+	if (engine_methods.includes("zynapi_martifact_formats")) $('#presets-search-panel').show();
+	else $('#presets-search-panel').hide();
+
+	var node_id = parseInt($("#SEL_NODE_ID").val())
+	$('#presets-tree').treeview('collapseAll', { silent: true });
+	$('#presets-tree').treeview('revealNode', [ node_id, { silent: true } ]);
+	$('#presets-tree').treeview('selectNode', node_id);
+}
+
+function renderSearchResults(data) {
+	html = "<div class='col-md-12 col-sm-12'>\n"
+	for (i in data) {
+		html += "<div class='row'>"
+		html += "<div class='col-md-10 col-sm-10 font-weight-bold'><b>" + data[i].name + "</b></div>"
+		html += "<div class='action-buttons col-md-2 col-sm-2 text-right'>"
+		html += "<span class='fa fa-info-circle' onclick=\"$('#martifact-desc-" + data[i].id + "').toggle(200);\"></span>&nbsp;"
+		html += "<span class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "')\"></span>"
+		html += "</div>"
+		html += "<div class='col-sm-12' id='martifact-desc-" + data[i].id + "' style='display:none'>"
+		html += data[i].description + "(by <em>" + data[i].author + "</em>)"
+		html += "</div>\n"
+		html += "</div>"
+	}
+	html += "</div>"
+
+	$("#presets-search-result").html(html)
+	$("#presets-search-result").show()
+}
+
+function installMArtifact(name, url) {
+	if (confirm("Do you really want to install '" + name + "'?")) {
+		$('#INSTALL_URL').val(url);
+		return do_action("install")
+	}
+	return false
+}
+
 </script>

@@ -23,152 +23,279 @@
 #********************************************************************
 
 import os
-import uuid
 import re
-import logging
-import tornado.web
 import json
+import copy
+import uuid
+import logging
 import shutil
 import requests
+import bz2
+import zipfile
+import tarfile
+import tornado.web
 from collections import OrderedDict
-from subprocess import check_output, call
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
-from lib.musical_artifacts import MusicalArtifacts
+from zyngui.zynthian_gui_engine import *
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class PresetsConfigHandler(tornado.web.RequestHandler):
-	PRESETS_DIRECTORY = "/zynthian/zynthian-my-data/presets"
-
-	selectedTreeNode = 0
-	selected_full_path = '';
-	searchResult = '';
-	maxTreeNodeIndex = 0
-
-	musical_artifacts = MusicalArtifacts()
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
+class PresetsConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
-	def get(self, errors=None):
+	def get(self):
 		config=OrderedDict([])
-		self.maxTreeNodeIndex = 0
-		presets = self.walk_directory(PresetsConfigHandler.PRESETS_DIRECTORY, '', '')
 
-		config['ZYNTHIAN_PRESETS'] = json.dumps(presets)
-
-		config['ZYNTHIAN_PRESETS_SELECTION_NODE_ID'] = self.selectedTreeNode
-
-		config['ZYNTHIAN_PRESETS_SEARCH_RESULT'] = self.searchResult
-
-		config['ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS'] = self.get_argument('ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS','')
-
+		config['engines'] = self.get_engine_info()
+		config['engine'] = self.get_argument('ENGINE', 'ZY')
+		config['sel_node_id'] = self.get_argument('SEL_NODE_ID', -1)
+		config['musical_artifact_tags'] = self.get_argument('MUSICAL_ARTIFACT_TAGS', '')
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 		if self.genjson:
 			self.write(config)
 		else:
-			self.render("config.html", body="presets.html", config=config, title="Presets", errors=errors)
+			self.render("config.html", body="presets.html", config=config, title="Presets & Soundfonts", errors=None)
+
 
 	@tornado.web.authenticated
-	def post(self):
-		action = self.get_argument('ZYNTHIAN_PRESETS_ACTION')
-		self.selected_full_path =  self.get_argument('ZYNTHIAN_PRESETS_FULLPATH')
-		if action:
-			errors = {
-				'NEW': lambda: self.do_new_bank(),
-				'REMOVE': lambda: self.do_remove(),
-				'RENAME': lambda: self.do_rename(),
-				'SEARCH': lambda: self.do_search(),
-				'DOWNLOAD': lambda: self.do_download(),
-				'REVISE_UPLOAD': lambda: self.do_revise_upload()
-			}[action]()
-
-		self.get(errors)
-
-	def do_remove(self):
-		path = self.get_argument('ZYNTHIAN_PRESETS_FULLPATH')
+	def post(self, action):
 		try:
-			if os.path.isdir(path):
-				shutil.rmtree(path)
-			else:
-				os.remove(path)
+			self.engine = self.get_argument('ENGINE', 'ZY')
+			self.engine_info = zynthian_gui_engine.engine_info[self.engine]
+			self.engine_cls = self.engine_info[3]
+			result = {
+				'get_tree': lambda: self.do_get_tree(),
+				'new_bank': lambda: self.do_new_bank(),
+				'remove_bank': lambda: self.do_remove_bank(),
+				'rename_bank': lambda: self.do_rename_bank(),
+				'remove_preset': lambda: self.do_remove_preset(),
+				'rename_preset': lambda: self.do_rename_preset(),
+				'download': lambda: self.do_download(),
+				'search': lambda: self.do_search(),
+				'install': lambda: self.do_install(),
+				'upload': lambda: self.do_upload()
+			}[action]()
 		except:
-			pass
+			result = {}
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+
+	def do_get_tree(self):
+		result = {}
+		try:
+			result['methods'] =	self.engine_cls.get_zynapi_methods()
+			result['presets'] = self.get_presets_data()
+		except Exception as e:
+			result['methods'] =  None
+			result['presets'] = None
+			logging.error(e)
+			result['errors'] = "Can't get preset tree data: {}".format(e)
+
+		return result
+
 
 	def do_new_bank(self):
-		if self.get_argument('ZYNTHIAN_PRESETS_NEW_BANK_NAME'):
-			newBank =  self.get_argument('ZYNTHIAN_PRESETS_FULLPATH') + "/" + self.get_argument('ZYNTHIAN_PRESETS_NEW_BANK_NAME')
-			os.mkdir(newBank)
-			self.selected_full_path = newBank
-
-	def do_rename(self):
-		newName = ''
-
-		if self.get_argument('ZYNTHIAN_PRESETS_BANK_NAME'):
-			newName = self.get_argument('ZYNTHIAN_PRESETS_BANK_NAME')
-		if self.get_argument('ZYNTHIAN_PRESETS_PRESET_NAME'):
-			newName = self.get_argument('ZYNTHIAN_PRESETS_PRESET_NAME')
-			filename_parts = os.path.splitext(newName)
-			if filename_parts[1] != "." + self.get_argument('ZYNTHIAN_PRESETS_BANK_TYPE'):
-				newName += "." + self.get_argument('ZYNTHIAN_PRESETS_BANK_TYPE')
-		if newName:
-			sourceFolder = self.get_argument('ZYNTHIAN_PRESETS_FULLPATH')
-			m = re.match('(.*/)(.*)', sourceFolder, re.M | re.I | re.S)
-			if m:
-				destinationFolder = m.group(1) + newName
-				shutil.move(sourceFolder, destinationFolder)
-				self.selected_full_path = destinationFolder;
-
-	def do_search(self):
+		result = {}
 		try:
-			self.searchResult = self.musical_artifacts.search_artifacts(self.get_argument('ZYNTHIAN_PRESETS_BANK_TYPE'), self.get_argument('ZYNTHIAN_PRESETS_MUSICAL_ARTIFACT_TAGS'))
-		except OSError as err:
-			logging.error(format(err))
-			return format(err)
+			self.engine_cls.zynapi_new_bank(self.get_argument('NEW_BANK_NAME'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't create new bank: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def do_rename_bank(self):
+		result = {}
+		try:
+			self.engine_cls.zynapi_rename_bank(self.get_argument('SEL_FULLPATH'), self.get_argument('SEL_BANK_NAME'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't rename bank: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def do_remove_bank(self):
+		result = {}
+		try:
+			self.engine_cls.zynapi_remove_bank(self.get_argument('SEL_FULLPATH'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't remove bank: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def do_rename_preset(self):
+		result = {}
+		try:
+			self.engine_cls.zynapi_rename_preset(self.get_argument('SEL_FULLPATH'), self.get_argument('SEL_PRESET_NAME'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't rename preset: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def do_remove_preset(self):
+		result = {}
+		try:
+			self.engine_cls.zynapi_remove_preset(self.get_argument('SEL_FULLPATH'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't remove preset: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
 
 
 	def do_download(self):
-		if self.get_argument('ZYNTHIAN_PRESETS_DOWNLOAD_FILE'):
-			source_file = self.get_argument('ZYNTHIAN_PRESETS_DOWNLOAD_FILE')
-			logging.debug("downloading: " + source_file)
-
-			m = re.match('(.*/)(.*)', source_file, re.M | re.I | re.S)
-			if m:
-				destination_file = self.selected_full_path + "/" + m.group(2)
-				file_type = self.get_argument('ZYNTHIAN_PRESETS_BANK_TYPE')
-				downloaded_file = self.musical_artifacts.download_artifact(source_file, destination_file, file_type, self.selected_full_path)
-
-				self.cleanup_download(self.selected_full_path, self.selected_full_path)
-
-				self.selected_full_path = self.revise_filename(self.selected_full_path, downloaded_file, file_type)
-
-	def do_revise_upload(self):
+		result = {}
 		try:
-			new_upload_file = self.get_argument('ZYNTHIAN_UPLOAD_NEW_FILE','')
+			fpath=self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
+			dname, fname = os.path.split(fpath)
+			if os.path.isdir(fpath):
+				zfpath = "/tmp/" + fname
+				shutil.make_archive(zfpath, 'zip', fpath)
+				fpath = zfpath + ".zip"
+				fname += ".zip"
+				delete = True
+				mime_type = "application/zip"
+			else:
+				delete = False
+				mime_type = "application/octet-stream"
+
+			self.set_header('Content-Type', mime_type)
+			self.set_header("Content-Description", "File Transfer")
+			self.set_header('Content-Disposition', 'attachment; filename="{}"'.format(fname))
+			with open(fpath, 'rb') as f:
+				while True:
+					data = f.read(4096)
+					if not data:
+						break
+					self.write(data)
+				self.finish()
+	
+			if delete:
+				os.remove(fpath)
+
+			return None
+
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't download file: {}".format(e)
+
+		return result
+
+
+	def do_search(self):
+		result = {}
+
+		try:
+			maformats = self.engine_cls.zynapi_martifact_formats()
+			result['search_results'] = self.search_artifacts(maformats, self.get_argument('MUSICAL_ARTIFACT_TAGS'))
+		except OSError as e:
+			logging.error(e)
+			result['errors'] = "Can't search Musical Artifacts: {}".format(e)
+
+		return result
+
+
+	def do_install(self):
+		result = {}
+
+		try:
+			self.install_url(self.get_argument('INSTALL_URL'))
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install URL: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def search_artifacts(self, formats, tags):
+		query_url = "https://musical-artifacts.com/artifacts.json"
+		sep = '?'
+		if formats:
+			query_url += sep + 'formats=' + formats
+			sep = "&"
+		if tags:
+			query_url += sep + 'tags=' + tags
+			sep = "&"
+
+		result = requests.get(query_url, verify=False).json()
+		for row in result:
+			if not "file" in row and "mirrors" in row and len(row['mirrors'])>0:
+				row['file'] = row['mirrors'][0]
+			if not "file" in row:
+				row['file'] = ''
+
+		return result
+
+
+	def install_file(self, fpath):
+		logging.info("Unpacking '{}' ...".format(fpath))
+		if fpath.endswith('.tar.bz2'):
+			dpath = fpath[:-8]
+			tar = tarfile.open(fpath, "r:bz2")
+			tar.extractall(dpath)
+			os.remove(fpath)
+		elif fpath.endswith('.tar.gz'):
+			dpath = fpath[:-7]
+			tar = tarfile.open(fpath, "r:gz")
+			tar.extractall(dpath)
+			os.remove(fpath)
+		elif fpath.endswith('.tgz'):
+			dpath = fpath[:-4]
+			tar = tarfile.open(fpath, "r:gz")
+			tar.extractall(dpath)
+			os.remove(fpath)
+		elif fpath.endswith('.zip'):
+			dpath = fpath[:-4]
+			with zipfile.ZipFile(fpath,'r') as soundfontZip:
+				soundfontZip.extractall(dpath)
+			os.remove(fpath)
+		else:
+			dpath = fpath
+
+		logging.info("Installing '{}' ...".format(dpath))
+		self.engine_cls.zynapi_install(dpath, self.get_argument('SEL_BANK_FULLPATH'))
+
+
+	def install_url(self, url):
+		logging.info("Downloading '{}' ...".format(url))
+		res = requests.get(url, verify=False)
+		head, tail = os.path.split(url)
+		fpath = "/tmp/" + tail
+		with open(fpath , "wb") as df:
+			df.write(res.content)
+			df.close()
+			self.install_file(fpath)
+
+
+	def do_upload(self):
+		try:
+			new_upload_file = self.get_argument('UPLOAD_FILE','')
 			if new_upload_file:
 				filename_parts = os.path.splitext(new_upload_file)
 				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
-		except OSError as err:
+		except Exception as err:
 			logging.error(format(err))
 			return format(err)
 
-
-	def get_preset_number_padding(self, file_type):
-		# in case we need to differentiate between 4 and 5
-		return 4
 
 	def revise_filename(self, selected_full_path, downloaded_file, file_type):
 		m = re.match('.*/(\d*)-{0,1}(.*)', downloaded_file, re.M | re.I | re.S)
@@ -201,61 +328,57 @@ class PresetsConfigHandler(tornado.web.RequestHandler):
 						break
 					current_index +=1
 
-			shutil.move(downloaded_file,selected_full_path + "/" + str(current_index).zfill(self.get_preset_number_padding(file_type)) + "-" + filename)
+			shutil.move(downloaded_file,selected_full_path + "/" + str(current_index).zfill(4 + "-" + filename))
 
 
-	def cleanup_download(self, currentDirectory, targetDirectory):
-		fileList =  os.listdir(currentDirectory)
-		for f in fileList:
-			sourcePath = os.path.join(currentDirectory, f)
-
-			if os.path.isdir(sourcePath):
-				self.cleanup_download(sourcePath, targetDirectory)
-				shutil.rmtree(sourcePath)
-			else:
-				if not f.startswith(".") and  f.endswith("." + self.get_argument('ZYNTHIAN_PRESETS_BANK_TYPE')):
-					targetPath = os.path.join(targetDirectory, f)
-					shutil.move(sourcePath, targetPath)
+	def get_engine_info(self):
+		engine_info = copy.copy(zynthian_gui_engine.engine_info)
+		for e in zynthian_gui_engine.engine_info:
+			if not hasattr(engine_info[e][3], "zynapi_get_banks"):
+				del engine_info[e]
+		return engine_info
 
 
-	def walk_directory(self, directory, nodeType, bankType):
-		banks = []
-		fileList =  os.listdir(directory)
-		fileList = sorted(fileList)
-		for f in fileList:
-			fullPath = os.path.join(directory, f)
-			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
-			text = ''
-			nextNodeType = ''
-			if m:
-				if nodeType:
-					if nodeType == 'BANK_TYPE':
-						nextNodeType = 'BANK'
-						text =  m.group(1)
-					else:
-						nextNodeType = 'PRESET'
-						text = m.group(1)
-				else:
-					bankType = m.group(1)
-					nextNodeType = 'BANK_TYPE'
-					text = m.group(1)
+	def get_presets_data(self):
+		if self.engine_cls==zynthian_engine_jalv:
+			self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
 
-			try:
-				if self.selected_full_path == fullPath:
-					self.selectedTreeNode = self.maxTreeNodeIndex
-			except:
-				pass
-			bank = {
-				'text': f,
-				'name': text,
-				'fullpath': fullPath,
-				'id': self.maxTreeNodeIndex,
-				'bankType': bankType,
-				'nodeType': nextNodeType}
-			self.maxTreeNodeIndex+=1
-			if os.path.isdir(os.path.join(directory, f)):
-				bank['nodes'] = self.walk_directory(os.path.join(directory, f), nextNodeType, bankType)
+		try:
+			i = 0
+			banks_data = []
+			for b in self.engine_cls.zynapi_get_banks():
+				brow = {
+					'id': i,
+					'text': b['text'],
+					'name': b['name'],
+					'fullpath': b['fullpath'],
+					'node_type': 'BANK',
+					'nodes': []
+				}
+				i += 1
+				try:
+					presets_data = []
+					for p in self.engine_cls.zynapi_get_presets(b):
+						prow = {
+							'id': i,
+							'text': p['text'],
+							'name': p['name'],
+							'fullpath': p['fullpath'],
+							'bank_fullpath' : b['fullpath'],
+							'node_type': 'PRESET',
+						}
+						i += 1
+						presets_data.append(prow)
 
-			banks.append(bank)
+					brow['nodes'] = presets_data
 
-		return banks
+				except Exception as e:
+					logging.error("PRESET NODE {} => {}".format(i,e))
+
+				banks_data.append(brow)
+
+		except Exception as e:
+			logging.error("BANK NODE {} => {}".format(i,e))
+
+		return banks_data
+

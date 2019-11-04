@@ -124,7 +124,7 @@ def get_port_alias(midi_port):
 #------------------------------------------------------------------------------
 
 class MidiConfigHandler(ZynthianConfigHandler):
-	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_MY_DATA_DIR")
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=ttymidi:MIDI_out\nENABLED_FB="
 
 	midi_program_change_presets=OrderedDict([
@@ -134,17 +134,25 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_UP': '',
 			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_DOWN': ''
 		}],
-		['Roland', {
+		['Roland MSB', {
 			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_UP': 'C#7F',
 			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_DOWN': 'C#00',
 			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_UP': 'B#007F',
-			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_DOWN': 'B#0000'
+			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_DOWN': 'B#0000',
+			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_CCNUM': '0'
+		}],
+		['Roland LSB', {
+			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_UP': 'C#7F',
+			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_DOWN': 'C#00',
+			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_UP': 'B#207F',
+			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_DOWN': 'B#2000',
+			'ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_CCNUM': '32'
 		}]
 	])
 
 	program_change_mode_labels=OrderedDict([
-		['32', 'LSB'],
-		['0', 'MSB']
+		['0', 'MSB'],
+		['32', 'LSB']
 	])
 
 	midi_cc_labels=OrderedDict([
@@ -257,7 +265,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'button',
 				'title': 'Delete MIDI profile',
 				'button_type': 'submit',
-				'class': 'btn-danger',
+				'class': 'btn-danger btn-block',
+				'icon' : 'fa fa-trash-o',
 				'script_file': 'midi_profile_delete.js'
 			}],
 			['zynthian_midi_profile_new_script_name', {
@@ -269,7 +278,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'button',
 				'title': 'New MIDI profile',
 				'button_type': 'button',
-				'class': 'btn-success',
+				'class': 'btn-success btn-block',
+				'icon' : 'fa fa-plus',
 				'script_file': 'midi_profile_new.js'
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {

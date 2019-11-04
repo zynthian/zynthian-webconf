@@ -31,62 +31,58 @@ import shutil
 import tornado.web
 from collections import OrderedDict
 
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Snapshot Config Handler
 #------------------------------------------------------------------------------
 
-class SnapshotConfigHandler(tornado.web.RequestHandler):
+class SnapshotConfigHandler(ZynthianConfigHandler):
 
-	SNAPSHOTS_DIRECTORY = "/zynthian/zynthian-my-data/snapshots"
-	LEADING_ZERO_BANK = 5
-	LEADING_ZERO_PROGRAM = 3
+	my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR',"/zynthian/zynthian-my-data")
 
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
-
+	SNAPSHOTS_DIRECTORY = my_data_dir + "/snapshots"
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([])
 
-		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY, 0, '', '')
+		ssdata = self.get_snapshots_data()
+		#logging.debug(snapshot)
 
-		config['ZYNTHIAN_SNAPSHOTS'] = json.dumps(snapshots)
-		config['ZYNTHIAN_SNAPSHOT_BANKS'] = self.get_existing_banks(snapshots, True)
-		config['ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER'] = self.calculate_next_bank(self.get_existing_banks(snapshots, False))
+		config['SNAPSHOTS'] = json.dumps(ssdata)
+		config['BANKS'] = self.get_existing_banks(ssdata, True)
+		config['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
+		config['PROGS_NUM'] = map(lambda x: str(x).zfill(3), list(range(0, 128)))
 
-		config['ZYNTHIAN_SNAPSHOT_PROGRAMS'] = map(lambda x: str(x).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM), list(range(1, 129)))
+		# Try to maintain selection after a POST action...
+		selected_node = 0
 		try:
-			selectedBank = 0
-			#logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')))
-			#logging.info(int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')))
-			for snapshot in snapshots:
-				logging.info(snapshot)
-				if int(snapshot['bank'])==int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')):
-					if not selectedBank:
-						selectedBank = snapshot['id']
-					if snapshot['nodes']:
-						for snapshot_program in snapshot['nodes']:
+			for ssbank in ssdata:
+				try:
+					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
+						if not selected_node:
+							selected_node = ssbank['id']
+
+					if ssbank['nodes']:
+						for ssprog in ssbank['nodes']:
 							try:
-								if int(snapshot_program['program'])==int(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')):
-									selectedBank = snapshot_program['id']
+								if int(ssprog['prog_num'])==int(self.get_argument('SEL_PROG_NUM')):
+									selected_node = ssprog['id']
 							except:
 								pass
-			#logging.info("selectedBank: " + str(selectedBank))
-			config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID']  = selectedBank
-		except:
-			config['ZYNTHIAN_SNAPSHOT_SELECTION_NODE_ID'] = 0
+				except:
+					action = self.get_argument('ACTION', '')
+					if action == 'SAVE_AS_DEFAULT' and ssbank['name'] == 'default':
+						selected_node = ssbank['id']
+					elif action == 'SAVE_AS_LAST_STATE' and ssbank['name'] == 'last_state':
+						selected_node = ssbank['id']
+
+		except Exception as e:
+			logging.debug("ERROR:" + str(e))
+
+		config['SEL_NODE_ID'] = selected_node
+		logging.debug("Selected Node: {}".format(selected_node))
 
 		if self.genjson:
 			self.write(config)
@@ -96,131 +92,185 @@ class SnapshotConfigHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_SNAPSHOT_ACTION')
+		action = self.get_argument('ACTION')
 		if action:
 			errors = {
         		'NEW_BANK': lambda: self.do_new_bank(),
         		'REMOVE': lambda: self.do_remove(),
-				'SAVE': lambda: self.do_save()
-    		}[action]()
+				'SAVE': lambda: self.do_save(),
+				'SAVE_AS_DEFAULT': lambda: self.do_save_as_default(),
+				'SAVE_AS_LAST_STATE': lambda: self.do_save_as_last_state()
+			}[action]()
 
 		self.get(errors)
 
 
 	def do_new_bank(self):
-		newBank = self.get_argument('ZYNTHIAN_SNAPSHOT_NEXT_BANK_NUMBER')
-		snapshots = self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY, 0, '', '')
-		if newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) in self.get_existing_banks(snapshots, False):
-			return "Bank exists already"
-		if newBank:
-			bankDirectory = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/' + newBank.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) + '-Bank'+newBank
-			if not os.path.exists(bankDirectory):
-				os.makedirs(bankDirectory)
+		existing_banks = self.get_existing_banks(self.get_snapshots_data(), False)
+		new_bank_dname = self.get_argument('NEW_BANK_NUM', str(self.calculate_next_bank(existing_banks))).zfill(3)
+		if new_bank_dname in existing_banks:
+			return "Bank already exists!"
+		if new_bank_dname:
+			bank_dpath = self.SNAPSHOTS_DIRECTORY + '/' + new_bank_dname
+			if not os.path.exists(bank_dpath):
+				os.makedirs(bank_dpath)
 
 
 	def do_remove(self):
-		fullPath = self.get_argument('ZYNTHIAN_SNAPSHOT_FULLPATH')
+		fullPath = self.get_argument('SEL_FULLPATH')
 		if os.path.exists(fullPath):
 			if os.path.isdir(fullPath):
-				try:
-					os.rmdir(fullPath)
-				except OSError:
-					return "Delete snapshots first!"
+				shutil.rmtree(fullPath)
 			else:
 				os.remove(fullPath)
 
 
 	def do_save(self):
-		fullPath = self.get_argument('ZYNTHIAN_SNAPSHOT_FULLPATH')
+		fullPath = self.get_argument('SEL_FULLPATH')
 		newFullPath = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/'
+		
+		# Save Bank
 		if os.path.isdir(fullPath):
-			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK_NO')
-			if self.get_argument('ZYNTHIAN_SNAPSHOT_NAME'):
-				 newFullPath +=  '-' +  self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
+			newFullPath += self.get_argument('SEL_BANK_NUM')
+			if self.get_argument('SEL_NAME'):
+				newFullPath += '-' + self.get_argument('SEL_NAME')
 			if os.path.exists(newFullPath):
 				return "Bank exists already!"
+		# Save Program
 		else:
-			newFullPath += self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK') + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')
-			if (self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')):
-				newFullPath += '-' + self.get_argument('ZYNTHIAN_SNAPSHOT_NAME')
-			newFullPath += '.zss'
-			newBankDirectory = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/' + self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK')
-			if os.path.exists(newFullPath):
-				return "Snapshot exists already!"
-			for existingSnapshot in os.listdir(newBankDirectory):
-				existingFullPath =  newBankDirectory + '/' + existingSnapshot
-				if fullPath!=existingFullPath and existingSnapshot.startswith(self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_PROGRAM')):
-					return "Bank and program exists already: " +  self.get_argument('ZYNTHIAN_SNAPSHOT_SELECTION_BANK') + '/' + existingSnapshot
+			try:
+				newFullPath += self.get_argument('SEL_BANK') + '/'
+				if not os.path.exists(newFullPath):
+					return "Bank doesn't exist. You must create it before moving snapshots inside it."
+			except:
+				pass
+
+			sshot_fname=None
+			try:
+				sshot_fname =  self.get_argument('SEL_PROG_NUM')
+				if self.get_argument('SEL_NAME'):
+					sshot_fname += '-' + self.get_argument('SEL_NAME')
+			except:
+				if self.get_argument('SEL_NAME'):
+					sshot_fname =  self.get_argument('SEL_NAME')
+			
+			if not sshot_fname:
+				return "You must specify a name or program number for the snapshot."
+
+			newFullPath += sshot_fname + '.zss'
+			if newFullPath!=fullPath and os.path.exists(newFullPath):
+				return "This bank/program combination is already used: " +  newFullPath
+
 		try:
 			os.rename(fullPath, newFullPath)
 		except OSError:
-			return 'mv ' + fullPath + ' to ' + newFullPath + ' failed!'
+			return 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
 
 
-	def get_existing_banks(self, snapshots, inclName):
-		existingBanks = []
-
-		for snapshot in snapshots:
-			if snapshot['bank']:
-				bankName = snapshot['bank'].zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
-				if inclName and snapshot['bankName']:
-					bankName += '-' + snapshot['bankName']
-				existingBanks.append(bankName)
-		#logging.info("existingbanks: " + str(existingBanks))
-		return sorted(existingBanks)
+	def do_save_as_default(self):
+		dest = self.SNAPSHOTS_DIRECTORY + "/default.zss"
+		src = self.get_argument('SEL_FULLPATH')
+		logging.info("Copy %s to %s" % (src, dest))
+		shutil.copyfile(src, dest)
 
 
-	def calculate_next_bank(self, existingBanks):
-		for i in range(1, 65536):
-			if str(i).zfill(SnapshotConfigHandler.LEADING_ZERO_BANK) not in existingBanks:
+	def do_save_as_last_state(self):
+		dest = self.SNAPSHOTS_DIRECTORY + "/last_state.zss"
+		src = self.get_argument('SEL_FULLPATH')
+		logging.info("Copy %s to %s" % (src, dest))
+		shutil.copyfile(src, dest)
+
+
+	def get_existing_banks(self, snapshot_data, incl_name):
+		existing_banks = []
+
+		for item in snapshot_data:
+			if item['node_type']=='BANK':
+				bank_dname = item['bank_num'].zfill(3)
+				if incl_name and item['bank_name']:
+					bank_dname += '-' + item['bank_name']
+				existing_banks.append(bank_dname)
+
+		#logging.info("existingbanks: " + str(existing_banks))
+		return sorted(existing_banks)
+
+
+	def calculate_next_bank(self, existing_banks):
+		for i in range(0, 128):
+			if str(i).zfill(3) not in existing_banks:
 				return i
 		return ''
 
 
-	def walk_directory(self, directory, idx, bankNumber, bankName):
+	def get_snapshots_data(self):
+		return self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY)
+
+
+	def walk_directory(self, directory, idx=0, _bank_num=None, _bank_name=None):
 		snapshots = []
-		fileList =  os.listdir(directory)
-		fileList = sorted(fileList)
-		for f in fileList:
-			fullPath = os.path.join(directory, f)
-			m = re.match('.*/(\d*)-{0,1}(.*)', fullPath, re.M | re.I | re.S)
-			bno = ''
-			bname = ''
-			text = ''
-			progno = ''
-			details = ''
-			if m:
-				#logging.info(m.group(0) + ";" + m.group(1) + ";" + m.group(2))
-				if not bankNumber:
-					bno =  m.group(1).zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
-					bname = m.group(2)
-					text = bname
+		file_list =  sorted(os.listdir(directory))
+		for f in file_list:
+			fullpath = os.path.join(directory, f)
+			if os.path.isdir(fullpath):
+				node_type = "BANK"
+				parts = f.split("-", 1)
+				bank_num = parts[0]
+				if len(parts)==2:
+					bank_name = parts[1]
 				else:
-					filename_parts = os.path.splitext(m.group(2))
-					if len(filename_parts)>1 and filename_parts[1]:
-						text = filename_parts[0]
-					bno = bankNumber.zfill(SnapshotConfigHandler.LEADING_ZERO_BANK)
-					bname = bankName
-					progno = m.group(1).zfill(SnapshotConfigHandler.LEADING_ZERO_PROGRAM)
-					with open(fullPath) as snapshotfile:
-						logging.info(fullPath)
+					bank_name = ""
+				prog_name = ""
+				prog_num = ""
+				prog_details = ""
+				name = bank_name
+			else:
+				fname = f[:-4]
+				fext = f[-4:]
+				if fext==".zss":
+					node_type = "SNAPSHOT"
+					if _bank_num is not None:
+						bank_num = _bank_num.zfill(3)
+						bank_name = _bank_name
+						parts = fname.split("-", 1)
+						prog_num = parts[0]
+						if len(parts)==2:
+							prog_name = fname[len(prog_num)+1:]
+						else:
+							prog_name = ""
+					else:
+						bank_num = ''
+						bank_name = ''
+						prog_num = ''
+						prog_name = fname
+					name = prog_name
+
+					with open(fullpath) as ssfile:
 						try:
-							details = json.load(snapshotfile)
+							prog_details = json.load(ssfile)
 						except:
 							pass
-						snapshotfile.close()
+						ssfile.close()
+				else:
+					continue
+
 			snapshot = {
-				'text': f,
-				'name': text,
-				'fullpath': fullPath,
 				'id': idx,
-				'bank': bno,
-				'bankName': bname,
-				'program': progno,
-				'details': details}
-			idx+=1
-			if os.path.isdir(os.path.join(directory, f)):
-				snapshot['nodes'] = self.walk_directory(os.path.join(directory, f), idx, bno, bname)
+				'text': f,
+				'name': name,
+				'fullpath': fullpath,
+				'node_type': node_type,
+				'bank_num': bank_num,
+				'bank_name': bank_name,
+				'prog_num': prog_num,
+				'prog_name': prog_name,
+				'prog_details': prog_details
+			}
+			
+			idx += 1
+			if os.path.isdir(fullpath):
+				snapshot['nodes'] = self.walk_directory(fullpath, idx, bank_num, bank_name)
 				idx+=len(snapshot['nodes'])
+
 			snapshots.append(snapshot)
+
 		return snapshots

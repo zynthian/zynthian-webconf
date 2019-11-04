@@ -1,6 +1,6 @@
 {
   "name": "seiyria-bootstrap-slider",
-  "version": "9.8.0",
+  "version": "9.10.0",
   "homepage": "https://github.com/seiyria/bootstrap-slider",
   "authors": [
     "Kyle Kemp <kyle@seiyria.com>",
@@ -23,14 +23,13 @@
     "node_modules",
     "bower_components"
   ],
-  "_release": "9.8.0",
+  "_release": "9.10.0",
   "_resolution": {
     "type": "version",
-    "tag": "v9.8.0",
-    "commit": "bfda949937b0a66f10741ecf3f1e5166bb81f477"
+    "tag": "v9.10.0",
+    "commit": "91e4f1d5c8fafb44e2615255030e7edd70df1b62"
   },
   "_source": "https://github.com/seiyria/bootstrap-slider.git",
   "_target": "^9.8.0",
-  "_originalSource": "seiyria-bootstrap-slider",
-  "_direct": true
+  "_originalSource": "seiyria-bootstrap-slider"
 }

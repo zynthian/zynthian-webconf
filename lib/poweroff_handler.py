@@ -24,7 +24,7 @@
 
 import logging
 import tornado.web
-from subprocess import check_output
+from os import system
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
@@ -45,7 +45,6 @@ class PoweroffHandler(ZynthianConfigHandler):
 		else:
 			self.render("config.html", body="poweroff_block.html", config=None, title="Power Off", errors=None)
 		try:
-			check_output("killall -SIGQUIT zynthian_gui.py", shell=True)
-			check_output("(sleep 4; poweroff)&", shell=True)
+			system("killall -SIGQUIT zynthian_gui.py; sleep 4; poweroff")
 		except Exception as e:
 			logging.error(e)

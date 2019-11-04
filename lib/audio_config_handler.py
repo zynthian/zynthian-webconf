@@ -39,37 +39,37 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	soundcard_presets=OrderedDict([
 		['HifiBerry DAC+', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ ADC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc\n',
 			#+'kernel=kernel7-hb.img',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ light', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ RTC', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\n'+
 				'dtoverlay=i2c-rtc,ds130',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry Digi', {
 			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -P -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry Amp', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-amp',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['AudioInjector', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-wm8731-audio',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorpi -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['AudioInjector Ultra', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw'
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorul -r 48000 -p 256 -n 2 -X raw'
 		}],
 		['IQAudio DAC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-dac',
@@ -230,14 +230,6 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				except Exception as err:
 					logging.error("Alsa Mixer => {}".format(err))
 					errors["ALSAMIXER_{}".format(varname)] = str(err)
-
-		if postedConfig['SOUNDCARD_NAME'][0] == 'AudioInjector':
-			try:
-				call("amixer sset 'Output Mixer HiFi' unmute", shell=True)
-				call("amixer -c 1 cset numid=10,iface=MIXER,name='Line Capture Switch' 1", shell=True)
-			except Exception as err:
-				logging.error("AudioInjector Alsa Mixer => {}".format(err))
-				errors["ALSAMIXER_AUDIOINJECTOR"] = err
 
 		self.reboot_flag = True
 		self.get(errors)

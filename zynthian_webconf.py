@@ -31,7 +31,7 @@ import logging
 import tornado.web
 import tornado.ioloop
 
-from lib.login_handler import LoginHandler
+from lib.login_handler import LoginHandler, LogoutHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.display_config_handler import DisplayConfigHandler
@@ -45,7 +45,6 @@ from lib.wifi_config_handler import WifiConfigHandler
 from lib.wifi_list_handler import WifiListHandler
 from lib.snapshot_config_handler import SnapshotConfigHandler
 from lib.midi_config_handler import MidiConfigHandler
-from lib.soundfont_config_handler import SoundfontConfigHandler
 from lib.upload_handler import UploadHandler
 from lib.system_backup_handler import SystemBackupHandler
 from lib.software_update_handler import SoftwareUpdateHandler
@@ -125,30 +124,32 @@ def make_app():
 		(r'/captures/(.*)$', tornado.web.StaticFileHandler, {'path': 'captures'}),
 		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
-		(r"/api/lib-snapshot$", SnapshotConfigHandler),
-		(r"/api/lib-soundfont$", SoundfontConfigHandler),
-		(r"/api/lib-presets$", PresetsConfigHandler),
-		(r"/api/lib-captures$", CapturesConfigHandler),
-		(r"/api/hw-kit$", KitConfigHandler),
-		(r"/api/hw-audio$", AudioConfigHandler),
-		(r"/api/hw-display$", DisplayConfigHandler),
-		(r"/api/hw-wiring$", WiringConfigHandler),
-		(r"/api/sw-update$", SoftwareUpdateHandler),
-		(r"/api/sw-pianoteq$", PianoteqHandler),
-		(r"/api/sw-jalv-lv2$", JalvLv2Handler),
-		(r"/api/sw-repos$", RepositoryHandler),
-		(r"/api/ui-options$", UiConfigHandler),
-		(r"/api/ui-log$", UiLogHandler),
-		(r"/api/ui-midi-options$", MidiConfigHandler),
-		(r"/api/ui-midi-log$", MidiLogHandler),
-		(r"/api/sys-wifi$", WifiConfigHandler),
-		(r"/api/sys-backup$", SystemBackupHandler),
-		(r"/api/sys-security$", SecurityConfigHandler),
-		(r"/api/sys-reboot$", RebootHandler),
-		(r"/api/sys-poweroff$", PoweroffHandler),
-		(r"/api/wifi/list$", WifiListHandler),
-		(r'/api/upload$', UploadHandler),
-		(r"/api/ws$", ZynthianWebSocketHandler),
+		(r"/logout", LogoutHandler),
+		(r"/lib-snapshot$", SnapshotConfigHandler),
+		(r"/lib-presets$", PresetsConfigHandler),
+		(r"/lib-presets/(.*)$", PresetsConfigHandler),
+		(r"/lib-presets/(.*)/(.*)$", PresetsConfigHandler),
+		(r"/lib-captures$", CapturesConfigHandler),
+		(r"/hw-kit$", KitConfigHandler),
+		(r"/hw-audio$", AudioConfigHandler),
+		(r"/hw-display$", DisplayConfigHandler),
+		(r"/hw-wiring$", WiringConfigHandler),
+		(r"/sw-update$", SoftwareUpdateHandler),
+		(r"/sw-pianoteq$", PianoteqHandler),
+		(r"/sw-jalv-lv2$", JalvLv2Handler),
+		(r"/sw-repos$", RepositoryHandler),
+		(r"/ui-options$", UiConfigHandler),
+		(r"/ui-log$", UiLogHandler),
+		(r"/ui-midi-options$", MidiConfigHandler),
+		(r"/ui-midi-log$", MidiLogHandler),
+		(r"/sys-wifi$", WifiConfigHandler),
+		(r"/sys-backup$", SystemBackupHandler),
+		(r"/sys-security$", SecurityConfigHandler),
+		(r"/sys-reboot$", RebootHandler),
+		(r"/sys-poweroff$", PoweroffHandler),
+		(r"/wifi/list$", WifiListHandler),
+		(r'/upload$', UploadHandler),
+		(r"/ws$", ZynthianWebSocketHandler)
 	], **settings)
 
 

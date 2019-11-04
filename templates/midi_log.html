@@ -1,5 +1,5 @@
 
-<h2>{{ escape(title) }}</h2>
+<h2>{{ title }}</h2>
 
 <form id="ui-log-form" enctype="multipart/form-data" method="post">
 
@@ -77,31 +77,38 @@ $(document).ready(function() {
 				var fgcolor = "";
 				if (data['type'] == 'note_on') {
 					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
-					fgcolor = "#008000"
+					fgcolor = "#008000";
 				} else if (data['type'] == 'note_off') {
 					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
-					fgcolor = "#C00000"
+					fgcolor = "#C00000";
 				} else if (data['type'] == "pitchwheel") {
 					dataPayload = " " + data['pitch'];
-					fgcolor = "#C07000"
+					fgcolor = "#C07000";
 				} else if (data['type'] == "control_change") {
 					dataPayload = " " + data['control'] + " => " + data['value']
-					fgcolor = "#0000C0"
+					fgcolor = "#0000C0";
 				} else if (data['type'] == "program_change") {
 					dataPayload = " " + data['program']
-					fgcolor = "#800080"
+					fgcolor = "#800080";
+				} else if (data['type'] == "songpos") {
+					dataPayload = " " + data['pos']
+					fgcolor = "#404040";
 				} else {
-					fgcolor = "#404040"
+					fgcolor = "#404040";
 				}
 
 				if (data['time']>0) {
-					dataPayLoad += "  [Time: " + data['time'] + "]"
+					dataPayLoad += "  [Time: " + data['time'] + "]";
 				}
 
 				if (log_filter==0 || (log_filter==1 && data['channel']>=0)) {
 					var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
 
-					var row = "<span style=\"color:" + fgcolor + "\">CH#" + ("00" + data['channel']).slice(-2) + " " + data['type'].toUpperCase() +  dataPayload + "</span><br />";
+					var row = "<span style=\"color:" + fgcolor + "\">";
+					if (data['channel']<16) row += "CH#" + ("00" + data['channel']).slice(-2) + " ";
+					else row += "SYS ";
+					row += data['type'].toUpperCase() +  dataPayload;
+					row += "</span><br />";
 					logDiv.append(row);
 
 					if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);

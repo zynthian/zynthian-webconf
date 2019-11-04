@@ -82,7 +82,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		logging.debug(config)
 
 		if self.reboot_flag:
-			self.redirect('/api/sys-reboot')
+			self.redirect('/sys-reboot')
 			return
 
 		elif self.restart_ui_flag:
