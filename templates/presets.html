@@ -44,6 +44,7 @@
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH">
 			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
 			<input type="hidden" id="INSTALL_URL" name="INSTALL_URL">
+			<input type="hidden" id="INSTALL_FPATH" name="INSTALL_FPATH">
 
 			<div id="presets-bank-panel">
 				<label for="SEL_BANK_NAME">Bank:</label>
@@ -89,7 +90,8 @@
 
 			<div id="upload-panel">
 				<div class="row"><div class="col-md-12 col-sm-12 text-center">
-					<button id="upload_show" class="btn btn-theme btn-block" title="Upload Preset/Bundle" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
+					<button id="button-upload" class="btn btn-theme btn-block" title="Upload Preset/Bundle" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
+					<span id="loading-action-upload" style="display:none;"><img src="/img/loading.gif"></span>
 				</div></div>
 			</div>
 
@@ -123,16 +125,19 @@
 var presetsForm = $('#presets-form')[0];
 
 $(document).ready(function () {
-	hideProgressAnimation()
-
 	load_preset_tree()
 	
 	$('#MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
 		// Enter pressed?
 		if(e.which == 13) {
 			e.preventDefault();
-			$('#ACTION_SEARCH').click();
+			$('#button-search').click();
 		}
+	});
+
+	$('#button-upload').click(function(){
+		$('#upload_panel').show(500)
+		$('#upload_progress_panel').hide(500);
 	});
 
 	var deferred = $.Deferred();
@@ -143,54 +148,19 @@ $(document).ready(function () {
 			"data": $('#input-uploadfile-session')[0].value
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
+		$("#presets-upload-form").attr("action", "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value);
+		//redirectUrl=/lib-presets&
 	});
 	connectZynthianWebSocket(deferred);
 
 	$('#upload_panel')[0].onuploadend = function(response){
-		console.log("upload succeded: " + response);
-		var ajaxData = new FormData(presetsForm);
-		ajaxData.append('ACTION','REVISE_UPLOAD')
-		var ajax = new XMLHttpRequest();
-
-		ajax.open( presetsForm.getAttribute( 'method' ), presetsForm.getAttribute( 'action' ), true );
-
-		ajax.onload = function() 	{
-			if( ajax.status >= 200 && ajax.status < 400 )	{
-				if( ajax.status != 200) {
-					console.log("upload error: " + data.errror);
-				}
-			}
-			else alert( 'Error. Please, contact the webmaster!' );
-		};
-
-		ajax.onloadend = function() {
-			console.log("revise uploads succeeded");
-			window.location.href = window.location.href;
-		};
-
-		ajax.onerror = function() {
-			console.log("revise uploads failed");
-		};
-
-		ajax.send(ajaxData);
+		console.log("Upload succeded: " + response)
+		$("#INSTALL_FPATH").val(response)
+		do_action("upload")
 	}
 
 });
 
-function showProgressAnimation() {
-	$("#loading-div-background").show();
-}
-
-function hideProgressAnimation() {
-	$("#loading-div-background").hide();
-}
-
-
-function setDownloadFile(filename){
-	$('#DOWNLOAD_FILE')[0].value=filename;
-}
-
-// Get Presets Data 
 
 var engine_methods=[]
 var engine_formats=""
@@ -235,9 +205,12 @@ function load_preset_tree() {
 	return false
 }
 
-function do_action(action=null) {
-	$("#button-" + action).hide()
-	$("#loading-action-" + action).show()
+function do_action(action=null, xid=null) {
+	var postfix = action
+	if (xid) postfix += "-" + xid
+
+	$("#button-" + postfix).hide()
+	$("#loading-action-" + postfix).show()
 	$("#error-message-action").hide()
 	
 	if (action=="search") $("#presets-search-result").hide()
@@ -245,8 +218,8 @@ function do_action(action=null) {
 	$.post("lib-presets/" + action, 
 		$('#presets-form').serialize(),
 		function(data, status) {
-			$("#button-" + action).show()
-			$("#loading-action-" + action).hide()
+			$("#button-" + postfix).show()
+			$("#loading-action-" + postfix).hide()
 			if (status=="success") {
 				if ("errors" in data) {
 					$("#error-message-action").html(data["errors"])
@@ -288,7 +261,6 @@ function renderPresetsTree(data) {
 		expandIcon: "glyphicon glyphicon-folder-close",
 		collapseIcon: "glyphicon glyphicon-folder-open",
 		onNodeSelected: function(event, data) {
-			$("#loading-div-background").css({ opacity: 1.0 });
 			$('#presets-bank-panel').hide();
 			$('#presets-file-panel').hide();
 			$('#download-panel').hide();
@@ -296,9 +268,6 @@ function renderPresetsTree(data) {
 			$('#SEL_PRESET_NAME').val('');
 			$('#SEL_NODE_ID').val(data.id);
 			$("#SEL_FULLPATH").val(data.fullpath);
-
-			$("#presets-upload-form").attr("action", "/upload?destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value);
-			//redirectUrl=/lib-presets&
 
 			if (data.node_type == 'BANK') {
 				$("#SEL_BANK_FULLPATH").val(data.fullpath);
@@ -340,7 +309,8 @@ function renderSearchResults(data) {
 		html += "<div class='col-md-10 col-sm-10 font-weight-bold'><b>" + data[i].name + "</b></div>"
 		html += "<div class='action-buttons col-md-2 col-sm-2 text-right'>"
 		html += "<span class='fa fa-info-circle' onclick=\"$('#martifact-desc-" + data[i].id + "').toggle(200);\"></span>&nbsp;"
-		html += "<span class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "')\"></span>"
+		html += "<span id='button-install-" + data[i].id + "' class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "','" + data[i].id + "')\"></span>"
+		html += "<span id='loading-action-install-" + data[i].id + "' style='display:none;'><img src='/img/loading.gif'></span>"
 		html += "</div>"
 		html += "<div class='col-sm-12' id='martifact-desc-" + data[i].id + "' style='display:none'>"
 		html += data[i].description + "(by <em>" + data[i].author + "</em>)"
@@ -353,10 +323,10 @@ function renderSearchResults(data) {
 	$("#presets-search-result").show()
 }
 
-function installMArtifact(name, url) {
+function installMArtifact(name, url, xid) {
 	if (confirm("Do you really want to install '" + name + "'?")) {
 		$('#INSTALL_URL').val(url);
-		return do_action("install")
+		return do_action("install", xid)
 	}
 	return false
 }

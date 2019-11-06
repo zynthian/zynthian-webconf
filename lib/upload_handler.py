@@ -150,21 +150,16 @@ class UploadHandler(tornado.web.RequestHandler):
 			response = ''
 			try:
 				destinationPath = self.get_argument("destinationPath")
-				last_part = None
-				part_count = 0
+				part_files = []
 				for part in  self.ps.parts:
 					if part.get_size()>0:
-						last_part = part
-						part_count += 1
+						part_files.append(destinationPath + "/" + part.get_filename())
 
-				if last_part:
-					if part_count>1:
-						response = destinationPath
-					else:
-						response = destinationPath + "/" + last_part.get_filename()
+				response = ",".join(part_files)
+
 			except Exception as e:
-				logging.error("copying failed: %s" % e)
-				pass
+				logging.error("Copying uploaded files failed: %s" % e)
+
 		finally:
 			# Don't forget to release temporary files.
 			self.ps.release_parts()

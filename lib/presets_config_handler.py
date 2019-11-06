@@ -76,8 +76,8 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				'rename_preset': lambda: self.do_rename_preset(),
 				'download': lambda: self.do_download(),
 				'search': lambda: self.do_search(),
-				'install': lambda: self.do_install(),
-				'upload': lambda: self.do_upload()
+				'install': lambda: self.do_install_url(),
+				'upload': lambda: self.do_install_file()
 			}[action]()
 		except:
 			result = {}
@@ -215,7 +215,23 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		return result
 
 
-	def do_install(self):
+	def do_install_file(self):
+		result = {}
+
+		try:
+			for fpath in self.get_argument('INSTALL_FPATH').split(","):
+				fpath = fpath.strip()
+				if len(fpath)>0:
+					self.install_file(fpath)
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install file: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def do_install_url(self):
 		result = {}
 
 		try:
@@ -273,8 +289,9 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		else:
 			dpath = fpath
 
-		logging.info("Installing '{}' ...".format(dpath))
-		self.engine_cls.zynapi_install(dpath, self.get_argument('SEL_BANK_FULLPATH'))
+		bank_fullpath = self.get_argument('SEL_BANK_FULLPATH')
+		logging.info("Installing '{}' => '{}' ...".format(dpath, bank_fullpath))
+		self.engine_cls.zynapi_install(dpath, bank_fullpath)
 
 
 	def install_url(self, url):
