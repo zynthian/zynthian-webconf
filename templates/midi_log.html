@@ -75,24 +75,31 @@ $(document).ready(function() {
 
 				var dataPayload = "";
 				var fgcolor = "";
-				if (data['type'] == 'note_on') {
+				var type = data.type;
+				if (type == 'note_on') {
 					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
 					fgcolor = "#008000";
-				} else if (data['type'] == 'note_off') {
+				} else if (type == 'note_off') {
 					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
 					fgcolor = "#C00000";
-				} else if (data['type'] == "pitchwheel") {
+				} else if (type == "pitchwheel") {
 					dataPayload = " " + data['pitch'];
 					fgcolor = "#C07000";
-				} else if (data['type'] == "control_change") {
-					dataPayload = " " + data['control'] + " => " + data['value']
+				} else if (type == "control_change") {
+					dataPayload = " " + data['control'] + " => " + data['value'];
 					fgcolor = "#0000C0";
-				} else if (data['type'] == "program_change") {
-					dataPayload = " " + data['program']
+				} else if (type == "program_change") {
+					dataPayload = " " + data['program'];
 					fgcolor = "#800080";
-				} else if (data['type'] == "songpos") {
-					dataPayload = " " + data['pos']
+				} else if (type == "songpos") {
+					dataPayload = " " + data['pos'];
 					fgcolor = "#404040";
+				} else if (type == "aftertouch") {
+					dataPayload = " " + data['value'];
+					fgcolor = "#009000";
+				} else if (type == "polytouch") {
+					dataPayload = " " + data['note'] + ", P: " + data['value'];
+					fgcolor = "#C08000";
 				} else {
 					fgcolor = "#404040";
 				}
