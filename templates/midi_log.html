@@ -78,10 +78,10 @@ $(document).ready(function() {
 				var type = data.type;
 				if (type == 'note_on') {
 					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
-					fgcolor = "#008000";
+					fgcolor = "#006000";
 				} else if (type == 'note_off') {
 					dataPayload = " " + data['note'] + ", Vel: " + data['velocity'];
-					fgcolor = "#C00000";
+					fgcolor = "#00A000";
 				} else if (type == "pitchwheel") {
 					dataPayload = " " + data['pitch'];
 					fgcolor = "#C07000";
@@ -96,10 +96,10 @@ $(document).ready(function() {
 					fgcolor = "#404040";
 				} else if (type == "aftertouch") {
 					dataPayload = " " + data['value'];
-					fgcolor = "#009000";
+					fgcolor = "#70A000";
 				} else if (type == "polytouch") {
 					dataPayload = " " + data['note'] + ", P: " + data['value'];
-					fgcolor = "#C08000";
+					fgcolor = "#A0A000";
 				} else {
 					fgcolor = "#404040";
 				}

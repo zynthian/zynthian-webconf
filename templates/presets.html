@@ -16,12 +16,6 @@
 					<option value="{{key}}" {{ 'selected' if config['engine']==key else '' }}>{{config['engines'][key][1]}}</option>
 				{% end %}
 			</select>
-			<div id="presets-tree"></div>
-			<div id="loading-tree" class="text-center" style="display:none;">
-				<br><br>
-				<img src="/img/loading.gif">
-				<br><br>
-			</div>
 			<div id="presets-new-bank-panel">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -33,6 +27,12 @@
 						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</span>
 				</div>
+			</div>
+			<div id="presets-tree"></div>
+			<div id="loading-tree" class="text-center" style="display:none;">
+				<br><br>
+				<img src="/img/loading.gif">
+				<br><br>
 			</div>
 			<div class="row">
 				<div id="error-message-tree" class="alert alert-danger" style="display:none">{{ errors }}</div>
@@ -89,7 +89,7 @@
 
 			<div id="upload-panel">
 				<div class="row"><div class="col-md-12 col-sm-12 text-center">
-					<button id="upload_show" class="btn btn-theme btn-block" title="Upload Preset/Bundle"><i class="fa fa-upload"></i> Upload</button>
+					<button id="upload_show" class="btn btn-theme btn-block" title="Upload Preset/Bundle" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
 				</div></div>
 			</div>
 
@@ -126,12 +126,6 @@ $(document).ready(function () {
 	hideProgressAnimation()
 
 	load_preset_tree()
-
-/*
-	$("#presets-form").submit(function(e) {
-		return false
-	})
-*/
 	
 	$('#MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
 		// Enter pressed?
@@ -199,6 +193,7 @@ function setDownloadFile(filename){
 // Get Presets Data 
 
 var engine_methods=[]
+var engine_formats=""
 
 function load_preset_tree() {
 	$('#presets-new-bank-panel').hide();
@@ -223,6 +218,10 @@ function load_preset_tree() {
 				}
 				if ("methods" in data) {
 					engine_methods = data['methods']
+				}
+				if ("formats" in data) {
+					engine_formats = data['formats']
+					$('#input-uploadfile-type')[0].value = engine_formats;
 				}
 				if ("presets" in data) {
 					renderPresetsTree(data['presets'])
@@ -255,6 +254,10 @@ function do_action(action=null) {
 				}
 				if ("methods" in data) {
 					engine_methods = data['methods']
+				}
+				if ("formats" in data) {
+					engine_formats = data['formats']
+					$('#input-uploadfile-type')[0].value = engine_formats;
 				}
 				if ("presets" in data) {
 					renderPresetsTree(data['presets'])
@@ -293,7 +296,9 @@ function renderPresetsTree(data) {
 			$('#SEL_PRESET_NAME').val('');
 			$('#SEL_NODE_ID').val(data.id);
 			$("#SEL_FULLPATH").val(data.fullpath);
-			//$("#presets-upload-form").attr("action", "/upload?redirectUrl=/lib-presets&destinationPath=" + data.full_path + "&clientId=" + $('#input-uploadfile-session')[0].value);
+
+			$("#presets-upload-form").attr("action", "/upload?destinationPath=" + data.fullpath + "&clientId=" + $('#input-uploadfile-session')[0].value);
+			//redirectUrl=/lib-presets&
 
 			if (data.node_type == 'BANK') {
 				$("#SEL_BANK_FULLPATH").val(data.fullpath);
@@ -302,7 +307,6 @@ function renderPresetsTree(data) {
 					$('#presets-bank-panel').show();
 					$('#download-panel').show();
 				}
-				//$('#input-uploadfile-type')[0].value = data.bankType;
 			} else if (data.node_type == 'PRESET') {
 				$("#SEL_BANK_FULLPATH").val(data.bank_fullpath);
 				$('#SEL_PRESET_NAME').val(data.name);
@@ -317,7 +321,8 @@ function renderPresetsTree(data) {
 	if (engine_methods.includes("zynapi_new_bank")) $('#presets-new-bank-panel').show();
 	else $('#presets-new-bank-panel').hide();
 
-	$('#upload-panel').show();
+	if (engine_methods.includes("zynapi_install")) $('#upload-panel').show();
+	else $('#upload-panel').hide();
 
 	if (engine_methods.includes("zynapi_martifact_formats")) $('#presets-search-panel').show();
 	else $('#presets-search-panel').hide();

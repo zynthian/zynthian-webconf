@@ -91,9 +91,11 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		result = {}
 		try:
 			result['methods'] =	self.engine_cls.get_zynapi_methods()
+			result['formats'] =	self.get_upload_formats()
 			result['presets'] = self.get_presets_data()
 		except Exception as e:
 			result['methods'] =  None
+			result['formats'] =  None
 			result['presets'] = None
 			logging.error(e)
 			result['errors'] = "Can't get preset tree data: {}".format(e)
@@ -337,6 +339,16 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			if not hasattr(engine_info[e][3], "zynapi_get_banks"):
 				del engine_info[e]
 		return engine_info
+
+
+	def get_upload_formats(self):
+		if self.engine_cls==zynthian_engine_jalv:
+			self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
+
+		try:
+			return self.engine_cls.zynapi_get_formats()
+		except:
+			return ""
 
 
 	def get_presets_data(self):
