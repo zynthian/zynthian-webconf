@@ -46,6 +46,10 @@
 			<input type="hidden" id="INSTALL_URL" name="INSTALL_URL">
 			<input type="hidden" id="INSTALL_FPATH" name="INSTALL_FPATH">
 
+			<div class="row">
+				<div id="error-message-action" class="alert alert-danger" style="display:none"></div>
+			</div>
+
 			<div id="presets-bank-panel">
 				<label for="SEL_BANK_NAME">Bank:</label>
 				<div class="row no-gutters">
@@ -62,7 +66,6 @@
 					</div>
 				</div>
 			</div>
-
 
 			<div id="presets-file-panel">
 				<label for="SEL_PRESET_NAME">Preset:</label>
@@ -93,10 +96,6 @@
 					<button id="button-upload" class="btn btn-theme btn-block" title="Upload Preset/Bundle" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
 					<span id="loading-action-upload" style="display:none;"><img src="/img/loading.gif"></span>
 				</div></div>
-			</div>
-
-			<div class="row">
-				<div id="error-message-action" class="alert alert-danger" style="display:none"></div>
 			</div>
 
 			<div id="presets-search-panel">
@@ -176,6 +175,9 @@ function load_preset_tree() {
 	$('#presets-tree').hide()
 	$("#loading-tree").show()
 	$("#error-message-tree").hide()
+	$("#error-message-action").hide()
+	
+	cleanSearchResults()
 
 	$.post("lib-presets/get_tree", 
 		$('#presets-form').serialize(),
@@ -211,6 +213,7 @@ function do_action(action=null, xid=null) {
 
 	$("#button-" + postfix).hide()
 	$("#loading-action-" + postfix).show()
+	$("#error-message-tree").hide()
 	$("#error-message-action").hide()
 	
 	if (action=="search") $("#presets-search-result").hide()
@@ -309,8 +312,10 @@ function renderSearchResults(data) {
 		html += "<div class='col-md-10 col-sm-10 font-weight-bold'><b>" + data[i].name + "</b></div>"
 		html += "<div class='action-buttons col-md-2 col-sm-2 text-right'>"
 		html += "<span class='fa fa-info-circle' onclick=\"$('#martifact-desc-" + data[i].id + "').toggle(200);\"></span>&nbsp;"
-		html += "<span id='button-install-" + data[i].id + "' class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "','" + data[i].id + "')\"></span>"
-		html += "<span id='loading-action-install-" + data[i].id + "' style='display:none;'><img src='/img/loading.gif'></span>"
+		if (engine_methods.includes("zynapi_install")) {
+			html += "<span id='button-install-" + data[i].id + "' class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "','" + data[i].id + "')\"></span>"
+			html += "<span id='loading-action-install-" + data[i].id + "' style='display:none;'><img src='/img/loading.gif'></span>"
+		}
 		html += "</div>"
 		html += "<div class='col-sm-12' id='martifact-desc-" + data[i].id + "' style='display:none'>"
 		html += data[i].description + "(by <em>" + data[i].author + "</em>)"
@@ -321,6 +326,10 @@ function renderSearchResults(data) {
 
 	$("#presets-search-result").html(html)
 	$("#presets-search-result").show()
+}
+
+function cleanSearchResults() {
+	$("#presets-search-result").html("")
 }
 
 function installMArtifact(name, url, xid) {

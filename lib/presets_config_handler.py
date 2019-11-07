@@ -164,7 +164,9 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 
 	def do_download(self):
-		result = {}
+		result = None
+		fpath = None
+		delete = False
 		try:
 			fpath=self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
 			dname, fname = os.path.split(fpath)
@@ -190,14 +192,14 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 					self.write(data)
 				self.finish()
 	
-			if delete:
-				os.remove(fpath)
-
-			return None
-
 		except Exception as e:
 			logging.error(e)
+			result = {}
 			result['errors'] = "Can't download file: {}".format(e)
+
+		finally:
+			if fpath and delete:
+				os.remove(fpath)
 
 		return result
 
@@ -289,9 +291,23 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		else:
 			dpath = fpath
 
+		# Remove thrash ...
+		if os.path.isdir(dpath):
+			try:
+				shutil.rmtree(dpath + "/__MACOSX")
+			except:
+				pass
+
 		bank_fullpath = self.get_argument('SEL_BANK_FULLPATH')
 		logging.info("Installing '{}' => '{}' ...".format(dpath, bank_fullpath))
-		self.engine_cls.zynapi_install(dpath, bank_fullpath)
+		
+		try:
+			self.engine_cls.zynapi_install(dpath, bank_fullpath)
+		finally:
+			try:
+				shutil.rmtree(dfpath)
+			except: 
+				pass
 
 
 	def install_url(self, url):
@@ -303,51 +319,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			df.write(res.content)
 			df.close()
 			self.install_file(fpath)
-
-
-	def do_upload(self):
-		try:
-			new_upload_file = self.get_argument('UPLOAD_FILE','')
-			if new_upload_file:
-				filename_parts = os.path.splitext(new_upload_file)
-				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
-		except Exception as err:
-			logging.error(format(err))
-			return format(err)
-
-
-	def revise_filename(self, selected_full_path, downloaded_file, file_type):
-		m = re.match('.*/(\d*)-{0,1}(.*)', downloaded_file, re.M | re.I | re.S)
-		if m:
-			filename =  m.group(2)
-
-			file_list =  os.listdir(selected_full_path)
-			file_list = sorted(file_list)
-
-			existing_program_numbers = []
-			for f in file_list:
-				if downloaded_file != selected_full_path + "/" + f:
-					# logging.info(f)
-					fp = os.path.join(selected_full_path, f)
-					m3 = re.match('.*/(\d*)-{0,1}(.*)', fp, re.M | re.I | re.S)
-					if m3:
-						try:
-							existing_program_numbers.append(int(m3.group(1)))
-						except:
-							pass
-			# logging.info(existing_program_numbers)
-
-			if  m.group(1) and not int(m.group(1)) in existing_program_numbers:
-				current_index = int(m.group(1))
-			else:
-				current_index = 0
-				for existing_program_number in existing_program_numbers:
-					if existing_program_number != current_index:
-						current_index +=1
-						break
-					current_index +=1
-
-			shutil.move(downloaded_file,selected_full_path + "/" + str(current_index).zfill(4 + "-" + filename))
 
 
 	def get_engine_info(self):
