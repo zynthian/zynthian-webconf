@@ -311,10 +311,12 @@ function renderSearchResults(data) {
 		html += "<div class='row'>"
 		html += "<div class='col-md-10 col-sm-10 font-weight-bold'><b>" + data[i].name + "</b></div>"
 		html += "<div class='action-buttons col-md-2 col-sm-2 text-right'>"
-		html += "<span class='fa fa-info-circle' onclick=\"$('#martifact-desc-" + data[i].id + "').toggle(200);\"></span>&nbsp;"
-		if (engine_methods.includes("zynapi_install")) {
-			html += "<span id='button-install-" + data[i].id + "' class='fa fa-plus-circle' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "','" + data[i].id + "')\"></span>"
+		html += "<span class='glyphicon glyphicon-info-sign' onclick=\"$('#martifact-desc-" + data[i].id + "').toggle(200);\"></span>&nbsp;"
+		if (data[i].file && data[i].file_hash && engine_methods.includes("zynapi_install")) {
+			html += "<span id='button-install-" + data[i].id + "' class='glyphicon glyphicon-plus-sign' onclick=\"installMArtifact('" + data[i].name + "','" + data[i].file + "','" + data[i].id + "')\"></span>"
 			html += "<span id='loading-action-install-" + data[i].id + "' style='display:none;'><img src='/img/loading.gif'></span>"
+		} else if (data[i].mirrors.length>0) {
+			html += "<a href=\"" + data[i].mirrors[0] + "\" target='_blank'><span id='button-install-" + data[i].id + "' class='glyphicon glyphicon-circle-arrow-right'></span></a>"
 		}
 		html += "</div>"
 		html += "<div class='col-sm-12' id='martifact-desc-" + data[i].id + "' style='display:none'>"

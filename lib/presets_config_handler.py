@@ -247,21 +247,24 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 
 	def search_artifacts(self, formats, tags):
-		query_url = "https://musical-artifacts.com/artifacts.json"
-		sep = '?'
-		if formats:
-			query_url += sep + 'formats=' + formats
-			sep = "&"
-		if tags:
-			query_url += sep + 'tags=' + tags
-			sep = "&"
+		result=[]
+		for fmt in formats.split(','):
+			query_url = "https://musical-artifacts.com/artifacts.json"
+			sep = '?'
+			if formats:
+				query_url += sep + 'formats=' + fmt
+				sep = "&"
+			if tags:
+				query_url += sep + 'tags=' + tags
+				#query_url += sep + 'q=' + tags
+				sep = "&"
 
-		result = requests.get(query_url, verify=False).json()
+			result += requests.get(query_url, verify=False).json()
+
 		for row in result:
-			if not "file" in row and "mirrors" in row and len(row['mirrors'])>0:
-				row['file'] = row['mirrors'][0]
 			if not "file" in row:
-				row['file'] = ''
+				if "mirrors" in row and len(row['mirrors'])>0:
+					row['file'] = row['mirrors'][0]
 
 		return result
 
@@ -305,7 +308,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.engine_cls.zynapi_install(dpath, bank_fullpath)
 		finally:
 			try:
-				shutil.rmtree(dfpath)
+				shutil.rmtree(dpath)
 			except: 
 				pass
 
