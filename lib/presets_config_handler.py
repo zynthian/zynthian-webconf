@@ -27,6 +27,7 @@ import re
 import json
 import copy
 import uuid
+import urllib3
 import logging
 import shutil
 import requests
@@ -265,6 +266,8 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			if not "file" in row:
 				if "mirrors" in row and len(row['mirrors'])>0:
 					row['file'] = row['mirrors'][0]
+				else:
+					row['file'] = None
 
 		return result
 

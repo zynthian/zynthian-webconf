@@ -321,6 +321,9 @@ function renderSearchResults(data) {
 		html += "</div>"
 		html += "<div class='col-sm-12' id='martifact-desc-" + data[i].id + "' style='display:none'>"
 		html += data[i].description + "(by <em>" + data[i].author + "</em>)"
+		if (data[i].file && data[i].file_hash) {
+			html += "<br><a href=\"" + data[i].file + "\">" + data[i].file + "</a><br>\n"
+		}
 		html += "</div>\n"
 		html += "</div>"
 	}
