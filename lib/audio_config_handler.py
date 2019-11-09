@@ -159,7 +159,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
 			enable_custom_text = " (select Custom kit to enable)"
 		else:
-			enable_custom_text = None
+			enable_custom_text = ""
 
 		config=OrderedDict([
 			['SOUNDCARD_NAME', {
@@ -168,7 +168,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('SOUNDCARD_NAME'),
 				'options': list(self.soundcard_presets.keys()),
 				'presets': self.soundcard_presets,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['SOUNDCARD_CONFIG', {
 				'type': 'textarea',
@@ -177,14 +177,14 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'rows': 4,
 				'value': os.environ.get('SOUNDCARD_CONFIG'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['JACKD_OPTIONS', {
 				'type': 'text',
 				'title': "Jackd Options{}".format(enable_custom_text),
 				'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
 				'type': 'text',
