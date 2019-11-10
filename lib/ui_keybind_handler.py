@@ -46,19 +46,17 @@ class UiKeybindHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
-		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
-
-		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-
-		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]=='CPU Usage':
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
-		else:
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
-
-		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
-
-		errors=self.update_config(escaped_arguments)
-
-		self.restart_ui_flag = True
+		action = self.get_argument('UI_KEYBINDINGS')
+		if action:
+			errors = {
+				'SAVE_KEYBIND': lambda: self.do_save_keybind(),
+			}[action]()
 		self.get(errors)
+
+	def do_save_keybind(self):
+		try:
+			postedBindings = tornado.escape.recursive_unicode(self.request.arguments)
+
+		except Exception as e:
+			logging.error("Saving keyboard binding failed: %s" % format(e))
+			return format(e)
