@@ -46,7 +46,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		action = self.get_argument('UI_KEYBINDINGS')
+		action = self.get_argument('ZYNTHIAN_KEYBIND_ACTION')
 		if action:
 			errors = {
 				'SAVE_KEYBIND': lambda: self.do_save_keybind(),
