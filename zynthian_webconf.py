@@ -139,6 +139,7 @@ def make_app():
 		(r"/sw-jalv-lv2$", JalvLv2Handler),
 		(r"/sw-repos$", RepositoryHandler),
 		(r"/ui-options$", UiConfigHandler),
+		(r"/ui-keybind$", UiKeybindHandler),
 		(r"/ui-log$", UiLogHandler),
 		(r"/ui-midi-options$", MidiConfigHandler),
 		(r"/ui-midi-log$", MidiLogHandler),

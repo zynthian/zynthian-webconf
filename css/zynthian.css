@@ -435,3 +435,13 @@ div#presets-search-result .action-buttons span:hover {
   padding-right: 1px;
   padding-left: 1px;
 }
+.tableFixHead {
+  overflow-y: auto;
+}
+.tableFixHead thead th {
+  position: sticky;
+  top: 0;
+}
+.tableFixHead tr:nth-child(even) {
+  background-color: #10E0E0;
+}

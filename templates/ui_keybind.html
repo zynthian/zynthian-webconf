@@ -1,0 +1,44 @@
+<h2>{{ title }}</h2>
+
+<form id="ui-keybind-form" action="/sw-ui-keybind" enctype="multipart/form-data" method="post">
+
+    <div class="tableFixHead">
+    <table>
+      <thead>
+        <tr>
+          <th>CUIA Action</th>
+          <th>Shift</th>
+          <th>Ctrl</th>
+          <th>Alt</th>
+          <th>CapsLock</th>
+          <th>Keyboard shortcut</th>
+        </tr>
+      </thead>
+      <tbody>
+    {% for cuia in sorted(config['UI_KEYBINDINGS']) %}
+      <tr>
+        <td>{{escape(cuia)}}</td>
+        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 1 %} checked {% end %}></td>
+        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 4 %} checked {% end %}></td>
+        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 8 %} checked {% end %}></td>
+        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 2 %} checked {% end %}></td>
+        <td><input value="{{escape(config['UI_KEYBINDINGS'][cuia]['keysym'])}}"></td>
+      </tr>
+    {% end %}
+      </tbody>
+    </table>
+    </div>
+
+    <div class="container-fluid">
+        <div class="row"><br/></div>
+        <div class="row">
+            <button name="ZYNTHIAN_KEYBIND_ACTION" value="SAVE_KEYBIND" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+
+</script>
+
+
