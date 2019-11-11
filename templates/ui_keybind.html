@@ -18,11 +18,11 @@
     {% for cuia in sorted(config['UI_KEYBINDINGS']) %}
       <tr>
         <td>{{escape(cuia)}}</td>
-        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 1 %} checked {% end %}></td>
-        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 4 %} checked {% end %}></td>
-        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 8 %} checked {% end %}></td>
-        <td><input type="checkbox" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 2 %} checked {% end %}></td>
-        <td><input value="{{escape(config['UI_KEYBINDINGS'][cuia]['keysym'])}}"></td>
+        <td><input type="checkbox" name="{{cuia}}:shift" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 1 %} checked {% end %}></td>
+        <td><input type="checkbox" name="{{cuia}}:ctrl" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 4 %} checked {% end %}></td>
+        <td><input type="checkbox" name="{{cuia}}:alt" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 8 %} checked {% end %}></td>
+        <td><input type="checkbox" name="{{cuia}}:caps" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 2 %} checked {% end %}></td>
+        <td><input name="{{cuia}}:keysym" type="text" value="{{escape(config['UI_KEYBINDINGS'][cuia]['keysym'])}}"></td>
       </tr>
     {% end %}
       </tbody>

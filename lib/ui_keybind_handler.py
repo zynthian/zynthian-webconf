@@ -38,6 +38,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+		zynthian_gui_keybinding.getInstance().load()
 		config=OrderedDict([])
 		config['UI_KEYBINDINGS'] = zynthian_gui_keybinding.getInstance().map
 
@@ -53,10 +54,36 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			}[action]()
 		self.get(errors)
 
+		
 	def do_save_keybind(self):
 		try:
 			postedBindings = tornado.escape.recursive_unicode(self.request.arguments)
+			zynthian_gui_keybinding.getInstance().resetModifiers()
+			try:
+				for cuia, value in postedBindings.items():
+					self.update_binding(cuia, value)
+			except Exception as e:
+				pass
+			zynthian_gui_keybinding.getInstance().save()
 
 		except Exception as e:
 			logging.error("Saving keyboard binding failed: %s" % format(e))
 			return format(e)
+
+
+	def update_binding(self, cuia, value):
+		cuia_name,cuia_param = cuia.split(':')
+		logging.info("Update binding for %s with param %s value %s", cuia_name, cuia_param, value)
+		try:
+			if cuia_param == "shift":
+				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 1
+			if cuia_param == "ctrl":
+				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 4
+			if cuia_param == "alt":
+				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 8
+			if cuia_param == "caps":
+				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 2
+			if cuia_param == "keysym":
+				zynthian_gui_keybinding.getInstance().map[cuia_name]['keysym'] = value
+		except Exception as e:
+			logging.error("Failed to set binding %s for %s: %s", cuia_param, cuia_name, format(e))
