@@ -2,7 +2,7 @@
 #********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# UI Configuration Handler
+# UI Keyboard Binding Handler
 #
 # Copyright (C) 2019 Brian Walton <brian@riban.co.uk>
 #
@@ -65,6 +65,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			except Exception as e:
 				pass
 			zynthian_gui_keybinding.getInstance().save()
+			super().restart_ui() # TODO Would be better to trigger UI to reload keymap rather than do full restart
 
 		except Exception as e:
 			logging.error("Saving keyboard binding failed: %s" % format(e))
