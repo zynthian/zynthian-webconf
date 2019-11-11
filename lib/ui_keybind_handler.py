@@ -41,7 +41,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 		zynthian_gui_keybinding.getInstance().load()
 		config=OrderedDict([])
 		config['UI_KEYBINDINGS'] = zynthian_gui_keybinding.getInstance().config['map']
-		config['UI_KEYBINDING_ENABLED'] = zynthian_gui_keybinding.getInstance().config['enabled']
+		config['UI_KEYBINDING_ENABLED'] = zynthian_gui_keybinding.getInstance().isEnabled()
 
 		self.render("config.html", body="ui_keybind.html", config=config, title="Keyboard Binding", errors=errors)
 
@@ -63,10 +63,11 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			zynthian_gui_keybinding.getInstance().resetModifiers()
 			try:
 				for cuia, value in postedBindings.items():
+					logging.info("cuia=%s, value=%s", cuia, value[0])
 					if cuia == "enable_keybinding":
-						zynthian_gui_keybinding.getInstance().enable(value == "on")
+						zynthian_gui_keybinding.getInstance().enable(value[0] == "on")
 					else:
-						self.update_binding(cuia, value)
+						self.update_binding(cuia, value[0])
 			except Exception as e:
 				pass
 			zynthian_gui_keybinding.getInstance().save()

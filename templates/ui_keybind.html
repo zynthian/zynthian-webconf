@@ -1,6 +1,6 @@
 <form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
 <div class="pull-right">
-    <input id="enable_keybinding" type="checkbox" name="enable_keybinding" onChange="showEnabled()"/><span>Enable Keybinding</span>
+    <input id="enable_keybinding" type="checkbox" name="enable_keybinding" onChange="showEnabled() {% if config['UI_KEYBINDING_ENABLED'] %} checked {% end %}"/><span>Enable Keybinding</span>
 </div>
 
 <h2>{{ title }}</h2>
