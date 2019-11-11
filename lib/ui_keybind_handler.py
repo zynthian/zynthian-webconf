@@ -83,7 +83,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 		try:
 			zynthian_config_handler.getInstance().resetConfig()
 		except Exception as e:
-			logging.error("Reseting keyboard binding to defaults failed: %s" % format(e))
+			logging.error("Resetting keyboard binding to defaults failed: %s" % format(e))
 			return format(e)
 	
 	
