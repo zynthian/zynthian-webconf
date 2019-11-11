@@ -40,7 +40,8 @@ class UiKeybindHandler(ZynthianConfigHandler):
 	def get(self, errors=None):
 		zynthian_gui_keybinding.getInstance().load()
 		config=OrderedDict([])
-		config['UI_KEYBINDINGS'] = zynthian_gui_keybinding.getInstance().map
+		config['UI_KEYBINDINGS'] = zynthian_gui_keybinding.getInstance().config['map']
+		config['UI_KEYBINDING_ENABLED'] = zynthian_gui_keybinding.getInstance().config['enabled']
 
 		self.render("config.html", body="ui_keybind.html", config=config, title="Keyboard Binding", errors=errors)
 
@@ -51,6 +52,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 		if action:
 			errors = {
 				'SAVE_KEYBIND': lambda: self.do_save_keybind(),
+				'RESET_KEYBIND': lambda: self.do_reset_keybind(),
 			}[action]()
 		self.get(errors)
 
@@ -61,7 +63,10 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			zynthian_gui_keybinding.getInstance().resetModifiers()
 			try:
 				for cuia, value in postedBindings.items():
-					self.update_binding(cuia, value)
+					if cuia == "enable_keybinding":
+						zynthian_gui_keybinding.getInstance().enable(value == "on")
+					else:
+						self.update_binding(cuia, value)
 			except Exception as e:
 				pass
 			zynthian_gui_keybinding.getInstance().save()
@@ -72,19 +77,30 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			return format(e)
 
 
+	def do_reset_keybind(self):
+		try:
+			zynthian_config_handler.getInstance().resetConfig()
+		except Exception as e:
+			logging.error("Reseting keyboard binding to defaults failed: %s" % format(e))
+			return format(e)
+	
+	
 	def update_binding(self, cuia, value):
+		if cuia == 'enable_keybinding':
+			zynthian_gui_keybinding.getInstance().enable(value == 'on')
+			return
 		cuia_name,cuia_param = cuia.split(':')
 		logging.info("Update binding for %s with param %s value %s", cuia_name, cuia_param, value)
 		try:
 			if cuia_param == "shift":
-				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 1
+				zynthian_gui_keybinding.getInstance().config['map'][cuia_name]['modifier'] |= 1
 			if cuia_param == "ctrl":
-				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 4
+				zynthian_gui_keybinding.getInstance().config['map'][cuia_name]['modifier'] |= 4
 			if cuia_param == "alt":
-				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 8
+				zynthian_gui_keybinding.getInstance().config['map'][cuia_name]['modifier'] |= 8
 			if cuia_param == "caps":
-				zynthian_gui_keybinding.getInstance().map[cuia_name]['modifier'] |= 2
+				zynthian_gui_keybinding.getInstance().config['map'][cuia_name]['modifier'] |= 2
 			if cuia_param == "keysym":
-				zynthian_gui_keybinding.getInstance().map[cuia_name]['keysym'] = value
+				zynthian_gui_keybinding.getInstance().config['map'][cuia_name]['keysym'] = value
 		except Exception as e:
 			logging.error("Failed to set binding %s for %s: %s", cuia_param, cuia_name, format(e))
