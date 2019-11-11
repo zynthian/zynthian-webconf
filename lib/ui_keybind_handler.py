@@ -62,10 +62,11 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			postedBindings = tornado.escape.recursive_unicode(self.request.arguments)
 			zynthian_gui_keybinding.getInstance().resetModifiers()
 			try:
+				zynthian_gui_keybinding.getInstance().enable(False) # need to disable because no flag is posted if checkbox not checked - will enable in loop if required
 				for cuia, value in postedBindings.items():
 					logging.info("cuia=%s, value=%s", cuia, value[0])
 					if cuia == "enable_keybinding":
-						zynthian_gui_keybinding.getInstance().enable(value[0] == "on")
+						zynthian_gui_keybinding.getInstance().enable()
 					else:
 						self.update_binding(cuia, value[0])
 			except Exception as e:
