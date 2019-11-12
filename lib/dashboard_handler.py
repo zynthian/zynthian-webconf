@@ -213,7 +213,7 @@ class DashboardHandler(ZynthianConfigHandler):
 
 	def get_gpio_expander(self):
 		out=check_output("gpio i2cd", shell=True).decode().split("\n")
-		if out[3].startswith("20: 20"):
+		if len(out)>3 and out[3].startswith("20: 20"):
 			return "MCP23017"
 		return "No detected"
 
