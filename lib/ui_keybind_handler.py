@@ -82,6 +82,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 	def do_reset_keybind(self):
 		try:
 			zynthian_gui_keybinding.getInstance().resetConfig()
+			zynthian_gui_keybinding.getInstance().save()
 		except Exception as e:
 			logging.error("Resetting keyboard binding to defaults failed: %s" % format(e))
 			return format(e)
