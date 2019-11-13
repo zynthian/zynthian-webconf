@@ -111,6 +111,7 @@ def make_app():
 		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
 		"upload_progress_handler": dict()
+		#"autoescape": None
 	}
 
 	return tornado.web.Application([

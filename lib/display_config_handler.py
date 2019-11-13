@@ -313,7 +313,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
 			enable_custom_text = " (select Custom kit to enable)"
 		else:
-			enable_custom_text = None
+			enable_custom_text = ""
 
 		config=OrderedDict([
 			['DISPLAY_NAME', {
@@ -322,7 +322,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('DISPLAY_NAME'),
 				'options': list(self.display_presets.keys()),
 				'presets': self.display_presets,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['DISPLAY_CONFIG', {
 				'type': 'textarea',
@@ -331,28 +331,28 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'title': 'Config{}'.format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_CONFIG'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['DISPLAY_WIDTH', {
 				'type': 'text',
 				'title': 'Width{}'.format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_WIDTH'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['DISPLAY_HEIGHT', {
 				'type': 'text',
 				'title': 'Height{}'.format(enable_custom_text),
 				'value': os.environ.get('DISPLAY_HEIGHT'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}],
 			['FRAMEBUFFER', {
 				'type': 'text',
 				'title': 'Framebuffer{}'.format(enable_custom_text),
 				'value': os.environ.get('FRAMEBUFFER'),
 				'advanced': True,
-				'disabled': enable_custom_text!=None
+				'disabled': enable_custom_text!=""
 			}]
 		])
 
