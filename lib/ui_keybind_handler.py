@@ -72,7 +72,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 			except Exception as e:
 				pass
 			zynthian_gui_keybinding.getInstance().save()
-			super().restart_ui() # TODO Would be better to trigger UI to reload keymap rather than do full restart
+			zynthian_gui_keybinding.getInstance().reload_keybinding()
 
 		except Exception as e:
 			logging.error("Saving keyboard binding failed: %s" % format(e))
@@ -83,6 +83,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 		try:
 			zynthian_gui_keybinding.getInstance().resetConfig()
 			zynthian_gui_keybinding.getInstance().save()
+			zynthian_gui_keybinding.getInstance().reload_keybinding()
 		except Exception as e:
 			logging.error("Resetting keyboard binding to defaults failed: %s" % format(e))
 			return format(e)
