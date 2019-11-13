@@ -39,6 +39,7 @@ from lib.reboot_handler import RebootHandler
 from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
+from lib.ui_keybind_handler import UiKeybindHandler
 from lib.kit_config_handler import KitConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
@@ -140,6 +141,7 @@ def make_app():
 		(r"/sw-jalv-lv2$", JalvLv2Handler),
 		(r"/sw-repos$", RepositoryHandler),
 		(r"/ui-options$", UiConfigHandler),
+		(r"/ui-keybind$", UiKeybindHandler),
 		(r"/ui-log$", UiLogHandler),
 		(r"/ui-midi-options$", MidiConfigHandler),
 		(r"/ui-midi-log$", MidiLogHandler),

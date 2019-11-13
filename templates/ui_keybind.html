@@ -1,0 +1,59 @@
+<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
+<div class="pull-right">
+	<input id="enable_keybinding" type="checkbox" name="enable_keybinding" onChange="showEnabled()" {% if config['UI_KEYBINDING_ENABLED'] %} checked {% end %}/><span>Enable Keybinding</span>
+</div>
+
+<h2>{{ title }}</h2>
+	<div id='keybind_table' {% if not config['UI_KEYBINDING_ENABLED'] %} style="display:none;" {% end %}>
+	<table class="table table-condensed">
+	<thead>
+	<tr class="success">
+		<th scope="col">Action</th>
+		<th scope="col">Shift</th>
+		<th scope="col">Ctrl</th>
+		<th scope="col">Alt</th>
+		<th scope="col">CapsLock</th>
+		<th scope="col">Key</th>
+	</tr>
+	</thead>
+	<tbody>
+	{% for cuia in sorted(config['UI_KEYBINDINGS']) %}
+	<tr>
+		<th scope="row">{{escape(cuia)}}</th>
+		<td><input type="checkbox" name="{{cuia}}:shift" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 1 %} checked {% end %}></td>
+		<td><input type="checkbox" name="{{cuia}}:ctrl" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 4 %} checked {% end %}></td>
+		<td><input type="checkbox" name="{{cuia}}:alt" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 8 %} checked {% end %}></td>
+		<td><input type="checkbox" name="{{cuia}}:caps" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 2 %} checked {% end %}></td>
+		<td><input name="{{cuia}}:keysym" type="text" value="{{escape(config['UI_KEYBINDINGS'][cuia]['keysym'])}}"></td>
+	</tr>
+	{% end %}
+	</tbody>
+	</table>
+	</div>
+
+	<div class="container-fluid">
+		<div class="row"><br/></div>
+		<div class="row">
+			<button name="ZYNTHIAN_KEYBIND_ACTION" value="SAVE_KEYBIND" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
+		</div>
+	</div>
+	<div class="container-fluid">
+		<div class="row"><br/></div>
+		<div class="row">
+			<button name="ZYNTHIAN_KEYBIND_ACTION" value="RESET_KEYBIND" class="btn btn-lg btn-theme btn-block advanced-view" onclick="return confirm('Are you sure to reset key bindings to default values?')">Reset to Default</button>
+		</div>
+	</div>
+</form>
+
+<script type="text/javascript">
+function showEnabled() {
+	var checkBox = document.getElementById("enable_keybinding");
+	var table = document.getElementById("keybind_table");
+
+	if (checkBox.checked == true){
+		table.style.display = "block";
+	} else {
+		table.style.display = "none";
+	}
+}
+</script>
