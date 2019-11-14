@@ -311,6 +311,3 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 			config[configKey] = mixerControl
 
-
-	def needs_reboot(self):
-		return True
