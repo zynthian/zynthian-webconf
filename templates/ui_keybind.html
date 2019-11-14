@@ -17,14 +17,14 @@
 	</tr>
 	</thead>
 	<tbody>
-	{% for cuia in sorted(config['UI_KEYBINDINGS']) %}
+	{% for cuia in sorted(config['UI_KEYBINDING_MAP']) %}
 	<tr>
 		<th scope="row">{{escape(cuia)}}</th>
-		<td><input type="checkbox" name="{{cuia}}:shift" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 1 %} checked {% end %}></td>
-		<td><input type="checkbox" name="{{cuia}}:ctrl" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 4 %} checked {% end %}></td>
-		<td><input type="checkbox" name="{{cuia}}:alt" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 8 %} checked {% end %}></td>
-		<td><input type="checkbox" name="{{cuia}}:caps" {% if config['UI_KEYBINDINGS'][cuia]['modifier'] & 2 %} checked {% end %}></td>
-		<td><input name="{{cuia}}:keysym" type="text" value="{{escape(config['UI_KEYBINDINGS'][cuia]['keysym'])}}"></td>
+		<td><input type="checkbox" name="{{cuia}}:shift" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 1 %} checked {% end %}></td>
+		<td><input type="checkbox" name="{{cuia}}:ctrl" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 4 %} checked {% end %}></td>
+		<td><input type="checkbox" name="{{cuia}}:alt" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 8 %} checked {% end %}></td>
+		<td><input type="checkbox" name="{{cuia}}:caps" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 2 %} checked {% end %}></td>
+		<td><input name="{{cuia}}:keysym" type="text" value="{{escape(config['UI_KEYBINDING_MAP'][cuia]['keysym'])}}"></td>
 	</tr>
 	{% end %}
 	</tbody>
@@ -34,13 +34,13 @@
 	<div class="container-fluid">
 		<div class="row"><br/></div>
 		<div class="row">
-			<button name="ZYNTHIAN_KEYBIND_ACTION" value="SAVE_KEYBIND" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
+			<button name="UI_KEYBINDING_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
 		</div>
 	</div>
 	<div class="container-fluid">
 		<div class="row"><br/></div>
 		<div class="row">
-			<button name="ZYNTHIAN_KEYBIND_ACTION" value="RESET_KEYBIND" class="btn btn-lg btn-theme btn-block advanced-view" onclick="return confirm('Are you sure to reset key bindings to default values?')">Reset to Default</button>
+			<button name="UI_KEYBINDING_ACTION" value="RESET" class="btn btn-lg btn-theme btn-block advanced-view" onclick="return confirm('Are you sure to reset key bindings to default values?')">Reset to Default</button>
 		</div>
 	</div>
 </form>

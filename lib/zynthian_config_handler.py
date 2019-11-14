@@ -48,6 +48,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	reboot_flag = False
 	restart_ui_flag = False
 	reload_midi_config_flag = False
+	reload_key_binding_flag = False
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
@@ -83,13 +84,15 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 		if self.reboot_flag:
 			self.redirect('/sys-reboot')
-			return
 
-		elif self.restart_ui_flag:
+		if self.restart_ui_flag:
 			self.restart_ui()
 
-		elif self.reload_midi_config_flag:
+		if self.reload_midi_config_flag:
 			self.reload_midi_config()
+
+		if self.reload_key_binding_flag:
+			self.reload_key_binding()
 
 		if self.genjson:
 			self.write(config)
@@ -113,16 +116,8 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_MIDI_CONFIG")
 
 
-	def needs_reboot(self):
-		return self.reboot_flag
-
-
-	def needs_restart_ui(self):
-		return self.restart_ui_flag
-
-
-	def needs_reload_midi_config(self):
-		return self.reload_midi_config_flag
+	def reload_key_binding(self):
+		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_KEY_BINDING")
 
 
 #------------------------------------------------------------------------------
