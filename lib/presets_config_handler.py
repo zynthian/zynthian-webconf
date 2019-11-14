@@ -68,6 +68,9 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.engine = self.get_argument('ENGINE', 'ZY')
 			self.engine_info = zynthian_gui_engine.engine_info[self.engine]
 			self.engine_cls = self.engine_info[3]
+			if self.engine_cls==zynthian_engine_jalv:
+				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
+
 			result = {
 				'get_tree': lambda: self.do_get_tree(),
 				'new_bank': lambda: self.do_new_bank(),
@@ -80,6 +83,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				'install': lambda: self.do_install_url(),
 				'upload': lambda: self.do_install_file()
 			}[action]()
+
 		except:
 			result = {}
 
@@ -274,46 +278,38 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 	def install_file(self, fpath):
 		logging.info("Unpacking '{}' ...".format(fpath))
-		if fpath.endswith('.tar.bz2'):
-			dpath = fpath[:-8]
-			tar = tarfile.open(fpath, "r:bz2")
-			tar.extractall(dpath)
-			os.remove(fpath)
-		elif fpath.endswith('.tar.gz'):
-			dpath = fpath[:-7]
-			tar = tarfile.open(fpath, "r:gz")
-			tar.extractall(dpath)
-			os.remove(fpath)
-		elif fpath.endswith('.tgz'):
-			dpath = fpath[:-4]
-			tar = tarfile.open(fpath, "r:gz")
-			tar.extractall(dpath)
-			os.remove(fpath)
-		elif fpath.endswith('.zip'):
-			dpath = fpath[:-4]
-			with zipfile.ZipFile(fpath,'r') as soundfontZip:
-				soundfontZip.extractall(dpath)
-			os.remove(fpath)
-		else:
-			dpath = fpath
-
-		# Remove thrash ...
-		if os.path.isdir(dpath):
-			try:
-				shutil.rmtree(dpath + "/__MACOSX")
-			except:
-				pass
-
-		bank_fullpath = self.get_argument('SEL_BANK_FULLPATH')
-		logging.info("Installing '{}' => '{}' ...".format(dpath, bank_fullpath))
-		
+		dpath = fpath
 		try:
+			if fpath.endswith('.tar.bz2'):
+				dpath = fpath[:-8]
+				tar = tarfile.open(fpath, "r:bz2")
+				tar.extractall(dpath)
+			elif fpath.endswith('.tar.gz'):
+				dpath = fpath[:-7]
+				tar = tarfile.open(fpath, "r:gz")
+				tar.extractall(dpath)
+			elif fpath.endswith('.tgz'):
+				dpath = fpath[:-4]
+				tar = tarfile.open(fpath, "r:gz")
+				tar.extractall(dpath)
+			elif fpath.endswith('.zip'):
+				dpath = fpath[:-4]
+				with zipfile.ZipFile(fpath,'r') as soundfontZip:
+					soundfontZip.extractall(dpath)
+
+			# Remove thrash ...
+			if os.path.isdir(dpath):
+				shutil.rmtree(dpath + "/__MACOSX", ignore_errors=True)
+
+			bank_fullpath = self.get_argument('SEL_BANK_FULLPATH')
+			logging.info("Installing '{}' => '{}' ...".format(dpath, bank_fullpath))
+
 			self.engine_cls.zynapi_install(dpath, bank_fullpath)
+
 		finally:
-			try:
-				shutil.rmtree(dpath)
-			except: 
-				pass
+			#os.remove(fpath)
+			#shutil.rmtree(dpath, ignore_errors=True)
+			pass
 
 
 	def install_url(self, url):
@@ -336,9 +332,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 
 	def get_upload_formats(self):
-		if self.engine_cls==zynthian_engine_jalv:
-			self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
-
 		try:
 			return self.engine_cls.zynapi_get_formats()
 		except:
@@ -346,9 +339,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 
 	def get_presets_data(self):
-		if self.engine_cls==zynthian_engine_jalv:
-			self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
-
 		try:
 			i = 0
 			banks_data = []
