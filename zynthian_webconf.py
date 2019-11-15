@@ -72,11 +72,11 @@ MAX_STREAMED_SIZE = 1*TB
 if os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'):
 	log_level=int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
 else:
-	log_level=logging.ERROR
-	#log_level=logging.WARNING
+	log_level=logging.WARNING
+	#log_level=logging.ERROR
 
 # Set root logging level
-logging.basicConfig(stream=sys.stderr, level=log_level)
+logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
 
 
 #------------------------------------------------------------------------------
