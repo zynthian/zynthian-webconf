@@ -348,8 +348,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 					'text': b['text'],
 					'name': b['name'],
 					'fullpath': b['fullpath'],
+					'readonly': b['readonly'],
 					'node_type': 'BANK',
-					'nodes': []
+					'nodes': [],
+					'icon': "glyphicon glyphicon-link" if b['readonly'] else None,
 				}
 				i += 1
 				try:
@@ -360,8 +362,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 							'text': p['text'],
 							'name': p['name'],
 							'fullpath': p['fullpath'],
+							'readonly': p['readonly'],
 							'bank_fullpath' : b['fullpath'],
 							'node_type': 'PRESET',
+							'icon': "glyphicon glyphicon-link" if p['readonly'] else None
 						}
 						i += 1
 						presets_data.append(prow)
