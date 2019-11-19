@@ -277,14 +277,14 @@ function renderPresetsTree(data) {
 			if (data.node_type == 'BANK') {
 				$("#SEL_BANK_FULLPATH").val(data.fullpath);
 				$('#SEL_BANK_NAME').val(data.name);
-				if (engine_methods.includes("zynapi_rename_bank")) {
+				if (engine_methods.includes("zynapi_rename_bank") && !data.readonly) {
 					$('#presets-bank-panel').show();
 					$('#download-panel').show();
 				}
 			} else if (data.node_type == 'PRESET') {
 				$("#SEL_BANK_FULLPATH").val(data.bank_fullpath);
 				$('#SEL_PRESET_NAME').val(data.name);
-				if (engine_methods.includes("zynapi_rename_preset")) {
+				if (engine_methods.includes("zynapi_rename_preset") && !data.readonly) {
 					$('#presets-file-panel').show();
 					$('#download-panel').show();
 				}
