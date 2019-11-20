@@ -362,7 +362,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 							'text': p['text'],
 							'name': p['name'],
 							'fullpath': p['fullpath'],
-							'readonly': p['readonly'],
+							'readonly': p['readonly'] or b['readonly'],
 							'bank_fullpath' : b['fullpath'],
 							'node_type': 'PRESET',
 							'icon': "glyphicon glyphicon-link" if p['readonly'] else None
