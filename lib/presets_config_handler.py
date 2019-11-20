@@ -71,6 +71,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			if self.engine_cls==zynthian_engine_jalv:
 				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
 
+		except Exception as e:
+			logging.error("Can't initialize engine: {}".format(e))
+
+		try:
 			result = {
 				'get_tree': lambda: self.do_get_tree(),
 				'new_bank': lambda: self.do_new_bank(),
