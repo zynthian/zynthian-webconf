@@ -183,7 +183,7 @@ function load_preset_tree() {
 		$('#presets-form').serialize(),
 		function(data, status) {
 			$("#loading-tree").hide()
-				if (status=="success") {
+			if (status=="success") {
 				if ("errors" in data) {
 					$("#error-message-tree").html(data["errors"])
 					$("#error-message-tree").show(600)
