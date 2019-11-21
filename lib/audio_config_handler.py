@@ -133,8 +133,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	])
 
 	soundcard_mixer_controls=OrderedDict([
-		['HifiBerry DAC+', ['Digital']],
+		['HifiBerry DAC+ ADC PRO', ['Digital','Analogue']],
 		['HifiBerry DAC+ ADC', ['Digital','Analogue']],
+		['HifiBerry DAC+', ['Digital']],
 		['HifiBerry DAC+ light', ['Digital']],
 		['HifiBerry DAC+ RTC', ['Digital']],
 		['HifiBerry Digi', []],
