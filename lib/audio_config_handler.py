@@ -37,13 +37,16 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class AudioConfigHandler(ZynthianConfigHandler):
 
 	soundcard_presets=OrderedDict([
-		['HifiBerry DAC+', {
-			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
+		['HifiBerry DAC+ ADC PRO', {
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ ADC', {
-			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc\n',
-			#+'kernel=kernel7-hb.img',
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
+		}],
+		['HifiBerry DAC+', {
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ light', {

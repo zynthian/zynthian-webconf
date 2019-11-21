@@ -79,7 +79,11 @@ class KitConfigHandler(ZynthianConfigHandler):
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version!="Custom":
-			if kit_version=="V3":
+			if kit_version=="V3-PRO":
+				soundcard_name = "HifiBerry DAC+ ADC PRO"
+				display_name = "ZynScreen 3.5 (v1)"
+				wiring_layout = "MCP23017_ZynScreen"
+			elif kit_version=="V3":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
