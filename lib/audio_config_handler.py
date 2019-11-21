@@ -133,7 +133,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	])
 
 	soundcard_mixer_controls=OrderedDict([
-		['HifiBerry DAC+ ADC PRO', ['Digital','Analogue']],
+		['HifiBerry DAC+ ADC PRO', ['Digital','ADC']], # Analogue is a 0/1 boost (-6dB/0dB)
 		['HifiBerry DAC+ ADC', ['Digital','Analogue']],
 		['HifiBerry DAC+', ['Digital']],
 		['HifiBerry DAC+ light', ['Digital']],
@@ -215,6 +215,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
 		errors=self.update_config(postedConfig)
 
+		device_name = self.get_device_name()
+
 		for varname in postedConfig:
 			if varname.find('ALSA_VOLUME_')>=0:
 				channelName = varname[12:]
@@ -222,13 +224,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				mixerControl = ''
 				if channelName.find('Playback')>=0:
 					channelType = 'Playback'
-					mixerControl = channelName[8:].replace('_',' ')
+					mixerControl = channelName[9:].replace('_',' ')
 				else:
 					channelType = 'Capture'
-					mixerControl = channelName[7:].replace('_',' ')
+					mixerControl = channelName[8:].replace('_',' ')
 
 				try:
-					amixer_command = "amixer -M set '" + mixerControl + "' " + channelType + " " + self.get_argument(varname) + "% unmute"
+					amixer_command = "amixer -M -c {} set '{}' {} {}% unmute".format(device_name, mixerControl, channelType, self.get_argument(varname))
 					logging.info(amixer_command)
 					call(amixer_command, shell=True)
 				except Exception as err:
@@ -245,10 +247,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		is_capture = False
 		is_playback = False
 
+		device_name = self.get_device_name()
+		logging.debug("AUDIO DEVICE NAME => {}".format(device_name))
+
 		volumePercent = ''
 		idx = 0
 		try:
-			for byteLine in check_output("amixer -M", shell=True).splitlines():
+			for byteLine in check_output("amixer -M -c {}".format(device_name), shell=True).splitlines():
 				line = byteLine.decode("utf-8")
 
 				if line.find('Simple mixer control')>=0:
@@ -299,13 +304,15 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
 
 		except Exception as err:
-			logging.error(format(err))
+			logging.error(err)
 
 
 	def add_mixer_control(self, config, mixerControl, controlName, volumePercent, channelType):
 		validMixer = ''
 		if os.environ.get('SOUNDCARD_NAME'):
 			validMixer = self.soundcard_mixer_controls[os.environ.get('SOUNDCARD_NAME')]
+
+		logging.debug("ADD MIXER CONTROL '{}' => {}".format(mixerControl, controlName))
 
 		realControlName = controlName.replace(' ','_')
 		if not validMixer or realControlName in validMixer:
@@ -314,4 +321,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			mixerControl['value'] = volumePercent
 
 			config[configKey] = mixerControl
+
+
+	def get_device_name(self):
+		try:
+			jack_opts=os.environ.get('JACKD_OPTIONS')
+			res = re.compile(r" hw:([^\s]+) ").search(jack_opts)
+			return res.group(1)
+		except:
+			return "0"
 
