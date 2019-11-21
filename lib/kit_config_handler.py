@@ -41,6 +41,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
+		'V3-PRO',
 		'V3',
 		'V2+',
 		'V2',
