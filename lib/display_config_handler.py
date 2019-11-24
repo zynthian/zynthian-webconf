@@ -83,15 +83,9 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		['WaveShare 3.2B', {
 			'DISPLAY_CONFIG':
 				'dtoverlay=waveshare32b:rotate=270,swapxy=1\n'+
-				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n'+
-				'hdmi_force_hotplug=1\n'+
-				'hdmi_group=2\n'+
-				'hdmi_mode=1\n'+
-				'hdmi_mode=87\n'+
-				'hdmi_cvt 480 320 60 6 0 0 0\n'+
-				'hdmi_drive=2',
-			'DISPLAY_WIDTH': '480',
-			'DISPLAY_HEIGHT': '320',
+				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900',
+			'DISPLAY_WIDTH': '320',
+			'DISPLAY_HEIGHT': '240',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['WaveShare 3.2C', {
