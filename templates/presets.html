@@ -183,7 +183,7 @@ function load_preset_tree() {
 		$('#presets-form').serialize(),
 		function(data, status) {
 			$("#loading-tree").hide()
-				if (status=="success") {
+			if (status=="success") {
 				if ("errors" in data) {
 					$("#error-message-tree").html(data["errors"])
 					$("#error-message-tree").show(600)
@@ -194,6 +194,7 @@ function load_preset_tree() {
 				if ("formats" in data) {
 					engine_formats = data['formats']
 					$('#input-uploadfile-type')[0].value = engine_formats;
+					$('#button-upload').html("<i class=\"fa fa-upload\"></i> Upload (" + engine_formats + ")")
 				}
 				if ("presets" in data) {
 					renderPresetsTree(data['presets'])
@@ -234,6 +235,7 @@ function do_action(action=null, xid=null) {
 				if ("formats" in data) {
 					engine_formats = data['formats']
 					$('#input-uploadfile-type')[0].value = engine_formats;
+					$('#button-upload').html("<i class=\"fa fa-upload\"></i> Upload (" + engine_formats + ")")
 				}
 				if ("presets" in data) {
 					renderPresetsTree(data['presets'])
@@ -275,14 +277,14 @@ function renderPresetsTree(data) {
 			if (data.node_type == 'BANK') {
 				$("#SEL_BANK_FULLPATH").val(data.fullpath);
 				$('#SEL_BANK_NAME').val(data.name);
-				if (engine_methods.includes("zynapi_rename_bank")) {
+				if (engine_methods.includes("zynapi_rename_bank") && !data.readonly) {
 					$('#presets-bank-panel').show();
 					$('#download-panel').show();
 				}
 			} else if (data.node_type == 'PRESET') {
 				$("#SEL_BANK_FULLPATH").val(data.bank_fullpath);
 				$('#SEL_PRESET_NAME').val(data.name);
-				if (engine_methods.includes("zynapi_rename_preset")) {
+				if (engine_methods.includes("zynapi_rename_preset") && !data.readonly) {
 					$('#presets-file-panel').show();
 					$('#download-panel').show();
 				}

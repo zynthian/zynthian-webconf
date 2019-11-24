@@ -37,13 +37,16 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class AudioConfigHandler(ZynthianConfigHandler):
 
 	soundcard_presets=OrderedDict([
-		['HifiBerry DAC+', {
-			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
+		['HifiBerry DAC+ ADC PRO', {
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ ADC', {
-			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc\n',
-			#+'kernel=kernel7-hb.img',
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
+		}],
+		['HifiBerry DAC+', {
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ light', {
@@ -130,8 +133,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	])
 
 	soundcard_mixer_controls=OrderedDict([
-		['HifiBerry DAC+', ['Digital']],
+		['HifiBerry DAC+ ADC PRO', ['Digital','ADC']], # Analogue is a 0/1 boost (-6dB/0dB)
 		['HifiBerry DAC+ ADC', ['Digital','Analogue']],
+		['HifiBerry DAC+', ['Digital']],
 		['HifiBerry DAC+ light', ['Digital']],
 		['HifiBerry DAC+ RTC', ['Digital']],
 		['HifiBerry Digi', []],
@@ -197,6 +201,10 @@ class AudioConfigHandler(ZynthianConfigHandler):
 				'title': "Limit USB speed to 12Mb/s",
 				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
 				'advanced': True
+			}],
+			['AUDIO_MIXER_JS', {
+				'type': 'jscript',
+				'script_file': "audio_mixer.js"
 			}]
 		])
 
@@ -210,27 +218,6 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
 		errors=self.update_config(postedConfig)
-
-		for varname in postedConfig:
-			if varname.find('ALSA_VOLUME_')>=0:
-				channelName = varname[12:]
-				channelType = ''
-				mixerControl = ''
-				if channelName.find('Playback')>=0:
-					channelType = 'Playback'
-					mixerControl = channelName[8:].replace('_',' ')
-				else:
-					channelType = 'Capture'
-					mixerControl = channelName[7:].replace('_',' ')
-
-				try:
-					amixer_command = "amixer -M set '" + mixerControl + "' " + channelType + " " + self.get_argument(varname) + "% unmute"
-					logging.info(amixer_command)
-					call(amixer_command, shell=True)
-				except Exception as err:
-					logging.error("Alsa Mixer => {}".format(err))
-					errors["ALSAMIXER_{}".format(varname)] = str(err)
-
 		self.reboot_flag = True
 		self.get(errors)
 
@@ -241,10 +228,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		is_capture = False
 		is_playback = False
 
+		device_name = self.get_device_name()
+		logging.debug("AUDIO DEVICE NAME => {}".format(device_name))
+
 		volumePercent = ''
 		idx = 0
 		try:
-			for byteLine in check_output("amixer -M", shell=True).splitlines():
+			for byteLine in check_output("amixer -M -c {}".format(device_name), shell=True).splitlines():
 				line = byteLine.decode("utf-8")
 
 				if line.find('Simple mixer control')>=0:
@@ -253,14 +243,17 @@ class AudioConfigHandler(ZynthianConfigHandler):
 							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
 						else:
 							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Playback')
-					mixerControl = {'type': 'slider',
+
+					mixerControl = {
+						'type': 'slider',
 						'id': idx,
 						'title': '',
 						'value': 0,
 						'min': 0,
 						'max': 100,
 						'step': 1,
-						'advanced': False}
+						'advanced': False
+					}
 					controlName = ''
 					is_capture = False
 					is_playback = False
@@ -271,10 +264,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					m = re.match("Simple mixer control '(.*?)'.*", line, re.M | re.I)
 					if m:
 						controlName = m.group(1).strip()
+
 				elif line.find('Capture channels:')>=0:
 						is_capture = True
+
 				elif line.find('Playback channels:')>=0:
 						is_playback = True
+
 				else:
 					m = re.match(".*(Playback|Capture).*\[(\d*)%\].*", line, re.M | re.I)
 					if m:
@@ -295,7 +291,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
 
 		except Exception as err:
-			logging.error(format(err))
+			logging.error(err)
 
 
 	def add_mixer_control(self, config, mixerControl, controlName, volumePercent, channelType):
@@ -303,11 +299,21 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		if os.environ.get('SOUNDCARD_NAME'):
 			validMixer = self.soundcard_mixer_controls[os.environ.get('SOUNDCARD_NAME')]
 
+		logging.debug("ADD MIXER CONTROL '{}' => {}".format(mixerControl, controlName))
+
 		realControlName = controlName.replace(' ','_')
 		if not validMixer or realControlName in validMixer:
 			configKey = 'ALSA_VOLUME_' + channelType + '_' + realControlName
 			mixerControl['title'] = 'ALSA volume ' + controlName
 			mixerControl['value'] = volumePercent
-
 			config[configKey] = mixerControl
+
+
+	def get_device_name(self):
+		try:
+			jack_opts=os.environ.get('JACKD_OPTIONS')
+			res = re.compile(r" hw:([^\s]+) ").search(jack_opts)
+			return res.group(1)
+		except:
+			return "0"
 
