@@ -38,7 +38,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	soundcard_presets=OrderedDict([
 		['HifiBerry DAC+ ADC PRO', {
-			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro,slave',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw'
 		}],
 		['HifiBerry DAC+ ADC', {
