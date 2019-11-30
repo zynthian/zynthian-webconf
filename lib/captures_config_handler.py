@@ -26,6 +26,8 @@ import os
 import re
 import fnmatch
 import logging
+import subprocess
+
 import tornado.web
 import json
 import shutil
@@ -60,17 +62,21 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 	def get(self, errors=None):
 		config=OrderedDict([])
 		self.maxTreeNodeIndex = 0
-		captures = []
-		captures.append(self.create_node('wav'))
-		captures.append(self.create_node('mid'))
-
-		config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
-		config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
-
-		if self.genjson:
-			self.write(config)
+		if self.get_argument('stream', None, True):
+			self.do_download(self.get_argument('stream'))
 		else:
-			self.render("config.html", body="captures.html", config=config, title="Captures", errors=errors)
+			captures = []
+			captures.append(self.create_node('wav'))
+			captures.append(self.create_node('ogg'))
+			captures.append(self.create_node('mid'))
+
+			config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
+			config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
+
+			if self.genjson:
+				self.write(config)
+			else:
+				self.render("config.html", body="captures.html", config=config, title="Captures", errors=errors)
 
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION')
@@ -79,19 +85,19 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			errors = {
 				'REMOVE': lambda: self.do_remove(),
 				'RENAME': lambda: self.do_rename(),
-				'DOWNLOAD': lambda: self.do_download()
+				'DOWNLOAD': lambda: self.do_download(self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')),
+				'CONVERT_OGG': lambda: self.do_convert_ogg()
 			}[action]()
 
 		if (action != 'DOWNLOAD'):
 			self.get(errors)
 
 	def do_remove(self):
-		path = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
 		try:
-			if os.path.isdir(path):
-				shutil.rmtree(path)
+			if os.path.isdir(self.selected_full_path):
+				shutil.rmtree(self.selected_full_path)
 			else:
-				os.remove(path)
+				os.remove(self.selected_full_path)
 		except:
 			pass
 
@@ -110,10 +116,10 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 				shutil.move(sourceFolder, destinationFolder)
 				self.selected_full_path = destinationFolder;
 
-	def do_download(self):
-		if self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH'):
-			source_file = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
-			filename = self.get_argument('ZYNTHIAN_CAPTURES_NAME')
+	def do_download(self, fullpath):
+		if fullpath:
+			source_file = fullpath
+			filename = os.path.split(fullpath)[1]
 
 			with open(source_file, 'rb') as f:
 				try:
@@ -123,8 +129,6 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 							break
 						self.write(data)
 
-
-
 					self.set_header('Content-Type', self.get_content_type(filename))
 					self.set_header('Content-Disposition', 'attachment; filename="%s"' % filename)
 					self.finish()
@@ -133,11 +137,23 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
+	def do_convert_ogg(self):
+		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
+		logging.warning(ogg_file_name)
+		cmd = 'oggenc {} -o {}'.format(self.selected_full_path, ogg_file_name)
+		try:
+			subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+		except Exception as e:
+			return e.output
+		return
+
 	def get_content_type(self, filename):
 		m = re.match('(.*)\.(.*)', filename, re.M | re.I | re.S)
 		if m:
 			if m.group(2) == 'mid':
 				return 'audio/midi'
+			elif m.group(2) == 'ogg':
+				return 'audio/ogg'
 		return 'application/wav'
 
 	def create_node(self, file_extension):
