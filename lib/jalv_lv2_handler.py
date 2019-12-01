@@ -130,6 +130,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		end = int(round(time.time() * 1000))
 		logging.info('config file generation took %d' % (end-start))
 
+
 	def load_plugins(self):
 		result = OrderedDict()
 		for pluginType in PluginType:
@@ -154,6 +155,7 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		except Exception as e:
 			logging.info('Loading list of enabled LV2-Plugins failed: %s' % e)
 		return result
+
 
 	def do_enable_plugins(self):
 		try:

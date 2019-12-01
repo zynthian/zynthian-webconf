@@ -39,6 +39,7 @@ from lib.reboot_handler import RebootHandler
 from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
+from lib.ui_keybind_handler import UiKeybindHandler
 from lib.kit_config_handler import KitConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
@@ -56,6 +57,7 @@ from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
 from lib.repository_handler import RepositoryHandler
+from lib.audio_mixer_handler import AudioMixerHandler
 
 #------------------------------------------------------------------------------
 
@@ -71,11 +73,11 @@ MAX_STREAMED_SIZE = 1*TB
 if os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'):
 	log_level=int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
 else:
-	log_level=logging.ERROR
-	#log_level=logging.WARNING
+	log_level=logging.WARNING
+	#log_level=logging.ERROR
 
 # Set root logging level
-logging.basicConfig(stream=sys.stderr, level=log_level)
+logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
 
 
 #------------------------------------------------------------------------------
@@ -110,6 +112,7 @@ def make_app():
 		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
 		"upload_progress_handler": dict()
+		#"autoescape": None
 	}
 
 	return tornado.web.Application([
@@ -132,6 +135,8 @@ def make_app():
 		(r"/lib-captures$", CapturesConfigHandler),
 		(r"/hw-kit$", KitConfigHandler),
 		(r"/hw-audio$", AudioConfigHandler),
+		(r"/hw-audio-mixer$", AudioMixerHandler),
+		(r"/hw-audio-mixer/(.*)/(.*)$", AudioMixerHandler),
 		(r"/hw-display$", DisplayConfigHandler),
 		(r"/hw-wiring$", WiringConfigHandler),
 		(r"/sw-update$", SoftwareUpdateHandler),
@@ -139,6 +144,7 @@ def make_app():
 		(r"/sw-jalv-lv2$", JalvLv2Handler),
 		(r"/sw-repos$", RepositoryHandler),
 		(r"/ui-options$", UiConfigHandler),
+		(r"/ui-keybind$", UiKeybindHandler),
 		(r"/ui-log$", UiLogHandler),
 		(r"/ui-midi-options$", MidiConfigHandler),
 		(r"/ui-midi-log$", MidiLogHandler),

@@ -24,11 +24,15 @@
 
 import os
 import re
+import sys
 import logging
 import tornado.web
 from subprocess import check_output
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
+
+sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+import zynconf
 
 #------------------------------------------------------------------------------
 # Dashboard Handler
@@ -80,6 +84,10 @@ class DashboardHandler(ZynthianConfigHandler):
 					'title': 'OS',
 					'value': "{}".format(self.get_os_info())
 				}],
+				['BUILD_DATE', {
+					'title': 'Build Date',
+					'value': self.get_build_info()['Timestamp'],
+				}],
 				['RAM', {
 					'title': 'Memory',
 					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total'])
@@ -88,15 +96,9 @@ class DashboardHandler(ZynthianConfigHandler):
 					'title': 'SD Card',
 					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
 				}],
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': self.get_host_name(),
-					'url': "/sys-security"
-				}],
-				['IP', {
-					'title': 'IP',
-					'value': self.get_ip(),
-					'url': "/sys-wifi"
+				['TEMPERATURE', {
+					'title': 'Temperature',
+					'value': self.get_temperature()
 				}]
 			])],
 			['MIDI', OrderedDict([
@@ -179,6 +181,23 @@ class DashboardHandler(ZynthianConfigHandler):
 					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid")),
 					'url': "/lib-captures"
 				}]
+			])],
+			['NETWORK', OrderedDict([
+				['HOSTNAME', {
+					'title': 'Hostname',
+					'value': self.get_host_name(),
+					'url': "/sys-security"
+				}],
+				['WIFI', {
+					'title': 'Wifi',
+					'value': zynconf.get_current_wifi_mode(),
+					'url': "/sys-wifi"
+				}],
+				['IP', {
+					'title': 'IP',
+					'value': self.get_ip(),
+					'url': "/sys-wifi"
+				}]
 			])]
 		])
 
@@ -205,6 +224,27 @@ class DashboardHandler(ZynthianConfigHandler):
 		return check_output("lsb_release -ds", shell=True).decode()
 
 
+	def get_build_info(self):
+		info = {}
+		try:
+			zynthian_dir = os.environ.get('ZYNTHIAN_DIR',"/zynthian")
+			with open(zynthian_dir + "/build_info.txt", 'r') as f:
+				rows = f.read().split("\n")
+				f.close()
+				for row in rows:
+					try:
+						k,v = row.split(": ")
+						info[k] = v
+						logging.debug("Build info => {}: {}".format(k,v))
+					except:
+						pass
+		except Exception as e:
+			logging.warning("Can't get build info! => {}".format(e))
+			info['Timestamp'] = '???'
+
+		return info
+
+
 	def get_ip(self):
 		#out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
 		out=check_output("hostname -I", shell=True).decode()
@@ -212,9 +252,12 @@ class DashboardHandler(ZynthianConfigHandler):
 
 
 	def get_gpio_expander(self):
-		out=check_output("gpio i2cd", shell=True).decode().split("\n")
-		if out[3].startswith("20: 20"):
-			return "MCP23017"
+		try:
+			out=check_output("gpio i2cd", shell=True).decode().split("\n")
+			if len(out)>3 and out[3].startswith("20: 20"):
+				return "MCP23017"
+		except:
+			pass
 		return "No detected"
 
 
@@ -222,6 +265,13 @@ class DashboardHandler(ZynthianConfigHandler):
 		out=check_output("free -m | grep 'Mem'", shell=True).decode()
 		parts=re.split('\s+', out)
 		return { 'total': parts[1]+"M", 'used': parts[2]+"M", 'free': parts[3]+"M", 'usage': "{}%".format(int(100*float(parts[2])/float(parts[1]))) }
+
+
+	def get_temperature(self):
+		try:
+			return check_output("/opt/vc/bin/vcgencmd measure_temp", shell=True).decode()[5:-3] + "ºC"
+		except:
+			return "???"
 
 
 	def get_sd_info(self):

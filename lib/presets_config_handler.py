@@ -27,6 +27,7 @@ import re
 import json
 import copy
 import uuid
+import urllib3
 import logging
 import shutil
 import requests
@@ -67,6 +68,13 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.engine = self.get_argument('ENGINE', 'ZY')
 			self.engine_info = zynthian_gui_engine.engine_info[self.engine]
 			self.engine_cls = self.engine_info[3]
+			if self.engine_cls==zynthian_engine_jalv:
+				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
+
+		except Exception as e:
+			logging.error("Can't initialize engine: {}".format(e))
+
+		try:
 			result = {
 				'get_tree': lambda: self.do_get_tree(),
 				'new_bank': lambda: self.do_new_bank(),
@@ -76,9 +84,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				'rename_preset': lambda: self.do_rename_preset(),
 				'download': lambda: self.do_download(),
 				'search': lambda: self.do_search(),
-				'install': lambda: self.do_install(),
-				'upload': lambda: self.do_upload()
+				'install': lambda: self.do_install_url(),
+				'upload': lambda: self.do_install_file()
 			}[action]()
+
 		except:
 			result = {}
 
@@ -91,9 +100,11 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		result = {}
 		try:
 			result['methods'] =	self.engine_cls.get_zynapi_methods()
+			result['formats'] =	self.get_upload_formats()
 			result['presets'] = self.get_presets_data()
 		except Exception as e:
 			result['methods'] =  None
+			result['formats'] =  None
 			result['presets'] = None
 			logging.error(e)
 			result['errors'] = "Can't get preset tree data: {}".format(e)
@@ -162,7 +173,9 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 
 	def do_download(self):
-		result = {}
+		result = None
+		fpath = None
+		delete = False
 		try:
 			fpath=self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
 			dname, fname = os.path.split(fpath)
@@ -188,14 +201,14 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 					self.write(data)
 				self.finish()
 	
-			if delete:
-				os.remove(fpath)
-
-			return None
-
 		except Exception as e:
 			logging.error(e)
+			result = {}
 			result['errors'] = "Can't download file: {}".format(e)
+
+		finally:
+			if fpath and delete:
+				os.remove(fpath)
 
 		return result
 
@@ -213,7 +226,23 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		return result
 
 
-	def do_install(self):
+	def do_install_file(self):
+		result = {}
+
+		try:
+			for fpath in self.get_argument('INSTALL_FPATH').split(","):
+				fpath = fpath.strip()
+				if len(fpath)>0:
+					self.install_file(fpath)
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install file: {}".format(e)
+
+		result.update(self.do_get_tree())
+		return result
+
+
+	def do_install_url(self):
 		result = {}
 
 		try:
@@ -227,52 +256,64 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 
 	def search_artifacts(self, formats, tags):
-		query_url = "https://musical-artifacts.com/artifacts.json"
-		sep = '?'
-		if formats:
-			query_url += sep + 'formats=' + formats
-			sep = "&"
-		if tags:
-			query_url += sep + 'tags=' + tags
-			sep = "&"
+		result=[]
+		for fmt in formats.split(','):
+			query_url = "https://musical-artifacts.com/artifacts.json"
+			sep = '?'
+			if formats:
+				query_url += sep + 'formats=' + fmt
+				sep = "&"
+			if tags:
+				query_url += sep + 'tags=' + tags
+				#query_url += sep + 'q=' + tags
+				sep = "&"
 
-		result = requests.get(query_url, verify=False).json()
+			result += requests.get(query_url, verify=False).json()
+
 		for row in result:
-			if not "file" in row and "mirrors" in row and len(row['mirrors'])>0:
-				row['file'] = row['mirrors'][0]
 			if not "file" in row:
-				row['file'] = ''
+				if "mirrors" in row and len(row['mirrors'])>0:
+					row['file'] = row['mirrors'][0]
+				else:
+					row['file'] = None
 
 		return result
 
 
 	def install_file(self, fpath):
 		logging.info("Unpacking '{}' ...".format(fpath))
-		if fpath.endswith('.tar.bz2'):
-			dpath = fpath[:-8]
-			tar = tarfile.open(fpath, "r:bz2")
-			tar.extractall(dpath)
-			os.remove(fpath)
-		elif fpath.endswith('.tar.gz'):
-			dpath = fpath[:-7]
-			tar = tarfile.open(fpath, "r:gz")
-			tar.extractall(dpath)
-			os.remove(fpath)
-		elif fpath.endswith('.tgz'):
-			dpath = fpath[:-4]
-			tar = tarfile.open(fpath, "r:gz")
-			tar.extractall(dpath)
-			os.remove(fpath)
-		elif fpath.endswith('.zip'):
-			dpath = fpath[:-4]
-			with zipfile.ZipFile(fpath,'r') as soundfontZip:
-				soundfontZip.extractall(dpath)
-			os.remove(fpath)
-		else:
-			dpath = fpath
+		dpath = fpath
+		try:
+			if fpath.endswith('.tar.bz2'):
+				dpath = fpath[:-8]
+				tar = tarfile.open(fpath, "r:bz2")
+				tar.extractall(dpath)
+			elif fpath.endswith('.tar.gz'):
+				dpath = fpath[:-7]
+				tar = tarfile.open(fpath, "r:gz")
+				tar.extractall(dpath)
+			elif fpath.endswith('.tgz'):
+				dpath = fpath[:-4]
+				tar = tarfile.open(fpath, "r:gz")
+				tar.extractall(dpath)
+			elif fpath.endswith('.zip'):
+				dpath = fpath[:-4]
+				with zipfile.ZipFile(fpath,'r') as soundfontZip:
+					soundfontZip.extractall(dpath)
 
-		logging.info("Installing '{}' ...".format(dpath))
-		self.engine_cls.zynapi_install(dpath, self.get_argument('SEL_BANK_FULLPATH'))
+			# Remove thrash ...
+			if os.path.isdir(dpath):
+				shutil.rmtree(dpath + "/__MACOSX", ignore_errors=True)
+
+			bank_fullpath = self.get_argument('SEL_BANK_FULLPATH')
+			logging.info("Installing '{}' => '{}' ...".format(dpath, bank_fullpath))
+
+			self.engine_cls.zynapi_install(dpath, bank_fullpath)
+
+		finally:
+			os.remove(fpath)
+			shutil.rmtree(dpath, ignore_errors=True)
+			pass
 
 
 	def install_url(self, url):
@@ -286,51 +327,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.install_file(fpath)
 
 
-	def do_upload(self):
-		try:
-			new_upload_file = self.get_argument('UPLOAD_FILE','')
-			if new_upload_file:
-				filename_parts = os.path.splitext(new_upload_file)
-				self.selected_full_path = self.revise_filename(os.path.dirname(new_upload_file), new_upload_file, filename_parts[1][1:])
-		except Exception as err:
-			logging.error(format(err))
-			return format(err)
-
-
-	def revise_filename(self, selected_full_path, downloaded_file, file_type):
-		m = re.match('.*/(\d*)-{0,1}(.*)', downloaded_file, re.M | re.I | re.S)
-		if m:
-			filename =  m.group(2)
-
-			file_list =  os.listdir(selected_full_path)
-			file_list = sorted(file_list)
-
-			existing_program_numbers = []
-			for f in file_list:
-				if downloaded_file != selected_full_path + "/" + f:
-					# logging.info(f)
-					fp = os.path.join(selected_full_path, f)
-					m3 = re.match('.*/(\d*)-{0,1}(.*)', fp, re.M | re.I | re.S)
-					if m3:
-						try:
-							existing_program_numbers.append(int(m3.group(1)))
-						except:
-							pass
-			# logging.info(existing_program_numbers)
-
-			if  m.group(1) and not int(m.group(1)) in existing_program_numbers:
-				current_index = int(m.group(1))
-			else:
-				current_index = 0
-				for existing_program_number in existing_program_numbers:
-					if existing_program_number != current_index:
-						current_index +=1
-						break
-					current_index +=1
-
-			shutil.move(downloaded_file,selected_full_path + "/" + str(current_index).zfill(4 + "-" + filename))
-
-
 	def get_engine_info(self):
 		engine_info = copy.copy(zynthian_gui_engine.engine_info)
 		for e in zynthian_gui_engine.engine_info:
@@ -339,10 +335,14 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		return engine_info
 
 
-	def get_presets_data(self):
-		if self.engine_cls==zynthian_engine_jalv:
-			self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
+	def get_upload_formats(self):
+		try:
+			return self.engine_cls.zynapi_get_formats()
+		except:
+			return ""
 
+
+	def get_presets_data(self):
 		try:
 			i = 0
 			banks_data = []
@@ -352,8 +352,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 					'text': b['text'],
 					'name': b['name'],
 					'fullpath': b['fullpath'],
+					'readonly': b['readonly'],
 					'node_type': 'BANK',
-					'nodes': []
+					'nodes': [],
+					'icon': "glyphicon glyphicon-link" if b['readonly'] else None,
 				}
 				i += 1
 				try:
@@ -364,8 +366,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 							'text': p['text'],
 							'name': p['name'],
 							'fullpath': p['fullpath'],
+							'readonly': p['readonly'] or b['readonly'],
 							'bank_fullpath' : b['fullpath'],
 							'node_type': 'PRESET',
+							'icon': "glyphicon glyphicon-link" if p['readonly'] else None
 						}
 						i += 1
 						presets_data.append(prow)

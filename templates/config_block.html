@@ -1,4 +1,6 @@
 
+{% autoescape None %}
+
 <div class="pull-right">
 	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
 </div>
@@ -20,7 +22,7 @@
 		{% try %} {{ "root_var={}".format(config[varname]['root_var']) }} {% except %} {% end %}
 		{% try %} {{ "enabling_options={}".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
 
-		{% if config[varname]['type']!='button' and config[varname]['type']!='hidden' %}
+		{% if config[varname]['type'] not in ['button', 'hidden', 'html', 'jscript'] %}
 			<label>{{ escape(config[varname]['title']) }}:</label>
 			{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 		{% end %}
@@ -89,13 +91,20 @@
 			</select>
 
 		{% elif config[varname]['type']=='slider' %}
-			<input type="text" name="{{ escape(varname) }}" data-provide="slider"
+			<input type="text" id="{{ escape(varname) }}" name="{{ escape(varname) }}" data-provide="slider"
 				data-slider-min="{{ config[varname]['min'] }}"
 				data-slider-max="{{ config[varname]['max'] }}"
 				data-slider-step="{{ config[varname]['step'] }}"
 				data-slider-value="{{ value }}"
 				data-slider-tooltip="show"
 			/>
+
+		{% elif config[varname]['type']=='html' %}
+			{{ config[varname]['content'] }}
+
+		{% elif config[varname]['type']=='jscript' %}
+			<script src="../js/{{ config[varname]['script_file'] }}" ></script>
+
 		{% end %}
 
 		{% if config[varname]['type']!='hidden' %}

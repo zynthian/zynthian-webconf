@@ -52,8 +52,37 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		config = OrderedDict([])
+		super().get("Repositories", self.get_config_info(), errors)
 
+
+	@tornado.web.authenticated
+	def post(self):
+		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+		logging.info(postedConfig)
+
+		errors = {}
+		changed_repos = 0
+		for posted_config_key in postedConfig:
+			repo_name = posted_config_key[14:]
+			try:
+				if self.set_repo_branch(repo_name, postedConfig[posted_config_key][0]):
+					changed_repos += 1
+			except Exception as err:
+				logging.error(err)
+				errors["ZYNTHIAN_REPO_{}".format(repo_name)]=err
+
+		config = self.get_config_info()
+		if changed_repos>0:
+			config['ZYNTHIAN_MESSAGE'] = {
+				'type': 'html',
+				'content': "<div class='alert alert-success'>Some repo changed its branch. You may want to <a href='/sw-update'>update the software</a> for getting the latest changes.</div>"
+			}
+
+		super().get("Repositories", config, errors)
+
+
+	def get_config_info(self):
+		config = OrderedDict([])
 		for repitem in self.repository_list:
 			options = self.get_repo_branch_list(repitem[0])
 			config["ZYNTHIAN_REPO_{}".format(repitem[0])] = {
@@ -64,26 +93,7 @@ class RepositoryHandler(ZynthianConfigHandler):
 				'option_labels': OrderedDict([(opt, opt) for opt in options]),
 				'advanced': repitem[1]
 			}
-
-		super().get("Repositories", config, errors)
-
-
-	@tornado.web.authenticated
-	def post(self):
-		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
-		logging.info(postedConfig)
-
-		errors = {}
-		for posted_config_key in postedConfig:
-			repo_name = posted_config_key[14:]
-			logging.info(repo_name)
-			try:
-				self.set_repo_branch(repo_name, postedConfig[posted_config_key][0])
-			except Exception as err:
-				logging.error(err)
-				errors[repo_name]=err
-
-		self.get(errors)
+		return config
 
 
 	def get_repo_tag_list(self, repo_name):
@@ -124,22 +134,27 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 
 	def set_repo_tag(self, repo_name, tag_name):
+		logging.info("Changing repository '{}' to tag '{}'".format(repo_name, tag_name))
+
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
 		current_branch = self.get_repo_current_branch(repo_name)
 
 		if tag_name != current_branch:
-			logging.info("needs change {}!= {}".format(current_branch, tag_name))
+			logging.info("... needs change: '{}' != '{}'".format(current_branch, tag_name))
 			if tag_name == 'master':
 				check_output("cd {}; git checkout .; git checkout {}".format(repo_dir, tag_name), shell=True)
 			else:
 				check_output("cd {}; git checkout .; git branch -d {}; git checkout tags/{} -b {}".format(repo_dir, tag_name, tag_name, tag_name), shell=True)
+			return True
 
 
 	def set_repo_branch(self, repo_name, branch_name):
+		logging.info("Changing repository '{}' to branch '{}'".format(repo_name, branch_name))
+
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
 		current_branch = self.get_repo_current_branch(repo_name)
 
 		if branch_name != current_branch:
-			logging.info("needs change {}!= {}".format(current_branch, branch_name))
+			logging.info("... needs change: '{}' != '{}'".format(current_branch, branch_name))
 			check_output("cd {}; git checkout .; git checkout {}".format(repo_dir, branch_name), shell=True)
-
+			return True
