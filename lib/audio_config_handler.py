@@ -319,7 +319,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		realControlName = controlName.replace(' ','_')
 		if not self.soundcard_mixer or realControlName in self.soundcard_mixer:
 			configKey = 'ALSA_VOLUME_' + channelType + '_' + realControlName
-			mixerControl['title'] = 'ALSA volume ' + controlName
+			mixerControl['title'] = channelType + ' ' + controlName
 			mixerControl['value'] = volumePercent
 			config[configKey] = mixerControl
 
