@@ -112,7 +112,7 @@ $(document).ready(function() {
 					var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
 
 					var row = "<span style=\"color:" + fgcolor + "\">";
-					if (data['channel']<16) row += "CH#" + ("00" + data['channel']).slice(-2) + " ";
+					if (data['channel']<16) row += "CH#" + ("00" + (data['channel']+1)).slice(-2) + " ";
 					else row += "SYS ";
 					row += data['type'].toUpperCase() +  dataPayload;
 					row += "</span><br />";
