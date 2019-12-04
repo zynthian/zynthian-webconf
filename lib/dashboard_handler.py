@@ -255,10 +255,14 @@ class DashboardHandler(ZynthianConfigHandler):
 		try:
 			out=check_output("gpio i2cd", shell=True).decode().split("\n")
 			if len(out)>3 and out[3].startswith("20: 20"):
-				return "MCP23017"
+				out2 = check_output("i2cget -y 1 0x20 0x10", shell=True).decode().strip()
+				if out2=='0x00':
+					return "MCP23008"
+				else:
+					return "MCP23017"
 		except:
 			pass
-		return "No detected"
+		return "Not detected"
 
 
 	def get_ram_info(self):
