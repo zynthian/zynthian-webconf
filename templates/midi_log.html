@@ -144,7 +144,7 @@ $(document).ready(function() {
 				}
 
 				if (log_filter==0 || (log_filter==1 && data['channel']>=0)) {
-					var row = "<span style=\"color:" + fgcolor + "\">";
+					var row = "<div style=\"color:" + fgcolor + "\">";
 					if (data['channel']<16) row += "CH#" + ("00" + (data['channel']+1)).slice(-2) + " ";
 					else row += "SYS ";
 					row += data['type'].toUpperCase() +  dataPayload;
