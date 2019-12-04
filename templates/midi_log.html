@@ -4,8 +4,8 @@
 <form id="ui-log-form" enctype="multipart/form-data" method="post">
 
 	<div class="row">
-		<div class="col-lg-6">
-			<select name="MIDI_PORT" onchange="start_logging(this.value)"><br>
+		<div class="col-md-5">
+			<select id="MIDI_PORT" name="MIDI_PORT" onchange="start_logging(this.value)"><br>
 				{% for mp in config['MIDI_PORTS'] %}
 					<option value="{{ escape(mp['name']) }}"
 						{% if config['MIDI_PORT']==mp['name'] %}selected=1{% end %}>
@@ -15,18 +15,21 @@
 			</select>
 		</div>
 
-		<div class="col-lg-6">
-			<select name="MIDI_LOG_FILTER" onchange="set_log_filter(this.value)"><br>
+		<div class="col-md-4">
+			<select id="MIDI_LOG_FILTER" name="MIDI_LOG_FILTER" onchange="set_log_filter(this.value)"><br>
 				<option value="0">Show All Messages</option>
-				<option value="1">Hide System Messages</option>
-				<option value="2">Stop Logging</option>
+				<option value="1" selected>Hide System Messages</option>
 			</select>
+		</div>
+
+		<div class="col-md-3">
+			<button id="pause_button" type="button" class="btn btn-theme" onclick="return pause_logging()"><i class="fa fa-pause"></i></button>
+			<button id="resume_button" type="button" class="btn btn-theme" onclick="return resume_logging()"><i class="fa fa-play"></i></button>
+			<button id="clean_button" type="button" class="btn btn-theme" onclick="return clean_log()"><i class="fa fa-trash-o"></i></button>
 		</div>
 	</div>
 
-	<!--<button type="button" class="btn btn-lg btn-theme" onclick="stop_logging()">Stop</button>-->
-
-	<div id="midi-log" class="log-panel"></div>
+	<div id="midi-log" class="log-panel" style="overflow-y:scroll;"></div>
 </form>
 
 <div id="loading-div-background">
@@ -36,6 +39,8 @@
 </div>
 
 <script type="text/javascript">
+
+var log_filter=2;
 
 function start_logging(midi_port) {
 	$("#midi-log").html('');
@@ -54,25 +59,55 @@ function stop_logging() {
 	window.zynthianSocket.send(JSON.stringify(socketMessage));
 }
 
+function pause_logging() {
+	log_filter = 2
+	$("button#pause_button").hide()
+	$("button#resume_button").show()
+}
 
-var log_filter=0;
+function resume_logging() {
+	log_filter = $("select#MIDI_LOG_FILTER").val()
+	$("button#pause_button").show()
+	$("button#resume_button").hide()
+}
 
 function set_log_filter(v) {
-	log_filter=parseInt(v);
+	if (log_filter!=2) log_filter=parseInt(v);
+}
+
+function clean_log() {
+	$("div#midi-log").html("");
 }
 
 function showProgressAnimation(){
 	$("#loading-div-background").show();
 }
 
+function resize_divlog() {
+	var height_rest = $("div#midi-log").position().top;
+	height_rest += $("section#section-config").position().top;
+	height_rest += $("form#ui-log-form").position().top;
+	//height_rest += $("div#midi-log").
+	//height_rest -= $("div#midi-log").height();
+	//height_rest += $("header").outerHeight(true);
+	//height_rest += $('div#footer').outerHeight(true);
+	height_rest += 116;
+	var wh = $(window).height() - height_rest;
+	$("div#midi-log").height(wh);
+	//alert("HEIGHT: "+ wh + ", " + height_rest);
+}
+
 $(document).ready(function() {
+	resize_divlog();
+	$(window).resize(resize_divlog);
+ 
 	var deferred = $.Deferred();
 	deferred.done(function(value) {
 		window.zynthianSocket.registerHandler('MidiLogMessageHandler', function(data) {
+			var divlog=$("div#midi-log")
+
 			if (data) {
 				//console.log("MidiLogMessageHandler:onmessage:", data);
-				var logDiv = $("#midi-log");
-
 				var dataPayload = "";
 				var fgcolor = "";
 				var type = data.type;
@@ -109,20 +144,28 @@ $(document).ready(function() {
 				}
 
 				if (log_filter==0 || (log_filter==1 && data['channel']>=0)) {
-					var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
-
-					var row = "<span style=\"color:" + fgcolor + "\">";
+					var row = "<div style=\"color:" + fgcolor + "\">";
 					if (data['channel']<16) row += "CH#" + ("00" + data['channel']).slice(-2) + " ";
 					else row += "SYS ";
 					row += data['type'].toUpperCase() +  dataPayload;
-					row += "</span><br />";
-					logDiv.append(row);
+					row += "</div>";
+					divlog.append(row);
 
-					if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
+					//Remove lines from beginning when the log is growing too much ...
+					if (divlog.children().length>10000) {
+						divlog.children("div:first").remove()
+					}
+
+					//Maintain scroll at the end, while not hand-scrolling
+					var sh = divlog.prop("scrollHeight") - divlog.innerHeight()
+					if (sh - divlog.scrollTop()<=50) {
+						divlog.scrollTop(sh);
+					}
 				}
 			}
 		});
 		start_logging("{{ config['MIDI_PORT'] }}")
+		resume_logging()
 	});
 	connectZynthianWebSocket(deferred);
 });
