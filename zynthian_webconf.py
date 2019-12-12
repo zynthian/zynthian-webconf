@@ -57,7 +57,6 @@ from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
 from lib.repository_handler import RepositoryHandler
-from lib.audio_mixer_handler import AudioMixerHandler
 
 #------------------------------------------------------------------------------
 
@@ -135,8 +134,6 @@ def make_app():
 		(r"/lib-captures$", CapturesConfigHandler),
 		(r"/hw-kit$", KitConfigHandler),
 		(r"/hw-audio$", AudioConfigHandler),
-		(r"/hw-audio-mixer$", AudioMixerHandler),
-		(r"/hw-audio-mixer/(.*)/(.*)$", AudioMixerHandler),
 		(r"/hw-display$", DisplayConfigHandler),
 		(r"/hw-wiring$", WiringConfigHandler),
 		(r"/sw-update$", SoftwareUpdateHandler),
