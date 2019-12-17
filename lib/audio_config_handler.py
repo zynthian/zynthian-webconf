@@ -58,8 +58,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'SOUNDCARD_MIXER': 'Digital'
 		}],
 		['HifiBerry DAC+ RTC', {
-			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\n'+
-				'dtoverlay=i2c-rtc,ds130',
+			'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\ndtoverlay=i2c-rtc,ds130',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 			'SOUNDCARD_MIXER': 'Digital'
 		}],
@@ -142,6 +141,11 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:UA1EX -r 44100 -p 1024 -n 2 -S -X raw',
 			'SOUNDCARD_MIXER': ''
+		}],
+		['RBPi On-Board Analog Audio', {
+			'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:ALSA -r 44100 -p 512 -n 3 -X raw',
+			'SOUNDCARD_MIXER': 'PCM'
 		}],
 		['Dummy device', {
 			'SOUNDCARD_CONFIG': '',
