@@ -40,7 +40,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC+ ADC PRO', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro,slave',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-			'SOUNDCARD_MIXER': 'Digital,ADC' # Analogue is a 0/1 boost (-6dB/0dB)
+			'SOUNDCARD_MIXER': 'Digital,ADC,ADC Left Input,ADC Right Input'
 		}],
 		['HifiBerry DAC+ ADC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc',
