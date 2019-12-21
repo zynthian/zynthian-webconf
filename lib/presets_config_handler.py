@@ -311,7 +311,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.engine_cls.zynapi_install(dpath, bank_fullpath)
 
 		finally:
-			os.remove(fpath)
+			try:
+				os.remove(fpath)
+			except:
+				pass
 			shutil.rmtree(dpath, ignore_errors=True)
 			pass
 
