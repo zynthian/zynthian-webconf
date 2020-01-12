@@ -129,7 +129,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}],
 		['Behringer UMC404HD (USB)', {
 			'SOUNDCARD_CONFIG': '',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CARD=U192k -r 48000 -p 256 -n 3 -s -S -X raw',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:U192k -r 48000 -p 256 -n 3 -s -S -X raw',
 			'SOUNDCARD_MIXER': 'UMC404HD_192k_Output,Mic'
 		}],
 		['Steinberg UR22 mkII (USB)', {
