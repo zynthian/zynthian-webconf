@@ -90,15 +90,23 @@ $(document).ready(function() {
 
 	var deferred = $.Deferred();
 	deferred.done(function(value) {
-		window.zynthianSocket.registerHandler('AudioConfigMessageHandlers', function(data) {
+		window.zynthianSocket.registerHandler('AudioConfigMessageHandler', function(data) {
 			if (data){
-				console.log("AudioConfigMessageHandler:onmessage:", data);
-
+				dataParts = data.split("=");
+				console.log("AudioConfigMessageHandler:onmessage:" + dataParts);
+				if (dataParts[0].startsWith("Selector")){
+					$('#ZYNTHIAN_CONTROLLER_VALUE_' + dataParts[0])[0].value=dataParts[1];
+				} else if (dataParts[0].startsWith("Toggle")){
+					$('#ZYNTHIAN_CONTROLLER_VALUE_' + dataParts[0])[0].checked=dataParts[1].toUpperCase()=='ON';
+				} else {
+					//slider
+					$('#ZYNTHIAN_CONTROLLER_VALUE_' + dataParts[0]).slider('setValue', dataParts[1], true);
+				}
 			}
 		});
 
-		//var socketMessage = {"handler_name": "AudioConfigMessageHandler", "data": 'SHOW_DEFAULT'};
-		//window.zynthianSocket.send(JSON.stringify(socketMessage));
+		var socketMessage = {"handler_name": "AudioConfigMessageHandler", "data": 'REGISTER_WEBSOCKET//'};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
 	});
 	connectZynthianWebSocket(deferred);
 });

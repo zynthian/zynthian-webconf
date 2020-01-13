@@ -22,6 +22,13 @@
 #
 #********************************************************************
 
+import os
+import re
+import sys
+import logging
+import jsonpickle
+from typing import Optional, Awaitable
+
 import tornado.web
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 from zyngine.zynthian_engine_mixer import *
@@ -30,15 +37,48 @@ from zyngine.zynthian_engine_mixer import *
 #------------------------------------------------------------------------------
 # Audio Configuration
 #------------------------------------------------------------------------------
+class AudioMixerHandler(tornado.web.RequestHandler):
+
+	websocket_message_handler_list = []
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, ctrl, val):
+		result = {}
+
+		try:
+			logging.debug('updating webconfig view: {} with {}'.format(ctrl, val))
+
+			for websocket_message_handler in AudioMixerHandler.websocket_message_handler_list:
+				logging.debug('message_handler: {}'.format(websocket_message_handler))
+				websocket_message_handler.update_controller_value(ctrl, val)
+
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+	@classmethod
+	def register_websocket(self, websocket_message_handler:ZynthianWebSocketMessageHandler):
+		AudioMixerHandler.websocket_message_handler_list.append(websocket_message_handler)
+
+	@classmethod
+	def unregister_websocket(self, websocket_message_handler: ZynthianWebSocketMessageHandler):
+		AudioMixerHandler.websocket_message_handler_list.remove(websocket_message_handler)
+
 
 class AudioConfigMessageHandler(ZynthianWebSocketMessageHandler):
 	logging_thread = None
 
-
 	@classmethod
 	def is_registered_for(cls, handler_name):
 		return handler_name == 'AudioConfigMessageHandler'
-
 
 
 	def on_websocket_message(self, action_with_parameters):
@@ -48,14 +88,15 @@ class AudioConfigMessageHandler(ZynthianWebSocketMessageHandler):
 
 		if action == 'UPDATE_AUDIO_MIXER':
 			self.do_update_audio_mixer(parm1, parm2)
+		elif action == 'REGISTER_WEBSOCKET':
+			AudioMixerHandler.register_websocket(self)
 		else:
 			logging.error('Unknown action {}'.format(action))
 		logging.debug("message handled.")  # this needs to show up early to get the socket working again.
 
 
 	def on_close(self):
-		if AudioConfigMessageHandler.logging_thread:
-			AudioConfigMessageHandler.logging_thread.stop()
+		AudioMixerHandler.unregister_websocket(self)
 
 	def do_update_audio_mixer(self, zcontroller_name, value):
 		zynthian_engine_mixer.init_zynapi_instance()
@@ -69,4 +110,8 @@ class AudioConfigMessageHandler(ZynthianWebSocketMessageHandler):
 				zyn_controller.set_value(value, False)
 			else:
 				zyn_controller.set_value(int(value), False)
+
+	def update_controller_value(self, zcontroller_name, value):
+		message = ZynthianWebSocketMessage('AudioConfigMessageHandler', '{}={}'.format(zcontroller_name, value))
+		self.websocket.write_message(jsonpickle.encode(message))
 
