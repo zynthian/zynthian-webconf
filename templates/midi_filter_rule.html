@@ -1,8 +1,8 @@
-<div id="midi_filter_rule_panel" class="modal">
+<div id="midi_filter_rule_panel" class="modal fade">
 	<div class="modal-content">
 
 		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
 			<h4 class="modal-title">Add new MIDI filter rule</h4>
 		</div>
 
@@ -110,22 +110,22 @@ var enabledNumberInputTypes = ['NON','NOFF','KP','CC','PC'];
 $(document).ready(function() {
 	$('#display_midi_filter_rule_panel').click(function(){
 		refreshSelectionView();
-		$('#midi_filter_rule_panel').show(500)
+		$('#midi_filter_rule_panel').modal('show')
 	});
 
 	$('#midi_filter_rule_panel .close').click(function(){
-		$('#midi_filter_rule_panel').hide(500)
+		$('#midi_filter_rule_panel').modal('hide')
 	});
 
 	window.onclick = function(event) {
 		if (event.target == document.getElementById('midi_filter_rule_panel')) {
-			$('#midi_filter_rule_panel').hide(500);
+			$('#midi_filter_rule_panel').modal('hide')
 		}
 	}
 
 	$("button#midi-filter-rule-add").click(function(){
 		if (addFilterRule()){
-			$('#midi_filter_rule_panel').hide(500);
+			$('#midi_filter_rule_panel').modal('hide')
 		} else {
 			alert("Bad rule options!");
 		}

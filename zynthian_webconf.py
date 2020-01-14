@@ -57,7 +57,7 @@ from lib.jalv_lv2_handler import JalvLv2Handler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
 from lib.repository_handler import RepositoryHandler
-from lib.audio_mixer_handler import AudioMixerHandler
+from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler
 
 #------------------------------------------------------------------------------
 
