@@ -25,6 +25,7 @@
 import os
 import re
 import json
+import base64
 import shutil
 import base64
 import logging
@@ -37,11 +38,13 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 # Snapshot Config Handler
 #------------------------------------------------------------------------------
 
+
 class SnapshotConfigHandler(ZynthianConfigHandler):
 
 	my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR',"/zynthian/zynthian-my-data")
 
 	SNAPSHOTS_DIRECTORY = my_data_dir + "/snapshots"
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -54,6 +57,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		config['BANKS'] = self.get_existing_banks(ssdata, True)
 		config['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
 		config['PROGS_NUM'] = map(lambda x: str(x).zfill(3), list(range(0, 128)))
+		config['MIDI_PROFILE_SCRIPTS'] = {os.path.splitext(x)[0]:  "%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)}
 
 		# Try to maintain selection after a POST action...
 		selected_node = 0
@@ -277,8 +281,6 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
 
-	websocket_message_handler_list = []
-
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
@@ -298,6 +300,50 @@ class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
 
 			result = data
 
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, snapshot_file_b64, midi_profile_script_b64):
+		result = {}
+
+		try:
+			snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
+			midi_profile_script = str(base64.b64decode(midi_profile_script_b64), 'utf-8')
+			logging.info("Add option values of {} into {}".format(midi_profile_script, snapshot_file))
+			data = []
+			with open(snapshot_file, "r") as fp:
+				data = json.load(fp)
+
+			p = re.compile("export ZYNTHIAN_MIDI_(\w*)=\"(.*)\"")
+			profile_values = {}
+			with open(midi_profile_script, "r") as midi_fp:
+				for line in midi_fp:
+					if line[0] == '#':
+						continue
+					m = p.match(line)
+					if m:
+						profile_values[m.group(1)] = m.group(2)
+
+			for profile_value in profile_values:
+				data['midi_profile_state'][profile_value] = profile_values[profile_value]
+
+			with open(snapshot_file, "w") as fp:
+				json.dump(data, fp)
+
+			result = data
 
 		except Exception as err:
 			result['errors'] = str(err)

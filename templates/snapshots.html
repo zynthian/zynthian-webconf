@@ -80,11 +80,18 @@
 					<table id="MIDI_PROFILE_STATE"
 						   name="MIDI_PROFILE_STATE"
 						   data-toggle="MIDI_PROFILE_STATE"
+						   data-show-footer="true"
 						   class="table table-striped table-bordered table-condensed table-hidden-header">
 						<thead>
 							<tr>
-								<th data-field="key" data-formatter="operateFormatter" data-events="midiProfileEvents">&nbsp;</th>
-								<th data-field="name">Options</th>
+								<th data-field="key"
+									data-formatter="operateFormatter"
+									data-events="midiProfileEvents"
+									data-footer-formatter="operateFooterFormatter"
+									>&nbsp;</th>
+								<th data-field="name"
+									data-footer-formatter="selectMidiProfileFormatter"
+								>Options</th>
 								<th data-field="value">&nbsp;</th>
 							</tr>
 						</thead>
@@ -188,8 +195,26 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 });
 $('#snapshot-tree').treeview('selectNode',{% raw config['SEL_NODE_ID'] %});
 
-
-
+function addMidiOptions() {
+	$.post("lib-snapshot/add/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + btoa($("#SELECTED_MIDI_PROFILE_SCRIPT").val())  ,
+			null,
+			function(data, status) {
+				if (status=="success") {
+					if (data){
+						if ("errors" in data) {
+							console.log("AddSnapshotOptions Error: " + data["errors"])
+						} else {
+							optionsData = getMidiProfileStateData(data);
+							$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+						}
+					}
+				} else {
+					console.log("AddSnapshotOptions Response: " + status)
+				}
+			}
+		);
+}
+/*
 function formatSnapshotDetails(snapshotDetails){
 	var result = "";
 	for (var ch=0; ch<16; ch++) {
@@ -209,7 +234,7 @@ function formatSnapshotDetails(snapshotDetails){
 	}
 	return result;
 }
-
+*/
 function getMidiProfileStateData(snapshotDetails){
 	result = [];
 	for (midiKey in snapshotDetails.midi_profile_state){
@@ -266,6 +291,24 @@ function operateFormatter(value, row, index) {
     ].join('')
 }
 
+function operateFooterFormatter(items) {
+    return [
+      '<a class="add-options" href="javascript:addMidiOptions()" title="Add">',
+      '<i class="fa fa-plus"></i>',
+      '</a>'
+    ].join('')
+}
 
+function selectMidiProfileFormatter(items) {
+	result = [];
+	result.push('<select id="SELECTED_MIDI_PROFILE_SCRIPT">');
+{% for midi_profile_script in config['MIDI_PROFILE_SCRIPTS'] %}
+	result.push('<option value="{{ config['MIDI_PROFILE_SCRIPTS'][midi_profile_script] }}">{{ midi_profile_script }}</option>');
+{% end %}
+
+	result.push('</select>');
+
+	return result;
+}
 
 </script>
