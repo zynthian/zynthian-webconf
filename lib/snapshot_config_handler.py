@@ -24,10 +24,10 @@
 
 import os
 import re
-import logging
-import base64
 import json
 import shutil
+import base64
+import logging
 import tornado.web
 from collections import OrderedDict
 
@@ -274,3 +274,35 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			snapshots.append(snapshot)
 
 		return snapshots
+
+class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
+
+	websocket_message_handler_list = []
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, snapshot_file, remove_option_key):
+		result = {}
+
+		try:
+			logging.info("Removing option {} in {}".format(remove_option_key, snapshot_file))
+			data = []
+			with open(snapshot_file, "r") as fp:
+				data = json.load(fp)
+				del data['midi_profile_state'][remove_option_key]
+
+			with open(snapshot_file, "w") as fp:
+				json.dump(data, fp)
+
+			result = data
+
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)

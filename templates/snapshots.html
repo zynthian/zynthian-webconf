@@ -57,11 +57,41 @@
 					<button name="ACTION" value="REMOVE" class="btn btn-danger btn-block" onclick="return confirm('Are you sure to remove this bank and all its snapshots?');"><i class="fa fa-trash-o"></i></button>
 				</div>
 			</div>
-			<div class="row">
+
+			<div class="row" id="LAYOUTS_TABLE_PANEL">
 				<div class="col-md-12">
-					<textarea id="SEL_PROG_DETAILS" name="SEL_PROG_DETAILS" rows="6" readonly></textarea>
+					<label>Layout</label>
+					<table id="LAYOUTS_TABLE"
+						   name="LAYOUTS_TABLE"
+						   data-toggle="LAYOUTS_TABLE"
+						   class="table table-striped table-bordered table-condensed table-hidden-header">
+						<thead>
+							<tr>
+								<th data-field="details">Layout</th>
+							</tr>
+						</thead>
+					</table>
 				</div>
 			</div>
+
+			<div class="row" id="MIDI_PROFILE_STATE_PANEL">
+				<div class="col-md-12">
+					<label>Options</label>
+					<table id="MIDI_PROFILE_STATE"
+						   name="MIDI_PROFILE_STATE"
+						   data-toggle="MIDI_PROFILE_STATE"
+						   class="table table-striped table-bordered table-condensed table-hidden-header">
+						<thead>
+							<tr>
+								<th data-field="key" data-formatter="operateFormatter" data-events="midiProfileEvents">&nbsp;</th>
+								<th data-field="name">Options</th>
+								<th data-field="value">&nbsp;</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+
 			
 			{% if errors %}
 			<div class="row">
@@ -91,6 +121,39 @@
 
 $('#snapshot-panel').hide();
 $('#zynthian-selection-customized-panel').hide();
+
+window.midiProfileEvents = {
+	'click .remove-option': function (e, value, row, index) {
+		if (confirm('Do you really want to delete the option ' + value + '?')){
+			$.post("lib-snapshot/remove/" + $("#SEL_FULLPATH")[0].value + "/" + value,
+				null,
+				function(data, status) {
+					if (status=="success") {
+						if (data){
+							if ("errors" in data) {
+								console.log("RemoveSnapshotOption Error: " + data["errors"])
+							} else {
+								optionsData = getMidiProfileStateData(data);
+								$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+							}
+						}
+					} else {
+						console.log("RemoveSnapshotOption Response: " + status)
+
+					}
+				}
+			);
+		}
+
+	}
+}
+
+$("#LAYOUTS_TABLE").bootstrapTable({
+	data: []
+});
+$("#MIDI_PROFILE_STATE").bootstrapTable({
+	data: []
+});
 $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'), bootstrap2: true ,
 	emptyIcon: "glyphicon glyphicon-floppy-disk",
 	expandIcon: "glyphicon glyphicon-folder-close",
@@ -103,14 +166,20 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 		$("#SEL_BANK")[0].disabled = data.nodes;
 		$("#SEL_PROG_NUM")[0].value = data.prog_num;
 		$("#SEL_PROG_NUM")[0].disabled = data.nodes;
-		$("#SEL_PROG_DETAILS")[0].disabled = false;
 		if (data.prog_details){
-			$("#SEL_PROG_DETAILS").show();
-			$("#SEL_PROG_DETAILS")[0].value = formatSnapshotDetails(data.prog_details);
+			layoutsData = getLayoutData(data.prog_details);
+			$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
+			$("#LAYOUTS_TABLE_PANEL").show();
+
+			optionsData = getMidiProfileStateData(data.prog_details);
+			$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+			$("#MIDI_PROFILE_STATE_PANEL").show();
+
 			$("#ACTION_SAVE_AS_DEFAULT").show();
 			$("#ACTION_SAVE_AS_LAST_STATE").show();
 		} else {
-			$("#SEL_PROG_DETAILS").hide();
+			$("#MIDI_PROFILE_STATE_PANEL").hide();
+			$("#LAYOUTS_TABLE_PANEL").hide();
 			$("#ACTION_SAVE_AS_DEFAULT").hide();
 			$("#ACTION_SAVE_AS_LAST_STATE").hide();
 		}
@@ -118,6 +187,8 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 	}
 });
 $('#snapshot-tree').treeview('selectNode',{% raw config['SEL_NODE_ID'] %});
+
+
 
 function formatSnapshotDetails(snapshotDetails){
 	var result = "";
@@ -138,5 +209,63 @@ function formatSnapshotDetails(snapshotDetails){
 	}
 	return result;
 }
+
+function getMidiProfileStateData(snapshotDetails){
+	result = [];
+	for (midiKey in snapshotDetails.midi_profile_state){
+		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey]});
+	}
+	return result;
+}
+
+function getLayoutData(snapshotDetails){
+	result = [];
+	for (layerKey in snapshotDetails.layers){
+		layer = snapshotDetails.layers[layerKey];
+		if (layer.midi_chan != null) {
+			details = "";
+			details += (layer.midi_chan + 1) + '#';
+			details += layer.engine_nick + ">"
+			if (layer.bank_name) details += layer.bank_name + "/";
+			if (layer.preset_name) details += layer.preset_name;
+			result.push({'channel': layer.midi_chan + 1,
+					'engine_nick': layer.engine_nick,
+					'bank_name': layer.bank_name,
+					'preset_name': layer.preset_name,
+					'details': details });
+		}
+	}
+
+	if (result.len > 0){
+		result.sort(compare_layer);
+	}
+	return result;
+}
+
+function compare_layer( a, b ) {
+  if ( a.channel < b.channel ){
+    return -1;
+  }
+  if ( a.channel > b.channel ){
+    return 1;
+  }
+  if ( a.details < b.details ){
+  	return -1;
+  }
+  if ( a.details > b.details ){
+  	return 1;
+  }
+  return 0;
+}
+
+function operateFormatter(value, row, index) {
+    return [
+      '<a class="remove-option" href="javascript:void(0)" title="Remove">',
+      '<i class="fa fa-trash"></i>',
+      '</a>'
+    ].join('')
+}
+
+
 
 </script>
