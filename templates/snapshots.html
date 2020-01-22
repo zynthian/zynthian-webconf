@@ -4,7 +4,7 @@
 <form method="post">
 <div class="container-fluid lib-treeview">
 	<div class="row">
-		<div class="col-md-5">
+		<div class="col-md-4">
 			<div id="snapshot-new-bank-panel">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -22,7 +22,7 @@
 		</div>
 
 
-		<div id="snapshot-panel" class="col-md-7">
+		<div id="snapshot-panel" class="col-md-8">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH" />
 			<div class="row no-gutters">
 				<div class="col-xs-5">
@@ -84,15 +84,16 @@
 						   class="table table-striped table-bordered table-condensed table-hidden-header">
 						<thead>
 							<tr>
+
+								<th data-field="name"
+									data-footer-formatter="selectMidiProfileFormatter"
+								>Options</th>
+								<th data-field="value">&nbsp;</th>
 								<th data-field="key"
 									data-formatter="operateFormatter"
 									data-events="midiProfileEvents"
 									data-footer-formatter="operateFooterFormatter"
 									>&nbsp;</th>
-								<th data-field="name"
-									data-footer-formatter="selectMidiProfileFormatter"
-								>Options</th>
-								<th data-field="value">&nbsp;</th>
 							</tr>
 						</thead>
 					</table>
@@ -285,15 +286,15 @@ function compare_layer( a, b ) {
 
 function operateFormatter(value, row, index) {
     return [
-      '<a class="remove-option" href="javascript:void(0)" title="Remove">',
-      '<i class="fa fa-trash"></i>',
+      '<a class="remove-option btn btn-danger btn-block" href="javascript:void(0)" title="Remove">',
+      '<i class="fa fa-trash-o"></i>',
       '</a>'
     ].join('')
 }
 
 function operateFooterFormatter(items) {
     return [
-      '<a class="add-options" href="javascript:addMidiOptions()" title="Add">',
+      '<a class="add-options btn btn-theme btn-block" href="javascript:addMidiOptions()" title="Add">',
       '<i class="fa fa-plus"></i>',
       '</a>'
     ].join('')
