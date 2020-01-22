@@ -215,27 +215,7 @@ function addMidiOptions() {
 			}
 		);
 }
-/*
-function formatSnapshotDetails(snapshotDetails){
-	var result = "";
-	for (var ch=0; ch<16; ch++) {
-		ch_layout = "";
-		for (idx in snapshotDetails.layers) {
-			layer = snapshotDetails.layers[idx]
-			if (ch==layer.midi_chan) {
-				if (ch_layout!="") ch_layout += "  ->";
-				else  ch_layout += (layer.midi_chan + 1) + '#';
-				ch_layout += layer.engine_nick + ">"
-				if (layer.bank_name) ch_layout += layer.bank_name + "/";
-				if (layer.preset_name) ch_layout += layer.preset_name;
-				ch_layout += "\n";
-			}
-		}
-		result += ch_layout;
-	}
-	return result;
-}
-*/
+
 function getMidiProfileStateData(snapshotDetails){
 	result = [];
 	for (midiKey in snapshotDetails.midi_profile_state){
@@ -249,22 +229,34 @@ function getLayoutData(snapshotDetails){
 	for (layerKey in snapshotDetails.layers){
 		layer = snapshotDetails.layers[layerKey];
 		if (layer.midi_chan != null) {
-			details = "";
-			details += (layer.midi_chan + 1) + '#';
-			details += layer.engine_nick + ">"
-			if (layer.bank_name) details += layer.bank_name + "/";
-			if (layer.preset_name) details += layer.preset_name;
 			result.push({'channel': layer.midi_chan + 1,
 					'engine_nick': layer.engine_nick,
 					'bank_name': layer.bank_name,
-					'preset_name': layer.preset_name,
-					'details': details });
+					'preset_name': layer.preset_name });
 		}
 	}
-
-	if (result.len > 0){
+	if (result.length > 0){
 		result.sort(compare_layer);
 	}
+	lastChannel=0
+	for (idx in result){
+		layer = result[idx];
+		details = "";
+
+		if (lastChannel>0 && lastChannel==layer.channel){
+			details += "  ->";
+		} else {
+			details += layer.channel + '#';
+		}
+
+		details += layer.engine_nick + ">"
+		if (layer.bank_name) details += layer.bank_name + "/";
+		if (layer.preset_name) details += layer.preset_name;
+		result[idx].details = details;
+
+		lastChannel = layer.channel;
+	}
+
 	return result;
 }
 
@@ -274,12 +266,6 @@ function compare_layer( a, b ) {
   }
   if ( a.channel > b.channel ){
     return 1;
-  }
-  if ( a.details < b.details ){
-  	return -1;
-  }
-  if ( a.details > b.details ){
-  	return 1;
   }
   return 0;
 }
