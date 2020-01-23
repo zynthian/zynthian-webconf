@@ -4,7 +4,7 @@
 <form method="post">
 <div class="container-fluid lib-treeview">
 	<div class="row">
-		<div class="col-md-5">
+		<div class="col-md-4">
 			<div id="snapshot-new-bank-panel">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -22,7 +22,7 @@
 		</div>
 
 
-		<div id="snapshot-panel" class="col-md-7">
+		<div id="snapshot-panel" class="col-md-8">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH" />
 			<div class="row no-gutters">
 				<div class="col-xs-5">
@@ -57,11 +57,49 @@
 					<button name="ACTION" value="REMOVE" class="btn btn-danger btn-block" onclick="return confirm('Are you sure to remove this bank and all its snapshots?');"><i class="fa fa-trash-o"></i></button>
 				</div>
 			</div>
-			<div class="row">
+
+			<div class="row" id="LAYOUTS_TABLE_PANEL">
 				<div class="col-md-12">
-					<textarea id="SEL_PROG_DETAILS" name="SEL_PROG_DETAILS" rows="6" readonly></textarea>
+					<label>Layout</label>
+					<table id="LAYOUTS_TABLE"
+						   name="LAYOUTS_TABLE"
+						   data-toggle="LAYOUTS_TABLE"
+						   class="table table-striped table-bordered table-condensed table-hidden-header">
+						<thead>
+							<tr>
+								<th data-field="details">Layout</th>
+							</tr>
+						</thead>
+					</table>
 				</div>
 			</div>
+
+			<div class="row" id="MIDI_PROFILE_STATE_PANEL">
+				<div class="col-md-12">
+					<label>Options</label>
+					<table id="MIDI_PROFILE_STATE"
+						   name="MIDI_PROFILE_STATE"
+						   data-toggle="MIDI_PROFILE_STATE"
+						   data-show-footer="true"
+						   class="table table-striped table-bordered table-condensed table-hidden-header">
+						<thead>
+							<tr>
+
+								<th data-field="name"
+									data-footer-formatter="selectMidiProfileFormatter"
+								>Options</th>
+								<th data-field="value">&nbsp;</th>
+								<th data-field="key"
+									data-formatter="operateFormatter"
+									data-events="midiProfileEvents"
+									data-footer-formatter="operateFooterFormatter"
+									>&nbsp;</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+
 			
 			{% if errors %}
 			<div class="row">
@@ -91,6 +129,39 @@
 
 $('#snapshot-panel').hide();
 $('#zynthian-selection-customized-panel').hide();
+
+window.midiProfileEvents = {
+	'click .remove-option': function (e, value, row, index) {
+		if (confirm('Do you really want to delete the option ' + value + '?')){
+			$.post("lib-snapshot/remove/" + $("#SEL_FULLPATH")[0].value + "/" + value,
+				null,
+				function(data, status) {
+					if (status=="success") {
+						if (data){
+							if ("errors" in data) {
+								console.log("RemoveSnapshotOption Error: " + data["errors"])
+							} else {
+								optionsData = getMidiProfileStateData(data);
+								$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+							}
+						}
+					} else {
+						console.log("RemoveSnapshotOption Response: " + status)
+
+					}
+				}
+			);
+		}
+
+	}
+}
+
+$("#LAYOUTS_TABLE").bootstrapTable({
+	data: []
+});
+$("#MIDI_PROFILE_STATE").bootstrapTable({
+	data: []
+});
 $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'), bootstrap2: true ,
 	emptyIcon: "glyphicon glyphicon-floppy-disk",
 	expandIcon: "glyphicon glyphicon-folder-close",
@@ -103,14 +174,20 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 		$("#SEL_BANK")[0].disabled = data.nodes;
 		$("#SEL_PROG_NUM")[0].value = data.prog_num;
 		$("#SEL_PROG_NUM")[0].disabled = data.nodes;
-		$("#SEL_PROG_DETAILS")[0].disabled = false;
 		if (data.prog_details){
-			$("#SEL_PROG_DETAILS").show();
-			$("#SEL_PROG_DETAILS")[0].value = formatSnapshotDetails(data.prog_details);
+			layoutsData = getLayoutData(data.prog_details);
+			$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
+			$("#LAYOUTS_TABLE_PANEL").show();
+
+			optionsData = getMidiProfileStateData(data.prog_details);
+			$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+			$("#MIDI_PROFILE_STATE_PANEL").show();
+
 			$("#ACTION_SAVE_AS_DEFAULT").show();
 			$("#ACTION_SAVE_AS_LAST_STATE").show();
 		} else {
-			$("#SEL_PROG_DETAILS").hide();
+			$("#MIDI_PROFILE_STATE_PANEL").hide();
+			$("#LAYOUTS_TABLE_PANEL").hide();
 			$("#ACTION_SAVE_AS_DEFAULT").hide();
 			$("#ACTION_SAVE_AS_LAST_STATE").hide();
 		}
@@ -119,23 +196,105 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 });
 $('#snapshot-tree').treeview('selectNode',{% raw config['SEL_NODE_ID'] %});
 
-function formatSnapshotDetails(snapshotDetails){
-	var result = "";
-	for (var ch=0; ch<16; ch++) {
-		ch_layout = "";
-		for (idx in snapshotDetails.layers) {
-			layer = snapshotDetails.layers[idx]
-			if (ch==layer.midi_chan) {
-				if (ch_layout!="") ch_layout += "  ->";
-				else  ch_layout += (layer.midi_chan + 1) + '#';
-				ch_layout += layer.engine_nick + ">"
-				if (layer.bank_name) ch_layout += layer.bank_name + "/";
-				if (layer.preset_name) ch_layout += layer.preset_name;
-				ch_layout += "\n";
+function addMidiOptions() {
+	$.post("lib-snapshot/add/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + btoa($("#SELECTED_MIDI_PROFILE_SCRIPT").val())  ,
+			null,
+			function(data, status) {
+				if (status=="success") {
+					if (data){
+						if ("errors" in data) {
+							console.log("AddSnapshotOptions Error: " + data["errors"])
+						} else {
+							optionsData = getMidiProfileStateData(data);
+							$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+						}
+					}
+				} else {
+					console.log("AddSnapshotOptions Response: " + status)
+				}
 			}
-		}
-		result += ch_layout;
+		);
+}
+
+function getMidiProfileStateData(snapshotDetails){
+	result = [];
+	for (midiKey in snapshotDetails.midi_profile_state){
+		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey]});
 	}
+	return result;
+}
+
+function getLayoutData(snapshotDetails){
+	result = [];
+	for (layerKey in snapshotDetails.layers){
+		layer = snapshotDetails.layers[layerKey];
+		if (layer.midi_chan != null) {
+			result.push({'channel': layer.midi_chan + 1,
+					'engine_nick': layer.engine_nick,
+					'bank_name': layer.bank_name,
+					'preset_name': layer.preset_name });
+		}
+	}
+	if (result.length > 0){
+		result.sort(compare_layer);
+	}
+	lastChannel=0
+	for (idx in result){
+		layer = result[idx];
+		details = "";
+
+		if (lastChannel>0 && lastChannel==layer.channel){
+			details += "  ->";
+		} else {
+			details += layer.channel + '#';
+		}
+
+		details += layer.engine_nick + ">"
+		if (layer.bank_name) details += layer.bank_name + "/";
+		if (layer.preset_name) details += layer.preset_name;
+		result[idx].details = details;
+
+		lastChannel = layer.channel;
+	}
+
+	return result;
+}
+
+function compare_layer( a, b ) {
+  if ( a.channel < b.channel ){
+    return -1;
+  }
+  if ( a.channel > b.channel ){
+    return 1;
+  }
+  return 0;
+}
+
+function operateFormatter(value, row, index) {
+    return [
+      '<a class="remove-option btn btn-danger btn-block" href="javascript:void(0)" title="Remove">',
+      '<i class="fa fa-trash-o"></i>',
+      '</a>'
+    ].join('')
+}
+
+function operateFooterFormatter(items) {
+    return [
+      '<a class="add-options btn btn-theme btn-block" href="javascript:addMidiOptions()" title="Add">',
+      '<i class="fa fa-plus"></i>',
+      '</a>'
+    ].join('')
+}
+
+function selectMidiProfileFormatter(items) {
+	result = [];
+	result.push('<select id="SELECTED_MIDI_PROFILE_SCRIPT">');
+{% for midi_profile_script in config['MIDI_PROFILE_SCRIPTS'] %}
+	result.push('<option value="{{ config['MIDI_PROFILE_SCRIPTS'][midi_profile_script] }}">{{ midi_profile_script }}</option>');
+{% end %}
+
+	result.push('</select>');
+
 	return result;
 }
 
