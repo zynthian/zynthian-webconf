@@ -326,6 +326,7 @@ class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
 			data = []
 			with open(snapshot_file, "r") as fp:
 				data = json.load(fp)
+				fp.close()
 
 			p = re.compile("export ZYNTHIAN_MIDI_(\w*)=\"(.*)\"")
 			profile_values = {}
@@ -336,12 +337,14 @@ class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
 					m = p.match(line)
 					if m:
 						profile_values[m.group(1)] = m.group(2)
+				midi_fp.close()
 
 			for profile_value in profile_values:
 				data['midi_profile_state'][profile_value] = profile_values[profile_value]
 
 			with open(snapshot_file, "w") as fp:
 				json.dump(data, fp)
+				fp.close()
 
 			result = data
 

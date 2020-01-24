@@ -219,7 +219,7 @@ function addMidiOptions() {
 function getMidiProfileStateData(snapshotDetails){
 	result = [];
 	for (midiKey in snapshotDetails.midi_profile_state){
-		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey]});
+		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey].replace(/\\n/g,"\n")});
 	}
 	return result;
 }
