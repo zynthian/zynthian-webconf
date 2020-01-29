@@ -297,9 +297,15 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'Preload Presets with Note-On events',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1')
 			}],
+			['ZYNTHIAN_MIDI_RTPMIDI_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable RTP-MIDI',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_RTPMIDI_ENABLED','0'),
+				'advanced': False
+			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
-				'title': 'Enable QmidiNet (MIDI over IP)',
+				'title': 'Enable QmidiNet (IP Multicast)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED','0'),
 				'advanced': False
 			}],
