@@ -122,7 +122,7 @@
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-					<button name="ACTION" value="DOWNLOAD" class="btn btn-theme btn-block">Export&nbsp;<i class="fa fa-share-square-o"></i></button>
+					<button id="ACTION_DOWNLOAD" name="ACTION" value="DOWNLOAD" class="btn btn-theme btn-block">Export&nbsp;<i class="fa fa-share-square-o"></i></button>
 				</div>
 			</div>
 
@@ -191,11 +191,13 @@ $('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].repla
 
 			$("#ACTION_SAVE_AS_DEFAULT").show();
 			$("#ACTION_SAVE_AS_LAST_STATE").show();
+			$("#ACTION_DOWNLOAD").show();
 		} else {
 			$("#MIDI_PROFILE_STATE_PANEL").hide();
 			$("#LAYOUTS_TABLE_PANEL").hide();
 			$("#ACTION_SAVE_AS_DEFAULT").hide();
 			$("#ACTION_SAVE_AS_LAST_STATE").hide();
+			$("#ACTION_DOWNLOAD").hide();
 		}
 		$('#snapshot-panel').show();
 	}
