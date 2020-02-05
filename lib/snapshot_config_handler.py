@@ -99,14 +99,16 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		action = self.get_argument('ACTION')
 		if action:
 			errors = {
-        		'NEW_BANK': lambda: self.do_new_bank(),
-        		'REMOVE': lambda: self.do_remove(),
+				'NEW_BANK': lambda: self.do_new_bank(),
+				'REMOVE': lambda: self.do_remove(),
 				'SAVE': lambda: self.do_save(),
+				'DOWNLOAD': lambda: self.do_download(),
 				'SAVE_AS_DEFAULT': lambda: self.do_save_as_default(),
 				'SAVE_AS_LAST_STATE': lambda: self.do_save_as_last_state()
 			}[action]()
 
-		self.get(errors)
+		if action != 'DOWNLOAD':
+			self.get(errors)
 
 
 	def do_new_bank(self):
@@ -163,13 +165,34 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 			newFullPath += sshot_fname + '.zss'
 			if newFullPath!=fullPath and os.path.exists(newFullPath):
-				return "This bank/program combination is already used: " +  newFullPath
+				return "This bank/program combination is already used: " + newFullPath
 
 		try:
 			os.rename(fullPath, newFullPath)
 		except OSError:
 			return 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
 
+	def do_download(self):
+		result = None
+		try:
+			fpath = self.get_argument('SEL_FULLPATH')
+			dname, fname = os.path.split(fpath)
+
+			self.set_header('Content-Type', "application/json")
+			self.set_header("Content-Description", "File Transfer")
+			self.set_header('Content-Disposition', 'attachment; filename="{}"'.format(fname))
+			with open(fpath, 'rb') as f:
+				while True:
+					data = f.read(4096)
+					if not data:
+						break
+					self.write(data)
+				self.finish()
+		except Exception as e:
+			logging.error(e)
+			result = {'errors': "Can't download file: {}".format(e)}
+
+		return result
 
 	def do_save_as_default(self):
 		dest = self.SNAPSHOTS_DIRECTORY + "/default.zss"
