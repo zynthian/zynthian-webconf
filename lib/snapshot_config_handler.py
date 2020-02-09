@@ -61,33 +61,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 		# Try to maintain selection after a POST action...
-		selected_node = 0
-		try:
-			for ssbank in ssdata:
-				try:
-					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
-						if not selected_node:
-							selected_node = ssbank['id']
-
-					if ssbank['nodes']:
-						for ssprog in ssbank['nodes']:
-							try:
-								if int(ssprog['prog_num'])==int(self.get_argument('SEL_PROG_NUM')):
-									selected_node = ssprog['id']
-							except:
-								pass
-				except:
-					action = self.get_argument('ACTION', '')
-					if action == 'SAVE_AS_DEFAULT' and ssbank['name'] == 'default':
-						selected_node = ssbank['id']
-					elif action == 'SAVE_AS_LAST_STATE' and ssbank['name'] == 'last_state':
-						selected_node = ssbank['id']
-
-		except Exception as e:
-			logging.debug("ERROR:" + str(e))
-
-		config['SEL_NODE_ID'] = selected_node
-		logging.debug("Selected Node: {}".format(selected_node))
+		config['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
 
 		if self.genjson:
 			self.write(config)
@@ -106,6 +80,9 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 				'save_as_last_state': lambda: self.do_save_as_last_state()
 			}[action]()
 
+		ssdata = self.get_snapshots_data()
+		result['SNAPSHOTS'] = ssdata
+		result['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
 		self.write(result)
 
 	def do_new_bank(self):
@@ -296,6 +273,34 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			snapshots.append(snapshot)
 
 		return snapshots
+
+	def get_selected_node_id(self, ssdata):
+		selected_node = 0
+		try:
+			for ssbank in ssdata:
+				try:
+					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
+						if not selected_node:
+							selected_node = ssbank['id']
+
+					if ssbank['nodes']:
+						for ssprog in ssbank['nodes']:
+							try:
+								if int(ssprog['prog_num'])==int(self.get_argument('SEL_PROG_NUM')):
+									selected_node = ssprog['id']
+							except:
+								pass
+				except:
+					action = self.get_argument('ACTION', '')
+					if action == 'SAVE_AS_DEFAULT' and ssbank['name'] == 'default':
+						selected_node = ssbank['id']
+					elif action == 'SAVE_AS_LAST_STATE' and ssbank['name'] == 'last_state':
+						selected_node = ssbank['id']
+
+		except Exception as e:
+			logging.debug("ERROR:" + str(e))
+		logging.debug("Selected Node: {}".format(selected_node))
+		return selected_node
 
 	def install_file(self, fpath):
 		logging.info(fpath)

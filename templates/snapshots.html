@@ -216,44 +216,50 @@ $("#LAYOUTS_TABLE").bootstrapTable({
 $("#MIDI_PROFILE_STATE").bootstrapTable({
 	data: []
 });
-$('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'), bootstrap2: true ,
-	emptyIcon: "glyphicon glyphicon-floppy-disk",
-	expandIcon: "glyphicon glyphicon-folder-close",
-	collapseIcon: "glyphicon glyphicon-folder-open",
-	onNodeSelected: function(event, data) {
-		$("#SEL_NAME")[0].value = data.name.replace("&#39;","'");
-		$("#SEL_FULLPATH")[0].value = data.fullpath;
-		$("#SEL_BANK_NUM")[0].value = data.bank_num;
-		$("#SEL_BANK")[0].value = data.bank_num + (data.bank_name? '-' + data.bank_name.replace("&#39;","'") : '');
-		$("#SEL_BANK")[0].disabled = data.nodes;
-		$("#SEL_PROG_NUM")[0].value = data.prog_num;
-		$("#SEL_PROG_NUM")[0].disabled = data.nodes;
-		if (data.prog_details){
-			layoutsData = getLayoutData(data.prog_details);
-			$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
-			$("#LAYOUTS_TABLE_PANEL").show();
+createTree(JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'),
+	{% raw config['SEL_NODE_ID'] %});
 
-			optionsData = getMidiProfileStateData(data.prog_details);
-			$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
-			$("#MIDI_PROFILE_STATE_PANEL").show();
 
-			$("#ACTION_SAVE_AS_DEFAULT").show();
-			$("#ACTION_SAVE_AS_LAST_STATE").show();
-			$("#ACTION_DOWNLOAD").show();
-			$("#upload-panel").hide();
-		} else {
-			$("#MIDI_PROFILE_STATE_PANEL").hide();
-			$("#LAYOUTS_TABLE_PANEL").hide();
-			$("#ACTION_SAVE_AS_DEFAULT").hide();
-			$("#ACTION_SAVE_AS_LAST_STATE").hide();
-			$("#ACTION_DOWNLOAD").hide();
-			$("#upload-panel").show();
+function createTree(data, selectedNodeId){
+	$('#snapshot-tree').treeview({data: data, bootstrap2: true ,
+		emptyIcon: "glyphicon glyphicon-floppy-disk",
+		expandIcon: "glyphicon glyphicon-folder-close",
+		collapseIcon: "glyphicon glyphicon-folder-open",
+		onNodeSelected: function(event, data) {
+			$("#SEL_NAME")[0].value = data.name.replace("&#39;","'");
+			$("#SEL_FULLPATH")[0].value = data.fullpath;
+			$("#SEL_BANK_NUM")[0].value = data.bank_num;
+			$("#SEL_BANK")[0].value = data.bank_num + (data.bank_name? '-' + data.bank_name.replace("&#39;","'") : '');
+			$("#SEL_BANK")[0].disabled = data.nodes;
+			$("#SEL_PROG_NUM")[0].value = data.prog_num;
+			$("#SEL_PROG_NUM")[0].disabled = data.nodes;
+			if (data.prog_details){
+				layoutsData = getLayoutData(data.prog_details);
+				$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
+				$("#LAYOUTS_TABLE_PANEL").show();
+
+				optionsData = getMidiProfileStateData(data.prog_details);
+				$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+				$("#MIDI_PROFILE_STATE_PANEL").show();
+
+				$("#ACTION_SAVE_AS_DEFAULT").show();
+				$("#ACTION_SAVE_AS_LAST_STATE").show();
+				$("#ACTION_DOWNLOAD").show();
+				$("#upload-panel").hide();
+			} else {
+				$("#MIDI_PROFILE_STATE_PANEL").hide();
+				$("#LAYOUTS_TABLE_PANEL").hide();
+				$("#ACTION_SAVE_AS_DEFAULT").hide();
+				$("#ACTION_SAVE_AS_LAST_STATE").hide();
+				$("#ACTION_DOWNLOAD").hide();
+				$("#upload-panel").show();
+			}
+			$('#snapshot-panel').show();
+			$("#error-message-action").hide()
 		}
-		$('#snapshot-panel').show();
-		$("#error-message-action").hide()
-	}
-});
-$('#snapshot-tree').treeview('selectNode',{% raw config['SEL_NODE_ID'] %});
+	});
+	$('#snapshot-tree').treeview('selectNode', selectedNodeId);
+}
 
 function addMidiOptions() {
 	$.post("lib-snapshot/add/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + btoa($("#SELECTED_MIDI_PROFILE_SCRIPT").val())  ,
@@ -375,8 +381,8 @@ function do_action(action=null) {
 					$("#error-message-action").html(data["errors"])
 					$("#error-message-action").show(600)
 				} else {
-					if (action != 'download'){
-						window.location.reload();
+					if ("SNAPSHOTS" in data){
+						createTree(data['SNAPSHOTS'], data['SEL_NODE_ID']);
 					}
 				}
 			} else {
