@@ -40,10 +40,10 @@ from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
 from zyngui.zynthian_gui_engine import *
 
+
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
-
 class PresetsConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
@@ -60,7 +60,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.write(config)
 		else:
 			self.render("config.html", body="presets.html", config=config, title="Presets & Soundfonts", errors=None)
-
 
 	@tornado.web.authenticated
 	def post(self, action):
@@ -95,7 +94,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		if result:
 			self.write(result)
 
-
 	def do_get_tree(self):
 		result = {}
 		try:
@@ -111,7 +109,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 		return result
 
-
 	def do_new_bank(self):
 		result = {}
 		try:
@@ -122,7 +119,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def do_rename_bank(self):
 		result = {}
@@ -135,7 +131,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_remove_bank(self):
 		result = {}
 		try:
@@ -146,7 +141,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def do_rename_preset(self):
 		result = {}
@@ -159,7 +153,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_remove_preset(self):
 		result = {}
 		try:
@@ -170,7 +163,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def do_download(self):
 		result = None
@@ -212,7 +204,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 		return result
 
-
 	def do_search(self):
 		result = {}
 
@@ -224,7 +215,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			result['errors'] = "Can't search Musical Artifacts: {}".format(e)
 
 		return result
-
 
 	def do_install_file(self):
 		result = {}
@@ -241,7 +231,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_install_url(self):
 		result = {}
 
@@ -253,7 +242,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def search_artifacts(self, formats, tags):
 		result=[]
@@ -278,7 +266,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 					row['file'] = None
 
 		return result
-
 
 	def install_file(self, fpath):
 		logging.info("Unpacking '{}' ...".format(fpath))
@@ -318,7 +305,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			shutil.rmtree(dpath, ignore_errors=True)
 			pass
 
-
 	def install_url(self, url):
 		logging.info("Downloading '{}' ...".format(url))
 		res = requests.get(url, verify=False)
@@ -329,7 +315,6 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			df.close()
 			self.install_file(fpath)
 
-
 	def get_engine_info(self):
 		engine_info = copy.copy(zynthian_gui_engine.engine_info)
 		for e in zynthian_gui_engine.engine_info:
@@ -337,13 +322,11 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				del engine_info[e]
 		return engine_info
 
-
 	def get_upload_formats(self):
 		try:
 			return self.engine_cls.zynapi_get_formats()
 		except:
 			return ""
-
 
 	def get_presets_data(self):
 		try:
@@ -388,4 +371,3 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			logging.error("BANK NODE {} => {}".format(i,e))
 
 		return banks_data
-
