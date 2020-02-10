@@ -127,7 +127,26 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=ttymidi:MIDI_out\nENABLED_FB="
 
-	midi_program_change_presets=OrderedDict([
+	midi_channels =  OrderedDict([
+		["00", "None"],
+		["01", "01"],
+		["02", "02"],
+		["03", "03"],
+		["04", "04"],
+		["05", "05"],
+		["06", "06"],
+		["07", "07"],
+		["08", "09"],
+		["10", "10"],
+		["11", "11"],
+		["12", "12"],
+		["13", "13"],
+		["14", "14"],
+		["15", "15"],
+		["16", "16"]
+	])
+
+	midi_program_change_presets = OrderedDict([
 		['Custom', {
 			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_UP': '',
 			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_DOWN': '',
@@ -150,12 +169,12 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
-	program_change_mode_labels=OrderedDict([
+	program_change_mode_labels = OrderedDict([
 		['0', 'MSB'],
 		['32', 'LSB']
 	])
 
-	midi_cc_labels=OrderedDict([
+	midi_cc_labels = OrderedDict([
 		['0', '0 - Bank Select (MSB)'],
 		['1', '1 - Modulation Wheel (MSB)'],
 		['2', '2 - Breath controller (MSB)'],
@@ -212,7 +231,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		['127', '127 - Poly Mode']
 	])
 
-	midi_event_types=OrderedDict([
+	midi_event_types = OrderedDict([
 		['NON', 'Note-On'],
 		['NOFF', 'Note-Off'],
 		['PC', 'Program change'],
@@ -332,7 +351,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'Master MIDI channel',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','15'),
-				'options': map(lambda x: str(x).zfill(2), list(range(1, 17)))
+				'options': list(self.midi_channels.keys()),
+				'option_labels': self.midi_channels
 			}],
 			['ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE', {
 				'type': 'select',
