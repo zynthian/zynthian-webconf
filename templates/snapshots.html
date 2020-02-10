@@ -37,7 +37,7 @@
 			</div>
 
 			<div class="row no-gutters">
-				<div class="col-xs-5">
+				<div class="col-xs-4">
 					<label>Name:</label>
 					<input id="SEL_NAME" name="SEL_NAME" class="form-control" />
 				</div>
@@ -65,6 +65,12 @@
 					<button id="ACTION_SAVE" class="btn btn-theme btn-block"
 						onclick="return do_action('save')"><i class="fa fa-check"></i></button>
 				</div>
+
+				<div class="col-xs-1">
+					<label>&nbsp;</label>
+					<button id="ACTION_DOWNLOAD" class="btn btn-theme btn-block" onclick="return do_download()" title="Download"><i class="fa fa-download"></i></button>
+				</div>
+
 				<div class="col-xs-1">
 					<label>&nbsp;</label>
 					<button id="ACTION_REMOVE" class="btn btn-danger btn-block" onclick="return do_remove();"><i class="fa fa-trash-o"></i></button>
@@ -133,12 +139,6 @@
 				<div class="col-md-12">
 					<button id="ACTION_SAVE_AS_LAST_STATE" class="btn btn-theme btn-block"
 						onclick="return do_action('save_as_last_state')">Save as Last State</button>
-				</div>
-			</div>
-			<div class="row">
-				<div class="col-md-12">
-					<button id="ACTION_DOWNLOAD"  class="btn btn-theme btn-block"
-						onclick="return do_download()">Export&nbsp;<i class="fa fa-share-square-o"></i></button>
 				</div>
 			</div>
 			<div class="row" id="upload-panel">
@@ -251,7 +251,7 @@ function createTree(data, selectedNodeId){
 				$("#LAYOUTS_TABLE_PANEL").hide();
 				$("#ACTION_SAVE_AS_DEFAULT").hide();
 				$("#ACTION_SAVE_AS_LAST_STATE").hide();
-				$("#ACTION_DOWNLOAD").hide();
+				$("#ACTION_DOWNLOAD").show();
 				$("#upload-panel").show();
 			}
 			$('#snapshot-panel').show();

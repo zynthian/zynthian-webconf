@@ -394,14 +394,27 @@ class SnapshotDownloadHandler(tornado.web.RequestHandler):
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
+
 	@tornado.web.authenticated
 	def get(self, fpath_b64):
 		result = None
+		fpath = None
+		delete = False
 		try:
 			fpath = str(base64.b64decode(fpath_b64), 'utf-8')
 			dname, fname = os.path.split(fpath)
+			if os.path.isdir(fpath):
+				zfpath = "/tmp/" + fname
+				shutil.make_archive(zfpath, 'zip', fpath)
+				fpath = zfpath + ".zip"
+				fname += ".zip"
+				delete = True
+				mime_type = "application/zip"
+			else:
+				delete = False
+				mime_type = "application/octet-stream"
 
-			self.set_header('Content-Type', "application/json")
+			self.set_header('Content-Type', mime_type)
 			self.set_header("Content-Description", "File Transfer")
 			self.set_header('Content-Disposition', 'attachment; filename="{}"'.format(fname))
 			with open(fpath, 'rb') as f:
@@ -411,11 +424,14 @@ class SnapshotDownloadHandler(tornado.web.RequestHandler):
 						break
 					self.write(data)
 				self.finish()
+
 		except Exception as e:
 			logging.error(e)
 			result = {'errors': "Can't download file: {}".format(e)}
 
+
+		finally:
+			if fpath and delete:
+				os.remove(fpath)
+
 		return result
-		# JSON Ouput
-		if result:
-			self.write(result)
