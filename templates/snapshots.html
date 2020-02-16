@@ -14,7 +14,7 @@
 					<span class="input-group-addon">
 						<label>New bank</label>
 					</span>
-					<input  name="NEW_BANK_NUM" aria-label="New Bank" value="{{ config['NEXT_BANK_NUM'] }}" class="form-control">
+					<input id="NEW_BANK_NUM" name="NEW_BANK_NUM" aria-label="New Bank" value="{{ config['NEXT_BANK_NUM'] }}" class="form-control">
 					<span class="input-group-btn">
 						<button id="button-new_bank" class="btn btn-theme btn-block"
 								onclick="return do_action('new_bank')"
@@ -381,8 +381,23 @@ function do_action(action=null) {
 					$("#error-message-action").html(data["errors"])
 					$("#error-message-action").show(600)
 				} else {
-					if ("SNAPSHOTS" in data){
+					if ('SNAPSHOTS' in data) {
 						createTree(data['SNAPSHOTS'], data['SEL_NODE_ID']);
+					}
+					if ('BANKS' in data) {
+						var sel_banks = $('#SEL_BANK')
+
+						sel_banks.empty().append(function() {
+							var output = '';
+							for (idx in data['BANKS']) {
+								output += '<option>' + data['BANKS'][idx] + '</option>';
+							}
+							return output;
+						});
+					}
+
+					if ('NEXT_BANK_NUM' in data) {
+						$('#NEW_BANK_NUM').val(data['NEXT_BANK_NUM']);
 					}
 				}
 			} else {
