@@ -48,18 +48,21 @@ class PluginType(Enum):
 
 class JalvLv2Handler(ZynthianConfigHandler):
 	JALV_LV2_CONFIG_FILE = "{}/jalv/plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
-	JALV_ALL_LV2_CONFIG_FILE = "{}/jalv/all_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
+	JALV_LV2_CONFIG_FILE_ALL = "{}/jalv/all_plugins.json".format(os.environ.get('ZYNTHIAN_CONFIG_DIR'))
 
-	all_plugins = None
+	plugins = None
+	plugin_by_type = None
+
 	world = lilv.World()
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		if self.all_plugins is None:
-			self.load_all_plugins()
+		if self.plugins is None:
+			self.load_plugins()
 
 		config=OrderedDict([])
-		config['ZYNTHIAN_JALV_PLUGINS'] = self.load_plugins()
+		config['ZYNTHIAN_JALV_PLUGINS'] = self.plugins_by_type
+
 		try:
 			config['ZYNTHIAN_ACTIVE_TAB'] = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
 		except:
@@ -86,6 +89,9 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
+		if self.plugins is None:
+			self.load_plugins()
+
 		action = self.get_argument('ZYNTHIAN_JALV_ACTION')
 		if action:
 			errors = {
@@ -95,23 +101,25 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		self.get(errors)
 
 
-	def load_all_plugins(self):
+	def load_plugins(self):
+		self.convert_from_all_plugins()
+
 		result = OrderedDict()
-		trials = 0
-		while not result and trials <= 1:
-			try:
-				trials = trials + 1
-				with open(self.JALV_ALL_LV2_CONFIG_FILE) as f:
-					result = json.load(f, object_pairs_hook=OrderedDict)
-			except Exception as e:
-				logging.warning('Loading list of all LV2-Plugins failed: %s' % e)
-			if not result:
-				self.generate_all_plugins_config_file()
-		self.all_plugins = result
-		return result
+		try:
+			with open(self.JALV_LV2_CONFIG_FILE) as f:
+				result = json.load(f, object_pairs_hook=OrderedDict)
+
+			self.plugins = result
+			self.get_plugins_by_type()
+
+		except Exception as e:
+			logging.warning('Loading list of LV2-Plugins failed: %s' % e)
+			self.generate_plugins_config_file()
+
+		return self.plugins
 
 
-	def generate_all_plugins_config_file(self):
+	def generate_plugins_config_file(self):
 		plugins = OrderedDict()
 		self.world.ns.ev = lilv.Namespace(self.world, 'http://lv2plug.in/ns/ext/event#')
 
@@ -119,67 +127,88 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		try:
 			self.world.load_all()
 			for plugin in self.world.get_all_plugins():
-				logging.info("Adding '{}'".format(plugin.get_name()))
-				plugins[str(plugin.get_name())] = {'URL': str(plugin.get_uri()), 'TYPE': self.get_plugin_type(plugin).value, 'ENABLED': False}
-			self.all_plugins = OrderedDict(sorted(plugins.items()))
-			with open(self.JALV_ALL_LV2_CONFIG_FILE, 'w') as f:
-				json.dump(self.all_plugins, f)
+				name = str(plugin.get_name())
+				logging.info("Adding '{}'".format(name))
+				plugins[name] = {'URL': str(plugin.get_uri()), 'TYPE': self.get_plugin_type(plugin).value, 'ENABLED': self.is_plugin_enabled(name)}
+
+			self.plugins = OrderedDict(sorted(plugins.items()))
+			self.get_plugins_by_type()
+
+			with open(self.JALV_LV2_CONFIG_FILE, 'w') as f:
+				json.dump(self.plugins, f)
 
 		except Exception as e:
-			logging.error('Generating list of all LV2-Plugins failed: %s' % e)
+			logging.error('Generating list of LV2-Plugins failed: %s' % e)
+
 		end = int(round(time.time() * 1000))
-		logging.info('config file generation took %d' % (end-start))
+		logging.info('LV2 plugin list generation took {}s'.format(end-start))
 
 
-	def load_plugins(self):
-		result = OrderedDict()
-		for pluginType in PluginType:
-			result[pluginType.value] = OrderedDict()
+	def get_plugins_by_type(self):
+		self.plugins_by_type = OrderedDict()
+		for t in PluginType:
+			self.plugins_by_type[t.value] = OrderedDict()
 
-		all_plugins = self.all_plugins
-		enabled_plugins = self.load_enabled_plugins();
+		for name, properties in self.plugins.items():
+			self.plugins_by_type[properties['TYPE']][name] = properties
 
-		for plugin_name, plugin_properties in all_plugins.items():
-			result[plugin_properties['TYPE']][plugin_name] = plugin_properties
-			if plugin_name in enabled_plugins:
-				logging.info("Plugin '{}' enabled".format(plugin_name))
-				plugin_properties['ENABLED'] = True
-		return result
-
-
-	def load_enabled_plugins(self):
-		result = OrderedDict()
-		try:
-			with open(self.JALV_LV2_CONFIG_FILE) as f:
-				result = json.load(f, object_pairs_hook=OrderedDict)
-		except Exception as e:
-			logging.info('Loading list of enabled LV2-Plugins failed: %s' % e)
-		return result
+		return self.plugins_by_type
 
 
 	def do_enable_plugins(self):
 		try:
-			pluginJson = OrderedDict()
-			self.load_all_plugins()
+			self.load_plugins()
 			postedPlugins = tornado.escape.recursive_unicode(self.request.arguments)
 
-			for plugin_name, plugin_properties in self.all_plugins.items():
-				if "ZYNTHIAN_JALV_ENABLE_%s" % plugin_name in postedPlugins:
-					pp = {}
-					pp['URL'] = plugin_properties['URL']
-					pp['TYPE'] = plugin_properties['TYPE']
-					pluginJson[plugin_name] = pp
+			for name, properties in self.plugins.items():
+				if "ZYNTHIAN_JALV_ENABLE_%s" % name in postedPlugins:
+					self.plugins[name]['ENABLED'] = True
+				else:
+					self.plugins[name]['ENABLED'] = False
 
 			with open(self.JALV_LV2_CONFIG_FILE,'w') as f:
-				json.dump(pluginJson, f)
+				json.dump(self.plugins, f)
 
 		except Exception as e:
-			logging.error("Installing jalv plugins failed: %s" % format(e))
+			logging.error("Enabling jalv plugins failed: %s" % format(e))
 			return format(e)
 
 
 	def do_regenerate_plugin_list(self):
-		self.generate_all_plugins_config_file()
+		self.generate_plugins_config_file()
+
+
+	def convert_from_all_plugins(self):
+		try:
+			with open(self.JALV_LV2_CONFIG_FILE_ALL) as f:
+				plugins = json.load(f, object_pairs_hook=OrderedDict)
+
+			with open(self.JALV_LV2_CONFIG_FILE) as f:
+				enplugins = json.load(f, object_pairs_hook=OrderedDict)
+
+			logging.info("Converting LV2 config files ...")
+
+			for name, properties in plugins.items():
+				if name in enplugins:
+					plugins[name]['ENABLED'] = True
+				else:
+					plugins[name]['ENABLED'] = False
+
+			with open(self.JALV_LV2_CONFIG_FILE,'w') as f:
+				json.dump(plugins, f)
+
+			os.remove(self.JALV_LV2_CONFIG_FILE_ALL)
+
+		except Exception as e:
+			#logging.error(e)
+			pass
+
+
+	def is_plugin_enabled(self, plugin_name):
+		try:
+			return self.plugins[plugin_name]['ENABLED']
+		except:
+			return False
 
 
 	def get_plugin_type(self, pl):
