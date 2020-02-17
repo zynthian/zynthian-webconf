@@ -165,67 +165,70 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
-			enable_custom_text = " (select Custom kit to enable)"
-		else:
-			enable_custom_text = ""
-
-		
 		zc_config = OrderedDict([
 			['ZCONTROLLERS', AudioConfigHandler.get_controllers()]
 		])
-
 		logging.info(zc_config)
 
-		config=OrderedDict([
-			['SOUNDCARD_NAME', {
-				'type': 'select',
-				'title': "Soundcard{}".format(enable_custom_text),
-				'value': os.environ.get('SOUNDCARD_NAME'),
-				'options': list(self.soundcard_presets.keys()),
-				'presets': self.soundcard_presets,
-				'disabled': enable_custom_text!=""
-			}],
-			['SOUNDCARD_CONFIG', {
-				'type': 'textarea',
-				'title': "Config{}".format(enable_custom_text),
-				'cols': 50,
-				'rows': 4,
-				'value': os.environ.get('SOUNDCARD_CONFIG'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['JACKD_OPTIONS', {
-				'type': 'text',
-				'title': "Jackd Options{}".format(enable_custom_text),
-				'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
-				'type': 'text',
-				'title': "Aubionotes Options",
-				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
-				'advanced': True
-			}],
-			['ZYNTHIAN_LIMIT_USB_SPEED', {
-				'type': 'boolean',
-				'title': "Limit USB speed to 12Mb/s",
-				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
-				'advanced': True
-			}],
-			['SOUNDCARD_MIXER', {
-				'type': 'textarea',
-				'title': "Mixer Controls{}".format(enable_custom_text),
-				'value': os.environ.get('SOUNDCARD_MIXER'),
-				'cols': 50,
-				'rows': 3,
-				'addButton': 'display_zcontroller_panel',
-				'addPanel': 'zcontroller.html',
-				'addPanelConfig': zc_config,
-				'advanced': True
-			}]
-		])
+		config=OrderedDict()
+
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			custom_options_disabled = True
+			config['ZYNTHIAN_MESSAGE'] = {
+				'type': 'html',
+				'content': "<div class='alert alert-warning'>Some config options are disabled. You may want to <a href='/hw-kit'>choose Custom Kit</a> for enabling all options.</div>"
+			}
+		else:
+			custom_options_disabled = False
+
+		config['SOUNDCARD_NAME'] = {
+			'type': 'select',
+			'title': "Soundcard",
+			'value': os.environ.get('SOUNDCARD_NAME'),
+			'options': list(self.soundcard_presets.keys()),
+			'presets': self.soundcard_presets,
+			'disabled': custom_options_disabled
+		}
+		config['SOUNDCARD_CONFIG'] = {
+			'type': 'textarea',
+			'title': "Config",
+			'cols': 50,
+			'rows': 4,
+			'value': os.environ.get('SOUNDCARD_CONFIG'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['JACKD_OPTIONS'] = {
+			'type': 'text',
+			'title': "Jackd Options",
+			'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_AUBIONOTES_OPTIONS'] = {
+			'type': 'text',
+			'title': "Aubionotes Options",
+			'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
+			'advanced': True
+		}
+		config['ZYNTHIAN_LIMIT_USB_SPEED'] = {
+			'type': 'boolean',
+			'title': "Limit USB speed to 12Mb/s",
+			'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
+			'advanced': True
+		}
+		config['SOUNDCARD_MIXER'] = {
+			'type': 'textarea',
+			'title': "Mixer Controls",
+			'value': os.environ.get('SOUNDCARD_MIXER'),
+			'cols': 50,
+			'rows': 3,
+			'addButton': 'display_zcontroller_panel',
+			'addPanel': 'zcontroller.html',
+			'addPanelConfig': zc_config,
+			'advanced': True
+		}
+
 
 		super().get("Audio", config, errors)
 

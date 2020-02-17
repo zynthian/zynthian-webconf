@@ -18,9 +18,7 @@
 {% end %}
 
 {% for varname in config %}
-	<div {% try %} {% if config[varname]['advanced'] %}class="advanced-view"{% end %} {% except %} {% end %}
-		{% try %} {{ "root_var={}".format(config[varname]['root_var']) }} {% except %} {% end %}
-		{% try %} {{ "enabling_options={}".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
+	<div {% try %} {% if config[varname]['advanced'] %}class="advanced-view"{% end %} {% except %} {% end %} {% try %} {{ "root_var={}".format(config[varname]['root_var']) }} {% except %} {% end %} {% try %} {{ "enabling_options={}".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
 
 		{% if config[varname]['type'] not in ['button', 'hidden', 'html', 'jscript'] %}
 			<label>{{ escape(config[varname]['title']) }}:</label>
@@ -104,10 +102,9 @@
 
 		{% elif config[varname]['type']=='jscript' %}
 			<script src="../js/{{ config[varname]['script_file'] }}" ></script>
-
 		{% end %}
 
-		{% if config[varname]['type']!='hidden' %}
+		{% if config[varname]['type'] not in ('hidden', 'html', 'jscript') %}
 		<br>
 		{% if errors and varname in errors %}<div class="alert alert-danger">{{ errors[varname] }}</div>{% end %}
 		<br>
