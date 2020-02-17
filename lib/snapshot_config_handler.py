@@ -83,6 +83,8 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		ssdata = self.get_snapshots_data()
 		result['SNAPSHOTS'] = ssdata
 		result['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
+		result['BANKS'] = self.get_existing_banks(ssdata, True)
+		result['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
 		self.write(result)
 
 	def do_new_bank(self):
@@ -90,7 +92,8 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		existing_banks = self.get_existing_banks(self.get_snapshots_data(), False)
 		new_bank_dname = self.get_argument('NEW_BANK_NUM', str(self.calculate_next_bank(existing_banks))).zfill(3)
 		if new_bank_dname in existing_banks:
-			return "Bank already exists!"
+			result['errors'] = "Bank already exists!"
+			return result
 		if new_bank_dname:
 			bank_dpath = self.SNAPSHOTS_DIRECTORY + '/' + new_bank_dname
 			if not os.path.exists(bank_dpath):
@@ -119,13 +122,15 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			if self.get_argument('SEL_NAME'):
 				newFullPath += '-' + self.get_argument('SEL_NAME')
 			if os.path.exists(newFullPath):
-				return "Bank exists already!"
+				result['errors'] = "Bank exists already!"
+				return result
 		# Save Program
 		else:
 			try:
 				newFullPath += self.get_argument('SEL_BANK') + '/'
 				if not os.path.exists(newFullPath):
-					return "Bank doesn't exist. You must create it before moving snapshots inside it."
+					result['errors'] = "Bank doesn't exist. You must create it before moving snapshots inside it."
+					return result
 			except:
 				pass
 
@@ -139,11 +144,13 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 					sshot_fname =  self.get_argument('SEL_NAME')
 			
 			if not sshot_fname:
-				return "You must specify a name or program number for the snapshot."
+				result['errors'] = "You must specify a name or program number for the snapshot."
+				return result;
 
 			newFullPath += sshot_fname + '.zss'
 			if newFullPath!=fullPath and os.path.exists(newFullPath):
-				return "This bank/program combination is already used: " + newFullPath
+				result['errors'] = "This bank/program combination is already used: " + newFullPath
+				return result
 
 		try:
 			os.rename(fullPath, newFullPath)
