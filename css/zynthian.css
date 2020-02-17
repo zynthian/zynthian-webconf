@@ -396,6 +396,7 @@ div.log-panel {
 	overflow-y: hidden;
 	overflow: auto;*/
   white-space: nowrap;
+  overflow-x: scroll;
 }
 div.log-panel.updating {
   background-color: #606060;
