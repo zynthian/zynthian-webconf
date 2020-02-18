@@ -1,14 +1,14 @@
 
 {% for group in config %}
 <div class="col-lg-4 col-sm-6">
-	<h3>{{ escape(group) }}</h3>
-	{% for varname in config[group] %}
-	<label>{{ escape(config[group][varname]['title']) }}{% if 'value' in config[group][varname] %}:{% end %}</label>
-	{% if 'value' in config[group][varname] %}
-	{% if 'url' in config[group][varname] %}
-		<a href="{{ config[group][varname]['url'] }}">{{ escape(config[group][varname]['value']) }}</a>
+	<h3><i class="{{ config[group]['icon'] }}"></i> {{ escape(group) }}</h3>
+	{% for tag, info in config[group]['info'].items() %}
+	<label>{{ escape(info['title']) }}{% if 'value' in info %}:{% end %}</label>
+	{% if 'value' in info %}
+	{% if 'url' in info %}
+		<a href="{{ info['url'] }}">{{ escape(info['value']) }}</a>
 	{% else %}
-		{{ escape(config[group][varname]['value']) }}
+		{{ escape(info['value']) }}
 	{% end %}
 	{% end %}
 	<br>

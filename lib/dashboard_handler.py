@@ -54,152 +54,189 @@ class DashboardHandler(ZynthianConfigHandler):
 		sd_info=self.get_sd_info()
 
 		config=OrderedDict([
-			['HARDWARE', OrderedDict([
-				['RBPI_VERSION', {
-					'title': os.environ.get('RBPI_VERSION')
-				}],
-				['SOUNDCARD_NAME', {
-					'title': 'Soundcard',
-					'value': os.environ.get('SOUNDCARD_NAME'),
-					'url': "/hw-audio"
-				}],
-				['DISPLAY_NAME', {
-					'title': 'Display',
-					'value': os.environ.get('DISPLAY_NAME'),
-					'url': "/hw-display"
-				}],
-				['WIRING_LAYOUT', {
-					'title': 'Wiring',
-					'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
-					'url': "/hw-wiring"
-				}],
-				['GPIO_EXPANDER', {
-					'title': 'GPIO Expander',
-					'value': self.get_gpio_expander(),
-					'url': "/hw-wiring"
-				}]
-			])],
-			['SYSTEM', OrderedDict([
-				['OS_INFO', {
-					'title': 'OS',
-					'value': "{}".format(self.get_os_info())
-				}],
-				['BUILD_DATE', {
-					'title': 'Build Date',
-					'value': self.get_build_info()['Timestamp'],
-				}],
-				['RAM', {
-					'title': 'Memory',
-					'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total'])
-				}],
-				['SD CARD', {
-					'title': 'SD Card',
-					'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
-				}],
-				['TEMPERATURE', {
-					'title': 'Temperature',
-					'value': self.get_temperature()
-				}]
-			])],
-			['MIDI', OrderedDict([
-				['PROFILE', {
-					'title': 'Profile',
-					'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
-					'url': "/ui-midi-options"
-				}],
-				['FINE_TUNING', {
-					'title': 'Fine Tuning',
-					'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
-					'url': "/ui-midi-options"
-				}],
-				['MASTER_CHANNEL', {
-					'title': 'Master Channel',
-					'value': os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16"),
-					'url': "/ui-midi-options"
-				}],
-				['QMIDINET', {
-					'title': 'QmidiNet',
-					'value': str(self.is_service_active("qmidinet")),
-					'url': "/ui-midi-options"
-				}],
-				['TOUCHOSC', {
-					'title': 'TouchOSC',
-					'value': str(self.is_service_active("touchosc2midi")),
-					'url': "/ui-midi-options"
-				}]
-			])],
-			['SOFTWARE', OrderedDict([
-				['ZYNCODER', {
-					'title': 'zyncoder',
-					'value': "{} ({})".format(git_info_zyncoder['branch'], git_info_zyncoder['gitid'][0:7]),
-					'url': "https://github.com/zynthian/zyncoder/commit/{}".format(git_info_zyncoder['gitid'])
-				}],
-				['UI', {
-					'title': 'zynthian-ui',
-					'value': "{} ({})".format(git_info_ui['branch'], git_info_ui['gitid'][0:7]),
-					'url': "https://github.com/zynthian/zynthian-ui/commit/{}".format(git_info_ui['gitid'])
-				}],
-				['SYS', {
-					'title': 'zynthian-sys',
-					'value': "{} ({})".format(git_info_sys['branch'], git_info_sys['gitid'][0:7]),
-					'url': "https://github.com/zynthian/zynthian-sys/commit/{}".format(git_info_sys['gitid'])
-				}],
-				['DATA', {
-					'title': 'zynthian-data',
-					'value': "{} ({})".format(git_info_data['branch'], git_info_data['gitid'][0:7]),
-					'url': "https://github.com/zynthian/zynthian-data/commit/{}".format(git_info_data['gitid'])
-				}],
-				['WEBCONF', {
-					'title': 'zynthian-webconf',
-					'value': "{} ({})".format(git_info_webconf['branch'], git_info_webconf['gitid'][0:7]),
-					'url': "https://github.com/zynthian/zynthian-webconf/commit/{}".format(git_info_webconf['gitid'])
-				}]
-			])],
-			['LIBRARY', OrderedDict([
-				['SNAPSHOTS', {
-					'title': 'Snapshots',
-					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots")),
-					'url': "/lib-snapshot"
-				}],
-				['USER_PRESETS', {
-					'title': 'User Presets',
-					'value': str(self.get_num_of_presets(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets")),
-					'url': "/lib-presets"
-				}],
-				['USER_SOUNDFONTS', {
-					'title': 'User Soundfonts',
-					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts")),
-					'url': "/lib-soundfont"
-				}],
-				['AUDIO_CAPTURES', {
-					'title': 'Audio Captures',
-					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav")),
-					'url': "/lib-captures"
-				}],
-				['MIDI_CAPTURES', {
-					'title': 'MIDI Captures',
-					'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid")),
-					'url': "/lib-captures"
-				}]
-			])],
-			['NETWORK', OrderedDict([
-				['HOSTNAME', {
-					'title': 'Hostname',
-					'value': self.get_host_name(),
-					'url': "/sys-security"
-				}],
-				['WIFI', {
-					'title': 'Wifi',
-					'value': zynconf.get_current_wifi_mode(),
-					'url': "/sys-wifi"
-				}],
-				['IP', {
-					'title': 'IP',
-					'value': self.get_ip(),
-					'url': "/sys-wifi"
-				}]
-			])]
+			['HARDWARE', {
+				#'icon': 'glyphicon glyphicon-wrench',
+				'icon': 'glyphicon glyphicon-cog',
+				'info': OrderedDict([
+					['RBPI_VERSION', {
+						'title': os.environ.get('RBPI_VERSION')
+					}],
+					['SOUNDCARD_NAME', {
+						'title': 'Soundcard',
+						'value': os.environ.get('SOUNDCARD_NAME'),
+						'url': "/hw-audio"
+					}],
+					['DISPLAY_NAME', {
+						'title': 'Display',
+						'value': os.environ.get('DISPLAY_NAME'),
+						'url': "/hw-display"
+					}],
+					['WIRING_LAYOUT', {
+						'title': 'Wiring',
+						'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
+						'url': "/hw-wiring"
+					}],
+					['GPIO_EXPANDER', {
+						'title': 'GPIO Expander',
+						'value': self.get_gpio_expander(),
+						'url': "/hw-wiring"
+					}]
+				])
+			}],
+			['SYSTEM', {
+				#'icon': 'glyphicon glyphicon-dashboard',
+				'icon': 'glyphicon glyphicon-tasks',
+				'info': OrderedDict([
+					['OS_INFO', {
+						'title': 'OS',
+						'value': "{}".format(self.get_os_info())
+					}],
+					['BUILD_DATE', {
+						'title': 'Build Date',
+						'value': self.get_build_info()['Timestamp'],
+					}],
+					['RAM', {
+						'title': 'Memory',
+						'value': "{} ({}/{})".format(ram_info['usage'],ram_info['used'],ram_info['total'])
+					}],
+					['SD CARD', {
+						'title': 'SD Card',
+						'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
+					}],
+					['TEMPERATURE', {
+						'title': 'Temperature',
+						'value': self.get_temperature()
+					}]
+				])
+			}],
+			['MIDI', {
+				'icon': 'glyphicon glyphicon-music',
+				'info': OrderedDict([
+					['PROFILE', {
+						'title': 'Profile',
+						'value': os.path.basename(os.environ.get('ZYNTHIAN_SCRIPT_MIDI_PROFILE',"")),
+						'url': "/ui-midi-options"
+					}],
+					['FINE_TUNING', {
+						'title': 'Fine Tuning',
+						'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
+						'url': "/ui-midi-options"
+					}],
+					['MASTER_CHANNEL', {
+						'title': 'Master Channel',
+						'value': self.get_midi_master_chan(),
+						'url': "/ui-midi-options"
+					}],
+					['SINGLE_ACTIVE_CHANNEL', {
+						'title': 'Single Active Channel',
+						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')),
+						'url': "/ui-midi-options"
+					}],
+					['ZS3_SUBSNAPSHOTS', {
+						'title': 'ZS3 SubSnapShots',
+						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')),
+						'url': "/ui-midi-options"
+					}]
+				])
+			}],
+			['SOFTWARE', {
+				'icon': 'glyphicon glyphicon-random',
+				'info': OrderedDict([
+					['ZYNCODER', {
+						'title': 'zyncoder',
+						'value': "{} ({})".format(git_info_zyncoder['branch'], git_info_zyncoder['gitid'][0:7]),
+						'url': "https://github.com/zynthian/zyncoder/commit/{}".format(git_info_zyncoder['gitid'])
+					}],
+					['UI', {
+						'title': 'zynthian-ui',
+						'value': "{} ({})".format(git_info_ui['branch'], git_info_ui['gitid'][0:7]),
+						'url': "https://github.com/zynthian/zynthian-ui/commit/{}".format(git_info_ui['gitid'])
+					}],
+					['SYS', {
+						'title': 'zynthian-sys',
+						'value': "{} ({})".format(git_info_sys['branch'], git_info_sys['gitid'][0:7]),
+						'url': "https://github.com/zynthian/zynthian-sys/commit/{}".format(git_info_sys['gitid'])
+					}],
+					['DATA', {
+						'title': 'zynthian-data',
+						'value': "{} ({})".format(git_info_data['branch'], git_info_data['gitid'][0:7]),
+						'url': "https://github.com/zynthian/zynthian-data/commit/{}".format(git_info_data['gitid'])
+					}],
+					['WEBCONF', {
+						'title': 'zynthian-webconf',
+						'value': "{} ({})".format(git_info_webconf['branch'], git_info_webconf['gitid'][0:7]),
+						'url': "https://github.com/zynthian/zynthian-webconf/commit/{}".format(git_info_webconf['gitid'])
+					}]
+				])
+			}],
+			['LIBRARY', {
+				'icon': 'glyphicon glyphicon-book',
+				'info': OrderedDict([
+					['SNAPSHOTS', {
+						'title': 'Snapshots',
+						'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots")),
+						'url': "/lib-snapshot"
+					}],
+					['USER_PRESETS', {
+						'title': 'User Presets',
+						'value': str(self.get_num_of_presets(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets")),
+						'url': "/lib-presets"
+					}],
+					['USER_SOUNDFONTS', {
+						'title': 'User Soundfonts',
+						'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts")),
+						'url': "/lib-soundfont"
+					}],
+					['AUDIO_CAPTURES', {
+						'title': 'Audio Captures',
+						'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.wav")),
+						'url': "/lib-captures"
+					}],
+					['MIDI_CAPTURES', {
+						'title': 'MIDI Captures',
+						'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture","*.mid")),
+						'url': "/lib-captures"
+					}]
+				])
+			}],
+			['NETWORK', {
+				'icon': 'glyphicon glyphicon-link',
+				'info': OrderedDict([
+					['HOSTNAME', {
+						'title': 'Hostname',
+						'value': self.get_host_name(),
+						'url': "/sys-security"
+					}],
+					['WIFI', {
+						'title': 'Wifi',
+						'value': zynconf.get_current_wifi_mode(),
+						'url': "/sys-wifi"
+					}],
+					['IP', {
+						'title': 'IP',
+						'value': self.get_ip(),
+						'url': "/sys-wifi"
+					}],
+					['RTPMIDI', {
+						'title': 'RTP-MIDI',
+						'value': self.bool2onoff(self.is_service_active("jackrtpmidid")),
+						'url': "/ui-midi-options"
+					}],
+					['QMIDINET', {
+						'title': 'QMidiNet',
+						'value': self.bool2onoff(self.is_service_active("qmidinet")),
+						'url': "/ui-midi-options"
+					}]
+				])
+			}]
 		])
+
+		if self.is_service_active("touchosc2midi"):
+			config['NETWORK']['info']['TOUCHOSC'] = {
+				'title': 'TouchOSC',
+				'value': 'on',
+				'url': "/ui-midi-options"
+			}
 
 		if self.genjson:
 			self.write(config)
@@ -312,6 +349,14 @@ class DashboardHandler(ZynthianConfigHandler):
 		return n1 + n2 + n3 + n4
 
 
+	def get_midi_master_chan(self):
+		mmc = os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16")
+		if int(mmc)==0:
+			return "off"
+		else:
+			return mmc
+
+
 	def is_service_active(self, service):
 		cmd="systemctl is-active %s" % service
 		try:
@@ -321,3 +366,12 @@ class DashboardHandler(ZynthianConfigHandler):
 		#print("Is service "+str(service)+" active? => "+str(result))
 		if result.strip()=='active': return True
 		else: return False
+
+
+	@staticmethod
+	def bool2onoff(b):
+		if b:
+			return "on"
+		else:
+			return "off"
+
