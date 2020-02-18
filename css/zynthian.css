@@ -396,7 +396,8 @@ div.log-panel {
 	overflow-y: hidden;
 	overflow: auto;*/
   white-space: nowrap;
-  overflow-x: scroll;
+  overflow-y: auto;
+  overflow-x: auto;
 }
 div.log-panel.updating {
   background-color: #606060;
@@ -436,11 +437,9 @@ div#presets-search-result .action-buttons span:hover {
   padding-right: 1px;
   padding-left: 1px;
 }
-
-.table-hidden-header thead{
-    display: none !important;
+.table-hidden-header thead {
+  display: none !important;
 }
-
 .midi-profile-value-column {
-    word-break: break-word;
+  word-break: break-word;
 }

@@ -1,7 +1,7 @@
 
 <h2>{{ title }}</h2>
 
-<form id="ui-log-form" enctype="multipart/form-data" method="post">
+<form id="midi-log-form" enctype="multipart/form-data" method="post">
 
 	<div class="row">
 		<div class="col-md-5">
@@ -29,7 +29,7 @@
 		</div>
 	</div>
 
-	<div id="midi-log" class="log-panel" style="overflow-y:scroll;"></div>
+	<div id="midi-log" class="log-panel"></div>
 </form>
 
 <div id="loading-div-background">
@@ -86,7 +86,7 @@ function showProgressAnimation(){
 function resize_divlog() {
 	var height_rest = $("div#midi-log").position().top;
 	height_rest += $("section#section-config").position().top;
-	height_rest += $("form#ui-log-form").position().top;
+	height_rest += $("form#midi-log-form").position().top;
 	//height_rest += $("div#midi-log").
 	//height_rest -= $("div#midi-log").height();
 	//height_rest += $("header").outerHeight(true);
