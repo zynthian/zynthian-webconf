@@ -102,19 +102,19 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 
 	def load_plugins(self):
-		self.convert_from_all_plugins()
-
 		result = OrderedDict()
 		try:
 			with open(self.JALV_LV2_CONFIG_FILE) as f:
 				result = json.load(f, object_pairs_hook=OrderedDict)
 
 			self.plugins = result
-			self.get_plugins_by_type()
+			self.convert_from_all_plugins()
 
 		except Exception as e:
 			logging.warning('Loading list of LV2-Plugins failed: %s' % e)
 			self.generate_plugins_config_file()
+
+		self.get_plugins_by_type()
 
 		return self.plugins
 
@@ -132,7 +132,6 @@ class JalvLv2Handler(ZynthianConfigHandler):
 				plugins[name] = {'URL': str(plugin.get_uri()), 'TYPE': self.get_plugin_type(plugin).value, 'ENABLED': self.is_plugin_enabled(name)}
 
 			self.plugins = OrderedDict(sorted(plugins.items()))
-			self.get_plugins_by_type()
 
 			with open(self.JALV_LV2_CONFIG_FILE, 'w') as f:
 				json.dump(self.plugins, f)
@@ -176,32 +175,38 @@ class JalvLv2Handler(ZynthianConfigHandler):
 
 	def do_regenerate_plugin_list(self):
 		self.generate_plugins_config_file()
+		self.get_plugins_by_type()
 
 
 	def convert_from_all_plugins(self):
 		try:
-			with open(self.JALV_LV2_CONFIG_FILE_ALL) as f:
-				plugins = json.load(f, object_pairs_hook=OrderedDict)
+			name, prop = next(iter(self.plugins.items()))
+			if 'ENABLED' not in prop:
+				enplugins = self.plugins
+				try:
+					with open(self.JALV_LV2_CONFIG_FILE_ALL) as f:
+						self.plugins = json.load(f, object_pairs_hook=OrderedDict)
+				except:
+					self.generate_plugins_config_file()
 
-			with open(self.JALV_LV2_CONFIG_FILE) as f:
-				enplugins = json.load(f, object_pairs_hook=OrderedDict)
+				logging.info("Converting LV2 config files ...")
 
-			logging.info("Converting LV2 config files ...")
+				for name, properties in self.plugins.items():
+					if name in enplugins:
+						self.plugins[name]['ENABLED'] = True
+					else:
+						self.plugins[name]['ENABLED'] = False
 
-			for name, properties in plugins.items():
-				if name in enplugins:
-					plugins[name]['ENABLED'] = True
-				else:
-					plugins[name]['ENABLED'] = False
+				with open(self.JALV_LV2_CONFIG_FILE,'w') as f:
+					json.dump(self.plugins, f)
 
-			with open(self.JALV_LV2_CONFIG_FILE,'w') as f:
-				json.dump(plugins, f)
-
-			os.remove(self.JALV_LV2_CONFIG_FILE_ALL)
+				try:
+					os.remove(self.JALV_LV2_CONFIG_FILE_ALL)
+				except OSError:
+					pass
 
 		except Exception as e:
-			#logging.error(e)
-			pass
+			logging.error(e)
 
 
 	def is_plugin_enabled(self, plugin_name):
