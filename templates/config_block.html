@@ -18,10 +18,12 @@
 {% end %}
 
 {% for varname in config %}
-	{% set div_class = '' %}
+	{% set div_class = 'col-xs-12' %}
 	{% try %} {% set div_class = config[varname]['div_class'] %} {% except %} {% end %}
 	{% if 'advanced' in config[varname] %}
 		{% set div_class = div_class + " advanced-view" %}
+	{% else %}
+		{% set div_class = div_class + " normal-view" %}
 	{% end %}
 	<div class="{{ div_class }}" {% try %} {{ "root_var={}".format(config[varname]['root_var']) }} {% except %} {% end %} {% try %} {{ "enabling_options={}".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
 
@@ -110,10 +112,8 @@
 			<script src="../js/{{ config[varname]['script_file'] }}" ></script>
 		{% end %}
 
-		{% if config[varname]['type'] not in ('hidden', 'html', 'jscript') %}
-		<br>
+		{% if config[varname]['type'] not in ('hidden', 'html', 'jscript', 'button') %}
 		{% if errors and varname in errors %}<div class="alert alert-danger">{{ errors[varname] }}</div>{% end %}
-		<br>
 		{% end %}
 	</div>
 {% end %}

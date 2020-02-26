@@ -88,8 +88,7 @@ class DashboardHandler(ZynthianConfigHandler):
 				'icon': 'glyphicon glyphicon-tasks',
 				'info': OrderedDict([
 					['OS_INFO', {
-						'title': 'OS',
-						'value': "{}".format(self.get_os_info())
+						'title': "{}".format(self.get_os_info())
 					}],
 					['BUILD_DATE', {
 						'title': 'Build Date',

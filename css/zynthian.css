@@ -40,7 +40,7 @@ h3 {
   margin-top: 60px;
 }
 .mar-top80 {
-  margin-top: 80px;
+  /* 	margin-top: 80px; */
 }
 .mar-top160 {
   margin-top: 160px;
@@ -288,12 +288,19 @@ textarea.input-zynthian {
     overflow: hidden!important;
   }
 }
-h3.dashboard-block {
+div.dashboard-block h3 {
+  margin-bottom: 0px;
   font-size: 130%;
   padding: 0.3em;
   background: rgba(0, 0, 0, 0.8);
   color: #f0f0f0;
   border-radius: 0.1em 0.4em;
+}
+div.dashboard-block div.content {
+  margin: 0;
+  padding: 0.5em;
+  background: rgba(221, 221, 221, 0.3);
+  border-radius: 0em 0em 0.5em 0.5em;
 }
 div.lib-treeview .row {
   padding-bottom: 10px;
@@ -332,9 +339,14 @@ div#loading-div {
   -moz-border-radius: 5px;
   border-radius: 5px;
 }
+div.normal-view {
+  background: rgba(221, 221, 221, 0.4);
+  padding-bottom: 1em;
+}
 div.advanced-view {
   display: none;
-  background: #dddddd;
+  background: rgba(221, 221, 221, 0.7);
+  padding-bottom: 1em;
 }
 div#midi_filter_rule_panel input:disabled,
 div#midi_filter_rule_panel select:disabled,
