@@ -278,28 +278,39 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.current_midi_profile_script,
 				'options': self.midi_profile_scripts,
 				'option_labels': {script_name: os.path.basename(script_name).split('.')[0] for script_name  in self.midi_profile_scripts},
-				'presets': self.midi_profile_presets
+				'presets': self.midi_profile_presets,
+				'div_class': "col-xs-10"
 			}],
 			['zynthian_midi_profile_delete_script', {
 				'type': 'button',
-				'title': 'Delete MIDI profile',
+				'title': 'Delete',
 				'button_type': 'submit',
 				'class': 'btn-danger btn-block',
 				'icon' : 'fa fa-trash-o',
-				'script_file': 'midi_profile_delete.js'
+				'script_file': 'midi_profile_delete.js',
+				'div_class': "col-xs-2",
+				'inline': 1
 			}],
 			['zynthian_midi_profile_new_script_name', {
 				'type': 'text',
 				'title': 'New MIDI profile',
-				'value': ''
+				'value': '',
+				'div_class': "col-xs-10"
 			}],
 			['zynthian_midi_profile_new_script', {
 				'type': 'button',
-				'title': 'New MIDI profile',
+				'title': 'Create',
 				'button_type': 'button',
 				'class': 'btn-success btn-block',
 				'icon' : 'fa fa-plus',
-				'script_file': 'midi_profile_new.js'
+				'script_file': 'midi_profile_new.js',
+				'div_class': "col-xs-2",
+				'inline': 1
+			}],
+			['ZYNTHIAN_MIDI_SYS_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable System Messages (Transport)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1')
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
 				'type': 'boolean',
@@ -318,7 +329,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_RTPMIDI_ENABLED', {
 				'type': 'boolean',
-				'title': 'Enable RTP-MIDI',
+				'title': 'Enable RTP-MIDI (AppleMIDI network)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_RTPMIDI_ENABLED','0'),
 				'advanced': False
 			}],
