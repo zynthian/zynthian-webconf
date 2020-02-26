@@ -333,7 +333,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 	def get_engine_info(self):
 		engine_info = copy.copy(zynthian_gui_engine.engine_info)
 		for e in zynthian_gui_engine.engine_info:
-			if not hasattr(engine_info[e][3], "zynapi_get_banks"):
+			if not engine_info[e][4] or not hasattr(engine_info[e][3], "zynapi_get_banks"):
 				del engine_info[e]
 		return engine_info
 
