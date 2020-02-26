@@ -20,7 +20,7 @@
 {% for varname in config %}
 	{% set div_class = 'col-xs-12' %}
 	{% try %} {% set div_class = config[varname]['div_class'] %} {% except %} {% end %}
-	{% if 'advanced' in config[varname] %}
+	{% if 'advanced' in config[varname] and config[varname]['advanced'] %}
 		{% set div_class = div_class + " advanced-view" %}
 	{% else %}
 		{% set div_class = div_class + " normal-view" %}
@@ -55,7 +55,7 @@
 			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
 
 		{% elif config[varname]['type']=='button' %}
-			{% if 'inline' in config[varname] %} <label>&nbsp;</label> {% end %}
+			{% if 'inline' in config[varname] and config[varname]['inline'] %} <label>&nbsp;</label> {% end %}
 			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn {{ config[varname]['class'] }}" {{ disabled }}>
 				{% if 'icon' in config[varname] %}
 					<i class="{{ config[varname]['icon'] }}"></i>
