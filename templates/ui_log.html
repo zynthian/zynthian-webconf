@@ -58,6 +58,23 @@ function resize_divlog() {
 	//alert("HEIGHT: "+ wh + ", " + height_rest);
 }
 
+var entityMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'/': '&#x2F;',
+	'`': '&#x60;',
+	'=': '&#x3D;'
+};
+
+function escapeHTML(string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+		return entityMap[s];
+	});
+}
+
 $(document).ready(function() {
 	resize_divlog();
 	$(window).resize(resize_divlog);
@@ -73,7 +90,7 @@ $(document).ready(function() {
 				console.log("UiLogMessageHandler:onmessage:", data);
 				var logDiv = $("#ui-log");
 				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
-				logDiv.append(data + "<br />");
+				logDiv.append(escapeHTML(data) + "<br>");
 				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		});
