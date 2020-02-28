@@ -28,6 +28,7 @@ import sys
 import logging
 import tornado.web
 from subprocess import check_output
+from distutils import util
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
@@ -369,7 +370,7 @@ class DashboardHandler(ZynthianConfigHandler):
 
 	@staticmethod
 	def bool2onoff(b):
-		if b:
+		if (isinstance(b, str) and util.strtobool(b)) or (isinstance(b, bool) and b):
 			return "on"
 		else:
 			return "off"
