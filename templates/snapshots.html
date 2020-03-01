@@ -86,7 +86,11 @@
 						   class="table table-striped table-bordered table-condensed table-hidden-header">
 						<thead>
 							<tr>
-								<th data-field="details">Layout</th>
+								<th data-field="details" class="col-md-11">Layout</th>
+								<th data-field="key" class="col-md-1"
+									data-formatter="operateFormatter"
+									data-events="layoutEvents"
+									>&nbsp;</th>
 							</tr>
 						</thead>
 					</table>
@@ -106,13 +110,16 @@
 
 								<th data-field="name"
 									data-footer-formatter="selectMidiProfileFormatter"
+									class="col-md-5"
 								>Options</th>
 								<th data-field="value"
-									data-class="midi-profile-value-column">&nbsp;</th>
+									data-class="midi-profile-value-column"
+									class="col-md-6">&nbsp;</th>
 								<th data-field="key"
 									data-formatter="operateFormatter"
 									data-events="midiProfileEvents"
 									data-footer-formatter="operateFooterFormatter"
+									class="col-md-1"
 									>&nbsp;</th>
 							</tr>
 						</thead>
@@ -210,6 +217,32 @@ window.midiProfileEvents = {
 	}
 }
 
+window.layoutEvents = {
+	'click .remove-option': function (e, value, row, index) {
+		if (confirm('Do you really want to delete ' + (parseInt(value) + 1) + '. layer?')){
+			$.post("lib-snapshot/remove-layer/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + value,
+				null,
+				function(data, status) {
+					if (status=="success") {
+						if (data){
+							if ("errors" in data) {
+								console.log("RemoveSnapshotLayout Error: " + data["errors"])
+							} else {
+								layoutData = getLayoutData(data);
+								$("#LAYOUTS_TABLE").bootstrapTable('load', layoutData);
+							}
+						}
+					} else {
+						console.log("RemoveSnapshotLayout Response: " + status)
+
+					}
+				}
+			);
+		}
+
+	}
+}
+
 $("#LAYOUTS_TABLE").bootstrapTable({
 	data: []
 });
@@ -293,12 +326,13 @@ function getLayoutData(snapshotDetails){
 	result = [];
 	for (layerKey in snapshotDetails.layers){
 		layer = snapshotDetails.layers[layerKey];
-		if (layer.midi_chan != null) {
-			result.push({'channel': layer.midi_chan + 1,
-					'engine_nick': layer.engine_nick,
-					'bank_name': layer.bank_name,
-					'preset_name': layer.preset_name });
-		}
+		result.push({
+				'key': layerKey,
+				'channel': layer.midi_chan ? layer.midi_chan + 1 : 0,
+				'engine_nick': layer.engine_nick,
+				'bank_name': layer.bank_name,
+				'preset_name': layer.preset_name,
+				'controllers_dict': layer.controllers_dict });
 	}
 	if (result.length > 0){
 		result.sort(compare_layer);
@@ -317,6 +351,11 @@ function getLayoutData(snapshotDetails){
 		details += layer.engine_nick + ">"
 		if (layer.bank_name) details += layer.bank_name + "/";
 		if (layer.preset_name) details += layer.preset_name;
+		if (layer.channel==0 && layer.controllers_dict) {
+			for (ctrlIdx in layer.controllers_dict) {
+				details += ' ' + ctrlIdx + '(' + layer.controllers_dict[ctrlIdx].value +  ')';
+			}
+		}
 		result[idx].details = details;
 
 		lastChannel = layer.channel;
