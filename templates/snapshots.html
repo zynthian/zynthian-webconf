@@ -328,7 +328,7 @@ function getLayoutData(snapshotDetails){
 		layer = snapshotDetails.layers[layerKey];
 		result.push({
 				'key': layerKey,
-				'channel': layer.midi_chan ? layer.midi_chan + 1 : 0,
+				'channel': layer.midi_chan != null? layer.midi_chan + 1 : 0,
 				'engine_nick': layer.engine_nick,
 				'bank_name': layer.bank_name,
 				'preset_name': layer.preset_name,
