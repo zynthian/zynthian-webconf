@@ -344,7 +344,7 @@ function getLayoutData(snapshotDetails){
 
 		if (lastChannel>0 && lastChannel==layer.channel){
 			details += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->";
-		} else {
+		} else if (layer.channel > 0){
 			details += layer.channel + '#';
 		}
 
@@ -352,12 +352,14 @@ function getLayoutData(snapshotDetails){
 		if (layer.bank_name) details += layer.bank_name + "/";
 		if (layer.preset_name) details += layer.preset_name;
 		if (layer.channel==0 && layer.controllers_dict) {
+			delimiter = ' ';
 			for (ctrlIdx in layer.controllers_dict) {
-				details += ' ' + ctrlIdx + '(' + layer.controllers_dict[ctrlIdx].value +  ')';
+				
+				details += delimiter + ctrlIdx + '(' + layer.controllers_dict[ctrlIdx].value +  ')';
+				delimiter = ', ';
 			}
 		}
 		result[idx].details = details;
-
 		lastChannel = layer.channel;
 	}
 
