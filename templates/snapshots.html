@@ -351,7 +351,7 @@ function getLayoutData(snapshotDetails){
 		details += layer.engine_nick + ">"
 		if (layer.bank_name) details += layer.bank_name + "/";
 		if (layer.preset_name) details += layer.preset_name;
-		if (layer.channel==0 && layer.controllers_dict) {
+		if (layer.engine_nick=='MX' && layer.controllers_dict) {
 			delimiter = ' ';
 			for (ctrlIdx in layer.controllers_dict) {
 				
