@@ -105,7 +105,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', {
 				'type': 'boolean',
-				'title': 'Ignore MIXER settings from Snapshots',
+				'title': 'Ignore mixer settings from snapshots',
 				'value': os.environ.get('ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', '0')
 			}]
 		])
