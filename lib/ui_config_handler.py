@@ -103,10 +103,10 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Restore last state on startup',
 				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
 			}],
-			['ZYNTHIAN_UI_EXCLUDE_MIXER_FROM_SNAPSHOTS', {
+			['ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', {
 				'type': 'boolean',
-				'title': 'Exclude MIXER settings from Snapshots',
-				'value': os.environ.get('ZYNTHIAN_UI_EXCLUDE_MIXER_FROM_SNAPSHOTS', '0')
+				'title': 'Ignore MIXER settings from Snapshots',
+				'value': os.environ.get('ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', '0')
 			}]
 		])
 
