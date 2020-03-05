@@ -351,13 +351,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0'),
 				'advanced': False
 			}],
-			['ZYNTHIAN_MIDI_EXCLUDE_MIXER_FROM_SNAPSHOT', {
-				'type': 'boolean',
-				'title': 'Exclude MIXER settings from Snapshots',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_EXCLUDE_MIXER_FROM_SNAPSHOT', '0'),
-				'advanced': False
-			}],
-
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
 				'type': 'select',
 				'title': 'MIDI fine tuning (Hz)',

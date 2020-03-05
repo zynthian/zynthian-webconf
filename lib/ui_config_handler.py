@@ -46,11 +46,6 @@ class UiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
-			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
-				'type': 'boolean',
-				'title': 'Restore last state on startup',
-				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
-			}],
 			['ZYNTHIAN_UI_FONT_SIZE', {
 				'type': 'text',
 				'title': 'Font Size',
@@ -102,6 +97,16 @@ class UiConfigHandler(ZynthianConfigHandler):
 					'Audio Level': 'Audio Level',
 					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
 				}
+			}],
+			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
+				'type': 'boolean',
+				'title': 'Restore last state on startup',
+				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+			}],
+			['ZYNTHIAN_UI_EXCLUDE_MIXER_FROM_SNAPSHOTS', {
+				'type': 'boolean',
+				'title': 'Exclude MIXER settings from Snapshots',
+				'value': os.environ.get('ZYNTHIAN_UI_EXCLUDE_MIXER_FROM_SNAPSHOTS', '0')
 			}]
 		])
 
