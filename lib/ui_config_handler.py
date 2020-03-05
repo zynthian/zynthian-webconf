@@ -82,12 +82,6 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
 				'advanced': True
 			}],
-			['ZYNTHIAN_UI_ENABLE_CURSOR', {
-				'type': 'boolean',
-				'title': 'Enable cursor',
-				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
-				'advanced': True
-			}],
 			['ZYNTHIAN_UI_METER_SELECTION', {
 				'type': 'select',
 				'title': 'Meter',
@@ -107,6 +101,12 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'type': 'boolean',
 				'title': 'Ignore mixer settings from snapshots',
 				'value': os.environ.get('ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', '0')
+			}],
+			['ZYNTHIAN_UI_ENABLE_CURSOR', {
+				'type': 'boolean',
+				'title': 'Enable cursor',
+				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+				'advanced': True
 			}]
 		])
 
@@ -115,6 +115,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', '0')
 		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 
