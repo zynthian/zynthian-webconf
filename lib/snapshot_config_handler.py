@@ -317,6 +317,37 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		shutil.move(fpath, destination)
 
 
+class SnapshotRemoveLayerHandler(tornado.web.RequestHandler):
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, snapshot_file_b64, layer):
+		result = {}
+		snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
+		try:
+			logging.info("Removing layer {} in {}".format(layer, snapshot_file))
+			data = []
+			with open(snapshot_file, "r") as fp:
+				data = json.load(fp)
+				del data['layers'][int(layer)]
+
+			with open(snapshot_file, "w") as fp:
+				json.dump(data, fp)
+
+			result = data
+
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+
 class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
 
 	def get_current_user(self):
