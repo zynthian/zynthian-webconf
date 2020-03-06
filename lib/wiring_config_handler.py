@@ -244,11 +244,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'options': CustomUiAction,
 			'advanced': True
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__CC_NUM'] = {
-			'enabling_options': 'MIDI_CC',
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
 			'type': 'select',
-			'title': 'CC Number',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__CC_NUM'),
+			'title': 'Number',
+			'value': self.get_custom_midi_num(1),
 			'options': [str(i) for i in range(0,128)],
 			'advanced': True
 		}
@@ -283,11 +283,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'options': CustomUiAction,
 			'advanced': True
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__CC_NUM'] = {
-			'enabling_options': 'MIDI_CC', 
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
 			'type': 'select',
-			'title': 'CC Number',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__CC_NUM'),
+			'title': 'Number',
+			'value': self.get_custom_midi_num(2),
 			'options': [str(i) for i in range(0,128)],
 			'advanced': True
 		}
@@ -322,11 +322,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'options': CustomUiAction,
 			'advanced': True
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__CC_NUM'] = {
-			'enabling_options': 'MIDI_CC', 
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
 			'type': 'select',
-			'title': 'CC Number',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__CC_NUM'),
+			'title': 'Number',
+			'value': self.get_custom_midi_num(3),
 			'options': [str(i) for i in range(0,128)],
 			'advanced': True
 		}
@@ -361,16 +361,24 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'options': CustomUiAction,
 			'advanced': True
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__CC_NUM'] = {
-			'enabling_options': 'MIDI_CC', 
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
 			'type': 'select',
-			'title': 'CC Number',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__CC_NUM'),
+			'title': 'Number',
+			'value': self.get_custom_midi_num(4),
 			'options': [str(i) for i in range(0,128)],
 			'advanced': True
 		}
 
 		super().get("Wiring", config, errors)
+
+
+	def get_custom_midi_num(self, i):
+		switch_base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}".format(i)
+		v = os.environ.get("{}__MIDI_NUM".format(switch_base_name))
+		if v is None:
+			v = os.environ.get("{}__CC_NUM".format(switch_base_name),"")
+		return v
 
 
 	@tornado.web.authenticated
@@ -380,6 +388,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 		self.restart_ui_flag = True
 		self.get(errors)
+
 
 	@classmethod
 	def rebuild_zyncoder(self):
