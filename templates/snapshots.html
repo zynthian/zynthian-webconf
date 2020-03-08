@@ -5,6 +5,23 @@
 	{% module Template('upload.html', config=config) %}
 </form>
 
+<div id="snapshot-info-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Snapshot Information</h4>
+      </div>
+      <div class="modal-body snapshot-info-content">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <form id="snapshot-form" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
 	<div class="row">
@@ -86,11 +103,14 @@
 						   class="table table-striped table-bordered table-condensed table-hidden-header">
 						<thead>
 							<tr>
-								<th data-field="details" class="col-md-11">Layout</th>
+								<th data-field="details" class="col-md-10">Layout</th>
+								<th data-field="layer_infos" class="col-md-1"
+									data-formatter="infoOperateFormatter"
+								/>&nbsp;</th>
 								<th data-field="key" class="col-md-1"
-									data-formatter="operateFormatter"
+									data-formatter="removeOperateFormatter"
 									data-events="layoutEvents"
-									>&nbsp;</th>
+								/>&nbsp;</th>
 							</tr>
 						</thead>
 					</table>
@@ -107,7 +127,6 @@
 						   class="table table-striped table-bordered table-condensed table-hidden-header">
 						<thead>
 							<tr>
-
 								<th data-field="name"
 									data-footer-formatter="selectMidiProfileFormatter"
 									class="col-md-5"
@@ -116,7 +135,7 @@
 									data-class="midi-profile-value-column"
 									class="col-md-6">&nbsp;</th>
 								<th data-field="key"
-									data-formatter="operateFormatter"
+									data-formatter="removeOperateFormatter"
 									data-events="midiProfileEvents"
 									data-footer-formatter="operateFooterFormatter"
 									class="col-md-1"
@@ -127,7 +146,6 @@
 				</div>
 			</div>
 
-			
 			{% if errors %}
 			<div class="row">
 				<div class="col-md-12">
@@ -208,7 +226,6 @@ window.midiProfileEvents = {
 						}
 					} else {
 						console.log("RemoveSnapshotOption Response: " + status)
-
 					}
 				}
 			);
@@ -233,13 +250,11 @@ window.layoutEvents = {
 							}
 						}
 					} else {
-						console.log("RemoveSnapshotLayout Response: " + status)
-
+						console.log("RemoveSnapshotLayout Response: " + status);
 					}
 				}
 			);
 		}
-
 	}
 }
 
@@ -252,6 +267,11 @@ $("#MIDI_PROFILE_STATE").bootstrapTable({
 createTree(JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'),
 	{% raw config['SEL_NODE_ID'] %});
 
+$('#snapshot-info-modal').on('show.bs.modal', function(e) {
+		var $modal = $(this),
+        data = atob(e.relatedTarget.dataset.content);
+		$modal.find('.snapshot-info-content').html(data);
+});
 
 function createTree(data, selectedNodeId){
 	$('#snapshot-tree').treeview({data: data, bootstrap2: true ,
@@ -332,7 +352,8 @@ function getLayoutData(snapshotDetails){
 				'engine_nick': layer.engine_nick,
 				'bank_name': layer.bank_name,
 				'preset_name': layer.preset_name,
-				'controllers_dict': layer.controllers_dict });
+				'controllers_dict': layer.controllers_dict,
+				'zs3_list': layer.zs3_list});
 	}
 	if (result.length > 0){
 		result.sort(compare_layer);
@@ -341,6 +362,7 @@ function getLayoutData(snapshotDetails){
 	for (idx in result){
 		layer = result[idx];
 		details = "";
+		layer_infos = "";
 
 		if (lastChannel>0 && lastChannel==layer.channel){
 			details += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->";
@@ -351,18 +373,63 @@ function getLayoutData(snapshotDetails){
 		details += layer.engine_nick + ">"
 		if (layer.bank_name) details += layer.bank_name + "/";
 		if (layer.preset_name) details += layer.preset_name;
-		if (layer.engine_nick=='MX' && layer.controllers_dict) {
-			delimiter = ' ';
+		if (layer.controllers_dict) {
+			layer_controller_infos = "";
+
 			for (ctrlIdx in layer.controllers_dict) {
-				
-				details += delimiter + ctrlIdx + '(' + layer.controllers_dict[ctrlIdx].value +  ')';
-				delimiter = ', ';
+				layer_controller_infos += ['<div class="row">',
+					'<div class="col-md-6">',
+					ctrlIdx,
+					'</div>',
+					'<div class="col-md-6">',
+					layer.controllers_dict[ctrlIdx].value,
+					'</div>',
+					'</div>'
+				].join('')
+			}
+			if (layer_controller_infos){
+				layer_infos += ['<h3>Controller Attributes</h3>',
+						layer_controller_infos,
+						'<div class="container">',
+						'</div>'
+				].join('')
 			}
 		}
+		if (layer.zs3_list && layer.zs3_list.length>0) {
+			zs3_infos = "";
+			for (zs3Idx in layer.zs3_list) {
+				zs3 = layer.zs3_list[zs3Idx];
+				if (zs3){
+					zs3_infos += ['<div class="row">',
+						'<div class="col-md-1">#',
+						parseInt(zs3Idx) + 1,
+						'</div>',
+						'<div class="col-md-4">',
+						layer.zs3_list[zs3Idx].bank_name,
+						'</div>',
+						'<div class="col-md-7">',
+						layer.zs3_list[zs3Idx].preset_name,
+						'</div>',
+						'</div>'
+					].join('')
+				}
+			}
+			if (zs3_infos){
+				layer_infos += ['<h3>ZS3</h3>',
+					'<div class="container">',
+					zs3_infos,
+					'</div>'
+				].join('')
+			}
+		}
+
+		if (layer_infos.length == 0){
+			layer_infos = "No data available";
+		}
 		result[idx].details = details;
+		result[idx].layer_infos = btoa(layer_infos);
 		lastChannel = layer.channel;
 	}
-
 	return result;
 }
 
@@ -376,11 +443,38 @@ function compare_layer( a, b ) {
   return 0;
 }
 
-function operateFormatter(value, row, index) {
+function removeOperateFormatter(value, row, index) {
     return [
       '<a class="remove-option btn btn-danger btn-block" href="javascript:void(0)" title="Remove">',
       '<i class="fa fa-trash-o"></i>',
       '</a>'
+    ].join('')
+}
+
+function infoOperateFormatter(value, row, index) {
+    return [
+   	  '<button type="button" class="btn btn-info btn-block" data-toggle="modal" data-target="#snapshot-info-modal" data-content="',
+   	  value,
+   	  '">',
+      '<i class="fa fa-info"></i>',
+      '</button>'
+    ].join('')
+}
+
+function layoutOperateFormatter(value, row, index) {
+    return [
+ 	  '<div class="row no-gutters">',
+ 	  '<div class="col-md-6">',
+ 	  '<a class="info-option btn btn-info btn-block" href="javascript:void(0)" title="Info">',
+      '<i class="fa fa-info"></i>',
+      '</a>',
+      '</div>',
+      '<div class="col-md-6">',
+      '<a class="remove-option btn btn-danger btn-block" href="javascript:void(0)" title="Remove">',
+      '<i class="fa fa-trash-o"></i>',
+      '</a>',
+      '</div>',
+      '</div>'
     ].join('')
 }
 
@@ -400,7 +494,6 @@ function selectMidiProfileFormatter(items) {
 {% end %}
 
 	result.push('</select>');
-
 	return result;
 }
 
