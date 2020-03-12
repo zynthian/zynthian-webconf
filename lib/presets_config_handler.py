@@ -72,7 +72,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
 
 		except Exception as e:
-			logging.error("Can't initialize engine: {}".format(e))
+			logging.error("Can't initialize engine '{}': {}".format(self.engine,e))
 
 		try:
 			result = {
