@@ -97,10 +97,10 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Restore last state on startup',
 				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
 			}],
-			['ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', {
+			['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
 				'type': 'boolean',
-				'title': 'Ignore mixer settings from snapshots',
-				'value': os.environ.get('ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', '0')
+				'title': 'Mixer settings on snapshots',
+				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 			}],
 			['ZYNTHIAN_UI_ENABLE_CURSOR', {
 				'type': 'boolean',
@@ -115,7 +115,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		self.request.arguments['ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_IGNORE_SNAPSHOT_MIXER_SETTINGS', '0')
+		self.request.arguments['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 
