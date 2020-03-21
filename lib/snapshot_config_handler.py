@@ -85,6 +85,10 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		result['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
 		result['BANKS'] = self.get_existing_banks(ssdata, True)
 		result['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
+		snapshot_warning = self.get_snapshot_warning(ssdata)
+		if snapshot_warning:
+			result['errors'] = snapshot_warning
+
 		self.write(result)
 
 	def do_new_bank(self):
@@ -202,6 +206,20 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 		#logging.info("existingbanks: " + str(existing_banks))
 		return sorted(existing_banks)
+
+	def get_snapshot_warning(self, snapshot_data):
+		duplicate_prog_nums = ''
+		for item in snapshot_data:
+			bank_num = item['bank_num'];
+			prev_prog_num = ''
+			for node_item in item['nodes']:
+				if prev_prog_num == node_item['prog_num']:
+					duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
+				prev_prog_num = node_item['prog_num']
+		if duplicate_prog_nums:
+			return "Duplicate program numbers exist. Please rearrange your snapshots: {}".format(duplicate_prog_nums)
+		else:
+			return ''
 
 	def calculate_next_bank(self, existing_banks):
 		for i in range(0, 128):

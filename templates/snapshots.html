@@ -511,28 +511,27 @@ function do_action(action=null) {
 			$("#button-" + postfix).show()
 			$("#loading-action-" + postfix).hide()
 			if (status=="success") {
+				if ('SNAPSHOTS' in data) {
+					createTree(data['SNAPSHOTS'], data['SEL_NODE_ID']);
+				}
+				if ('BANKS' in data) {
+					var sel_banks = $('#SEL_BANK')
+
+					sel_banks.empty().append(function() {
+						var output = '';
+						for (idx in data['BANKS']) {
+							output += '<option>' + data['BANKS'][idx] + '</option>';
+						}
+						return output;
+					});
+				}
+
+				if ('NEXT_BANK_NUM' in data) {
+					$('#NEW_BANK_NUM').val(data['NEXT_BANK_NUM']);
+				}
 				if ("errors" in data) {
 					$("#error-message-action").html(data["errors"])
 					$("#error-message-action").show(600)
-				} else {
-					if ('SNAPSHOTS' in data) {
-						createTree(data['SNAPSHOTS'], data['SEL_NODE_ID']);
-					}
-					if ('BANKS' in data) {
-						var sel_banks = $('#SEL_BANK')
-
-						sel_banks.empty().append(function() {
-							var output = '';
-							for (idx in data['BANKS']) {
-								output += '<option>' + data['BANKS'][idx] + '</option>';
-							}
-							return output;
-						});
-					}
-
-					if ('NEXT_BANK_NUM' in data) {
-						$('#NEW_BANK_NUM').val(data['NEXT_BANK_NUM']);
-					}
 				}
 			} else {
 				$("#error-message-action").html("Can't do " + action + ": " + status)
