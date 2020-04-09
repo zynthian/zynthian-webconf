@@ -82,6 +82,18 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
 				'advanced': True
 			}],
+			['ZYNTHIAN_UI_SWITCH_BOLD_MS', {
+				'type': 'text',
+				'title': 'Bold Push Time (ms)',
+				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_BOLD_MS', '300'),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_SWITCH_LONG_MS', {
+				'type': 'text',
+				'title': 'Long Push Time (ms)',
+				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
+				'advanced': True
+			}],
 			['ZYNTHIAN_UI_METER_SELECTION', {
 				'type': 'select',
 				'title': 'Meter',
