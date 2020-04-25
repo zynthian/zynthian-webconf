@@ -44,7 +44,41 @@ function showProgressAnimation(){
 	$("#loading-div-background").show();
 }
 
+function resize_divlog() {
+	var height_rest = $("div#ui-log").position().top;
+	height_rest += $("section#section-config").position().top;
+	height_rest += $("form#ui-log-form").position().top;
+	//height_rest += $("div#ui-log").
+	//height_rest -= $("div#ui-log").height();
+	//height_rest += $("header").outerHeight(true);
+	//height_rest += $('div#footer').outerHeight(true);
+	height_rest += 116;
+	var wh = $(window).height() - height_rest;
+	$("div#ui-log").height(wh);
+	//alert("HEIGHT: "+ wh + ", " + height_rest);
+}
+
+var entityMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'/': '&#x2F;',
+	'`': '&#x60;',
+	'=': '&#x3D;'
+};
+
+function escapeHTML(string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+		return entityMap[s];
+	});
+}
+
 $(document).ready(function() {
+	resize_divlog();
+	$(window).resize(resize_divlog);
+
 	$('#button-show-debug').hide();
 	$('#button-hide-debug').hide();
 
@@ -56,7 +90,7 @@ $(document).ready(function() {
 				console.log("UiLogMessageHandler:onmessage:", data);
 				var logDiv = $("#ui-log");
 				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
-				logDiv.append(data + "<br />");
+				logDiv.append(escapeHTML(data) + "<br>");
 				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		});

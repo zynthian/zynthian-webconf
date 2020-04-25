@@ -46,11 +46,6 @@ class UiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([
-			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
-				'type': 'boolean',
-				'title': 'Restore last state on startup',
-				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
-			}],
 			['ZYNTHIAN_UI_FONT_SIZE', {
 				'type': 'text',
 				'title': 'Font Size',
@@ -87,10 +82,16 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
 				'advanced': True
 			}],
-			['ZYNTHIAN_UI_ENABLE_CURSOR', {
-				'type': 'boolean',
-				'title': 'Enable cursor',
-				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+			['ZYNTHIAN_UI_SWITCH_BOLD_MS', {
+				'type': 'text',
+				'title': 'Bold Push Time (ms)',
+				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_BOLD_MS', '300'),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_SWITCH_LONG_MS', {
+				'type': 'text',
+				'title': 'Long Push Time (ms)',
+				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_METER_SELECTION', {
@@ -102,6 +103,22 @@ class UiConfigHandler(ZynthianConfigHandler):
 					'Audio Level': 'Audio Level',
 					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
 				}
+			}],
+			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
+				'type': 'boolean',
+				'title': 'Restore last state on startup',
+				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+			}],
+			['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
+				'type': 'boolean',
+				'title': 'Mixer settings on snapshots',
+				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
+			}],
+			['ZYNTHIAN_UI_ENABLE_CURSOR', {
+				'type': 'boolean',
+				'title': 'Enable cursor',
+				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+				'advanced': True
 			}]
 		])
 
@@ -110,6 +127,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 

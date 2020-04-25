@@ -1,0 +1,130 @@
+<div id="zcontroller_panel" class="modal fade">
+	<div class="modal-dialog">
+		<div class="modal-content">
+
+			<div class="modal-header">
+				<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
+				<h4 class="modal-title">Mixer Controllers</h4>
+			</div>
+
+			<div class="modal-body">
+				<table class="table">
+				<thead>
+				<tr>
+					<th class="col-md-1">View</th>
+					<th class="col-md-4">Name</th>
+					<th class="col-md-7">Value</th>
+				</tr>
+				</thead>
+				<tbody>
+	{% for symbol, zctrl in config['ZCONTROLLERS'].items() %}
+					<tr>
+						<td><input type="checkbox"
+								id="ZYNTHIAN_CONTROLLER_VISIBLE_{{ symbol }}"
+								name="ZYNTHIAN_CONTROLLER_VISIBLE_{{ symbol }}" value="{{ zctrl.name }}" /></td>
+						<td>{{ zctrl.name  }}</td>
+						<td>
+		{% if zctrl.is_toggle %} 
+							<input type="checkbox"
+								data-provide="checkbox"
+								id="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" name="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" value="on" {% if zctrl.get_value()==1 %}checked="checked"{% end %}" />
+		{% elif zctrl.labels %}
+							<select id="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" name="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" >
+			{% for label in zctrl.labels %}
+								<option value="{{ label }}"  {% if zctrl.get_value2label()==label %}selected="selected"{% end %}>{{ label }}</option>
+			{% end %}
+							</select>
+		{% elif zctrl.is_integer %}
+							<input type="range" id="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" name="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" data-provide="slider"
+							data-slider-min="{{ zctrl.value_min }}"
+							data-slider-max="{{ zctrl.value_max }}"
+							data-slider-step="1"
+							data-slider-value="{{ zctrl.get_value() }}"
+							data-slider-tooltip="show"
+							/>
+		{% end %}
+						</td>
+					</tr>
+	{% end %}
+				</tbody>
+			</table>
+			</div>
+
+			<div class="modal-footer">
+				<button id="zynthian_controllers_save" class="btn btn-block btn-success" data-dismiss="modal" type="button"><span aria-hidden="true">OK</span></button>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script src="../js/audio_mixer.js"></script>
+
+<script>
+$(document).ready(function() {
+
+	$('#display_zcontroller_panel').click(function(){
+		scMixers = $('#SOUNDCARD_MIXER')[0].value.split(',');
+		for (idx in scMixers){
+			for (idx2 in $('#ZYNTHIAN_CONTROLLER_VISIBLE_' + scMixers[idx].trim().split(" ").join("_"))) {
+				$('#ZYNTHIAN_CONTROLLER_VISIBLE_' + scMixers[idx].trim().split(" ").join("_"))[idx2].checked = true;
+			}
+		}
+		$('#zcontroller_panel').modal('show');
+	});
+
+
+	$('#zcontroller_panel .close').click(function(){
+		$('#zcontroller_panel').modal('hide');
+	});
+
+	window.onclick = function(event) {
+		if (event.target == document.getElementById('zcontroller_panel')) {
+			$('#zcontroller_panel').modal('hide');
+		}
+	}
+
+	document.getElementById('zynthian_controllers_save').onclick = function(event) {
+		if (refreshZynthianControllers()){
+			$('#zcontroller_panel').modal('hide');
+		} else {
+			alert('Saving the controllers failed!');
+		}
+	}
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		window.zynthianSocket.registerHandler('AudioConfigMessageHandler', function(data) {
+			if (data){
+				dataParts = data.split("=");
+				console.log("AudioConfigMessageHandler:onmessage:" + dataParts);
+				if (dataParts[0].startsWith("Selector")){
+					$('#ZYNTHIAN_CONTROLLER_VALUE_' + dataParts[0])[0].value=dataParts[1];
+				} else if (dataParts[0].startsWith("Toggle")){
+					$('#ZYNTHIAN_CONTROLLER_VALUE_' + dataParts[0])[0].checked=dataParts[1].toUpperCase()=='ON';
+				} else {
+					//slider
+					$('#ZYNTHIAN_CONTROLLER_VALUE_' + dataParts[0]).slider('setValue', dataParts[1], true);
+				}
+			}
+		});
+
+		var socketMessage = {"handler_name": "AudioConfigMessageHandler", "data": 'REGISTER_WEBSOCKET//'};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	});
+	connectZynthianWebSocket(deferred);
+});
+
+function refreshZynthianControllers(){
+	zynthianControllersTextarea = document.getElementById('SOUNDCARD_MIXER') ;
+
+	zynthianControllersTextarea.value = '';
+	visibleControllers = $("input[name^=ZYNTHIAN_CONTROLLER_VISIBLE_]:checkbox:checked");
+	for (var i = 0; i < visibleControllers.length; i++){
+		zynthianControllersTextarea.value += visibleControllers[i].value + ',';
+	}
+	if (zynthianControllersTextarea.value.slice(-1)==',') zynthianControllersTextarea.value=zynthianControllersTextarea.value.slice(0,-1)
+
+	return true;	
+}
+
+</script>

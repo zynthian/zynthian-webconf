@@ -256,51 +256,55 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
-			enable_custom_text = " (select Custom kit to enable)"
-		else:
-			enable_custom_text = ""
+		config=OrderedDict()
 
-		config=OrderedDict([
-			['DISPLAY_NAME', {
-				'type': 'select',
-				'title': "Display{}".format(enable_custom_text),
-				'value': os.environ.get('DISPLAY_NAME'),
-				'options': list(self.display_presets.keys()),
-				'presets': self.display_presets,
-				'disabled': enable_custom_text!=""
-			}],
-			['DISPLAY_CONFIG', {
-				'type': 'textarea',
-				'rows': 4,
-				'cols': 50,
-				'title': 'Config{}'.format(enable_custom_text),
-				'value': os.environ.get('DISPLAY_CONFIG'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['DISPLAY_WIDTH', {
-				'type': 'text',
-				'title': 'Width{}'.format(enable_custom_text),
-				'value': os.environ.get('DISPLAY_WIDTH'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['DISPLAY_HEIGHT', {
-				'type': 'text',
-				'title': 'Height{}'.format(enable_custom_text),
-				'value': os.environ.get('DISPLAY_HEIGHT'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['FRAMEBUFFER', {
-				'type': 'text',
-				'title': 'Framebuffer{}'.format(enable_custom_text),
-				'value': os.environ.get('FRAMEBUFFER'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}]
-		])
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			custom_options_disabled = True
+			config['ZYNTHIAN_MESSAGE'] = {
+				'type': 'html',
+				'content': "<div class='alert alert-warning'>Some config options are disabled. You may want to <a href='/hw-kit'>choose Custom Kit</a> for enabling all options.</div>"
+			}
+		else:
+			custom_options_disabled = False
+
+		config['DISPLAY_NAME'] = {
+			'type': 'select',
+			'title': "Display",
+			'value': os.environ.get('DISPLAY_NAME'),
+			'options': list(self.display_presets.keys()),
+			'presets': self.display_presets,
+			'disabled': custom_options_disabled
+		}
+		config['DISPLAY_CONFIG'] = {
+			'type': 'textarea',
+			'rows': 4,
+			'cols': 50,
+			'title': 'Config',
+			'value': os.environ.get('DISPLAY_CONFIG'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['DISPLAY_WIDTH'] = {
+			'type': 'text',
+			'title': 'Width',
+			'value': os.environ.get('DISPLAY_WIDTH'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['DISPLAY_HEIGHT'] = {
+			'type': 'text',
+			'title': 'Height',
+			'value': os.environ.get('DISPLAY_HEIGHT'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['FRAMEBUFFER'] = {
+			'type': 'text',
+			'title': 'Framebuffer',
+			'value': os.environ.get('FRAMEBUFFER'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
 
 		super().get("Display", config, errors)
 

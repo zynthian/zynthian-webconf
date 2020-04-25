@@ -22,7 +22,7 @@ h3 {
 	margin-top: 60px;
 }
 .mar-top80 {
-	margin-top: 80px;
+/* 	margin-top: 80px; */
 }
 .mar-top160 {
 	margin-top: 160px;
@@ -322,6 +322,21 @@ textarea.input-zynthian {
 // Webconf specific CSS
 //-----------------------------------------------------------------------------
 
+div.dashboard-block h3 {
+	margin-bottom: 0px;
+	font-size: 130%;
+	padding: 0.3em;
+	background: rgba(0,0,0,0.8);
+	color: #f0f0f0;
+	border-radius: 0.1em 0.4em;
+}
+
+div.dashboard-block div.content {
+	margin: 0;
+	padding: 0.5em;
+	background: fade(lighten(@lightgrey,5%),30%);
+	border-radius: 0em 0em 0.5em 0.5em;
+}
 
 div.lib-treeview .row {
 	padding-bottom: 10px;
@@ -365,11 +380,20 @@ div#loading-div {
 	border-radius: 5px;
 }
 
-div.advanced-view {
-	display: none;
-	background: lighten(@lightgrey,5%);
+div.normal-view {
+	background: fade(lighten(@lightgrey,5%),40%);
+	padding-bottom: 1em;
 }
 
+div.advanced-view {
+	display: none;
+	background: fade(lighten(@lightgrey,5%),70%);
+	padding-bottom: 1em;
+}
+
+div.tab-content div.advanced-view {
+	padding-bottom: 0em;
+}
 
 div#midi_filter_rule_panel input:disabled,
 div#midi_filter_rule_panel select:disabled,
@@ -446,6 +470,8 @@ div.log-panel{
 	overflow-y: hidden;
 	overflow: auto;*/
 	white-space: nowrap;
+	overflow-y: auto;
+	overflow-x: auto;
 }
 
 div.log-panel.updating{
@@ -467,7 +493,7 @@ div .nav-tabs li.active a {
 
 div.one-line-truncated { 
 	white-space: nowrap;
-	text-overflow:ellipsis;
+	text-overflow: ellipsis;
 	overflow: hidden;
 }
 
@@ -493,4 +519,12 @@ div#presets-search-result .action-buttons span:hover {
     padding-right: 1px;
     padding-left: 1px;
   }
+}
+
+.table-hidden-header thead {
+    display: none !important;
+}
+
+.midi-profile-value-column {
+    word-break: break-word;
 }

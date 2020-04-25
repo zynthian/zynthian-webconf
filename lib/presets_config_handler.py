@@ -72,7 +72,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
 
 		except Exception as e:
-			logging.error("Can't initialize engine: {}".format(e))
+			logging.error("Can't initialize engine '{}': {}".format(self.engine,e))
 
 		try:
 			result = {
@@ -311,7 +311,10 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 			self.engine_cls.zynapi_install(dpath, bank_fullpath)
 
 		finally:
-			os.remove(fpath)
+			try:
+				os.remove(fpath)
+			except:
+				pass
 			shutil.rmtree(dpath, ignore_errors=True)
 			pass
 
@@ -330,7 +333,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 	def get_engine_info(self):
 		engine_info = copy.copy(zynthian_gui_engine.engine_info)
 		for e in zynthian_gui_engine.engine_info:
-			if not hasattr(engine_info[e][3], "zynapi_get_banks"):
+			if not engine_info[e][4] or not hasattr(engine_info[e][3], "zynapi_get_banks"):
 				del engine_info[e]
 		return engine_info
 

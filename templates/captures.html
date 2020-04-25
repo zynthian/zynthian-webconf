@@ -95,13 +95,13 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			$('#captures-panel').hide();
 		} else {
 			$("#loading-div-background").css({ opacity: 1.0 });
-			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text;
-			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src='?stream=' + data.fullpath;
+			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.text.replace(new RegExp("&#39;","g"),"'");
+			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src='?stream=' + data.fullpath.replace(new RegExp("&#39;","g"),"'");
 			isOgg=(data.name.substr(data.name.length-3))=="ogg";
 			isWav=(data.name.substr(data.name.length-3))=="wav";
 			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].style.display=isOgg?"block":"none";
 			$('#ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG')[0].disabled=!isWav;
-			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath;
+			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath.replace(new RegExp("&#39;","g"),"'");
 			$('#captures-panel').show();
 		}
 	}

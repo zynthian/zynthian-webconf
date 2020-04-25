@@ -1,18 +1,41 @@
 
 <h2>{{ title }}</h2>
 
-<form method="post">
+<form id="snapshot-upload-form" action="/upload" enctype="multipart/form-data" method="post">
+	{% module Template('upload.html', config=config) %}
+</form>
+
+<div id="snapshot-info-modal" class="modal fade" role="dialog">
+  <div class="modal-dialog">
+    <!-- Modal content-->
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal">&times;</button>
+        <h4 class="modal-title">Snapshot Information</h4>
+      </div>
+      <div class="modal-body snapshot-info-content">
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<form id="snapshot-form" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
 	<div class="row">
-		<div class="col-md-5">
+		<div class="col-md-4">
 			<div id="snapshot-new-bank-panel">
 				<div class="input-group">
 					<span class="input-group-addon">
 						<label>New bank</label>
 					</span>
-					<input  name="NEW_BANK_NUM" aria-label="New Bank" value="{{ config['NEXT_BANK_NUM'] }}" class="form-control">
+					<input id="NEW_BANK_NUM" name="NEW_BANK_NUM" aria-label="New Bank" value="{{ config['NEXT_BANK_NUM'] }}" class="form-control">
 					<span class="input-group-btn">
-						<button id="button-new_bank" name="ACTION" value="NEW_BANK" class="btn btn-theme btn-block" title="Create New Bank"><i class="fa fa-plus"></i></button>
+						<button id="button-new_bank" class="btn btn-theme btn-block"
+								onclick="return do_action('new_bank')"
+								title="Create New Bank"><i class="fa fa-plus"></i></button>
 						<span id="loading-action-new_bank" style="display:none;"><img src="/img/loading.gif"></span>
 					</span>
 				</div>
@@ -22,10 +45,16 @@
 		</div>
 
 
-		<div id="snapshot-panel" class="col-md-7">
+		<div id="snapshot-panel" class="col-md-8">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH" />
+			<input type="hidden" id="INSTALL_FPATH" name="INSTALL_FPATH">
+
+			<div class="row">
+				<div id="error-message-action" class="alert alert-danger" style="display:none"></div>
+			</div>
+
 			<div class="row no-gutters">
-				<div class="col-xs-5">
+				<div class="col-xs-4">
 					<label>Name:</label>
 					<input id="SEL_NAME" name="SEL_NAME" class="form-control" />
 				</div>
@@ -50,19 +79,73 @@
 				</div>
 				<div class="col-xs-1">
 					<label>&nbsp;</label>
-					<button name="ACTION" value="SAVE" class="btn btn-theme btn-block"><i class="fa fa-check"></i></button>
+					<button id="ACTION_SAVE" class="btn btn-theme btn-block"
+						onclick="return do_action('save')"><i class="fa fa-check"></i></button>
 				</div>
+
 				<div class="col-xs-1">
 					<label>&nbsp;</label>
-					<button name="ACTION" value="REMOVE" class="btn btn-danger btn-block" onclick="return confirm('Are you sure to remove this bank and all its snapshots?');"><i class="fa fa-trash-o"></i></button>
+					<button id="ACTION_DOWNLOAD" class="btn btn-theme btn-block" onclick="return do_download()" title="Download"><i class="fa fa-download"></i></button>
+				</div>
+
+				<div class="col-xs-1">
+					<label>&nbsp;</label>
+					<button id="ACTION_REMOVE" class="btn btn-danger btn-block" onclick="return do_remove();"><i class="fa fa-trash-o"></i></button>
 				</div>
 			</div>
-			<div class="row">
+
+			<div class="row" id="LAYOUTS_TABLE_PANEL">
 				<div class="col-md-12">
-					<textarea id="SEL_PROG_DETAILS" name="SEL_PROG_DETAILS" rows="6" readonly></textarea>
+					<label>Layout</label>
+					<table id="LAYOUTS_TABLE"
+						   name="LAYOUTS_TABLE"
+						   data-toggle="LAYOUTS_TABLE"
+						   class="table table-striped table-bordered table-condensed table-hidden-header">
+						<thead>
+							<tr>
+								<th data-field="details" class="col-md-10">Layout</th>
+								<th data-field="layer_infos" class="col-md-1"
+									data-formatter="infoOperateFormatter"
+								/>&nbsp;</th>
+								<th data-field="key" class="col-md-1"
+									data-formatter="removeOperateFormatter"
+									data-events="layoutEvents"
+								/>&nbsp;</th>
+							</tr>
+						</thead>
+					</table>
 				</div>
 			</div>
-			
+
+			<div class="row" id="MIDI_PROFILE_STATE_PANEL">
+				<div class="col-md-12">
+					<label>Options</label>
+					<table id="MIDI_PROFILE_STATE"
+						   name="MIDI_PROFILE_STATE"
+						   data-toggle="MIDI_PROFILE_STATE"
+						   data-show-footer="true"
+						   class="table table-striped table-bordered table-condensed table-hidden-header">
+						<thead>
+							<tr>
+								<th data-field="name"
+									data-footer-formatter="selectMidiProfileFormatter"
+									class="col-md-5"
+								>Options</th>
+								<th data-field="value"
+									data-class="midi-profile-value-column"
+									class="col-md-6">&nbsp;</th>
+								<th data-field="key"
+									data-formatter="removeOperateFormatter"
+									data-events="midiProfileEvents"
+									data-footer-formatter="operateFooterFormatter"
+									class="col-md-1"
+									>&nbsp;</th>
+							</tr>
+						</thead>
+					</table>
+				</div>
+			</div>
+
 			{% if errors %}
 			<div class="row">
 				<div class="col-md-12">
@@ -73,12 +156,20 @@
 
 			<div class="row">
 				<div class="col-md-12">
-					<button id="ACTION_SAVE_AS_DEFAULT" name="ACTION" value="SAVE_AS_DEFAULT" class="btn btn-theme btn-block">Save as Default</button>
+					<button  id="ACTION_SAVE_AS_DEFAULT" class="btn btn-theme btn-block"
+						onclick="return do_action('save_as_default')" >Save as Default</button>
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-					<button id="ACTION_SAVE_AS_LAST_STATE" name="ACTION" value="SAVE_AS_LAST_STATE" class="btn btn-theme btn-block">Save as Last State</button>
+					<button id="ACTION_SAVE_AS_LAST_STATE" class="btn btn-theme btn-block"
+						onclick="return do_action('save_as_last_state')">Save as Last State</button>
+				</div>
+			</div>
+			<div class="row" id="upload-panel">
+				<div class="col-md-12 col-sm-12 text-center">
+					<button id="button-upload" class="btn btn-theme btn-block" title="Upload Snapshot" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
+					<span id="loading-action-upload" style="display:none;"><img src="/img/loading.gif"></span>
 				</div>
 			</div>
 
@@ -89,54 +180,385 @@
 
 <script type="text/javascript">
 
-$('#snapshot-panel').hide();
-$('#zynthian-selection-customized-panel').hide();
-$('#snapshot-tree').treeview({data: JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'), bootstrap2: true ,
-	emptyIcon: "glyphicon glyphicon-floppy-disk",
-	expandIcon: "glyphicon glyphicon-folder-close",
-	collapseIcon: "glyphicon glyphicon-folder-open",
-	onNodeSelected: function(event, data) {
-		$("#SEL_NAME")[0].value = data.name.replace("&#39;","'");
-		$("#SEL_FULLPATH")[0].value = data.fullpath;
-		$("#SEL_BANK_NUM")[0].value = data.bank_num;
-		$("#SEL_BANK")[0].value = data.bank_num + (data.bank_name? '-' + data.bank_name.replace("&#39;","'") : '');
-		$("#SEL_BANK")[0].disabled = data.nodes;
-		$("#SEL_PROG_NUM")[0].value = data.prog_num;
-		$("#SEL_PROG_NUM")[0].disabled = data.nodes;
-		$("#SEL_PROG_DETAILS")[0].disabled = false;
-		if (data.prog_details){
-			$("#SEL_PROG_DETAILS").show();
-			$("#SEL_PROG_DETAILS")[0].value = formatSnapshotDetails(data.prog_details);
-			$("#ACTION_SAVE_AS_DEFAULT").show();
-			$("#ACTION_SAVE_AS_LAST_STATE").show();
-		} else {
-			$("#SEL_PROG_DETAILS").hide();
-			$("#ACTION_SAVE_AS_DEFAULT").hide();
-			$("#ACTION_SAVE_AS_LAST_STATE").hide();
-		}
-		$('#snapshot-panel').show();
+$(document).ready(function () {
+	$('#button-upload').click(function(){
+		$('#upload_panel').show(500)
+		$('#upload_progress_panel').hide(500);
+	});
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$("#upload_progress_panel").addClass("active");
+		var socketMessage = {
+			"handler_name": "UploadProgressHandler",
+			"data": $('#input-uploadfile-session')[0].value
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+		$("#snapshot-upload-form").attr("action", "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value);
+		//redirectUrl=/lib-presets&
+	});
+	connectZynthianWebSocket(deferred);
+
+	$('#upload_panel')[0].onuploadend = function(response){
+		console.log("Upload succeded: " + response)
+		$("#INSTALL_FPATH").val(response)
+		do_action("upload")
 	}
 });
-$('#snapshot-tree').treeview('selectNode',{% raw config['SEL_NODE_ID'] %});
 
-function formatSnapshotDetails(snapshotDetails){
-	var result = "";
-	for (var ch=0; ch<16; ch++) {
-		ch_layout = "";
-		for (idx in snapshotDetails.layers) {
-			layer = snapshotDetails.layers[idx]
-			if (ch==layer.midi_chan) {
-				if (ch_layout!="") ch_layout += "  ->";
-				else  ch_layout += (layer.midi_chan + 1) + '#';
-				ch_layout += layer.engine_nick + ">"
-				if (layer.bank_name) ch_layout += layer.bank_name + "/";
-				if (layer.preset_name) ch_layout += layer.preset_name;
-				ch_layout += "\n";
-			}
+$('#snapshot-panel').hide();
+$('#zynthian-selection-customized-panel').hide();
+
+window.midiProfileEvents = {
+	'click .remove-option': function (e, value, row, index) {
+		if (confirm('Do you really want to delete the option ' + value + '?')){
+			$.post("lib-snapshot/remove/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + value,
+				null,
+				function(data, status) {
+					if (status=="success") {
+						if (data){
+							if ("errors" in data) {
+								console.log("RemoveSnapshotOption Error: " + data["errors"])
+							} else {
+								optionsData = getMidiProfileStateData(data);
+								$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+							}
+						}
+					} else {
+						console.log("RemoveSnapshotOption Response: " + status)
+					}
+				}
+			);
 		}
-		result += ch_layout;
+
+	}
+}
+
+window.layoutEvents = {
+	'click .remove-option': function (e, value, row, index) {
+		if (confirm('Do you really want to delete ' + (parseInt(value) + 1) + '. layer?')){
+			$.post("lib-snapshot/remove-layer/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + value,
+				null,
+				function(data, status) {
+					if (status=="success") {
+						if (data){
+							if ("errors" in data) {
+								console.log("RemoveSnapshotLayout Error: " + data["errors"])
+							} else {
+								layoutData = getLayoutData(data);
+								$("#LAYOUTS_TABLE").bootstrapTable('load', layoutData);
+							}
+						}
+					} else {
+						console.log("RemoveSnapshotLayout Response: " + status);
+					}
+				}
+			);
+		}
+	}
+}
+
+$("#LAYOUTS_TABLE").bootstrapTable({
+	data: []
+});
+$("#MIDI_PROFILE_STATE").bootstrapTable({
+	data: []
+});
+createTree(JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'),
+	{% raw config['SEL_NODE_ID'] %});
+
+$('#snapshot-info-modal').on('show.bs.modal', function(e) {
+		var $modal = $(this),
+        data = atob(e.relatedTarget.dataset.content);
+		$modal.find('.snapshot-info-content').html(data);
+});
+
+function createTree(data, selectedNodeId){
+	$('#snapshot-tree').treeview({data: data, bootstrap2: true ,
+		emptyIcon: "glyphicon glyphicon-floppy-disk",
+		expandIcon: "glyphicon glyphicon-folder-close",
+		collapseIcon: "glyphicon glyphicon-folder-open",
+		onNodeSelected: function(event, data) {
+			$("#SEL_NAME")[0].value = data.name.replace("&#39;","'");
+			$("#SEL_FULLPATH")[0].value = data.fullpath;
+			$("#SEL_BANK_NUM")[0].value = data.bank_num;
+			$("#SEL_BANK")[0].value = data.bank_num + (data.bank_name? '-' + data.bank_name.replace("&#39;","'") : '');
+			$("#SEL_BANK")[0].disabled = data.nodes;
+			$("#SEL_PROG_NUM")[0].value = data.prog_num;
+			$("#SEL_PROG_NUM")[0].disabled = data.nodes;
+			if (data.prog_details){
+				layoutsData = getLayoutData(data.prog_details);
+				$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
+				$("#LAYOUTS_TABLE_PANEL").show();
+
+				optionsData = getMidiProfileStateData(data.prog_details);
+				$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+				$("#MIDI_PROFILE_STATE_PANEL").show();
+
+				$("#ACTION_SAVE_AS_DEFAULT").show();
+				$("#ACTION_SAVE_AS_LAST_STATE").show();
+				$("#ACTION_DOWNLOAD").show();
+				$("#upload-panel").hide();
+			} else {
+				$("#MIDI_PROFILE_STATE_PANEL").hide();
+				$("#LAYOUTS_TABLE_PANEL").hide();
+				$("#ACTION_SAVE_AS_DEFAULT").hide();
+				$("#ACTION_SAVE_AS_LAST_STATE").hide();
+				$("#ACTION_DOWNLOAD").show();
+				$("#upload-panel").show();
+			}
+			$('#snapshot-panel').show();
+			$("#error-message-action").hide()
+		}
+	});
+	$('#snapshot-tree').treeview('selectNode', selectedNodeId);
+}
+
+function addMidiOptions() {
+	$.post("lib-snapshot/add/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + btoa($("#SELECTED_MIDI_PROFILE_SCRIPT").val())  ,
+			null,
+			function(data, status) {
+				if (status=="success") {
+					if (data){
+						if ("errors" in data) {
+							console.log("AddSnapshotOptions Error: " + data["errors"])
+						} else {
+							optionsData = getMidiProfileStateData(data);
+							$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+						}
+					}
+				} else {
+					console.log("AddSnapshotOptions Response: " + status)
+				}
+			}
+		);
+}
+
+function getMidiProfileStateData(snapshotDetails){
+	result = [];
+	for (midiKey in snapshotDetails.midi_profile_state){
+		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey].replace(/\\n/g,"\n")});
 	}
 	return result;
+}
+
+function getLayoutData(snapshotDetails){
+	result = [];
+	for (layerKey in snapshotDetails.layers){
+		layer = snapshotDetails.layers[layerKey];
+		result.push({
+				'key': layerKey,
+				'channel': layer.midi_chan != null? layer.midi_chan + 1 : 0,
+				'engine_nick': layer.engine_nick,
+				'bank_name': layer.bank_name,
+				'preset_name': layer.preset_name,
+				'controllers_dict': layer.controllers_dict,
+				'zs3_list': layer.zs3_list});
+	}
+	if (result.length > 0){
+		result.sort(compare_layer);
+	}
+	lastChannel=0
+	for (idx in result){
+		layer = result[idx];
+		details = "";
+		layer_infos = "";
+
+		if (lastChannel>0 && lastChannel==layer.channel){
+			details += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->";
+		} else if (layer.channel > 0){
+			details += layer.channel + '#';
+		}
+
+		details += layer.engine_nick + ">"
+		if (layer.bank_name) details += layer.bank_name + "/";
+		if (layer.preset_name) details += layer.preset_name;
+		if (layer.controllers_dict) {
+			layer_controller_infos = "";
+
+			for (ctrlIdx in layer.controllers_dict) {
+				layer_controller_infos += ['<div class="row">',
+					'<div class="col-md-6">',
+					ctrlIdx,
+					'</div>',
+					'<div class="col-md-6">',
+					layer.controllers_dict[ctrlIdx].value,
+					'</div>',
+					'</div>'
+				].join('')
+			}
+			if (layer_controller_infos){
+				layer_infos += ['<h3>Controller Attributes</h3>',
+						layer_controller_infos,
+						'<div class="container">',
+						'</div>'
+				].join('')
+			}
+		}
+		if (layer.zs3_list && layer.zs3_list.length>0) {
+			zs3_infos = "";
+			for (zs3Idx in layer.zs3_list) {
+				zs3 = layer.zs3_list[zs3Idx];
+				if (zs3){
+					zs3_infos += ['<div class="row">',
+						'<div class="col-md-1">#',
+						parseInt(zs3Idx) + 1,
+						'</div>',
+						'<div class="col-md-4">',
+						layer.zs3_list[zs3Idx].bank_name,
+						'</div>',
+						'<div class="col-md-7">',
+						layer.zs3_list[zs3Idx].preset_name,
+						'</div>',
+						'</div>'
+					].join('')
+				}
+			}
+			if (zs3_infos){
+				layer_infos += ['<h3>ZS3</h3>',
+					'<div class="container">',
+					zs3_infos,
+					'</div>'
+				].join('')
+			}
+		}
+
+		if (layer_infos.length == 0){
+			layer_infos = "No data available";
+		}
+		result[idx].details = details;
+		result[idx].layer_infos = btoa(layer_infos);
+		lastChannel = layer.channel;
+	}
+	return result;
+}
+
+function compare_layer( a, b ) {
+  if ( a.channel < b.channel ){
+    return -1;
+  }
+  if ( a.channel > b.channel ){
+    return 1;
+  }
+  return 0;
+}
+
+function removeOperateFormatter(value, row, index) {
+    return [
+      '<a class="remove-option btn btn-danger btn-block" href="javascript:void(0)" title="Remove">',
+      '<i class="fa fa-trash-o"></i>',
+      '</a>'
+    ].join('')
+}
+
+function infoOperateFormatter(value, row, index) {
+    return [
+   	  '<button type="button" class="btn btn-info btn-block" data-toggle="modal" data-target="#snapshot-info-modal" data-content="',
+   	  value,
+   	  '">',
+      '<i class="fa fa-info"></i>',
+      '</button>'
+    ].join('')
+}
+
+function layoutOperateFormatter(value, row, index) {
+    return [
+ 	  '<div class="row no-gutters">',
+ 	  '<div class="col-md-6">',
+ 	  '<a class="info-option btn btn-info btn-block" href="javascript:void(0)" title="Info">',
+      '<i class="fa fa-info"></i>',
+      '</a>',
+      '</div>',
+      '<div class="col-md-6">',
+      '<a class="remove-option btn btn-danger btn-block" href="javascript:void(0)" title="Remove">',
+      '<i class="fa fa-trash-o"></i>',
+      '</a>',
+      '</div>',
+      '</div>'
+    ].join('')
+}
+
+function operateFooterFormatter(items) {
+    return [
+      '<a class="add-options btn btn-theme btn-block" href="javascript:addMidiOptions()" title="Add">',
+      '<i class="fa fa-plus"></i>',
+      '</a>'
+    ].join('')
+}
+
+function selectMidiProfileFormatter(items) {
+	result = [];
+	result.push('<select id="SELECTED_MIDI_PROFILE_SCRIPT">');
+{% for midi_profile_script in config['MIDI_PROFILE_SCRIPTS'] %}
+	result.push('<option value="{{ config['MIDI_PROFILE_SCRIPTS'][midi_profile_script] }}">{{ midi_profile_script }}</option>');
+{% end %}
+
+	result.push('</select>');
+	return result;
+}
+
+function do_action(action=null) {
+	var postfix = action
+
+	$("#button-" + postfix).hide()
+	$("#loading-action-" + postfix).show()
+	$("#error-message-tree").hide()
+	$("#error-message-action").hide()
+
+	$.post("lib-snapshot/ajax/" + action,
+		$('#snapshot-form').serialize(),
+		function(data, status) {
+			$("#button-" + postfix).show()
+			$("#loading-action-" + postfix).hide()
+			if (status=="success") {
+				if ('SNAPSHOTS' in data) {
+					createTree(data['SNAPSHOTS'], data['SEL_NODE_ID']);
+				}
+				if ('BANKS' in data) {
+					var sel_banks = $('#SEL_BANK')
+
+					sel_banks.empty().append(function() {
+						var output = '';
+						for (idx in data['BANKS']) {
+							output += '<option>' + data['BANKS'][idx] + '</option>';
+						}
+						return output;
+					});
+				}
+
+				if ('NEXT_BANK_NUM' in data) {
+					$('#NEW_BANK_NUM').val(data['NEXT_BANK_NUM']);
+				}
+				if ("errors" in data) {
+					$("#error-message-action").html(data["errors"])
+					$("#error-message-action").show(600)
+				}
+			} else {
+				$("#error-message-action").html("Can't do " + action + ": " + status)
+				$("#error-message-action").show(600)
+			}
+		}
+	)
+	return false
+}
+
+function do_download() {
+	var fpath = $("#SEL_FULLPATH")[0].value
+
+	window.location = "lib-snapshot/download/" + btoa(fpath);
+	return false
+}
+
+function do_remove(){
+	var confirm_message = 'Are you sure to remove this bank and all its snapshots?';
+	if ($("#LAYOUTS_TABLE_PANEL").is(':visible')){
+		confirm_message = 'Are you sure to remove this snapshots?'
+	}
+	if (confirm(confirm_message)) {
+		return do_action('remove');
+	} else {
+		return false;
+	}
 }
 
 </script>

@@ -127,7 +127,26 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 	DEFAULT_MIDI_PORTS = "DISABLED_IN=\nENABLED_OUT=ttymidi:MIDI_out\nENABLED_FB="
 
-	midi_program_change_presets=OrderedDict([
+	midi_channels =  OrderedDict([
+		["00", "None"],
+		["01", "01"],
+		["02", "02"],
+		["03", "03"],
+		["04", "04"],
+		["05", "05"],
+		["06", "06"],
+		["07", "07"],
+		["08", "09"],
+		["10", "10"],
+		["11", "11"],
+		["12", "12"],
+		["13", "13"],
+		["14", "14"],
+		["15", "15"],
+		["16", "16"]
+	])
+
+	midi_program_change_presets = OrderedDict([
 		['Custom', {
 			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_UP': '',
 			'ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_DOWN': '',
@@ -150,12 +169,12 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
-	program_change_mode_labels=OrderedDict([
+	program_change_mode_labels = OrderedDict([
 		['0', 'MSB'],
 		['32', 'LSB']
 	])
 
-	midi_cc_labels=OrderedDict([
+	midi_cc_labels = OrderedDict([
 		['0', '0 - Bank Select (MSB)'],
 		['1', '1 - Modulation Wheel (MSB)'],
 		['2', '2 - Breath controller (MSB)'],
@@ -212,7 +231,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		['127', '127 - Poly Mode']
 	])
 
-	midi_event_types=OrderedDict([
+	midi_event_types = OrderedDict([
 		['NON', 'Note-On'],
 		['NOFF', 'Note-Off'],
 		['PC', 'Program change'],
@@ -259,28 +278,39 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.current_midi_profile_script,
 				'options': self.midi_profile_scripts,
 				'option_labels': {script_name: os.path.basename(script_name).split('.')[0] for script_name  in self.midi_profile_scripts},
-				'presets': self.midi_profile_presets
+				'presets': self.midi_profile_presets,
+				'div_class': "col-xs-10"
 			}],
 			['zynthian_midi_profile_delete_script', {
 				'type': 'button',
-				'title': 'Delete MIDI profile',
+				'title': 'Delete',
 				'button_type': 'submit',
 				'class': 'btn-danger btn-block',
 				'icon' : 'fa fa-trash-o',
-				'script_file': 'midi_profile_delete.js'
+				'script_file': 'midi_profile_delete.js',
+				'div_class': "col-xs-2",
+				'inline': 1
 			}],
 			['zynthian_midi_profile_new_script_name', {
 				'type': 'text',
 				'title': 'New MIDI profile',
-				'value': ''
+				'value': '',
+				'div_class': "col-xs-10"
 			}],
 			['zynthian_midi_profile_new_script', {
 				'type': 'button',
-				'title': 'New MIDI profile',
+				'title': 'Create',
 				'button_type': 'button',
 				'class': 'btn-success btn-block',
 				'icon' : 'fa fa-plus',
-				'script_file': 'midi_profile_new.js'
+				'script_file': 'midi_profile_new.js',
+				'div_class': "col-xs-2",
+				'inline': 1
+			}],
+			['ZYNTHIAN_MIDI_SYS_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable System Messages (Transport)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1')
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
 				'type': 'boolean',
@@ -297,9 +327,15 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'Preload Presets with Note-On events',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1')
 			}],
+			['ZYNTHIAN_MIDI_RTPMIDI_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable RTP-MIDI (AppleMIDI network)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_RTPMIDI_ENABLED','0'),
+				'advanced': False
+			}],
 			['ZYNTHIAN_MIDI_NETWORK_ENABLED', {
 				'type': 'boolean',
-				'title': 'Enable QmidiNet (MIDI over IP)',
+				'title': 'Enable QmidiNet (IP Multicast)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED','0'),
 				'advanced': False
 			}],
@@ -315,7 +351,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0'),
 				'advanced': False
 			}],
-
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
 				'type': 'select',
 				'title': 'MIDI fine tuning (Hz)',
@@ -326,7 +361,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'Master MIDI channel',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','15'),
-				'options': map(lambda x: str(x).zfill(2), list(range(1, 17)))
+				'options': list(self.midi_channels.keys()),
+				'option_labels': self.midi_channels
 			}],
 			['ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE', {
 				'type': 'select',
@@ -397,9 +433,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_MIDI_SYS_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_SYS_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
 		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','0')
+		self.request.arguments['ZYNTHIAN_MIDI_RTPMIDI_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_RTPMIDI_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_TOUCHOSC_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_TOUCHOSC_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_AUBIONOTES_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0')

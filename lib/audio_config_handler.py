@@ -29,6 +29,7 @@ import tornado.web
 from collections import OrderedDict
 from subprocess import check_output, call
 from lib.zynthian_config_handler import ZynthianConfigHandler
+from zyngine.zynthian_engine_mixer import *
 
 #------------------------------------------------------------------------------
 # Audio Configuration
@@ -45,7 +46,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['HifiBerry DAC+ ADC', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-			'SOUNDCARD_MIXER': 'Digital,Analogue'
+			'SOUNDCARD_MIXER': 'Digital'
 		}],
 		['HifiBerry DAC+', {
 			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
@@ -122,27 +123,27 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw',
 			'SOUNDCARD_MIXER': ''
 		}],
-		['Behringer UCA222 (USB)', {
+		['Behringer UCA222', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CODEC -r 48000 -p 256 -n 3 -s -S -X raw',
 			'SOUNDCARD_MIXER': 'PCM'
 		}],
-		['Behringer UMC404HD (USB)', {
+		['Behringer UMC404HD', {
 			'SOUNDCARD_CONFIG': '',
-			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:CARD=U192k -r 48000 -p 256 -n 3 -s -S -X raw',
+			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:U192k -r 48000 -p 256 -n 3 -s -S -X raw',
 			'SOUNDCARD_MIXER': 'UMC404HD_192k_Output,Mic'
 		}],
-		['Steinberg UR22 mkII (USB)', {
+		['Steinberg UR22 MKII', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw',
 			'SOUNDCARD_MIXER': 'Clock_Source_41_Validity'
 		}],
-		['Edirol UA1-EX (USB)', {
+		['Edirol UA1-EX', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:UA1EX -r 44100 -p 1024 -n 2 -S -X raw',
 			'SOUNDCARD_MIXER': ''
 		}],
-		['RBPi On-Board Analog Audio', {
+		['RBPi On-Board Audio', {
 			'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:ALSA -r 44100 -p 512 -n 3 -X raw',
 			'SOUNDCARD_MIXER': 'PCM'
@@ -159,66 +160,75 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+	zctrls = None
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
-			enable_custom_text = " (select Custom kit to enable)"
-		else:
-			enable_custom_text = ""
-
-		config=OrderedDict([
-			['SOUNDCARD_NAME', {
-				'type': 'select',
-				'title': "Soundcard{}".format(enable_custom_text),
-				'value': os.environ.get('SOUNDCARD_NAME'),
-				'options': list(self.soundcard_presets.keys()),
-				'presets': self.soundcard_presets,
-				'disabled': enable_custom_text!=""
-			}],
-			['SOUNDCARD_CONFIG', {
-				'type': 'textarea',
-				'title': "Config{}".format(enable_custom_text),
-				'cols': 50,
-				'rows': 4,
-				'value': os.environ.get('SOUNDCARD_CONFIG'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['JACKD_OPTIONS', {
-				'type': 'text',
-				'title': "Jackd Options{}".format(enable_custom_text),
-				'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_AUBIONOTES_OPTIONS', {
-				'type': 'text',
-				'title': "Aubionotes Options",
-				'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
-				'advanced': True
-			}],
-			['ZYNTHIAN_LIMIT_USB_SPEED', {
-				'type': 'boolean',
-				'title': "Limit USB speed to 12Mb/s",
-				'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
-				'advanced': True
-			}],
-			['SOUNDCARD_MIXER', {
-				'type': 'text',
-				'title': "Mixer Controls{}".format(enable_custom_text),
-				'value': os.environ.get('SOUNDCARD_MIXER'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['AUDIO_MIXER_JS', {
-				'type': 'jscript',
-				'script_file': "audio_mixer.js"
-			}]
+		zc_config = OrderedDict([
+			['ZCONTROLLERS', AudioConfigHandler.get_controllers()]
 		])
+		logging.info(zc_config)
 
-		self.get_mixer_controls(config)
+		config=OrderedDict()
+
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			custom_options_disabled = True
+			config['ZYNTHIAN_MESSAGE'] = {
+				'type': 'html',
+				'content': "<div class='alert alert-warning'>Some config options are disabled. You may want to <a href='/hw-kit'>choose Custom Kit</a> for enabling all options.</div>"
+			}
+		else:
+			custom_options_disabled = False
+
+		config['SOUNDCARD_NAME'] = {
+			'type': 'select',
+			'title': "Soundcard",
+			'value': os.environ.get('SOUNDCARD_NAME'),
+			'options': list(self.soundcard_presets.keys()),
+			'presets': self.soundcard_presets,
+			'disabled': custom_options_disabled
+		}
+		config['SOUNDCARD_CONFIG'] = {
+			'type': 'textarea',
+			'title': "Config",
+			'cols': 50,
+			'rows': 4,
+			'value': os.environ.get('SOUNDCARD_CONFIG'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['JACKD_OPTIONS'] = {
+			'type': 'text',
+			'title': "Jackd Options",
+			'value': os.environ.get('JACKD_OPTIONS',"-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw"),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_AUBIONOTES_OPTIONS'] = {
+			'type': 'text',
+			'title': "Aubionotes Options",
+			'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
+			'advanced': True
+		}
+		config['ZYNTHIAN_LIMIT_USB_SPEED'] = {
+			'type': 'boolean',
+			'title': "Limit USB speed to 12Mb/s",
+			'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
+			'advanced': True
+		}
+		config['SOUNDCARD_MIXER'] = {
+			'type': 'textarea',
+			'title': "Mixer Controls",
+			'value': os.environ.get('SOUNDCARD_MIXER'),
+			'cols': 50,
+			'rows': 3,
+			'addButton': 'display_zcontroller_panel',
+			'addPanel': 'zcontroller.html',
+			'addPanelConfig': zc_config,
+			'advanced': True
+		}
+
 
 		super().get("Audio", config, errors)
 
@@ -227,105 +237,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+		for k in list(postedConfig):
+			if k.startswith('ZYNTHIAN_CONTROLLER'):
+				del postedConfig[k]
+
 		errors=self.update_config(postedConfig)
 		self.reboot_flag = True
 		self.get(errors)
-
-
-	def get_mixer_controls(self, config):
-		mixerControl = None
-		controlName = ''
-		is_capture = False
-		is_playback = False
-
-		device_name = self.get_device_name()
-		logging.debug("AUDIO DEVICE NAME => {}".format(device_name))
-
-		try:
-			scMixer = config['SOUNDCARD_MIXER']['value']
-			if scMixer is None:
-				scMixer = self.soundcard_presets[os.environ.get('SOUNDCARD_NAME')]['SOUNDCARD_MIXER']
-				config['SOUNDCARD_MIXER']['value'] = scMixer
-				self.soundcard_mixer = scMixer.split(',')
-			elif scMixer.strip()=='':
-				self.soundcard_mixer = None
-			else:
-			 self.soundcard_mixer = scMixer.split(',')
-		except:
-			self.soundcard_mixer = None
-
-		volumePercent = ''
-		idx = 0
-		try:
-			for byteLine in check_output("amixer -M -c {}".format(device_name), shell=True).splitlines():
-				line = byteLine.decode("utf-8")
-
-				if line.find('Simple mixer control')>=0:
-					if controlName and (is_capture or is_playback):
-						if is_capture:
-							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
-						else:
-							self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Playback')
-
-					mixerControl = {
-						'type': 'slider',
-						'id': idx,
-						'title': '',
-						'value': 0,
-						'min': 0,
-						'max': 100,
-						'step': 1,
-						'advanced': False
-					}
-					controlName = ''
-					is_capture = False
-					is_playback = False
-
-
-					volumePercent = ''
-					idx += 1
-					m = re.match("Simple mixer control '(.*?)'.*", line, re.M | re.I)
-					if m:
-						controlName = m.group(1).strip()
-
-				elif line.find('Capture channels:')>=0:
-						is_capture = True
-
-				elif line.find('Playback channels:')>=0:
-						is_playback = True
-
-				else:
-					m = re.match(".*(Playback|Capture).*\[(\d*)%\].*", line, re.M | re.I)
-					if m:
-						volumePercent = m.group(2)
-						if m.group(1) == 'Capture':
-							is_capture = True
-						else:
-							is_playback = True
-					else:
-						m = re.match(".*\[(\d*)%\].*", line, re.M | re.I)
-						if m:
-							volumePercent = m.group(1)
-
-			if controlName and (is_playback or is_capture):
-				if is_playback:
-					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Playback')
-				else:
-					self.add_mixer_control(config, mixerControl, controlName, volumePercent, 'Capture')
-
-		except Exception as err:
-			logging.error(err)
-
-
-	def add_mixer_control(self, config, mixerControl, controlName, volumePercent, channelType):
-		logging.debug("ADD MIXER CONTROL '{}' => {}".format(mixerControl, controlName))
-
-		realControlName = controlName.replace(' ','_')
-		if not self.soundcard_mixer or realControlName in self.soundcard_mixer:
-			configKey = 'ALSA_VOLUME_' + channelType + '_' + realControlName
-			mixerControl['title'] = channelType + ' ' + controlName
-			mixerControl['value'] = volumePercent
-			config[configKey] = mixerControl
 
 
 	def get_device_name(self):
@@ -335,4 +253,16 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			return res.group(1)
 		except:
 			return "0"
+
+
+	@classmethod
+	def get_controllers(cls):
+		try:
+			zynthian_engine_mixer.init_zynapi_instance()
+			AudioConfigHandler.zctrls = zynthian_engine_mixer.zynapi_get_controllers("*")
+			return AudioConfigHandler.zctrls
+		except Exception as err:
+			logging.error(err)
+			return []
+
 

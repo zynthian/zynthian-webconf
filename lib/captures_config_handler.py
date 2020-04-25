@@ -63,7 +63,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		config=OrderedDict([])
 		self.maxTreeNodeIndex = 0
 		if self.get_argument('stream', None, True):
-			self.do_download(self.get_argument('stream'))
+			self.do_download(self.get_argument('stream').replace("%27","'"))
 		else:
 			captures = []
 			captures.append(self.create_node('wav'))
@@ -80,7 +80,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION')
-		self.selected_full_path =  self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
+		self.selected_full_path =  self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH').replace("%27","'")
 		if action:
 			errors = {
 				'REMOVE': lambda: self.do_remove(),
@@ -93,6 +93,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			self.get(errors)
 
 	def do_remove(self):
+		logging.info('removing {}'.format(self.selected_full_path))
 		try:
 			if os.path.isdir(self.selected_full_path):
 				shutil.rmtree(self.selected_full_path)
@@ -139,9 +140,9 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 
 	def do_convert_ogg(self):
 		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
-		logging.warning(ogg_file_name)
-		cmd = 'oggenc {} -o {}'.format(self.selected_full_path, ogg_file_name)
+		cmd = 'oggenc "{}" -o "{}"'.format(self.selected_full_path, ogg_file_name)
 		try:
+			logging.info(cmd)
 			subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
 		except Exception as e:
 			return e.output
@@ -201,9 +202,9 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			except:
 				pass
 			capture = {
-				'text': f,
-				'name': text,
-				'fullpath': fullPath,
+				'text': f.replace("'","&#39;"),
+				'name': text.replace("'","&#39;"),
+				'fullpath': fullPath.replace("'","&#39;"),
 				'icon': icon,
 				'id': self.maxTreeNodeIndex}
 			self.maxTreeNodeIndex+=1

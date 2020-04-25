@@ -133,240 +133,284 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
-			enable_custom_text = " (select Custom kit to enable)"
-		else:
-			enable_custom_text = ""
+		config=OrderedDict()
 
-		config=OrderedDict([
-			['ZYNTHIAN_WIRING_LAYOUT', {
-				'type': 'select',
-				'title': 'Wiring Layout{}'.format(enable_custom_text),
-				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
-				'options': list(self.wiring_presets.keys()),
-				'presets': self.wiring_presets,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_WIRING_ENCODER_A', {
-				'type': 'text',
-				'title': "Encoders A-pins{}".format(enable_custom_text),
-				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_WIRING_ENCODER_B', {
-				'type': 'text',
-				'title': "Encoders B-pins{}".format(enable_custom_text),
-				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_WIRING_SWITCHES', {
-				'type': 'text',
-				'title': "Switches Pins{}".format(enable_custom_text),
-				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_WIRING_MCP23017_INTA_PIN', {
-				'type': 'select',
-				'title': "MCP23017 INT-A Pin{}".format(enable_custom_text),
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
-				'option_labels': {
-					'': 'Default', 
-					'0': 'WPi-GPIO 0 (pin 11)',
-					'2': 'WPi-GPIO 2 (pin 13)',
-					'3': 'WPi-GPIO 3 (pin 15)',
-					'4': 'WPi-GPIO 4 (pin 16)',
-					'5': 'WPi-GPIO 5 (pin 18)',
-					'6': 'WPi-GPIO 6 (pin 22)',
-					'7': 'WPi-GPIO 7 (pin 7)',
-					'25': 'WPi-GPIO 25 (pin 37)',
-					'27': 'WPi-GPIO 27 (pin 36)'
-				},
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_WIRING_MCP23017_INTB_PIN', {
-				'type': 'select',
-				'title': "MCP23017 INT-B Pin{}".format(enable_custom_text),
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
-				'option_labels': {
-					'': 'Default', 
-					'0': 'WPi-GPIO 0 (pin 11)',
-					'2': 'WPi-GPIO 2 (pin 13)',
-					'3': 'WPi-GPIO 3 (pin 15)',
-					'4': 'WPi-GPIO 4 (pin 16)',
-					'5': 'WPi-GPIO 5 (pin 18)',
-					'6': 'WPi-GPIO 6 (pin 22)',
-					'7': 'WPi-GPIO 7 (pin 7)',
-					'25': 'WPi-GPIO 25 (pin 37)',
-					'27': 'WPi-GPIO 27 (pin 36)'
-				},
-				'advanced': True,
-				'disabled': enable_custom_text!=""
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01', {
-				'type': 'select',
-				'title': 'Custom Switch-1 Action',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'),
-				'options': CustomSwitchActionType,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_SHORT', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Short-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_SHORT'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_BOLD', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Bold-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_BOLD'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_LONG', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Long-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_LONG'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__CC_NUM', {
-				'enabling_options': 'MIDI_CC',
-				'type': 'select',
-				'title': 'CC Number',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__CC_NUM'),
-				'options': [str(i) for i in range(0,128)],
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02', {
-				'type': 'select',
-				'title': 'Custom Switch-2 Action',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'),
-				'options': CustomSwitchActionType,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_SHORT', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Short-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_SHORT'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_BOLD', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Bold-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_BOLD'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_LONG', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Long-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_LONG'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__CC_NUM', {
-				'enabling_options': 'MIDI_CC', 
-				'type': 'select',
-				'title': 'CC Number',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__CC_NUM'),
-				'options': [str(i) for i in range(0,128)],
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03', {
-				'type': 'select',
-				'title': 'Custom Switch-3 Action',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'),
-				'options': CustomSwitchActionType,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_SHORT', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Short-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_SHORT'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_BOLD', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Bold-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_BOLD'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_LONG', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Long-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_LONG'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__CC_NUM', {
-				'enabling_options': 'MIDI_CC', 
-				'type': 'select',
-				'title': 'CC Number',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__CC_NUM'),
-				'options': [str(i) for i in range(0,128)],
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04', {
-				'type': 'select',
-				'title': 'Custom Switch-4 Action',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'),
-				'options': CustomSwitchActionType,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_SHORT', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Short-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_SHORT'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_BOLD', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Bold-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_BOLD'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_LONG', {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Long-push',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_LONG'),
-				'options': CustomUiAction,
-				'advanced': True
-			}],
-			['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__CC_NUM', {
-				'enabling_options': 'MIDI_CC', 
-				'type': 'select',
-				'title': 'CC Number',
-				'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__CC_NUM'),
-				'options': [str(i) for i in range(0,128)],
-				'advanced': True
-			}]
-		])
+		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+			custom_options_disabled = True
+			config['ZYNTHIAN_MESSAGE'] = {
+				'type': 'html',
+				'content': "<div class='alert alert-warning'>Some config options are disabled. You may want to <a href='/hw-kit'>choose Custom Kit</a> for enabling all options.</div>"
+			}
+		else:
+			custom_options_disabled = False
+
+		config['ZYNTHIAN_WIRING_LAYOUT'] = {
+			'type': 'select',
+			'title': 'Wiring Layout',
+			'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
+			'options': list(self.wiring_presets.keys()),
+			'presets': self.wiring_presets,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_WIRING_ENCODER_A'] = {
+			'type': 'text',
+			'title': "Encoders A-pins",
+			'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_WIRING_ENCODER_B'] = {
+			'type': 'text',
+			'title': "Encoders B-pins",
+			'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_WIRING_SWITCHES'] = {
+			'type': 'text',
+			'title': "Switches Pins",
+			'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
+			'type': 'select',
+			'title': "MCP23017 INT-A Pin",
+			'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
+			'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+			'option_labels': {
+				'': 'Default', 
+				'0': 'WPi-GPIO 0 (pin 11)',
+				'2': 'WPi-GPIO 2 (pin 13)',
+				'3': 'WPi-GPIO 3 (pin 15)',
+				'4': 'WPi-GPIO 4 (pin 16)',
+				'5': 'WPi-GPIO 5 (pin 18)',
+				'6': 'WPi-GPIO 6 (pin 22)',
+				'7': 'WPi-GPIO 7 (pin 7)',
+				'25': 'WPi-GPIO 25 (pin 37)',
+				'27': 'WPi-GPIO 27 (pin 36)'
+			},
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
+			'type': 'select',
+			'title': "MCP23017 INT-B Pin",
+			'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
+			'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+			'option_labels': {
+				'': 'Default', 
+				'0': 'WPi-GPIO 0 (pin 11)',
+				'2': 'WPi-GPIO 2 (pin 13)',
+				'3': 'WPi-GPIO 3 (pin 15)',
+				'4': 'WPi-GPIO 4 (pin 16)',
+				'5': 'WPi-GPIO 5 (pin 18)',
+				'6': 'WPi-GPIO 6 (pin 22)',
+				'7': 'WPi-GPIO 7 (pin 7)',
+				'25': 'WPi-GPIO 25 (pin 37)',
+				'27': 'WPi-GPIO 27 (pin 36)'
+			},
+			'advanced': True,
+			'disabled': custom_options_disabled
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'] = {
+			'type': 'select',
+			'title': 'Custom Switch-1 Action',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'),
+			'options': CustomSwitchActionType,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_SHORT'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Short-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_SHORT'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_BOLD'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Bold-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_BOLD'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_LONG'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Long-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_LONG'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_CHAN'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+			'type': 'select',
+			'title': 'Channel',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_CHAN'),
+			'options': ["Active"] + [str(i) for i in range(1,17)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+			'type': 'select',
+			'title': 'Number',
+			'value': self.get_custom_midi_num(1),
+			'options': [str(i) for i in range(0,128)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'] = {
+			'type': 'select',
+			'title': 'Custom Switch-2 Action',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'),
+			'options': CustomSwitchActionType,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_SHORT'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Short-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_SHORT'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_BOLD'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Bold-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_BOLD'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_LONG'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Long-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_LONG'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_CHAN'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+			'type': 'select',
+			'title': 'Channel',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_CHAN'),
+			'options': ["Active"] + [str(i) for i in range(1,17)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
+			'type': 'select',
+			'title': 'Number',
+			'value': self.get_custom_midi_num(2),
+			'options': [str(i) for i in range(0,128)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'] = {
+			'type': 'select',
+			'title': 'Custom Switch-3 Action',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'),
+			'options': CustomSwitchActionType,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_SHORT'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Short-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_SHORT'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_BOLD'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Bold-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_BOLD'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_LONG'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Long-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_LONG'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_CHAN'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+			'type': 'select',
+			'title': 'Channel',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_CHAN'),
+			'options': ["Active"] + [str(i) for i in range(1,17)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
+			'type': 'select',
+			'title': 'Number',
+			'value': self.get_custom_midi_num(3),
+			'options': [str(i) for i in range(0,128)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'] = {
+			'type': 'select',
+			'title': 'Custom Switch-4 Action',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'),
+			'options': CustomSwitchActionType,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_SHORT'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Short-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_SHORT'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_BOLD'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Bold-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_BOLD'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_LONG'] = {
+			'enabling_options': 'UI_ACTION',
+			'type': 'select',
+			'title': 'Long-push',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_LONG'),
+			'options': CustomUiAction,
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_CHAN'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+			'type': 'select',
+			'title': 'Channel',
+			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_CHAN'),
+			'options': ["Active"] + [str(i) for i in range(1,17)],
+			'advanced': True
+		}
+		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_NUM'] = {
+			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
+			'type': 'select',
+			'title': 'Number',
+			'value': self.get_custom_midi_num(4),
+			'options': [str(i) for i in range(0,128)],
+			'advanced': True
+		}
 
 		super().get("Wiring", config, errors)
+
+
+	def get_custom_midi_num(self, i):
+		switch_base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}".format(i)
+		v = os.environ.get("{}__MIDI_NUM".format(switch_base_name))
+		if v is None:
+			v = os.environ.get("{}__CC_NUM".format(switch_base_name),"")
+		return v
 
 
 	@tornado.web.authenticated
@@ -376,6 +420,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 		self.restart_ui_flag = True
 		self.get(errors)
+
 
 	@classmethod
 	def rebuild_zyncoder(self):

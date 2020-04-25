@@ -24,10 +24,11 @@
 
 import os
 import re
-import logging
-import base64
 import json
+import base64
 import shutil
+import base64
+import logging
 import tornado.web
 from collections import OrderedDict
 
@@ -37,11 +38,13 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 # Snapshot Config Handler
 #------------------------------------------------------------------------------
 
+
 class SnapshotConfigHandler(ZynthianConfigHandler):
 
 	my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR',"/zynthian/zynthian-my-data")
 
 	SNAPSHOTS_DIRECTORY = my_data_dir + "/snapshots"
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -54,78 +57,66 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		config['BANKS'] = self.get_existing_banks(ssdata, True)
 		config['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
 		config['PROGS_NUM'] = map(lambda x: str(x).zfill(3), list(range(0, 128)))
+		config['MIDI_PROFILE_SCRIPTS'] = {os.path.splitext(x)[0]:  "%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)}
+		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 		# Try to maintain selection after a POST action...
-		selected_node = 0
-		try:
-			for ssbank in ssdata:
-				try:
-					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
-						if not selected_node:
-							selected_node = ssbank['id']
-
-					if ssbank['nodes']:
-						for ssprog in ssbank['nodes']:
-							try:
-								if int(ssprog['prog_num'])==int(self.get_argument('SEL_PROG_NUM')):
-									selected_node = ssprog['id']
-							except:
-								pass
-				except:
-					action = self.get_argument('ACTION', '')
-					if action == 'SAVE_AS_DEFAULT' and ssbank['name'] == 'default':
-						selected_node = ssbank['id']
-					elif action == 'SAVE_AS_LAST_STATE' and ssbank['name'] == 'last_state':
-						selected_node = ssbank['id']
-
-		except Exception as e:
-			logging.debug("ERROR:" + str(e))
-
-		config['SEL_NODE_ID'] = selected_node
-		logging.debug("Selected Node: {}".format(selected_node))
+		config['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
 
 		if self.genjson:
 			self.write(config)
 		else:
 			self.render("config.html", body="snapshots.html", config=config, title="Snapshots", errors=errors)
 
-
 	@tornado.web.authenticated
-	def post(self):
-		action = self.get_argument('ACTION')
+	def post(self, action):
 		if action:
-			errors = {
-        		'NEW_BANK': lambda: self.do_new_bank(),
-        		'REMOVE': lambda: self.do_remove(),
-				'SAVE': lambda: self.do_save(),
-				'SAVE_AS_DEFAULT': lambda: self.do_save_as_default(),
-				'SAVE_AS_LAST_STATE': lambda: self.do_save_as_last_state()
+			result = {
+				'new_bank': lambda: self.do_new_bank(),
+				'remove': lambda: self.do_remove(),
+				'save': lambda: self.do_save(),
+				'upload': lambda: self.do_upload(),
+				'save_as_default': lambda: self.do_save_as_default(),
+				'save_as_last_state': lambda: self.do_save_as_last_state()
 			}[action]()
 
-		self.get(errors)
+		ssdata = self.get_snapshots_data()
+		result['SNAPSHOTS'] = ssdata
+		result['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
+		result['BANKS'] = self.get_existing_banks(ssdata, True)
+		result['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
+		snapshot_warning = self.get_snapshot_warning(ssdata)
+		if snapshot_warning:
+			result['errors'] = snapshot_warning
 
+		self.write(result)
 
 	def do_new_bank(self):
+		result = {}
 		existing_banks = self.get_existing_banks(self.get_snapshots_data(), False)
 		new_bank_dname = self.get_argument('NEW_BANK_NUM', str(self.calculate_next_bank(existing_banks))).zfill(3)
 		if new_bank_dname in existing_banks:
-			return "Bank already exists!"
+			result['errors'] = "Bank already exists!"
+			return result
 		if new_bank_dname:
 			bank_dpath = self.SNAPSHOTS_DIRECTORY + '/' + new_bank_dname
 			if not os.path.exists(bank_dpath):
 				os.makedirs(bank_dpath)
+		return result
 
 
 	def do_remove(self):
+		result = {}
 		fullPath = self.get_argument('SEL_FULLPATH')
 		if os.path.exists(fullPath):
 			if os.path.isdir(fullPath):
 				shutil.rmtree(fullPath)
 			else:
 				os.remove(fullPath)
-
+		return result
 
 	def do_save(self):
+		result = {}
 		fullPath = self.get_argument('SEL_FULLPATH')
 		newFullPath = SnapshotConfigHandler.SNAPSHOTS_DIRECTORY + '/'
 		
@@ -135,13 +126,15 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			if self.get_argument('SEL_NAME'):
 				newFullPath += '-' + self.get_argument('SEL_NAME')
 			if os.path.exists(newFullPath):
-				return "Bank exists already!"
+				result['errors'] = "Bank exists already!"
+				return result
 		# Save Program
 		else:
 			try:
 				newFullPath += self.get_argument('SEL_BANK') + '/'
 				if not os.path.exists(newFullPath):
-					return "Bank doesn't exist. You must create it before moving snapshots inside it."
+					result['errors'] = "Bank doesn't exist. You must create it before moving snapshots inside it."
+					return result
 			except:
 				pass
 
@@ -155,31 +148,51 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 					sshot_fname =  self.get_argument('SEL_NAME')
 			
 			if not sshot_fname:
-				return "You must specify a name or program number for the snapshot."
+				result['errors'] = "You must specify a name or program number for the snapshot."
+				return result;
 
 			newFullPath += sshot_fname + '.zss'
 			if newFullPath!=fullPath and os.path.exists(newFullPath):
-				return "This bank/program combination is already used: " +  newFullPath
+				result['errors'] = "This bank/program combination is already used: " + newFullPath
+				return result
 
 		try:
 			os.rename(fullPath, newFullPath)
 		except OSError:
-			return 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
+			result['errors'] = 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
+		return result
 
+	def do_upload(self):
+		logging.info("do_upload")
+		result = {}
+
+		try:
+			for fpath in self.get_argument('INSTALL_FPATH').split(","):
+				fpath = fpath.strip()
+				if len(fpath) > 0:
+					logging.info(fpath)
+					self.install_file(fpath)
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install file: {}".format(e)
+
+		return result
 
 	def do_save_as_default(self):
+		result = {}
 		dest = self.SNAPSHOTS_DIRECTORY + "/default.zss"
 		src = self.get_argument('SEL_FULLPATH')
 		logging.info("Copy %s to %s" % (src, dest))
 		shutil.copyfile(src, dest)
-
+		return result
 
 	def do_save_as_last_state(self):
+		result = {}
 		dest = self.SNAPSHOTS_DIRECTORY + "/last_state.zss"
 		src = self.get_argument('SEL_FULLPATH')
 		logging.info("Copy %s to %s" % (src, dest))
 		shutil.copyfile(src, dest)
-
+		return result
 
 	def get_existing_banks(self, snapshot_data, incl_name):
 		existing_banks = []
@@ -194,6 +207,19 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		#logging.info("existingbanks: " + str(existing_banks))
 		return sorted(existing_banks)
 
+	def get_snapshot_warning(self, snapshot_data):
+		duplicate_prog_nums = ''
+		for item in snapshot_data:
+			bank_num = item['bank_num'];
+			prev_prog_num = ''
+			for node_item in item['nodes']:
+				if prev_prog_num == node_item['prog_num']:
+					duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
+				prev_prog_num = node_item['prog_num']
+		if duplicate_prog_nums:
+			return "Duplicate program numbers exist. Please rearrange your snapshots: {}".format(duplicate_prog_nums)
+		else:
+			return ''
 
 	def calculate_next_bank(self, existing_banks):
 		for i in range(0, 128):
@@ -201,10 +227,8 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 				return i
 		return ''
 
-
 	def get_snapshots_data(self):
 		return self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY)
-
 
 	def walk_directory(self, directory, idx=0, _bank_num=None, _bank_name=None):
 		snapshots = []
@@ -274,3 +298,196 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			snapshots.append(snapshot)
 
 		return snapshots
+
+	def get_selected_node_id(self, ssdata):
+		selected_node = 0
+		try:
+			for ssbank in ssdata:
+				try:
+					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
+						if not selected_node:
+							selected_node = ssbank['id']
+
+					if ssbank['nodes']:
+						for ssprog in ssbank['nodes']:
+							try:
+								if int(ssprog['prog_num'])==int(self.get_argument('SEL_PROG_NUM')):
+									selected_node = ssprog['id']
+							except:
+								pass
+				except:
+					action = self.get_argument('ACTION', '')
+					if action == 'SAVE_AS_DEFAULT' and ssbank['name'] == 'default':
+						selected_node = ssbank['id']
+					elif action == 'SAVE_AS_LAST_STATE' and ssbank['name'] == 'last_state':
+						selected_node = ssbank['id']
+
+		except Exception as e:
+			logging.debug("ERROR:" + str(e))
+		logging.debug("Selected Node: {}".format(selected_node))
+		return selected_node
+
+	def install_file(self, fpath):
+		logging.info(fpath)
+		logging.info(self.get_argument('SEL_FULLPATH'))
+		destination = "{}/{}".format(self.get_argument('SEL_FULLPATH'), os.path.basename(fpath))
+		logging.info(destination)
+		shutil.move(fpath, destination)
+
+
+class SnapshotRemoveLayerHandler(tornado.web.RequestHandler):
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, snapshot_file_b64, layer):
+		result = {}
+		snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
+		try:
+			logging.info("Removing layer {} in {}".format(layer, snapshot_file))
+			data = []
+			with open(snapshot_file, "r") as fp:
+				data = json.load(fp)
+				del data['layers'][int(layer)]
+
+			with open(snapshot_file, "w") as fp:
+				json.dump(data, fp)
+
+			result = data
+
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+
+class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, snapshot_file_b64, remove_option_key):
+		result = {}
+		snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
+		try:
+			logging.info("Removing option {} in {}".format(remove_option_key, snapshot_file))
+			data = []
+			with open(snapshot_file, "r") as fp:
+				data = json.load(fp)
+				del data['midi_profile_state'][remove_option_key]
+
+			with open(snapshot_file, "w") as fp:
+				json.dump(data, fp)
+
+			result = data
+
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+
+class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
+	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+	@tornado.web.authenticated
+	def post(self, snapshot_file_b64, midi_profile_script_b64):
+		result = {}
+
+		try:
+			snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
+			midi_profile_script = str(base64.b64decode(midi_profile_script_b64), 'utf-8')
+			logging.info("Add option values of {} into {}".format(midi_profile_script, snapshot_file))
+			data = []
+			with open(snapshot_file, "r") as fp:
+				data = json.load(fp)
+				fp.close()
+
+			p = re.compile("export ZYNTHIAN_MIDI_(\w*)=\"(.*)\"")
+			profile_values = {}
+			with open(midi_profile_script, "r") as midi_fp:
+				for line in midi_fp:
+					if line[0] == '#':
+						continue
+					m = p.match(line)
+					if m:
+						profile_values[m.group(1)] = m.group(2)
+				midi_fp.close()
+
+			for profile_value in profile_values:
+				data['midi_profile_state'][profile_value] = profile_values[profile_value]
+
+			with open(snapshot_file, "w") as fp:
+				json.dump(data, fp)
+				fp.close()
+
+			result = data
+
+		except Exception as err:
+			result['errors'] = str(err)
+			logging.error(err)
+
+		# JSON Ouput
+		if result:
+			self.write(result)
+
+
+class SnapshotDownloadHandler(tornado.web.RequestHandler):
+
+	def get_current_user(self):
+		return self.get_secure_cookie("user")
+
+
+	@tornado.web.authenticated
+	def get(self, fpath_b64):
+		result = None
+		fpath = None
+		delete = False
+		try:
+			fpath = str(base64.b64decode(fpath_b64), 'utf-8')
+			dname, fname = os.path.split(fpath)
+			if os.path.isdir(fpath):
+				zfpath = "/tmp/" + fname
+				shutil.make_archive(zfpath, 'zip', fpath)
+				fpath = zfpath + ".zip"
+				fname += ".zip"
+				delete = True
+				mime_type = "application/zip"
+			else:
+				delete = False
+				mime_type = "application/octet-stream"
+
+			self.set_header('Content-Type', mime_type)
+			self.set_header("Content-Description", "File Transfer")
+			self.set_header('Content-Disposition', 'attachment; filename="{}"'.format(fname))
+			with open(fpath, 'rb') as f:
+				while True:
+					data = f.read(4096)
+					if not data:
+						break
+					self.write(data)
+				self.finish()
+
+		except Exception as e:
+			logging.error(e)
+			result = {'errors': "Can't download file: {}".format(e)}
+
+
+		finally:
+			if fpath and delete:
+				os.remove(fpath)
+
+		return result

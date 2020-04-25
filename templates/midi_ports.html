@@ -1,7 +1,7 @@
-<div id="midi_ports_panel" class="modal">
+<div id="midi_ports_panel" class="modal fade">
 	<div class="modal-content">
 		<div class="modal-header">
-			<button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
 			<h4 class="modal-title">MIDI ports</h4>
 		</div>
 		<div class="modal-body">
@@ -68,23 +68,23 @@
 
 $(document).ready(function() {
 	$('#display_midi_ports_panel').click(function(){
-		$('#midi_ports_panel').show(500)
+		$('#midi_ports_panel').modal('show')
 	});
 
 	$('#midi_ports_panel .close').click(function(){
-		$('#midi_ports_panel').hide(500)
+		$('#midi_ports_panel').modal('hide')
 	});
 
 	window.onclick = function(event) {
 		if (event.target == document.getElementById('midi_ports_panel')) {
-			$('#midi_ports_panel').hide(500);
+			$('#midi_ports_panel').modal('hide')
 		}
 	}
 
 
 	document.getElementById('midi_ports_add').onclick = function(event) {
 		if (refreshMidiPorts()){
-			$('#midi_ports_panel').hide(500);
+			$('#midi_ports_panel').modal('hide')
 		} else {
 			alert('You didn\'t choose a valid configuration');
 		}

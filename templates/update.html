@@ -23,6 +23,7 @@ $(document).ready(function (){
 		});
 		connectZynthianWebSocket(deferred);
 });
+
 function executeUpdate(update_action){
 	var logDiv = $("#update-log");
 	logDiv.addClass("updating");
@@ -38,11 +39,29 @@ function executeUpdate(update_action){
 			} else {
 				console.log("socket:onmessage:",data);
 				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
-				logDiv.append(data + "<br />");
+				logDiv.append(escapeHTML(data) + "<br>");
 				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
 			}
 		}
 	});
 	window.zynthianSocket.send(JSON.stringify(socketMessage));
 }
+
+var entityMap = {
+	'&': '&amp;',
+	'<': '&lt;',
+	'>': '&gt;',
+	'"': '&quot;',
+	"'": '&#39;',
+	'/': '&#x2F;',
+	'`': '&#x60;',
+	'=': '&#x3D;'
+};
+
+function escapeHTML(string) {
+	return String(string).replace(/[&<>"'`=\/]/g, function (s) {
+		return entityMap[s];
+	});
+}
+
 </script>

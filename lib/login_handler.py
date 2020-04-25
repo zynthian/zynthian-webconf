@@ -52,7 +52,7 @@ class LoginHandler(tornado.web.RequestHandler):
 			logging.debug("PASSWD: %s <=> %s" % (root_crypt, input_crypt))
 			if input_crypt == root_crypt:
 				self.set_secure_cookie("user", "root")
-				if self.get_argument("next"):
+				if self.get_argument("next", ""):
 					self.redirect(self.get_argument("next"))
 				else:
 					self.redirect("/")
@@ -64,6 +64,6 @@ class LoginHandler(tornado.web.RequestHandler):
 
 
 class LogoutHandler(tornado.web.RequestHandler):
-    def get(self):
-        self.clear_cookie('user')
-        self.redirect(self.get_argument('next', '/'))
+	def get(self):
+		self.clear_cookie('user')
+		self.redirect(self.get_argument('next', '/'))
