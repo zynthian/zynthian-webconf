@@ -33,13 +33,13 @@ import json
 import shutil
 import jsonpickle
 from collections import OrderedDict
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class CapturesConfigHandler(ZynthianConfigHandler):
+class CapturesConfigHandler(ZynthianBasicHandler):
 	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/capture"
 	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
@@ -47,17 +47,6 @@ class CapturesConfigHandler(ZynthianConfigHandler):
 	selected_full_path = ''
 	searchResult = ''
 	maxTreeNodeIndex = 0
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -74,10 +63,8 @@ class CapturesConfigHandler(ZynthianConfigHandler):
 			config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
 			config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
 
-			if self.genjson:
-				self.write(config)
-			else:
-				self.render("config.html", body="captures.html", config=config, title="Captures", errors=errors)
+			super().get("captures.html", "Captures", config, errors)
+
 
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION')

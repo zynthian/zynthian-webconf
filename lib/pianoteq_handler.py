@@ -23,6 +23,7 @@
 #********************************************************************
 
 import os
+import sys
 import logging
 import tornado.web
 import json
@@ -35,14 +36,17 @@ from subprocess import check_output
 from collections import OrderedDict
 from xml.etree import ElementTree as ET
 
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngine.zynthian_engine_pianoteq import *
+
+sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+import zynconf
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class PianoteqHandler(ZynthianConfigHandler):
+class PianoteqHandler(ZynthianBasicHandler):
 
 	data_dir = os.environ.get('ZYNTHIAN_DATA_DIR',"/zynthian/zynthian-data")
 	plugins_dir = os.environ.get('ZYNTHIAN_PLUGINS_DIR',"/zynthian/zynthian-plugins")
@@ -57,16 +61,14 @@ class PianoteqHandler(ZynthianConfigHandler):
 		config['ZYNTHIAN_PIANOTEQ_VERSION'] = ".".join(str(v) for v in PIANOTEQ_VERSION)
 		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = PIANOTEQ_PRODUCT
 		config['ZYNTHIAN_PIANOTEQ_LICENSE'] = self.get_license_key()
-		if self.genjson:
-			self.write(config)
+
+		if errors:
+			logging.error("Pianoteq Action Failed: %s" % format(errors))
+			self.clear()
+			self.set_status(400)
+			self.finish("Pianoteq Action Failed: %s" % format(errors))
 		else:
-			if errors:
-				logging.error("Pianoteq Action Failed: %s" % format(errors))
-				self.clear()
-				self.set_status(400)
-				self.finish("Pianoteq Action Failed: %s" % format(errors))
-			else:
-				self.render("config.html", body="pianoteq.html", config=config, title="Pianoteq", errors=errors)
+			super().get("pianoteq.html", "Pianoteq", config, errors)
 
 
 	@tornado.web.authenticated
@@ -168,3 +170,11 @@ class PianoteqHandler(ZynthianConfigHandler):
 
 		# Regenerate presets cache
 		zynthian_engine_pianoteq(None, True)
+
+
+	def update_config(self, config):
+		sconfig={}
+		for vn in config:
+			sconfig[vn]=config[vn][0]
+
+		zynconf.save_config(sconfig, update_sys=True)

@@ -65,10 +65,7 @@ class WifiConfigHandler(ZynthianBasicHandler):
 			['ZYNTHIAN_WIFI_NETWORKS', networks]
 		])
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="wifi.html", config=config, title="Wifi", errors=errors)
+		super().get("wifi.html", "Wifi", config, errors)
 
 
 	@tornado.web.authenticated

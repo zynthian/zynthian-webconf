@@ -30,6 +30,7 @@ import mido
 import asyncio
 from collections import OrderedDict
 from lib.tail_thread import TailThread
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 from lib.midi_config_handler import get_ports_config
 
@@ -37,20 +38,7 @@ from lib.midi_config_handler import get_ports_config
 # UI Configuration
 #------------------------------------------------------------------------------
 
-class MidiLogHandler(tornado.web.RequestHandler):
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-
-	def prepare(self):
-		self.genjson = False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson = True
-		except:
-			pass
-
+class MidiLogHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -64,10 +52,7 @@ class MidiLogHandler(tornado.web.RequestHandler):
 			['MIDI_PORTS', self.get_midi_in_ports()]
 		])
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="midi_log.html", config=config, title="MIDI Log", errors=errors)
+		super().get("midi_log.html", "MIDI Log", config, errors)
 
 
 	@tornado.web.authenticated

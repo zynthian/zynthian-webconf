@@ -470,8 +470,14 @@ div#presets-search-result .action-buttons span:hover {
   left: 0;
   bottom: 0;
   width: 100%;
-  height: 50px;
-  background-color: red;
+  /*height: 50px;*/
+  background-color: #ff0120;
   color: white;
-  text-align: center;
+  padding-top: 12px;
+  padding-bottom: 0px;
+}
+.main-footer p {
+  font-size: 120%;
+  color: #ffffff;
+  padding-bottom: 0px;
 }

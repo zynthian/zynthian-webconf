@@ -81,7 +81,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	@tornado.web.authenticated
-	def get(self, title, config, errors=None):
+	def get(self, body, title, config, errors=None):
 		logging.debug(config)
 
 		if self.reboot_flag:
@@ -98,9 +98,8 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 		if self.genjson:
 			self.write(config)
-
 		else:
-			self.render("config.html", body="config_block.html", config=config, title=title, errors=errors)
+			self.render("config.html", body=body, config=config, title=title, errors=errors)
 
 
 	def is_service_active(self, service):
@@ -121,8 +120,10 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	def reload_key_binding(self):
 		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_KEY_BINDING")
 
+
 	def persist_reboot_flag(self):
 		check_output("touch /tmp/zynthian_reboot", shell=True)
+
 
 	def read_reboot_flag(self):
 		self.reboot_flag = os.path.exists("/tmp/zynthian_reboot")
@@ -132,6 +133,11 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 #------------------------------------------------------------------------------
 
 class ZynthianConfigHandler(ZynthianBasicHandler):
+
+	@tornado.web.authenticated
+	def get(self, title, config, errors=None):
+		super().get("config_block.html", title, config, errors)
+
 
 	def update_config(self, config):
 		sconfig={}

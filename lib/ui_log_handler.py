@@ -34,6 +34,7 @@ from multiprocessing import Queue
 from subprocess import check_output
 from lib.tail_thread import TailThread, AsynchronousFileReader
 
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 
@@ -41,28 +42,12 @@ from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, Zynt
 # UI Configuration
 #------------------------------------------------------------------------------
 
-class UiLogHandler(tornado.web.RequestHandler):
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-
-	def prepare(self):
-		self.genjson = False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson = True
-		except:
-			pass
-
+class UiLogHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="ui_log.html", config=config, title="UI Log", errors=errors)
+		super().get("ui_log.html", "UI Log", config, errors)
 
 
 	@tornado.web.authenticated
