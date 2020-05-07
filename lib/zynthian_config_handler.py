@@ -58,6 +58,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		zynconf.load_config()
 		zynconf.load_midi_config()
 
+		self.read_reboot_flag()
 		self.genjson=False
 		try:
 			if self.get_query_argument("json"):
@@ -68,7 +69,8 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	def render(self, tpl, **kwargs):
 		info = {
-			'host_name': self.request.host
+			'host_name': self.request.host,
+			'reboot_flag': self.reboot_flag
 		}
 
 		# If MOD-UI is enabled, add access URI to info
@@ -83,7 +85,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		logging.debug(config)
 
 		if self.reboot_flag:
-			self.redirect('/sys-reboot')
+			self.persist_reboot_flag()
 
 		if self.restart_ui_flag:
 			self.restart_ui()
@@ -119,6 +121,11 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	def reload_key_binding(self):
 		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_KEY_BINDING")
 
+	def persist_reboot_flag(self):
+		check_output("touch /tmp/zynthian_reboot", shell=True)
+
+	def read_reboot_flag(self):
+		self.reboot_flag = os.path.exists("/tmp/zynthian_reboot")
 
 #------------------------------------------------------------------------------
 # Zynthian Config Handler

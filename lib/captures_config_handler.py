@@ -33,12 +33,13 @@ import json
 import shutil
 import jsonpickle
 from collections import OrderedDict
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class CapturesConfigHandler(tornado.web.RequestHandler):
+class CapturesConfigHandler(ZynthianConfigHandler):
 	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/capture"
 	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
