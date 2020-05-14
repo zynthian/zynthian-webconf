@@ -1,0 +1,86 @@
+/*
+###########################################################
+FONT-FACE DECLARATIONS
+###########################################################
+*/
+
+@font-face {
+  font-family: 'Lato Light';
+  font-style:  normal;
+  font-weight: 300;
+  font-display: fallback;
+  src: url("../fonts/lato/Lato-Light.ttf") format("ttf"),
+       url("../fonts/lato/Lato-Light.woff2") format("woff2"),
+       url("../fonts/lato/Lato-Light.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Lato Regular';
+  font-style:  normal;
+  font-weight: 400;
+  font-display: fallback;
+  src: url("../fonts/lato/Lato-Regular.ttf") format("ttf"),
+       url("../fonts/lato/Lato-Regular.woff2") format("woff2"),
+       url("../fonts/lato/Lato-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Lato Italic';
+  font-style:  italic;
+  font-weight: 400;
+  font-display: fallback;
+  src: url("../fonts/lato/Lato-Italic.ttf") format("ttf"),
+       url("../fonts/lato/Lato-Italic.woff2") format("woff2"),
+       url("../fonts/lato/Lato-Italic.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Lato Bold';
+  font-style:  normal;
+  font-weight: 700;
+  font-display: fallback;
+  src: url("../fonts/lato/Lato-Bold.ttf") format("ttf"),
+       url("../fonts/lato/Lato-Bold.woff2") format("woff2"),
+       url("../fonts/lato/Lato-Bold.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Lato Black';
+  font-style:  normal;
+  font-weight: 900;
+  font-display: fallback;
+  src: url("../fonts/lato/Lato-Black.ttf") format("ttf"),
+       url("../fonts/lato/Lato-Black.woff2") format("woff2"),
+       url("../fonts/lato/Lato-Black.woff") format("woff");
+}
+
+@font-face {
+  font-family: 'Audiowide';
+  font-style:  normal;
+  font-weight: 400;
+  font-display: fallback;
+  src: url("../fonts/audiowide/Audiowide-Regular.ttf") format("ttf"),
+       url("../fonts/audiowide/Audiowide-Regular.woff2") format("woff2"),
+       url("../fonts/audiowide/Audiowide-Regular.woff") format("woff");
+}
+
+
+
+
+
+/*
+###########################################################
+MINIMUM FONT PROPERTIES
+###########################################################
+*/
+
+html{
+  --font-light: 'Lato Light', sans-serif;
+  --font-base: 'Lato Regular', sans-serif;
+  --font-base-italic: 'Lato Italic', sans-serif;
+  --font-base-bold: 'Lato Bold', sans-serif;
+  --font-alt: 'Lato Black', sans-serif;
+  --font-special: 'Audiowide', sans-serif;
+}
+
+

@@ -6,97 +6,90 @@
 </form>
 
 <form id="pianoteq-form" action="/sw-pianoteq" enctype="multipart/form-data" method="post">
-<div class="container-fluid">
-  <div class="row">
-		<div class="row">
-			<p><a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical modelling engine developed by Moddart and approved by Steinway &amp; Sons among others. It can simulate a wide range of instruments, like Grand Pianos, Electric Pianos, Clavichords, Harps, Celestas, Vibraphones, Bells, etc. with a high degree of precision and realism. It's a pleasure to play it!</p>
-			<p>Zynthian SD images include the restricted trial version of "Pianoteq 6 Stage", that have some keys disabled and stop playing after 20 minutes.</p>
-			<p>If you already have a Pianoteq licence (Stage, Standard or Pro), on this page you can install the licensed binary and activate it with your license key. Also, you can upgrade to newer versions of the trial or licensed binaries, as well as install PTQ modules too.</p>
-		</div>
 
-		<div class="row">
-		  <input id="upload_show" class="btn btn-lg btn-theme" type="button" value="Upload Binary / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/upload?redirectUrl=/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
-		</div>
+	<p><a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical modelling engine developed by Moddart and approved by Steinway &amp; Sons among others. It can simulate a wide range of instruments, like Grand Pianos, Electric Pianos, Clavichords, Harps, Celestas, Vibraphones, Bells, etc. with a high degree of precision and realism. It's a pleasure to play it!</p>
+	<p>Zynthian SD images include the restricted trial version of "Pianoteq 6 Stage", that have some keys disabled and stop playing after 20 minutes.</p>
+	<p>If you already have a Pianoteq licence (Stage, Standard or Pro), on this page you can install the licensed binary and activate it with your license key. Also, you can upgrade to newer versions of the trial or licensed binaries, as well as install PTQ modules too.</p>
 
-		<div class="row"><br/></div>
 
-		<div class="row" id='upload-finished'>
-			<p>
-				<b>The new file is being installed. Please wait...</b>
-			</p>
-		</div>
+	<div id='binary-info'>
+		<p>
+			<b>Product:</b><br/>
+			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_PRODUCT" value="{{ config['ZYNTHIAN_PIANOTEQ_PRODUCT'] }}{% if config['ZYNTHIAN_PIANOTEQ_TRIAL'] %} TRIAL{% end %}" />
+		</p>
 
-		<div class="row" id='installation-success'>
-			<p>
-				<b>The new file was installed successfully.</b>
-			</p>
-			<p>
-				If you installed PTQ files, you should restart the Pianoteq engine by removing any Pianoteq layer before having access to the new installed instruments and presets.
-			</p>
-			<p>
-				If you installed a new binary, you should <a href="/sys-reboot">reboot your zynthian</a> for complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key. Please, reload this page after rebooting.
-			</p>
-			<p>
-				<a href="/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
-			</p>
-		</div>
-
-		<div class="row" id='binary-info'>
-			<p>
-				<b>Product:</b><br/>
-				<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_PRODUCT" value="{{ config['ZYNTHIAN_PIANOTEQ_PRODUCT'] }}{% if config['ZYNTHIAN_PIANOTEQ_TRIAL'] %} TRIAL{% end %}" />
-			</p>
-
-			<p>
-				<b>Version:</b><br/>
-				<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_VERSION" value="{{ config['ZYNTHIAN_PIANOTEQ_VERSION'] }}" />
-			</p>
-		</div>
+		<p>
+			<b>Version:</b><br/>
+			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_VERSION" value="{{ config['ZYNTHIAN_PIANOTEQ_VERSION'] }}" />
+		</p>
+	</div>
 		
-		{% if not config['ZYNTHIAN_PIANOTEQ_TRIAL'] and not config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
-		<div class="row" id='license-activation'>
-			{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "6.4.1" %}
-			<p>Your version is older than 6.4.1 and must be activated by hand:</p>
-			<ul class="content-section" style="margin-left: 1em;">
-				<li>Open a terminal session from your computer with the X-forwarding option (ssh -Y root@zynthian.local). You need a X-server. If you are using Linux, most probably you already have one. Mac users could install XQuartz, and for Windows users, XMing should work OK.</li>
-				<li>Start Pianoteq on your zynthian, selecting any bank &amp; preset. Pianoteq UI should open in your computer.</li>
-				<li>Follow on-screen instructions for License Activation.</li>
-				<li>When activated, <b>close the Pianoteq GUI</b> and reboot your zynthian.</li>
-				<li>In some cases, you may need to click "Update Presets" from the webconf Pianoteq tab.</li>
-			</ul>
-			{% else %}
-			<p>For activating the software you have to enter your license key and click "Activate":</p>
-			<p>
-				<b>Licence Key:</b><br/>
-				<input type="text" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="" class="col-md-10" style="padding-left:0; padding-right:0;"/>
-				<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="col-md-2 btn btn-theme">Activate</button>
-			</p>
-			{% end %}
-		</div>
+	{% if not config['ZYNTHIAN_PIANOTEQ_TRIAL'] and not config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
+	<div id='license-activation'>
+		{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "6.4.1" %}
+		<p>Your version is older than 6.4.1 and must be activated by hand:</p>
+		<ul class="content-section" style="margin-left: 1em;">
+			<li>Open a terminal session from your computer with the X-forwarding option (ssh -Y root@zynthian.local). You need a X-server. If you are using Linux, most probably you already have one. Mac users could install XQuartz, and for Windows users, XMing should work OK.</li>
+			<li>Start Pianoteq on your zynthian, selecting any bank &amp; preset. Pianoteq UI should open in your computer.</li>
+			<li>Follow on-screen instructions for License Activation.</li>
+			<li>When activated, <b>close the Pianoteq GUI</b> and reboot your zynthian.</li>
+			<li>In some cases, you may need to click "Update Presets" from the webconf Pianoteq tab.</li>
+		</ul>
+		{% else %}
+		<p>For activating the software you have to enter your license key and click "Activate":</p>
+		<p>
+			<b>Licence Key:</b><br/>
+			<input type="text" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="" class="col-md-10" style="padding-left:0; padding-right:0;"/>
+			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="col-md-2 btn btn-theme">Activate</button>
+		</p>
 		{% end %}
+	</div>
+	{% end %}
 
-		{% if config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
-		<div class="row" id='license-key'>
-			<p>
-				<b>Licence Key:</b><br/>
-				<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENSE'] }}" />
-			</p>
-		</div>
-		{% end %}
+	{% if config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
+	<div id='license-key'>
+		<p>
+			<b>Licence Key:</b><br/>
+			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENSE'] }}" />
+		</p>
+	</div>
+	{% end %}
 
-		<hr>
+	<p>
+		<br>
+		<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="Upload Binary / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/upload?redirectUrl=/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
+	</p>
 
-	    <div class="row" id="update-cache">
-			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
-		</div>
-
+	<div id='upload-finished'>
+		<p>
+			<b>The new file is being installed. Please wait...</b>
+		</p>
 	</div>
 
-	<div class="row">
+	<div id='installation-success'>
+		<p>
+			<b>The new file was installed successfully.</b>
+		</p>
+		<p>
+			If you installed PTQ files, you should restart the Pianoteq engine by removing any Pianoteq layer before having access to the new installed instruments and presets.
+		</p>
+		<p>
+			If you installed a new binary, you should <a href="/sys-reboot">reboot your zynthian</a> for complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key. Please, reload this page after rebooting.
+		</p>
+		<p>
+			<a href="/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
+		</p>
+	</div>
+	
+	<p id="update-cache">
+		<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
+	<p>
+
+
+	<div>
 		{% if errors %}<div class="alert alert-danger">{{ str(errors) }}</div>{% end %}
 	</div>
 
-</div>
 </form>
 
 <div id="loading-div-background">

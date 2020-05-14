@@ -1,27 +1,4 @@
-/* Zynthian */
-/* MPBTC */
-/*
-@dark: #000;
-@light: #fff;
-@primary: #50B000;
-@secondary: #50B000;
-@bill_text1: #C07000;
-@bill_text2: #10B000;
-@grey: #606060;
-*/
-/*
-@dark: #006020;
-@light: #fff;
-@primary: lighten(@dark,20%);
-@secondary: #900040;
-@bill_text1: #C07000;
-@bill_text2: #00C000;
-@grey: #808080;
-*/
-/*
-@primary: #35A49C;
-@secondary: #79CDC0;
-*/
+/* Zynthian Webconf Style Variables*/
 input,
 select,
 textarea,
@@ -36,52 +13,49 @@ input[type="checkbox"] {
   width: auto;
 }
 a {
-  color: #50b000;
+  color: #000000;
 }
 a:hover {
-  color: #5cca00;
+  color: #c00127;
 }
 /* menu */
 h1 a.navbar-brand {
-  color: #50b000;
+  color: #000000;
 }
 .nav > li > a:hover {
-  color: #5cca00;
+  color: #c00127;
 }
 .navbar .navbar-nav > .active > a {
-  color: #5cca00;
-}
-.navbar .navbar-nav > .active > a {
-  color: #50b000;
+  color: #000000;
 }
 /* --- icon box hover --- */
 .hi-icon-effect-5 .hi-icon {
-  color: #50b000;
-  box-shadow: 0 0 0 4px #50b000;
+  color: #000000;
+  box-shadow: 0 0 0 4px #000000;
 }
 .no-touch .hi-icon-effect-5 .hi-icon:hover {
-  background: #50b000;
-  box-shadow: 0 0 0 8px #50b000;
+  background: #000000;
+  box-shadow: 0 0 0 8px #000000;
 }
 /* btn */
 .btn-theme {
-  background-color: #50b000;
+  background-color: #000000;
   color: #ffffff;
 }
 .btn-theme:hover,
 .btn-theme:focus,
 .btn-theme:active {
-  background-color: #449700;
+  background-color: #c00127;
   color: #ffffff;
 }
 .btn-cta,
 .btn-cta.btn-lg {
-  background-color: #50b000;
-  border-color: #397d00;
+  background-color: #c00127;
+  border-color: #ffffff;
   color: #ffffff;
 }
 .btn-cta:focus,
 .btn-cta:active {
-  border-color: #449700;
+  border-color: #c00127;
   color: #ffffff;
 }

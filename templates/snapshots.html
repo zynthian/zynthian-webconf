@@ -6,20 +6,20 @@
 </form>
 
 <div id="snapshot-info-modal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Snapshot Information</h4>
-      </div>
-      <div class="modal-body snapshot-info-content">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
+	<div class="modal-dialog">
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Controller Values</h4>
+			</div>
+			<div class="modal-body snapshot-info-content">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-theme btn-block" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <form id="snapshot-form" enctype="multipart/form-data" method="post">
@@ -388,7 +388,7 @@ function getLayoutData(snapshotDetails){
 				].join('')
 			}
 			if (layer_controller_infos){
-				layer_infos += ['<h3>Controller Attributes</h3>',
+				layer_infos += ['<h3>'+details+'</h3>',
 						layer_controller_infos,
 						'<div class="container">',
 						'</div>'
@@ -453,7 +453,7 @@ function removeOperateFormatter(value, row, index) {
 
 function infoOperateFormatter(value, row, index) {
     return [
-   	  '<button type="button" class="btn btn-info btn-block" data-toggle="modal" data-target="#snapshot-info-modal" data-content="',
+   	  '<button type="button" class="btn btn-theme btn-block" data-toggle="modal" data-target="#snapshot-info-modal" data-content="',
    	  value,
    	  '">',
       '<i class="fa fa-info"></i>',

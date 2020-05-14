@@ -301,7 +301,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'button',
 				'title': 'Create',
 				'button_type': 'button',
-				'class': 'btn-success btn-block',
+				'class': 'btn-theme btn-block',
 				'icon' : 'fa fa-plus',
 				'script_file': 'midi_profile_new.js',
 				'div_class': "col-xs-2",
