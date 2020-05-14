@@ -215,12 +215,13 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 	def get_snapshot_warning(self, snapshot_data):
 		duplicate_prog_nums = ''
 		for item in snapshot_data:
-			bank_num = item['bank_num'];
-			prev_prog_num = ''
-			for node_item in item['nodes']:
-				if prev_prog_num == node_item['prog_num']:
-					duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
-				prev_prog_num = node_item['prog_num']
+			if 'nodes' in item:
+				bank_num = item['bank_num'];
+				prev_prog_num = ''
+				for node_item in item['nodes']:
+					if prev_prog_num == node_item['prog_num']:
+						duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
+					prev_prog_num = node_item['prog_num']
 		if duplicate_prog_nums:
 			return "Duplicate program numbers exist. Please rearrange your snapshots: {}".format(duplicate_prog_nums)
 		else:
