@@ -62,19 +62,23 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 			config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
 			config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
+			config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 			super().get("captures.html", "Captures", config, errors)
 
 
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION')
+		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION', None)
+		if not action and self.get_argument('INSTALL_FPATH', None):
+			action = 'UPLOAD'
 		self.selected_full_path =  self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH').replace("%27","'")
 		if action:
 			errors = {
 				'REMOVE': lambda: self.do_remove(),
 				'RENAME': lambda: self.do_rename(),
 				'DOWNLOAD': lambda: self.do_download(self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')),
-				'CONVERT_OGG': lambda: self.do_convert_ogg()
+				'CONVERT_OGG': lambda: self.do_convert_ogg(),
+				'UPLOAD': lambda: self.do_install_file()
 			}[action]()
 
 		if (action != 'DOWNLOAD'):
@@ -128,6 +132,19 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
+	def do_install_file(self):
+		result = {}
+
+		try:
+			for fpath in self.get_argument('INSTALL_FPATH').split(","):
+				fpath = fpath.strip()
+				if len(fpath)>0:
+					self.install_file(fpath)
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install file: {}".format(e)
+
+		return result
 
 	def do_convert_ogg(self):
 		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
@@ -180,6 +197,13 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		root_capture['nodes'] = captures
 		return root_capture
 
+	def install_file(self, fpath):
+		logging.info(fpath)
+		fname, fext = os.path.splitext(os.path.basename(fpath))
+
+		destination = "{}/{}.{}".format(CapturesConfigHandler.CAPTURES_DIRECTORY, fname, fext[1:4])
+		logging.info(destination)
+		shutil.move(fpath, destination)
 
 	def walk_directory(self, directory, icon, file_extension):
 		captures = []
@@ -190,13 +214,13 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			if len(fext)>0:
 				fext = fext[1:] 
 
-			logging.debug("{} => {}".format(fname,fext))
+			#logging.debug("{} => {}".format(fname,fext))
 
 			if fext.lower()!=file_extension.lower():
 				continue
 
 			fullPath = os.path.join(directory, f)
-
+			logging.debug(fullPath)
 			#m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
 			#text = ''
 			#if m:
@@ -208,22 +232,26 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			except:
 				pass
 
+			text = f.replace("'", "&#39;")
 			try:
 				l = mutagen.File(fullPath).info.length
-				capture = {
-					'text': "{} [{}:{}]".format(f.replace("'","&#39;"), int(l/60), int(l%60)),
-					'name': f.replace("'","&#39;"),
-					'fext': fext,
-					'fullpath': fullPath.replace("'","&#39;"),
-					'icon': icon,
-					'id': self.maxTreeNodeIndex
-				}
-				self.maxTreeNodeIndex+=1
-				if os.path.isdir(fullPath):
-					capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
-				captures.append(capture)
-
+				text = "{} [{}:{}]".format(f.replace("'", "&#39;"), int(l/60), int(l%60))
 			except Exception as e:
 				logging.warning(e)
+
+			capture = {
+				'text': text,
+				'name': f.replace("'","&#39;"),
+				'fext': fext,
+				'fullpath': fullPath.replace("'","&#39;"),
+				'icon': icon,
+				'id': self.maxTreeNodeIndex
+			}
+			self.maxTreeNodeIndex+=1
+			if os.path.isdir(fullPath):
+				capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
+			captures.append(capture)
+
+
 
 		return captures
