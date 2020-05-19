@@ -114,6 +114,11 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Mixer settings on snapshots',
 				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 			}],
+			['ZYNTHIAN_UI_TOUCH_WIDGETS', {
+				'type': 'boolean',
+				'title': 'Enable Touch Widgets',
+				'value': os.environ.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0'),
+			}],
 			['ZYNTHIAN_UI_ENABLE_CURSOR', {
 				'type': 'boolean',
 				'title': 'Enable cursor',
@@ -130,6 +135,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
+		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
 
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
