@@ -24,14 +24,14 @@
 
 import os
 import re
-import fnmatch
-import logging
-import subprocess
-
-import tornado.web
 import json
 import shutil
+import mutagen
+import fnmatch
+import logging
 import jsonpickle
+import subprocess
+import tornado.web
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
@@ -80,6 +80,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		if (action != 'DOWNLOAD'):
 			self.get(errors)
 
+
 	def do_remove(self):
 		logging.info('removing {}'.format(self.selected_full_path))
 		try:
@@ -105,6 +106,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 				shutil.move(sourceFolder, destinationFolder)
 				self.selected_full_path = destinationFolder;
 
+
 	def do_download(self, fullpath):
 		if fullpath:
 			source_file = fullpath
@@ -126,6 +128,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
+
 	def do_convert_ogg(self):
 		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
 		cmd = 'oggenc "{}" -o "{}"'.format(self.selected_full_path, ogg_file_name)
@@ -136,6 +139,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			return e.output
 		return
 
+
 	def get_content_type(self, filename):
 		m = re.match('(.*)\.(.*)', filename, re.M | re.I | re.S)
 		if m:
@@ -144,6 +148,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			elif m.group(2) == 'ogg':
 				return 'audio/ogg'
 		return 'application/wav'
+
 
 	def create_node(self, file_extension):
 		captures = []
@@ -172,6 +177,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		root_capture['nodes'] = captures
 		return root_capture
 
+
 	def walk_directory(self, directory, icon, file_extension):
 		captures = []
 		fileList = os.listdir(directory)
@@ -189,16 +195,20 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					self.selectedTreeNode = self.maxTreeNodeIndex # max is current right now
 			except:
 				pass
-			capture = {
-				'text': f.replace("'","&#39;"),
-				'name': text.replace("'","&#39;"),
-				'fullpath': fullPath.replace("'","&#39;"),
-				'icon': icon,
-				'id': self.maxTreeNodeIndex}
-			self.maxTreeNodeIndex+=1
-			if os.path.isdir(os.path.join(directory, f)):
-				capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
+			try:
+				l = mutagen.File(fullPath).info.length
+				capture = {
+					'text': "{} [{}:{}]".format(f.replace("'","&#39;"), int(l/60), int(l%60)),
+					'name': text.replace("'","&#39;"),
+					'fullpath': fullPath.replace("'","&#39;"),
+					'icon': icon,
+					'id': self.maxTreeNodeIndex}
+				self.maxTreeNodeIndex+=1
+				if os.path.isdir(os.path.join(directory, f)):
+					capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
+				captures.append(capture)
 
-			captures.append(capture)
+			except Exception as e:
+				logging.warning(e)
 
 		return captures
