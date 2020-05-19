@@ -147,7 +147,10 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 				return 'audio/midi'
 			elif m.group(2) == 'ogg':
 				return 'audio/ogg'
-		return 'application/wav'
+			elif m.group(2) == 'mp3':
+				return 'audio/mp3'
+			elif m.group(2) == 'wav':
+				return 'application/wav'
 
 
 	def create_node(self, file_extension):
@@ -180,31 +183,43 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 	def walk_directory(self, directory, icon, file_extension):
 		captures = []
-		fileList = os.listdir(directory)
-		logging.info(directory)
-		fileList = sorted(fileList)
-		for f in fnmatch.filter(fileList, '*.%s' % file_extension):
-			fullPath = os.path.join(directory, f)
-			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
-			text = ''
+		logging.info("Getting {} filelist from {}".format(file_extension,directory))
+		for f in sorted(os.listdir(directory)):
 
-			if m:
-				text = m.group(1)
+			fname, fext = os.path.splitext(f)
+			if len(fext)>0:
+				fext = fext[1:] 
+
+			logging.debug("{} => {}".format(fname,fext))
+
+			if fext.lower()!=file_extension.lower():
+				continue
+
+			fullPath = os.path.join(directory, f)
+
+			#m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
+			#text = ''
+			#if m:
+			#	text = m.group(1)
+
 			try:
 				if self.selected_full_path == fullPath:
 					self.selectedTreeNode = self.maxTreeNodeIndex # max is current right now
 			except:
 				pass
+
 			try:
 				l = mutagen.File(fullPath).info.length
 				capture = {
 					'text': "{} [{}:{}]".format(f.replace("'","&#39;"), int(l/60), int(l%60)),
-					'name': text.replace("'","&#39;"),
+					'name': f.replace("'","&#39;"),
+					'fext': fext,
 					'fullpath': fullPath.replace("'","&#39;"),
 					'icon': icon,
-					'id': self.maxTreeNodeIndex}
+					'id': self.maxTreeNodeIndex
+				}
 				self.maxTreeNodeIndex+=1
-				if os.path.isdir(os.path.join(directory, f)):
+				if os.path.isdir(fullPath):
 					capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
 				captures.append(capture)
 
