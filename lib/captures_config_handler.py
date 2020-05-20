@@ -58,6 +58,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			captures = []
 			captures.append(self.create_node('wav'))
 			captures.append(self.create_node('ogg'))
+			captures.append(self.create_node('mp3'))
 			captures.append(self.create_node('mid'))
 
 			config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
