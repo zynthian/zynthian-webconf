@@ -114,6 +114,7 @@ class KitConfigHandler(ZynthianConfigHandler):
 				pconfig[k]=[v]
 
 		errors = self.update_config(pconfig)
+		DisplayConfigHandler.delete_fb_splash()
 		WiringConfigHandler.rebuild_zyncoder()
 		
 		return errors
