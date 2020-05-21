@@ -7,6 +7,10 @@
 
 <h2>{{ title }}</h2>
 
+<form id="captures-upload-form" action="/upload" enctype="multipart/form-data" method="post">
+	{% module Template('upload.html', config=config) %}
+</form>
+
 <form id="captures-form" action="/lib-captures" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
 	<div id="no-captures-panel" class="row">
@@ -18,39 +22,46 @@
 			<div id="captures-tree"></div>
 		</div>
 
-		<div id="captures-panel" class="col-md-7">
+		<div id="right-panel" class="col-md-7">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE">
+			<input type="hidden" id="INSTALL_FPATH" name="INSTALL_FPATH">
 
+			<div class="row no-gutters">
+				<div class="col-md-12 col-sm-12 text-center">
+					<button id="button-upload" class="btn btn-theme btn-block" title="Upload Capture" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
+					<div id="loading-action-upload" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
+				</div>
+			</div>
 
-			<div id="captures-input" class="row">
-				<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
-				<div class="row no-gutters">
-					<div class="col-xs-8">
-						<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME">
-					</div>
-					<div class="col-xs-1">	
-						<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme btn-block" title="Rename"><i class="fa fa-check"></i></button>
-					</div>
-					<div class="col-xs-1">
-						<button id="ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG" name="ZYNTHIAN_CAPTURES_ACTION" value="CONVERT_OGG"  class="btn btn-theme btn-block" title="Convert to Ogg"><i class="fa fa-compress"></i></button>
-					</div>
-					<div class="col-xs-1">
-						<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme btn-block" title="Download"><i class="fa fa-download"></i></button>
-					</div>
-					<div class="col-xs-1">	
-						<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block"><i class="fa fa-trash-o"></i></button>
-					</div>
+			<div id="captures-panel" class="row no-gutters">
+				<div id="captures-input" class="row no-gutters">
+					<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
+					<div class="row no-gutters">
+						<div class="col-xs-8">
+							<input type="text" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME">
+						</div>
+						<div class="col-xs-1">
+							<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme btn-block" title="Rename"><i class="fa fa-check"></i></button>
+						</div>
+						<div class="col-xs-1">
+							<button id="ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG" name="ZYNTHIAN_CAPTURES_ACTION" value="CONVERT_OGG"  class="btn btn-theme btn-block" title="Convert to Ogg"><i class="fa fa-compress"></i></button>
+						</div>
+						<div class="col-xs-1">
+							<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme btn-block" title="Download"><i class="fa fa-download"></i></button>
+						</div>
 
+						<div class="col-xs-1">
+							<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block"><i class="fa fa-trash-o"></i></button>
+						</div>
+					</div>
 				</div>
 
+				<div id="captures-player" class="row no-gutters">
+					<audio id="ZYNTHIAN_CAPTURES_PLAYER" style="width:100%;" controls src="">Browser does not support audio playback</audio>
+				</div>
 			</div>
-
-			<div id="captures-player" class="row">
-				<audio id="ZYNTHIAN_CAPTURES_PLAYER" style="width:100%;" controls src="">Browser does not support audio playback</audio>
-			</div>
-
 		</div>
 
 	</div>
@@ -74,6 +85,29 @@ var capturesForm = $('#captures-form')[0];
 
 $(document).ready(function (){
 	$("#loading-div-background").hide();
+
+	$('#button-upload').click(function(){
+		$('#upload_panel').show(500)
+		$('#upload_progress_panel').hide(500);
+	});
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$("#upload_progress_panel").addClass("active");
+		var socketMessage = {
+			"handler_name": "UploadProgressHandler",
+			"data": $('#input-uploadfile-session')[0].value
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+		$("#captures-upload-form").attr("action", "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value);
+	});
+	connectZynthianWebSocket(deferred);
+
+	$('#upload_panel')[0].onuploadend = function(response){
+		console.log("Upload succeeded: " + response)
+		$("#INSTALL_FPATH").val(response)
+		document.forms['captures-form'].submit();
+	}
 });
 
 
@@ -83,6 +117,12 @@ function showProgressAnimation(){
 
 $('#captures-panel').hide();
 var jsonTree = JSON.parse('{% raw config['ZYNTHIAN_CAPTURES'] %}')
+$('#input-uploadfile-type')[0].value = "midi";
+for(dirIdx in jsonTree){
+	$('#input-uploadfile-type')[0].value = $('#input-uploadfile-type')[0].value + "," + jsonTree[dirIdx].text;
+}
+
+console.log(jsonTree);
 $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 	levels: 3,
 	emptyIcon: "",
@@ -99,7 +139,9 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src='?stream=' + data.fullpath.replace(new RegExp("&#39;","g"),"'");
 			isOgg=(data.fext=="ogg");
 			isWav=(data.fext=="wav");
-			isAudio=(isOgg || isWav);
+			isMP3=(data.fext=="mp3");
+
+			isAudio=(isOgg || isWav || isMP3);
 			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].style.display=isAudio?"block":"none";
 			$('#ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG')[0].disabled=!isWav;
 			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath.replace(new RegExp("&#39;","g"),"'");
@@ -112,5 +154,6 @@ if (jsonTree.length > 0){
 	$('#captures-tree').treeview('selectNode', {% raw config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] %});
 	$('#no-captures-panel').hide();
 }
+
 
 </script>
