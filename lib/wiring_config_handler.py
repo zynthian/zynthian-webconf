@@ -418,7 +418,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 
 	@classmethod
-	def rebuild_zyncoder(self):
+	def rebuild_zyncoder(cls):
 		try:
 			cmd="cd %s/zyncoder/build;cmake ..;make" % os.environ.get('ZYNTHIAN_DIR')
 			check_output(cmd, shell=True)

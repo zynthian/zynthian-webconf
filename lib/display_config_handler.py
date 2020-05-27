@@ -318,7 +318,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		self.get(errors)
 
 
-	def delete_fb_splash(self):
+	@classmethod
+	def delete_fb_splash(cls):
 		try:
 			cmd="rm -rf %s/img" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
 			check_output(cmd, shell=True)

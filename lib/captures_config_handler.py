@@ -236,7 +236,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			text = f.replace("'", "&#39;")
 			try:
 				l = mutagen.File(fullPath).info.length
-				text = "{} [{}:{}]".format(f.replace("'", "&#39;"), int(l/60), int(l%60))
+				text = "{} [{}:{:02d}]".format(f.replace("'", "&#39;"), int(l/60), int(l%60))
 			except Exception as e:
 				logging.warning(e)
 
