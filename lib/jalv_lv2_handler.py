@@ -26,7 +26,7 @@ import logging
 import tornado.web
 
 from collections import OrderedDict
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 import zyngine.zynthian_lv2 as zynthian_lv2
 
@@ -35,7 +35,7 @@ import zyngine.zynthian_lv2 as zynthian_lv2
 # Jalv LV2 Configuration
 #------------------------------------------------------------------------------
 
-class JalvLv2Handler(ZynthianConfigHandler):
+class JalvLv2Handler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -55,16 +55,13 @@ class JalvLv2Handler(ZynthianConfigHandler):
 		except:
 			config['ZYNTHIAN_JALV_FILTER'] = ''
 
-		if self.genjson:
-			self.write(config)
+		if errors:
+			logging.error("Configuring JALV LV2-Plugins  failed: {}".format(errors))
+			self.clear()
+			self.set_status(400)
+			self.finish("Configuring JALV LV2-Plugins failed: {}".format(errors))
 		else:
-			if errors:
-				logging.error("Configuring JALV LV2-Plugins  failed: {}".format(errors))
-				self.clear()
-				self.set_status(400)
-				self.finish("Configuring JALV LV2-Plugins failed: {}".format(errors))
-			else:
-				self.render("config.html", body="jalv_lv2.html", config=config, title="LV2-Plugins", errors=errors)
+			super().get("jalv_lv2.html", "LV2-Plugins", config, errors)
 
 
 	@tornado.web.authenticated

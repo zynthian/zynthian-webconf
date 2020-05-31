@@ -27,14 +27,14 @@ import logging
 import tornado.web
 from collections import OrderedDict
 
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngui.zynthian_gui_keybinding import zynthian_gui_keybinding
 
 #------------------------------------------------------------------------------
 # UI Configuration
 #------------------------------------------------------------------------------
 
-class UiKeybindHandler(ZynthianConfigHandler):
+class UiKeybindHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -46,7 +46,7 @@ class UiKeybindHandler(ZynthianConfigHandler):
 		config['UI_KEYBINDING_MAP'] = zynthian_gui_keybinding.getInstance().config['map']
 		config['UI_KEYBINDING_ENABLED'] = zynthian_gui_keybinding.getInstance().isEnabled()
 
-		self.render("config.html", body="ui_keybind.html", title="Keyboard Binding", config=config, errors=errors)
+		super().get("ui_keybind.html", "Keyboard Binding", config, errors)
 
 
 	@tornado.web.authenticated

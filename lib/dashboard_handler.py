@@ -30,7 +30,7 @@ import tornado.web
 from subprocess import check_output
 from distutils import util
 from collections import OrderedDict
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
@@ -39,7 +39,7 @@ import zynconf
 # Dashboard Handler
 #------------------------------------------------------------------------------
 
-class DashboardHandler(ZynthianConfigHandler):
+class DashboardHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self):
@@ -238,10 +238,7 @@ class DashboardHandler(ZynthianConfigHandler):
 				'url': "/ui-midi-options"
 			}
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="dashboard_block.html", config=config, title="Dashboard", errors=None)
+		super().get("dashboard_block.html", "Dashboard", config, None)
 
 
 	def get_git_info(self, path):

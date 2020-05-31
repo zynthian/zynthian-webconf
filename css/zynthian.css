@@ -1,27 +1,4 @@
-/* Zynthian */
-/* MPBTC */
-/*
-@dark: #000;
-@light: #fff;
-@primary: #50B000;
-@secondary: #50B000;
-@bill_text1: #C07000;
-@bill_text2: #10B000;
-@grey: #606060;
-*/
-/*
-@dark: #006020;
-@light: #fff;
-@primary: lighten(@dark,20%);
-@secondary: #900040;
-@bill_text1: #C07000;
-@bill_text2: #00C000;
-@grey: #808080;
-*/
-/*
-@primary: #35A49C;
-@secondary: #79CDC0;
-*/
+/* Zynthian Webconf Style Variables*/
 /*---------------------------------------------------
     LESS Elements 0.9
   ---------------------------------------------------
@@ -82,88 +59,102 @@ h3 {
   display: none;
 }
 header#header {
-  position: absolute;
-  z-index: 100;
   background-color: transparent;
 }
 header#header .navbar-brand img {
   height: 50px;
 }
+header#header ul.navbar-nav {
+  position: relative;
+}
+header#header ul.navbar-nav li {
+  text-align: left;
+  background: None;
+}
+header#header ul.navbar-nav li:hover,
+header#header ul.navbar-nav li:active {
+  background: None;
+}
 header#header ul.navbar-nav li a {
-  padding-left: 3em;
+  padding-left: 1em;
+  background: None;
+}
+header#header ul.navbar-nav li a:hover,
+header#header ul.navbar-nav li a:active {
+  color: #f30131;
 }
 header#header ul.navbar-nav .dropdown a.dropdown-toggle:focus,
 header#header ul.navbar-nav .dropdown a.dropdown-toggle:active {
   background-color: transparent;
-  color: #fff;
+  color: #ffffff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu {
   position: relative;
-  background-color: #404040;
-  color: #fff;
-  opacity: 0.8;
+  background-color: #000000;
+  color: #ffffff;
+  opacity: 0.95;
+  padding-bottom: 1em;
+  border-radius: 0 0 5% 5%;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li {
-  color: #fff;
+  color: #ffffff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li a {
   margin-left: 0px;
   padding-left: 1em;
   font-size: 120%;
-  color: #fff;
+  color: #ffffff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li a:hover {
-  color: #50B000;
-  background-color: #606060;
-}
-section.bg_logo_z {
-  background: url("../img/logo/zynthian_logo_z_big_tenue.png") no-repeat center center;
-  background-size: contain;
-}
-section.bg_logo_wave {
-  background: url("../img/logo/zynthian_logo_square_big_tenue.png") no-repeat center center;
-  background-size: cover;
-  background-attachment: fixed;
-  min-height: 100%;
+  color: #f30131;
+  background-color: #000000;
+  /*background-color: @grey;*/
 }
 .modal {
   color: #606060;
-  background-color: #000;
+  background-color: #000000;
   overflow-y: auto;
 }
 .modal-header,
 .modal-footer {
-  color: #fff;
+  color: #ffffff;
   background-color: #606060;
 }
 .modal-body {
-  color: #fff;
-  background-color: #000;
+  color: #ffffff;
+  background-color: #000000;
 }
 .modal-body input,
 .modal-body textarea,
 .modal-body select {
-  color: #303030;
+  color: #202020;
 }
 .modal-body input[type='file'] {
-  color: #fff;
+  color: #ffffff;
+}
+.modal h3 {
+  text-transform: none;
+  color: #ffffff;
 }
 .modal h4 {
   text-transform: none;
-  color: #fff;
+  color: #ffffff;
 }
 .modal p {
   margin-top: 12px;
   margin-bottom: 0px;
   font-size: 100%;
-  color: #fff;
+  color: #ffffff;
+}
+.content-section h2 {
+  font-family: 'audiowide';
 }
 .content-section p {
   line-height: 1.3em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
   font-size: 120%;
-  color: #303030;
+  color: #202020;
 }
 .content-section ul,
 ol {
@@ -174,32 +165,18 @@ ol {
   line-height: 1.3em;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
-  color: #303030 !important;
+  color: #202020 !important;
 }
 .content-section li li {
   line-height: 0.8em;
 }
 .content-section li a {
-  color: #7d7d7d;
+  color: #000000;
 }
 .content-section li a:hover {
-  color: #50B000;
-}
-.testimonial h5 {
-  font-family: 'Lato', sans-serif;
-  font-weight: 500;
-  opacity: 0.7;
-  -moz-text-outline: 2px 2px #000;
-  -webkit-text-outline: 2px 2px #000;
-  text-outline: 2px 2px #000;
-  background-color: #000;
+  color: #c00127;
 }
 .form-control-feedback {
-  /*
-	color: @light;
-	background-color: @primary;
-	border-color: @primary;
-*/
   border-radius: 0px 8px 8px 0px;
 }
 .input-zynthian {
@@ -208,15 +185,6 @@ ol {
   -webkit-transition: all 0.3s ease-in-out;
   -moz-transition: all 0.3s ease-in-out;
   transition: all 0.3s ease-in-out;
-}
-.input-zynthian:hover,
-.input-zynthian:active,
-.input-zynthian:focus {
-  /*
-	outline: 0 !important;
-	color: @dark;
-	background-color: @primary;
-*/
 }
 textarea.input-zynthian {
   min-height: 12em;
@@ -257,11 +225,10 @@ textarea.input-zynthian {
   .navbar-nav {
     float: none!important;
     margin: 7.5px -15px;
-    opacity: 0.8;
   }
   .navbar-nav > li {
     float: none;
-    background-color: #606060;
+    background-color: #000000;
     margin-bottom: 2px;
   }
   .navbar-nav > li > a {
@@ -273,8 +240,8 @@ textarea.input-zynthian {
     padding-bottom: 12px;
   }
   .navbar-collapse.collapse .nav > li > a:hover {
-    color: #50B000;
-    background-color: #535353;
+    color: #c00127;
+    background-color: #000000;
   }
   .navbar-text {
     float: none;
@@ -289,11 +256,12 @@ textarea.input-zynthian {
   }
 }
 div.dashboard-block h3 {
+  font-family: 'audiowide';
   margin-bottom: 0px;
   font-size: 130%;
-  padding: 0.3em;
-  background: rgba(0, 0, 0, 0.8);
-  color: #f0f0f0;
+  padding: 0.25em 0.5em;
+  background: #000000;
+  color: #ffffff;
   border-radius: 0.1em 0.4em;
 }
 div.dashboard-block div.content {
@@ -304,6 +272,9 @@ div.dashboard-block div.content {
 }
 div.lib-treeview .row {
   padding-bottom: 10px;
+}
+div.treeview .node-selected {
+  background-color: #fe8fa5 !important;
 }
 div.sw-jalv .row {
   padding-bottom: 10px;
@@ -319,14 +290,14 @@ div#loading-div-background {
   position: fixed;
   top: 0;
   left: 0;
-  background: #fff;
+  background: #ffffff;
   width: 100%;
   height: 100%;
 }
 div#loading-div {
   width: 300px;
   height: 150px;
-  background-color: #fff;
+  background-color: #ffffff;
   border: 5px solid #404040;
   text-align: center;
   color: #606060;
@@ -364,14 +335,14 @@ div#drop-zone {
   position: absolute;
   left: 50%;
   margin-left: -150px;
-  border: 2px dashed #fff;
+  border: 2px dashed #ffffff;
   border-radius: 20px;
   font-family: Arial;
   text-align: center;
   position: relative;
   line-height: 180px;
   font-size: 20px;
-  color: #fff;
+  color: #ffffff;
 }
 div#drop-zone input {
   /*Important*/
@@ -384,7 +355,7 @@ div#drop-zone input {
 }
 /*Important*/
 div#drop-zone.mouse-over {
-  border: 2px dashed #fff;
+  border: 2px dashed #ffffff;
   color: rgba(0, 0, 0, 0.5);
 }
 /*If you dont want the button*/
@@ -396,15 +367,15 @@ div#click-here {
   margin-left: -50px;
   margin-top: 20px;
   line-height: 26px;
-  color: white;
+  color: #ffffff;
   font-size: 12px;
   width: 100px;
   height: 26px;
   border-radius: 4px;
-  background-color: #3b85c3;
+  background-color: #000000;
 }
 div#click-here:hover {
-  background-color: #4499DD;
+  background-color: #c00127;
 }
 .box__dragndrop {
   display: none;
@@ -423,17 +394,34 @@ div.log-panel {
 }
 div.log-panel.updating {
   background-color: #606060;
-  color: #fff;
+  color: #ffffff;
+}
+div.jalv-lv2-plugin-panel {
+  margin: 0 1em;
 }
 div.jalv-lv2-plugin-panel .advanced-view {
   background-color: transparent;
 }
 div.jalv-lv2-plugin-panel .header {
-  background-color: #d0d0d0;
+  background-color: #404040;
+  color: #ffffff;
 }
-div .nav-tabs li.active a {
-  color: #404040;
+div .nav-tabs li {
+  padding-top: 1.5em;
+  padding-bottom: 0px;
+}
+div .nav-tabs li a {
+  border-radius: 8px 8px 0 0 !important;
+}
+div .nav-tabs li.active a,
+div .nav-tabs li.active a.focus {
+  background-color: #000000 !important;
+  color: #ffffff !important;
   font-weight: bold;
+}
+div .nav-tabs li a:hover {
+  background-color: #c00127;
+  color: #ffffff;
 }
 div.one-line-truncated {
   white-space: nowrap;
@@ -447,7 +435,7 @@ div#presets-search-result .action-buttons {
   font-size: 120%;
 }
 div#presets-search-result .action-buttons span:hover {
-  color: #50B000;
+  color: #c00127;
   cursor: pointer;
 }
 .no-gutters {
@@ -459,9 +447,30 @@ div#presets-search-result .action-buttons span:hover {
   padding-right: 1px;
   padding-left: 1px;
 }
+table.table tr.success,
+table.table tr.success th {
+  background-color: #000000;
+  color: #ffffff;
+}
 .table-hidden-header thead {
   display: none !important;
 }
 .midi-profile-value-column {
   word-break: break-word;
+}
+.main-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  /*height: 50px;*/
+  background-color: #c00127;
+  color: white;
+  padding-top: 12px;
+  padding-bottom: 0px;
+}
+.main-footer p {
+  font-size: 120%;
+  color: #ffffff;
+  padding-bottom: 0px;
 }

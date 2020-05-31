@@ -26,17 +26,19 @@ import logging
 import tornado.web
 from os import system
 
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 #------------------------------------------------------------------------------
 # Poweroff Handler
 #------------------------------------------------------------------------------
 
-class PoweroffHandler(ZynthianConfigHandler):
+class PoweroffHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self):
-		self.render("config.html", body="poweroff_confirm_block.html", config=None, title="Power Off", errors=None)
+		self.reboot_flag = False
+		super().get("poweroff_confirm_block.html", "Power Off", None, None)
+
 
 	@tornado.web.authenticated
 	def post(self):

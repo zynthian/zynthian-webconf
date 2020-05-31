@@ -91,11 +91,6 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ENCODER_B': "26,25,0,4",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2"
 		}],
-		["PROTOTYPE-KEES", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,5",
-			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,31,7",
-			'ZYNTHIAN_WIRING_SWITCHES': "23,107,6,106"
-		}],
 		["PROTOTYPE-2", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,0",
 			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,3,7",
@@ -423,7 +418,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 
 	@classmethod
-	def rebuild_zyncoder(self):
+	def rebuild_zyncoder(cls):
 		try:
 			cmd="cd %s/zyncoder/build;cmake ..;make" % os.environ.get('ZYNTHIAN_DIR')
 			check_output(cmd, shell=True)

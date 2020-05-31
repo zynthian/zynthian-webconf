@@ -37,14 +37,14 @@ import tarfile
 import tornado.web
 from collections import OrderedDict
 
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngui.zynthian_gui_engine import *
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class PresetsConfigHandler(ZynthianConfigHandler):
+class PresetsConfigHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self):
@@ -56,10 +56,7 @@ class PresetsConfigHandler(ZynthianConfigHandler):
 		config['musical_artifact_tags'] = self.get_argument('MUSICAL_ARTIFACT_TAGS', '')
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="presets.html", config=config, title="Presets & Soundfonts", errors=None)
+		super().get("presets.html", "Presets & Soundfonts", config, None)
 
 
 	@tornado.web.authenticated

@@ -6,20 +6,20 @@
 </form>
 
 <div id="snapshot-info-modal" class="modal fade" role="dialog">
-  <div class="modal-dialog">
-    <!-- Modal content-->
-    <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal">&times;</button>
-        <h4 class="modal-title">Snapshot Information</h4>
-      </div>
-      <div class="modal-body snapshot-info-content">
-      </div>
-      <div class="modal-footer">
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-      </div>
-    </div>
-  </div>
+	<div class="modal-dialog">
+		<!-- Modal content-->
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Controller Values</h4>
+			</div>
+			<div class="modal-body snapshot-info-content">
+			</div>
+			<div class="modal-footer">
+				<button type="button" class="btn btn-theme btn-block" data-dismiss="modal">Close</button>
+			</div>
+		</div>
+	</div>
 </div>
 
 <form id="snapshot-form" enctype="multipart/form-data" method="post">
@@ -79,18 +79,21 @@
 				</div>
 				<div class="col-xs-1">
 					<label>&nbsp;</label>
-					<button id="ACTION_SAVE" class="btn btn-theme btn-block"
+					<button id="button-save" class="btn btn-theme btn-block"
 						onclick="return do_action('save')"><i class="fa fa-check"></i></button>
+					<div id="loading-action-save" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 				</div>
 
 				<div class="col-xs-1">
 					<label>&nbsp;</label>
-					<button id="ACTION_DOWNLOAD" class="btn btn-theme btn-block" onclick="return do_download()" title="Download"><i class="fa fa-download"></i></button>
+					<button id="button-download" class="btn btn-theme btn-block" onclick="return do_download()" title="Download"><i class="fa fa-download"></i></button>
+					<div id="loading-action-download" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 				</div>
 
 				<div class="col-xs-1">
 					<label>&nbsp;</label>
-					<button id="ACTION_REMOVE" class="btn btn-danger btn-block" onclick="return do_remove();"><i class="fa fa-trash-o"></i></button>
+					<button id="button-remove" class="btn btn-danger btn-block" onclick="return do_remove();"><i class="fa fa-trash-o"></i></button>
+					<div id="loading-action-remove" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 				</div>
 			</div>
 
@@ -156,20 +159,22 @@
 
 			<div class="row">
 				<div class="col-md-12">
-					<button  id="ACTION_SAVE_AS_DEFAULT" class="btn btn-theme btn-block"
+					<button  id="button-save_as_default" class="btn btn-theme btn-block"
 						onclick="return do_action('save_as_default')" >Save as Default</button>
+					<div id="loading-action-save_as_default" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 				</div>
 			</div>
 			<div class="row">
 				<div class="col-md-12">
-					<button id="ACTION_SAVE_AS_LAST_STATE" class="btn btn-theme btn-block"
+					<button id="button-save_as_last_state" class="btn btn-theme btn-block"
 						onclick="return do_action('save_as_last_state')">Save as Last State</button>
+					<span id="loading-action-save_as_last_state" style="display:none;"><img src="/img/loading.gif" class="center-block"></span>
 				</div>
 			</div>
 			<div class="row" id="upload-panel">
 				<div class="col-md-12 col-sm-12 text-center">
 					<button id="button-upload" class="btn btn-theme btn-block" title="Upload Snapshot" onclick="return false"><i class="fa fa-upload"></i> Upload</button>
-					<span id="loading-action-upload" style="display:none;"><img src="/img/loading.gif"></span>
+					<span id="loading-action-upload" style="display:none;"><img src="/img/loading.gif" class="center-block"></span>
 				</div>
 			</div>
 
@@ -295,16 +300,16 @@ function createTree(data, selectedNodeId){
 				$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
 				$("#MIDI_PROFILE_STATE_PANEL").show();
 
-				$("#ACTION_SAVE_AS_DEFAULT").show();
-				$("#ACTION_SAVE_AS_LAST_STATE").show();
-				$("#ACTION_DOWNLOAD").show();
+				$("#button-save_as_default").show();
+				$("#button-save_as_last_state").show();
+				$("#button-download").show();
 				$("#upload-panel").hide();
 			} else {
 				$("#MIDI_PROFILE_STATE_PANEL").hide();
 				$("#LAYOUTS_TABLE_PANEL").hide();
-				$("#ACTION_SAVE_AS_DEFAULT").hide();
-				$("#ACTION_SAVE_AS_LAST_STATE").hide();
-				$("#ACTION_DOWNLOAD").show();
+				$("#button-save_as_default").hide();
+				$("#button-save_as_last_state").hide();
+				$("#button-download").show();
 				$("#upload-panel").show();
 			}
 			$('#snapshot-panel').show();
@@ -388,7 +393,7 @@ function getLayoutData(snapshotDetails){
 				].join('')
 			}
 			if (layer_controller_infos){
-				layer_infos += ['<h3>Controller Attributes</h3>',
+				layer_infos += ['<h3>'+details+'</h3>',
 						layer_controller_infos,
 						'<div class="container">',
 						'</div>'
@@ -453,7 +458,7 @@ function removeOperateFormatter(value, row, index) {
 
 function infoOperateFormatter(value, row, index) {
     return [
-   	  '<button type="button" class="btn btn-info btn-block" data-toggle="modal" data-target="#snapshot-info-modal" data-content="',
+   	  '<button type="button" class="btn btn-theme btn-block" data-toggle="modal" data-target="#snapshot-info-modal" data-content="',
    	  value,
    	  '">',
       '<i class="fa fa-info"></i>',

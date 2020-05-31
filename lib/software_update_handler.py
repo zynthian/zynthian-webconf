@@ -29,6 +29,7 @@ import tornado.websocket
 from collections import OrderedDict
 import subprocess
 import jsonpickle
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 UPDATE_COMMANDS = OrderedDict([
@@ -42,29 +43,13 @@ UPDATE_COMMANDS = OrderedDict([
 # SoftwareUpdateHandler Config Handler
 #------------------------------------------------------------------------------
 
-class SoftwareUpdateHandler(tornado.web.RequestHandler):
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
+class SoftwareUpdateHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config=OrderedDict([])
-
 		config['UPDATE_COMMANDS'] = UPDATE_COMMANDS.keys()
-
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="update.html", config=config, title="Update", errors=errors)
+		super().get("update.html", "Software Update", config, errors)
 
 
 class SoftwareUpdateMessageHandler(ZynthianWebSocketMessageHandler):

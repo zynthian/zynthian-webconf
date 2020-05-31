@@ -32,14 +32,14 @@ import logging
 import tornado.web
 from collections import OrderedDict
 
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 #------------------------------------------------------------------------------
 # Snapshot Config Handler
 #------------------------------------------------------------------------------
 
 
-class SnapshotConfigHandler(ZynthianConfigHandler):
+class SnapshotConfigHandler(ZynthianBasicHandler):
 
 	my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR',"/zynthian/zynthian-my-data")
 
@@ -63,10 +63,8 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		# Try to maintain selection after a POST action...
 		config['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="snapshots.html", config=config, title="Snapshots", errors=errors)
+		super().get("snapshots.html", "Snapshots", config, errors)
+
 
 	@tornado.web.authenticated
 	def post(self, action):
@@ -91,6 +89,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 		self.write(result)
 
+
 	def do_new_bank(self):
 		result = {}
 		existing_banks = self.get_existing_banks(self.get_snapshots_data(), False)
@@ -114,6 +113,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			else:
 				os.remove(fullPath)
 		return result
+
 
 	def do_save(self):
 		result = {}
@@ -162,6 +162,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			result['errors'] = 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
 		return result
 
+
 	def do_upload(self):
 		logging.info("do_upload")
 		result = {}
@@ -178,6 +179,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 		return result
 
+
 	def do_save_as_default(self):
 		result = {}
 		dest = self.SNAPSHOTS_DIRECTORY + "/default.zss"
@@ -186,6 +188,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		shutil.copyfile(src, dest)
 		return result
 
+
 	def do_save_as_last_state(self):
 		result = {}
 		dest = self.SNAPSHOTS_DIRECTORY + "/last_state.zss"
@@ -193,6 +196,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		logging.info("Copy %s to %s" % (src, dest))
 		shutil.copyfile(src, dest)
 		return result
+
 
 	def get_existing_banks(self, snapshot_data, incl_name):
 		existing_banks = []
@@ -207,19 +211,22 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 		#logging.info("existingbanks: " + str(existing_banks))
 		return sorted(existing_banks)
 
+
 	def get_snapshot_warning(self, snapshot_data):
 		duplicate_prog_nums = ''
 		for item in snapshot_data:
-			bank_num = item['bank_num'];
-			prev_prog_num = ''
-			for node_item in item['nodes']:
-				if prev_prog_num == node_item['prog_num']:
-					duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
-				prev_prog_num = node_item['prog_num']
+			if 'nodes' in item:
+				bank_num = item['bank_num'];
+				prev_prog_num = ''
+				for node_item in item['nodes']:
+					if prev_prog_num == node_item['prog_num']:
+						duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
+					prev_prog_num = node_item['prog_num']
 		if duplicate_prog_nums:
 			return "Duplicate program numbers exist. Please rearrange your snapshots: {}".format(duplicate_prog_nums)
 		else:
 			return ''
+
 
 	def calculate_next_bank(self, existing_banks):
 		for i in range(0, 128):
@@ -227,8 +234,10 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 				return i
 		return ''
 
+
 	def get_snapshots_data(self):
 		return self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY)
+
 
 	def walk_directory(self, directory, idx=0, _bank_num=None, _bank_name=None):
 		snapshots = []
@@ -299,6 +308,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 
 		return snapshots
 
+
 	def get_selected_node_id(self, ssdata):
 		selected_node = 0
 		try:
@@ -326,6 +336,7 @@ class SnapshotConfigHandler(ZynthianConfigHandler):
 			logging.debug("ERROR:" + str(e))
 		logging.debug("Selected Node: {}".format(selected_node))
 		return selected_node
+
 
 	def install_file(self, fpath):
 		logging.info(fpath)

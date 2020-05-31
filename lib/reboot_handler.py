@@ -26,24 +26,25 @@ import logging
 import tornado.web
 from os import system
 
-from lib.zynthian_config_handler import ZynthianConfigHandler
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 #------------------------------------------------------------------------------
 # Reboot Handler
 #------------------------------------------------------------------------------
 
-class RebootHandler(ZynthianConfigHandler):
+class RebootHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self):
-		self.render("config.html", body="reboot_confirm_block.html", config=None, title="Reboot", errors=None)
+		self.reboot_flag = False
+		super().get("reboot_confirm_block.html", "Reboot", None, None)
+
 
 	@tornado.web.authenticated
 	def post(self):
-		if self.genjson:
-			self.write("REBOOT")
-		else:
-			self.render("config.html", body="reboot_block.html", config=None, title="Reboot", errors=None)
+		self.reboot_flag = False
+		super().get("reboot_block.html", "Reboot", None, None)
+
 		try:
 			system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
 		except Exception as e:

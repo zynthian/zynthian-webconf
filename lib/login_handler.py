@@ -36,7 +36,7 @@ from subprocess import check_output
 class LoginHandler(tornado.web.RequestHandler):
 
 	def get(self, errors=None):
-		self.render("config.html", body="login_block.html", title="Login", config=None, errors=errors)
+		self.render("config.html", info={}, body="login_block.html", title="Login", config=None, errors=errors)
 
 	def post(self):
 		input_passwd = self.get_argument("PASSWORD")

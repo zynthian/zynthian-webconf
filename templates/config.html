@@ -25,7 +25,7 @@
 	<link rel="stylesheet" href="/bower_components/bootstrap-table/dist/bootstrap-table.min.css">
 	<link rel="stylesheet" href="/bower_components/font-awesome/css/font-awesome.min.css">
 
-	<link rel="stylesheet" href="/css/lato_font.css">
+	<link rel="stylesheet" href="/css/fonts.css">
 	<link rel="stylesheet" href="/css/style.css">
 	<link rel="stylesheet" href="/css/default.css">
 	<link rel="stylesheet" href="/css/zynthian.css">
@@ -54,10 +54,10 @@
 </head>
 
 <body>
-	<img src="/img/loading.gif" style="display:hidden;">
+	<img src="/img/loading.gif" style="display:none;">
 	<!-- header -->
 	<header id="header">
-		<div class="navbar navbar-fixed-top" role="navigation" data-0="line-height:77px; height:77px; background-color:rgba(0,0,0,0);" data-300="line-height:50px; height:50px; background-color:rgba(0,0,0,0.8);">
+		<div class="navbar navbar-fixed-top" role="navigation">
 			<div class="container">
 				<div class="navbar-header">
 					<button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
@@ -65,12 +65,12 @@
 					</button>
 					<h1>
 						<a class="navbar-brand" href="/" title="Start">
-							<img src="/img/logo/zynthian_logo_black_trans_320.png" data-0="height:64px;" data-300="height:50px;">
+							<img src="/img/logo/zynthian_logo_black_trans_320.png">
 						</a>
 					</h1>
 				</div>
 				<div class="navbar-collapse collapse">
-					<ul class="nav navbar-nav" data-0="margin-top:12px;" data-300="margin-top:0px;">
+					<ul class="nav navbar-nav">
 					{% if current_user is not None %}
 
 							<li class="dropdown {% if request.uri[0:9]=="/lib-" %}active{% end %}">
@@ -149,6 +149,17 @@
 			</div>
 		</div>
 	</section>
+
+	{% if info and 'reboot_flag' in info and info['reboot_flag'] %}
+	<div class="main-footer">
+		<div class="col-lg-8 col-lg-offset-1 col-xs-12 col-xs-offset-0">
+			<p>Zynthian needs to reboot to apply your changes!</p>
+		</div>
+		<div class="col-lg-2 col-xs-12">
+			<p><a href="/sys-reboot"><button class="btn btn-danger">REBOOT NOW!</button></a><p>
+		</div>
+	</div>
+	{% end %}
 
 </body>
 

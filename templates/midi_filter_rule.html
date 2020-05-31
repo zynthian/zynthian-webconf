@@ -11,6 +11,7 @@
 				<option value="">Select a Rule Command ...</option>
 				<option value="IGNORE">IGNORE</option>
 				<option value="MAP">MAP</option>
+				<option value="TOGGLE">TOGGLE</option>
 			</select>
 
 			<div class="row">
@@ -98,7 +99,7 @@
 		</div>
 		
 		<div class="modal-footer">
-			<button id="midi-filter-rule-add" class="btn btn-success btn-block" data-dismiss="modal" type="button"><span aria-hidden="true">ADD</span></button>
+			<button id="midi-filter-rule-add" class="btn btn-theme btn-block" data-dismiss="modal" type="button"><span aria-hidden="true">ADD</span></button>
 		</div>
 
 	</div>
@@ -191,7 +192,7 @@ function addFilterRule(){
 
 	console.log("NEW RULE: "+new_rule)
 	
-	var current_rules_text=$('textarea#ZYNTHIAN_MIDI_FILTER_RULES').val();
+	var current_rules_text=$('textarea#ZYNTHIAN_MIDI_FILTER_RULES').val().trim();
 	if (current_rules_text) current_rules_text += "\n";
 	$('textarea#ZYNTHIAN_MIDI_FILTER_RULES').val(current_rules_text+new_rule);
 

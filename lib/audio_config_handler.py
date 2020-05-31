@@ -39,7 +39,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	soundcard_presets=OrderedDict([
 		['HifiBerry DAC+ ADC PRO', {
-			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro,slave',
+			'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 			'SOUNDCARD_MIXER': 'Digital,ADC,ADC Left Input,ADC Right Input'
 		}],
@@ -237,6 +237,10 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
+		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
+			self.persist_update_sys_flag()
+
 		for k in list(postedConfig):
 			if k.startswith('ZYNTHIAN_CONTROLLER'):
 				del postedConfig[k]

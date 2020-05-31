@@ -3,7 +3,7 @@
 @import "elements.less";
 
 //-----------------------------------------------------------------------------
-// Style "Mi Primer Bitcoin"
+// Style "Zynthian Webconf Tool"
 //-----------------------------------------------------------------------------
 
 html,
@@ -70,9 +70,8 @@ h3 {
 
 //-----------------------------------------------------------------------------
 
+
 header#header {
-	position: absolute;
-	z-index: 100;
 	background-color: transparent;
 }
 
@@ -80,8 +79,29 @@ header#header .navbar-brand img {
 	height: 50px;
 }
 
+header#header ul.navbar-nav {
+	position: relative;
+}
+
+header#header ul.navbar-nav li {
+	//width: 9em;
+	text-align: left;
+	background: None;
+}
+
+header#header ul.navbar-nav li:hover,
+header#header ul.navbar-nav li:active {
+	background: None;
+}
+
 header#header ul.navbar-nav li a {
-	padding-left: 3em;
+	padding-left: 1em;
+	background: None;
+}
+
+header#header ul.navbar-nav li a:hover, 
+header#header ul.navbar-nav li a:active {
+	color: lighten(@zynred,10%);
 }
 
 header#header ul.navbar-nav .dropdown a.dropdown-toggle:focus,
@@ -91,10 +111,15 @@ header#header ul.navbar-nav .dropdown a.dropdown-toggle:active {
 }
 
 header#header ul.navbar-nav .dropdown .dropdown-menu {
-	position:relative;
-	background-color: @darkgrey;
+	position: relative;
+	//position:absolute;
+	//top: 1.5em;
+	//left: 0;
+	background-color: @dark;
 	color: @light;
-	opacity: 0.8;
+	opacity: 0.95;
+	padding-bottom: 1em;
+	border-radius: 0 0 5% 5%;
 }
 
 header#header ul.navbar-nav .dropdown .dropdown-menu li {
@@ -108,23 +133,24 @@ header#header ul.navbar-nav .dropdown .dropdown-menu li a {
 	color: @light;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li a:hover {
-	color: @primary;
-	background-color: @grey;
+	color: lighten(@zynred,10%);
+	background-color: @dark;
+	/*background-color: @grey;*/
 }
 
 //-----------------------------------------------------------------------------
 
 section.bg_logo_z {
-	background: url("../img/logo/zynthian_logo_z_big_tenue.png") no-repeat center center;
-	background-size: contain;
+	//background: url("../img/logo/zynthian_logo_z_big_tenue.png") no-repeat center center;
+	//background-size: contain;
 	//background-size: cover;
 }
 
 section.bg_logo_wave {
-	background: url("../img/logo/zynthian_logo_square_big_tenue.png") no-repeat center center;
-	background-size: cover;
-	background-attachment: fixed;
-	min-height: 100%;
+	//background: url("../img/logo/zynthian_logo_square_big_tenue.png") no-repeat center center;
+	//background-size: cover;
+	//background-attachment: fixed;
+	//min-height: 100%;
 }
 
 //-----------------------------------------------------------------------------
@@ -157,6 +183,12 @@ section.bg_logo_wave {
 	color: @light
 }
 
+.modal h3 {
+	text-transform: none;
+	color: @light;
+}
+
+
 .modal h4 {
 	text-transform: none;
 	color: @light;
@@ -170,6 +202,10 @@ section.bg_logo_wave {
 }
 
 //-----------------------------------------------------------------------------
+
+.content-section h2 {
+	font-family: 'audiowide';
+}
 
 .content-section p {
 	line-height: 1.3em;
@@ -196,31 +232,16 @@ section.bg_logo_wave {
 }
 
 .content-section li a {
-	color: lighten(@darktext,30%);
+	color: @dark;
 }
 .content-section li a:hover {
-	color: @primary;
-}
-
-.testimonial h5 {
-	font-family: 'Lato', sans-serif;
-	font-weight: 500;
-	opacity: 0.7;
-	-moz-text-outline: 2px 2px @dark;
-	-webkit-text-outline: 2px 2px @dark;
-	text-outline: 2px 2px @dark;
-	background-color: @dark;
+	color: @zynred;
 }
 
 
 //-----------------------------------------------------------------------------
 
 .form-control-feedback {
-/*
-	color: @light;
-	background-color: @primary;
-	border-color: @primary;
-*/
 	border-radius: 0px 8px 8px 0px;
 }
 
@@ -235,11 +256,7 @@ section.bg_logo_wave {
 .input-zynthian:hover,
 .input-zynthian:active,
 .input-zynthian:focus {
-/*
-	outline: 0 !important;
-	color: @dark;
-	background-color: @primary;
-*/
+
 }
 
 textarea.input-zynthian {
@@ -278,12 +295,11 @@ textarea.input-zynthian {
 	.navbar-nav {
 		float: none!important;
 		margin: 7.5px -15px;
-		opacity: 0.8;
 	}
 
 	.navbar-nav > li {
 		float: none;
-		background-color: @grey;
+		background-color: @dark;
 		margin-bottom: 2px;
 		margin-bottom: 2px;
 	}
@@ -297,8 +313,8 @@ textarea.input-zynthian {
 		padding-bottom: 12px;
 	}
 	.navbar-collapse.collapse .nav > li > a:hover {
-		color: @primary;
-		background-color: darken(@grey,5%);
+		color: @zynred;
+		background-color: @dark;
 	}
 	.navbar-text {
 		float: none;
@@ -323,11 +339,12 @@ textarea.input-zynthian {
 //-----------------------------------------------------------------------------
 
 div.dashboard-block h3 {
+	font-family: 'audiowide';
 	margin-bottom: 0px;
 	font-size: 130%;
-	padding: 0.3em;
-	background: rgba(0,0,0,0.8);
-	color: #f0f0f0;
+	padding: 0.25em 0.5em;
+	background: @dark;
+	color: @light;
 	border-radius: 0.1em 0.4em;
 }
 
@@ -340,6 +357,10 @@ div.dashboard-block div.content {
 
 div.lib-treeview .row {
 	padding-bottom: 10px;
+}
+
+div.treeview .node-selected {
+	background-color: lighten(@zynred,40%) !important;
 }
 
 div.sw-jalv .row {
@@ -358,7 +379,7 @@ div#loading-div-background {
 	position: fixed;
 	top: 0;
 	left: 0;
-	background: #fff;
+	background: @light;
 	width: 100%;
 	height: 100%;
 }
@@ -366,7 +387,7 @@ div#loading-div-background {
 div#loading-div {
 	width: 300px;
 	height: 150px;
-	background-color: #fff;
+	background-color: @light;
 	border: 5px solid @darkgrey;
 	text-align: center;
 	color: @grey;
@@ -444,16 +465,16 @@ div#click-here {
 	margin-left: -50px;
 	margin-top: 20px;
 	line-height: 26px;
-	color: white;
+	color: @light;
 	font-size: 12px;
 	width: 100px;
 	height: 26px;
 	border-radius: 4px;
-	background-color: #3b85c3;
+	background-color: @dark;
 }
 
 div#click-here:hover {
-	background-color: #4499DD;
+	background-color: @zynred;
 }
 
 .box__dragndrop {
@@ -478,17 +499,38 @@ div.log-panel.updating{
 	background-color: @grey;
 	color: @light;
 }
+
+div.jalv-lv2-plugin-panel {
+	margin: 0 1em;
+}
+	
 div.jalv-lv2-plugin-panel .advanced-view {
 	background-color: transparent;
 }
 div.jalv-lv2-plugin-panel .header {
-	background-color: @lightgrey;
+	background-color: @darkgrey;
+	color: @light;
 }
 
-div .nav-tabs li.active a {
-	//background-color: @lightgrey;
-	color: @darkgrey;
+div .nav-tabs li {
+	padding-top: 1.5em;
+	padding-bottom: 0px;
+}
+
+div .nav-tabs li a {
+	border-radius: 8px 8px 0 0 !important;
+}
+
+div .nav-tabs li.active a,
+div .nav-tabs li.active a.focus {
+	background-color: @dark !important;
+	color: @light !important;
 	font-weight: bold;
+}
+
+div .nav-tabs li a:hover {
+	background-color: @zynred;
+	color: @light;
 }
 
 div.one-line-truncated { 
@@ -506,7 +548,7 @@ div#presets-search-result .action-buttons {
 }
 
 div#presets-search-result .action-buttons span:hover {
-	color: @primary;
+	color: @zynred;
 	cursor: pointer;
 }
 
@@ -521,10 +563,35 @@ div#presets-search-result .action-buttons span:hover {
   }
 }
 
+
+table.table tr.success,
+table.table tr.success th {
+	background-color: @dark;
+	color: @light;
+}
+
 .table-hidden-header thead {
     display: none !important;
 }
 
 .midi-profile-value-column {
     word-break: break-word;
+}
+
+.main-footer {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  /*height: 50px;*/
+  background-color: @zynred;
+  color: white;
+  padding-top: 12px;
+  padding-bottom: 0px;
+}
+
+.main-footer p {
+  font-size: 120%;
+  color: @light;
+  padding-bottom: 0px;
 }

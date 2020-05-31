@@ -82,10 +82,8 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 				'value': ''
 			}]
 		])
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="config_block.html", config=config, title="Security/Access", errors=errors)
+
+		super().get("Security/Access", config, errors)
 
 
 	@tornado.web.authenticated

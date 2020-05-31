@@ -30,7 +30,7 @@ from io import BytesIO
 from collections import OrderedDict
 import time
 import jsonpickle
-
+from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 
 #------------------------------------------------------------------------------
@@ -45,29 +45,17 @@ def get_backup_items(filename):
 # Snapshot Config Handler
 #------------------------------------------------------------------------------
 
-class SystemBackupHandler(tornado.web.RequestHandler):
+class SystemBackupHandler(ZynthianBasicHandler):
 
 	SYSTEM_BACKUP_ITEMS_FILE = "/zynthian/config/system_backup_items.txt"
 	DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
 	EXCLUDE_SUFFIX = ".exclude"
 
 
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
-
-
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		self.do_get(None, errors)
+
 
 	def do_get(self, active_tab, errors=None):
 		config=OrderedDict([])
@@ -114,10 +102,7 @@ class SystemBackupHandler(tornado.web.RequestHandler):
 		self.walk_backup_items(add_system_backup_item, system_backup_items)
 		self.walk_backup_items(add_data_backup_item, data_backup_items)
 
-		if self.genjson:
-			self.write(config)
-		else:
-			self.render("config.html", body="backup.html", config=config, title="Backup / Restore", errors=errors)
+		super().get("backup.html", "Backup / Restore", config, errors)
 
 
 	@tornado.web.authenticated

@@ -24,21 +24,22 @@
 
 import os
 import re
-import fnmatch
-import logging
-import subprocess
-
-import tornado.web
 import json
 import shutil
+import mutagen
+import fnmatch
+import logging
 import jsonpickle
+import subprocess
+import tornado.web
 from collections import OrderedDict
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
 #------------------------------------------------------------------------------
 
-class CapturesConfigHandler(tornado.web.RequestHandler):
+class CapturesConfigHandler(ZynthianBasicHandler):
 	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/capture"
 	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
@@ -46,17 +47,6 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 	selected_full_path = ''
 	searchResult = ''
 	maxTreeNodeIndex = 0
-
-	def get_current_user(self):
-		return self.get_secure_cookie("user")
-
-	def prepare(self):
-		self.genjson=False
-		try:
-			if self.get_query_argument("json"):
-				self.genjson=True
-		except:
-			pass
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
@@ -68,29 +58,33 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			captures = []
 			captures.append(self.create_node('wav'))
 			captures.append(self.create_node('ogg'))
+			captures.append(self.create_node('mp3'))
 			captures.append(self.create_node('mid'))
 
 			config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
 			config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
+			config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
-			if self.genjson:
-				self.write(config)
-			else:
-				self.render("config.html", body="captures.html", config=config, title="Captures", errors=errors)
+			super().get("captures.html", "Captures", config, errors)
+
 
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION')
+		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION', None)
+		if not action and self.get_argument('INSTALL_FPATH', None):
+			action = 'UPLOAD'
 		self.selected_full_path =  self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH').replace("%27","'")
 		if action:
 			errors = {
 				'REMOVE': lambda: self.do_remove(),
 				'RENAME': lambda: self.do_rename(),
 				'DOWNLOAD': lambda: self.do_download(self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')),
-				'CONVERT_OGG': lambda: self.do_convert_ogg()
+				'CONVERT_OGG': lambda: self.do_convert_ogg(),
+				'UPLOAD': lambda: self.do_install_file()
 			}[action]()
 
 		if (action != 'DOWNLOAD'):
 			self.get(errors)
+
 
 	def do_remove(self):
 		logging.info('removing {}'.format(self.selected_full_path))
@@ -117,6 +111,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 				shutil.move(sourceFolder, destinationFolder)
 				self.selected_full_path = destinationFolder;
 
+
 	def do_download(self, fullpath):
 		if fullpath:
 			source_file = fullpath
@@ -138,6 +133,20 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
+	def do_install_file(self):
+		result = {}
+
+		try:
+			for fpath in self.get_argument('INSTALL_FPATH').split(","):
+				fpath = fpath.strip()
+				if len(fpath)>0:
+					self.install_file(fpath)
+		except Exception as e:
+			logging.error(e)
+			result['errors'] = "Can't install file: {}".format(e)
+
+		return result
+
 	def do_convert_ogg(self):
 		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
 		cmd = 'oggenc "{}" -o "{}"'.format(self.selected_full_path, ogg_file_name)
@@ -148,6 +157,7 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 			return e.output
 		return
 
+
 	def get_content_type(self, filename):
 		m = re.match('(.*)\.(.*)', filename, re.M | re.I | re.S)
 		if m:
@@ -155,7 +165,11 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 				return 'audio/midi'
 			elif m.group(2) == 'ogg':
 				return 'audio/ogg'
-		return 'application/wav'
+			elif m.group(2) == 'mp3':
+				return 'audio/mp3'
+			elif m.group(2) == 'wav':
+				return 'application/wav'
+
 
 	def create_node(self, file_extension):
 		captures = []
@@ -184,33 +198,61 @@ class CapturesConfigHandler(tornado.web.RequestHandler):
 		root_capture['nodes'] = captures
 		return root_capture
 
+	def install_file(self, fpath):
+		logging.info(fpath)
+		fname, fext = os.path.splitext(os.path.basename(fpath))
+
+		destination = "{}/{}.{}".format(CapturesConfigHandler.CAPTURES_DIRECTORY, fname, fext[1:4])
+		logging.info(destination)
+		shutil.move(fpath, destination)
+
 	def walk_directory(self, directory, icon, file_extension):
 		captures = []
-		fileList = os.listdir(directory)
-		logging.info(directory)
-		fileList = sorted(fileList)
-		for f in fnmatch.filter(fileList, '*.%s' % file_extension):
-			fullPath = os.path.join(directory, f)
-			m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
-			text = ''
+		logging.info("Getting {} filelist from {}".format(file_extension,directory))
+		for f in sorted(os.listdir(directory)):
 
-			if m:
-				text = m.group(1)
+			fname, fext = os.path.splitext(f)
+			if len(fext)>0:
+				fext = fext[1:] 
+
+			#logging.debug("{} => {}".format(fname,fext))
+
+			if fext.lower()!=file_extension.lower():
+				continue
+
+			fullPath = os.path.join(directory, f)
+			logging.debug(fullPath)
+			#m = re.match('.*/(.*)', fullPath, re.M | re.I | re.S)
+			#text = ''
+			#if m:
+			#	text = m.group(1)
+
 			try:
 				if self.selected_full_path == fullPath:
 					self.selectedTreeNode = self.maxTreeNodeIndex # max is current right now
 			except:
 				pass
+
+			text = f.replace("'", "&#39;")
+			try:
+				l = mutagen.File(fullPath).info.length
+				text = "{} [{}:{:02d}]".format(f.replace("'", "&#39;"), int(l/60), int(l%60))
+			except Exception as e:
+				logging.warning(e)
+
 			capture = {
-				'text': f.replace("'","&#39;"),
-				'name': text.replace("'","&#39;"),
+				'text': text,
+				'name': f.replace("'","&#39;"),
+				'fext': fext,
 				'fullpath': fullPath.replace("'","&#39;"),
 				'icon': icon,
-				'id': self.maxTreeNodeIndex}
+				'id': self.maxTreeNodeIndex
+			}
 			self.maxTreeNodeIndex+=1
-			if os.path.isdir(os.path.join(directory, f)):
+			if os.path.isdir(fullPath):
 				capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
-
 			captures.append(capture)
+
+
 
 		return captures
