@@ -239,6 +239,18 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '128',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
+		['EPDF HDMI', {
+			'DISPLAY_CONFIG': 'disable_overscan=1\ndtoverlay=act-led,activelow=off,gpio=4\n',
+			'DISPLAY_WIDTH': '',
+			'DISPLAY_HEIGHT': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['EPDF HDMI Inverted', {
+			'DISPLAY_CONFIG': 'disable_overscan=1\nlcd_rotate=2\ndtoverlay=act-led,activelow=off,gpio=4\n',
+			'DISPLAY_WIDTH': '',
+			'DISPLAY_HEIGHT': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
 		['Generic HDMI Display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
@@ -258,7 +270,9 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 
 		config=OrderedDict()
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		kit_version = os.environ.get('ZYNTHIAN_KIT_VERSION')
+
+		if kit_version!='Custom' and kit_version!='EPDF':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
@@ -266,6 +280,9 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			}
 		else:
 			custom_options_disabled = False
+			search_key = "EPDF"
+			if search_key in kit_version:
+				self.display_presets = dict(filter(lambda item: search_key in item[0], self.display_presets.items()))
 
 		config['DISPLAY_NAME'] = {
 			'type': 'select',

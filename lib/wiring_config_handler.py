@@ -61,6 +61,20 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
 			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
 		}],
+		["MCP23017_EPDF", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "103,100,111,108",
+			'ZYNTHIAN_WIRING_ENCODER_B': "104,101,112,109",
+			'ZYNTHIAN_WIRING_SWITCHES': "105,102,113,110,106,107,114,115",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
+		}],
+		["MCP23017_EPDF_REVERSE", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "104,101,112,109",
+			'ZYNTHIAN_WIRING_ENCODER_B': "103,100,111,108",
+			'ZYNTHIAN_WIRING_SWITCHES': "105,102,113,110,106,107,114,115",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "27",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25"
+		}],
 		["PROTOTYPE-5", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,0,4",
 			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,3",
@@ -130,7 +144,9 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 		config=OrderedDict()
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		kit_version = os.environ.get('ZYNTHIAN_KIT_VERSION')
+
+		if kit_version!='Custom' and kit_version!='EPDF':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
@@ -138,6 +154,9 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			}
 		else:
 			custom_options_disabled = False
+			search_key = "EPDF"
+			if search_key in kit_version:
+				self.wiring_presets = dict(filter(lambda item: search_key in item[0], self.wiring_presets.items()))
 
 		config['ZYNTHIAN_WIRING_LAYOUT'] = {
 			'type': 'select',

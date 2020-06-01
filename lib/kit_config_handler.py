@@ -41,6 +41,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
+		'EPDF',
 		'V3-PRO',
 		'V3',
 		'V2+',
@@ -100,6 +101,10 @@ class KitConfigHandler(ZynthianConfigHandler):
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiTFT 2.8 Resistive"
 				wiring_layout = "PROTOTYPE-4"
+			elif kit_version=="EPDF":
+				soundcard_name = "AudioInjector"
+				display_name = "EPDF HDMI"
+				wiring_layout = "MCP23017_EPDF"
 
 			pconfig['SOUNDCARD_NAME']=[soundcard_name]
 			for k,v in AudioConfigHandler.soundcard_presets[soundcard_name].items():

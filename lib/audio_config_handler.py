@@ -172,7 +172,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 		config=OrderedDict()
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		kit_version = os.environ.get('ZYNTHIAN_KIT_VERSION')
+
+		if kit_version!='Custom' and kit_version!='EPDF':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
