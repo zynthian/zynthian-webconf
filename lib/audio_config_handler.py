@@ -151,7 +151,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		['Yeti Microphone', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-t 2000 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
-			'SOUNDCARD_MIXER': ''
+			'SOUNDCARD_MIXER': 'Speaker,Mic'
 		}],
 		['Dummy device', {
 			'SOUNDCARD_CONFIG': '',
