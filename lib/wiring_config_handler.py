@@ -412,7 +412,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.rebuild_zyncoder()
-		if not self.read_reboot_flag():
+		if not self.reboot_flag:
 			self.restart_ui_flag = True
 		self.get(errors)
 
