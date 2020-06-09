@@ -1,3 +1,32 @@
+<style>
+th.rotate {
+  height: 140px;
+  white-space: nowrap;
+}
+
+th.rotate > div {
+  transform: 
+    translate(0px, -4px)
+    /* 45 is really 360 - 45 */
+    rotate(315deg);
+  width: 30px;
+  float: right;
+}
+th.rotate > div > span {
+  border-bottom: 1px solid #000;
+  padding: 1px 0px;
+}
+td.unchanged {
+    color: #555;
+}
+table.values {
+    width: auto; /* Don't scale the table up to 100% */
+}
+table.values > tbody > tr > td {
+    text-align: right;
+    padding-right: 19px;
+}
+</style>
 
 <h2>{{ title }}</h2>
 
@@ -347,6 +376,19 @@ function getMidiProfileStateData(snapshotDetails){
 	return result;
 }
 
+function renderControllers(ctrl) {
+  let result = '<div>';
+  for (key in ctrl) {
+    result += '<div class="row"><div class="col-md-3">';
+    result += key;
+    result += '</div><div class="col-md-9">';
+    result += ctrl[key].value;
+    result += "</div></div>"
+  }
+  result += '</div>';
+  return result;
+}
+
 function getLayoutData(snapshotDetails){
 	result = [];
 	for (layerKey in snapshotDetails.layers){
@@ -401,27 +443,31 @@ function getLayoutData(snapshotDetails){
 			}
 		}
 		if (layer.zs3_list && layer.zs3_list.length>0) {
-			zs3_infos = "";
+			zs3_infos = "<table data-toggle='table' class='table table-condensed values'><thead><tr><th></th>";
+                        for (key in layer.zs3_list.find(z => z !== null).controllers_dict) {
+                          zs3_infos += "<th class='rotate'><div><span>" + key + "</th></div></span>";
+                        }
+                        zs3_infos += "</tr></thead><tbody>";
 			for (zs3Idx in layer.zs3_list) {
 				zs3 = layer.zs3_list[zs3Idx];
 				if (zs3){
-					zs3_infos += ['<div class="row">',
-						'<div class="col-md-1">#',
-						parseInt(zs3Idx) + 1,
-						'</div>',
-						'<div class="col-md-4">',
-						layer.zs3_list[zs3Idx].bank_name,
-						'</div>',
-						'<div class="col-md-7">',
-						layer.zs3_list[zs3Idx].preset_name,
-						'</div>',
-						'</div>'
-					].join('')
+                                        zs3_infos += "<tr><td>#" + zs3Idx + "</td>";
+					for (key in zs3.controllers_dict) {
+                                          const v = zs3.controllers_dict[key].value;
+                                          if (v != layer.controllers_dict[key].value) {
+  					    zs3_infos += "<td>" + v.toFixed(1) + "</td>";
+                                          } else {
+                                            zs3_infos += "<td class='unchanged'>·</td>";
+                                          }
+					}
+					zs3_infos += "</tr>";
 				}
 			}
+                        zs3_infos += "</tbody></table>";
 			if (zs3_infos){
 				layer_infos += ['<h3>ZS3</h3>',
 					'<div class="container">',
+                                        '<div><i>Empty values in this table are equal to the default snapshot values, and removed for clarity.</i></div>',
 					zs3_infos,
 					'</div>'
 				].join('')
