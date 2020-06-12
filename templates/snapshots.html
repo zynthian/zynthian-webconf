@@ -383,10 +383,11 @@ function getLayoutData(snapshotDetails){
 
 			for (ctrlIdx in layer.controllers_dict) {
 				layer_controller_infos += ['<div class="row">',
-					'<div class="col-md-6">',
+					'<div class="col-xs-6"><strong>',
 					ctrlIdx,
-					'</div>',
-					'<div class="col-md-6">',
+					'</strong></div>',
+					'<div class="col-xs-1"></div>',
+					'<div class="col-xs-5">',
 					layer.controllers_dict[ctrlIdx].value,
 					'</div>',
 					'</div>'
