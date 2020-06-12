@@ -148,6 +148,11 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:ALSA -r 44100 -p 512 -n 3 -X raw',
 			'SOUNDCARD_MIXER': 'PCM'
 		}],
+		['Yeti Microphone', {
+			'SOUNDCARD_CONFIG': '',
+			'JACKD_OPTIONS': '-t 2000 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
+			'SOUNDCARD_MIXER': 'Speaker,Mic'
+		}],
 		['Dummy device', {
 			'SOUNDCARD_CONFIG': '',
 			'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw',
@@ -237,6 +242,10 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
+		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
+			self.persist_update_sys_flag()
+
 		for k in list(postedConfig):
 			if k.startswith('ZYNTHIAN_CONTROLLER'):
 				del postedConfig[k]
