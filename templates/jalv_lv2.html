@@ -13,7 +13,8 @@
             </div>
 
             <div class="col-md-8">
-                <input type="text" name="ZYNTHIAN_JALV_FILTER" id="ZYNTHIAN_JALV_FILTER" value="{{config['ZYNTHIAN_JALV_FILTER']}}"/>
+              <input type="text" name="ZYNTHIAN_JALV_FILTER" id="ZYNTHIAN_JALV_FILTER" value="{{config['ZYNTHIAN_JALV_FILTER']}}"
+                     onchange="javascript:filter_plugins();" onkeyup="javascript:filter_plugins();"/>
             </div>
             <div class="col-md-2">
                 <input type="button" name="ZYNTHIAN_JALV_FILTER_ACTION" value="FILTER" class="btn btn-block btn-theme" onclick="javascript:filter_plugins();" />
@@ -59,7 +60,7 @@
                     </div>
                   </div>
                   {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'][pluginType] %}
-                  <div class="rowi hide {% if not config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} advanced-view {% end %}" >
+                  <div class="row plugin" >
                       <div class="col-md-1 advanced-view plugin-installed" >
                               <input type="checkbox"
                                      name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}"
@@ -70,9 +71,9 @@
                           {{ escape(pluginname) }}
                       </div>
                       <div class="col-md-2 plugin-type">
-                          {% if 'TYPE' in config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname] %}
-    {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['TYPE']) }}
-    {% end %}
+                          {% if 'CLASS' in config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname] %}
+                            {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['CLASS']) }}
+                          {% end %}
                       </div>
                       <div class="col-md-5 one-line-truncated plugin-url">
 			<a href="{{ config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL'] }}" target="_blank">
@@ -146,11 +147,11 @@ function reset_filter() {
 
 function filter_plugins() {
     filter_value=$("#ZYNTHIAN_JALV_FILTER")[0].value.toUpperCase();
-    $(".plugin-name").each(function(index,plugin_type_div) {
-	if (plugin_type_div.innerText.toUpperCase().includes(filter_value)){
-            plugin_type_div.parentElement.classList.remove("hide");    
+    $(".plugin").each(function(index,row_div) {
+	if (row_div.innerText.toUpperCase().includes(filter_value)){
+            row_div.classList.remove("hide");    
         } else {
-            plugin_type_div.parentElement.classList.add("hide");    
+            row_div.classList.add("hide");    
         }
     });
 
