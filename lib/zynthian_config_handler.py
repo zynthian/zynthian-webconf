@@ -121,6 +121,10 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_KEY_BINDING")
 
 
+	def persist_update_sys_flag(self):
+		check_output("touch /zynthian_update_sys", shell=True)
+
+
 	def persist_reboot_flag(self):
 		check_output("touch /tmp/zynthian_reboot", shell=True)
 

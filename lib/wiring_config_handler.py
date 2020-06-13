@@ -426,13 +426,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
 		self.rebuild_zyncoder()
-
-		self.restart_ui_flag = True
+		if not self.reboot_flag:
+			self.restart_ui_flag = True
 		self.get(errors)
 
 
 	@classmethod
-	def rebuild_zyncoder(self):
+	def rebuild_zyncoder(cls):
 		try:
 			cmd="cd %s/zyncoder/build;cmake ..;make" % os.environ.get('ZYNTHIAN_DIR')
 			check_output(cmd, shell=True)

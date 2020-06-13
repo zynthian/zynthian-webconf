@@ -153,7 +153,7 @@ $(document).ready(function () {
 	connectZynthianWebSocket(deferred);
 
 	$('#upload_panel')[0].onuploadend = function(response){
-		console.log("Upload succeded: " + response)
+		console.log("Upload succeeded: " + response)
 		$("#INSTALL_FPATH").val(response)
 		do_action("upload")
 	}

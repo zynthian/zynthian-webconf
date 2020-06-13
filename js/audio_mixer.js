@@ -40,7 +40,10 @@ $(document).ready(function () {
 	$("select").on('change',function(ev) {
 		var ctrl = $(ev.target).attr('id')
 		var val = $(ev.target).val()
-		if (ctrl.substr(0,26)=="ZYNTHIAN_CONTROLLER_VALUE_") ctrl = ctrl.substr(26)
-			changeMixerValue(ctrl, val);
+		if (ctrl){
+		    if (ctrl.substr(0,26)=="ZYNTHIAN_CONTROLLER_VALUE_")
+		        ctrl = ctrl.substr(26)
+		    changeMixerValue(ctrl, val);
+		}
 	});
 });
