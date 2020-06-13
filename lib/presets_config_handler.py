@@ -4,7 +4,7 @@
 #
 # Presets Manager Handler
 #
-# Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
+# Copyright (C) 2020 Markus Heidt <markus@heidt-tech.com>
 #
 #********************************************************************
 #
@@ -64,7 +64,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		try:
 			self.engine = self.get_argument('ENGINE', 'ZY')
 			self.engine_info = zynthian_gui_engine.engine_info[self.engine]
-			self.engine_cls = self.engine_info[3]
+			self.engine_cls = self.engine_info[4]
 			if self.engine_cls==zynthian_engine_jalv:
 				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
 
@@ -330,7 +330,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 	def get_engine_info(self):
 		engine_info = copy.copy(zynthian_gui_engine.engine_info)
 		for e in zynthian_gui_engine.engine_info:
-			if not engine_info[e][4] or not hasattr(engine_info[e][3], "zynapi_get_banks"):
+			if not engine_info[e][5] or not hasattr(engine_info[e][4], "zynapi_get_banks"):
 				del engine_info[e]
 		return engine_info
 
