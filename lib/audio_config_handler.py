@@ -241,11 +241,16 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
-		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
-		previousSoundcard = os.environ.get('SOUNDCARD_NAME')
-		if self.get_argument('SOUNDCARD_NAME') != previousSoundcard:
-			self.persist_update_sys_flag()
 
+		try:
+			previousSoundcard = os.environ.get('SOUNDCARD_NAME')
+			currentSoundcard = self.get_argument('SOUNDCARD_NAME')
+			if currentSoundcard.startswith('AudioInjector') and currentSoundcard!=previousSoundcard:
+				self.persist_update_sys_flag()
+		except:
+			pass
+
+		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
 		for k in list(postedConfig):
 			if k.startswith('ZYNTHIAN_CONTROLLER'):
 				del postedConfig[k]
