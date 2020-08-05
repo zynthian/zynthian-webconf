@@ -1,4 +1,16 @@
 
+<style>
+.row.display-flex {
+  display: flex;
+  flex-wrap: wrap;
+}
+.row.display-flex > [class*='col-'] {
+  display: flex;
+  flex-direction: column;
+}
+</style>
+
+<div class="row display-flex">
 {% for group in config %}
 <div class="col-lg-4 col-sm-6 dashboard-block">
 	<h3><i class="{{ config[group]['icon'] }}"></i> {{ escape(group) }}</h3>
@@ -17,6 +29,7 @@
 	</div>
 </div>
 {% end %}
+</div>
 
 <div class="row">
 {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
