@@ -30,7 +30,7 @@ from collections import OrderedDict
 from subprocess import check_output, call
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
-from lib.audio_config_handler import AudioConfigHandler
+from lib.audio_config_handler import soundcard_presets
 from lib.display_config_handler import DisplayConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 
@@ -103,7 +103,7 @@ class KitConfigHandler(ZynthianConfigHandler):
 				wiring_layout = "PROTOTYPE-4"
 
 			pconfig['SOUNDCARD_NAME']=[soundcard_name]
-			for k,v in AudioConfigHandler.soundcard_presets[soundcard_name].items():
+			for k,v in soundcard_presets[soundcard_name].items():
 				pconfig[k]=[v]
 
 			pconfig['DISPLAY_NAME']=[display_name]
