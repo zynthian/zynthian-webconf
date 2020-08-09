@@ -70,7 +70,7 @@ class JalvLv2Handler(ZynthianBasicHandler):
 		if action:
 			errors = {
 				'ENABLE_PLUGINS': lambda: self.do_enable_plugins(),
-				'REGENERATE_PLUGIN_LIST': lambda: self.do_regenerate_plugin_list()
+				'REGENERATE_PLUGIN_LIST': lambda: self.do_regenerate_lv2_cache()
 			}[action]()
 		self.get(errors)
 
@@ -92,8 +92,10 @@ class JalvLv2Handler(ZynthianBasicHandler):
 			return format(e)
 
 
-	def do_regenerate_plugin_list(self):
+	def do_regenerate_lv2_cache(self):
 		zynthian_lv2.generate_plugins_config_file()
 		zynthian_lv2.get_plugins_by_type()
+		zynthian_lv2.generate_all_presets_cache(False)
+
 
 #------------------------------------------------------------------------------
