@@ -27,7 +27,7 @@ import re
 import sys
 import logging
 import tornado.web
-from subprocess import check_output
+from subprocess import check_output, DEVNULL
 from distutils import util
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -341,7 +341,8 @@ class DashboardHandler(ZynthianBasicHandler):
 			else:
 				return None
 		except Exception as e:
-			logging.error("Can't get info for '{}' => {}".format(mpath,e))
+			#logging.error("Can't get info for '{}' => {}".format(mpath,e))
+			pass
 
 
 	def get_num_of_files(self, path, pattern=None):
@@ -361,7 +362,7 @@ class DashboardHandler(ZynthianBasicHandler):
 		n2 = int(check_output("find {}/pianoteq -type f -prune | wc -l".format(path), shell=True).decode())
 		logging.debug("Pianoteq presets => {}".format(n2))
 		# Puredata presets
-		n3 = int(check_output("find {}/puredata/*/* -type d -prune | wc -l".format(path), shell=True).decode())
+		n3 = int(check_output("find {}/puredata/*/* -type d -prune | wc -l".format(path), shell=True, stderr=DEVNULL).decode())
 		logging.debug("Puredata presets => {}".format(n3))
 		# ZynAddSubFX presets
 		n4 = int(check_output("find {}/zynaddsubfx -type f -name *.xiz | wc -l".format(path), shell=True).decode())
