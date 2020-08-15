@@ -1,7 +1,3 @@
-<div class="pull-right">
-    <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
-</div>
-
 <h2>{{ title }}</h2>
 
 <form id="jalv-lv2-form" action="/sw-jalv-lv2" enctype="multipart/form-data" method="post">
@@ -24,7 +20,7 @@
 
         <div class="row">
             <div class="col-md-12">
-                <button name="ZYNTHIAN_JALV_ACTION" value="REGENERATE_PLUGIN_LIST" class="btn btn-theme btn-block advanced-view">Search for new Plugins &amp; Presets</button>
+                <button name="ZYNTHIAN_JALV_ACTION" value="REGENERATE_PLUGIN_LIST" class="btn btn-theme btn-block">Search for new Plugins &amp; Presets</button>
             </div>
         </div>
     </div>
@@ -46,7 +42,7 @@
             <div class="container-fluid jalv-lv2-plugin-panel">
               <div class="row">
                   <div class="row">
-                      <div  class="col-md-1 header advanced-view">
+                      <div  class="col-md-1 header">
                           Enable
                       </div>
                       <div  class="col-md-4 header">
@@ -61,7 +57,7 @@
                   </div>
                   {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'][pluginType] %}
                   <div class="row plugin" >
-                      <div class="col-md-1 advanced-view plugin-installed" >
+                      <div class="col-md-1 plugin-installed" >
                               <input type="checkbox"
                                      name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}"
                                      {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} checked="checked" {% end %}
@@ -96,7 +92,7 @@
     <div class="container-fluid">
         <div class="row"><br/></div>
         <div class="row">
-            <button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
+            <button name="ZYNTHIAN_JALV_ACTION" value="ENABLE_PLUGINS" class="btn btn-lg btn-theme btn-block">Save</button>
         </div>
     </div>
 </form>
@@ -108,26 +104,6 @@ function showProgressAnimation(){
     $("#loading-div-background").show();
 }
 
-function restore_advanced_view() {
-    if (Cookies.get('advanced_view')) {
-        $('input#check_advanced_view').prop("checked", true);
-        $('.advanced-view').show();
-    } else {
-        $('input#check_advanced_view').prop("checked", false);
-        $('.advanced-view').hide();
-    }
-}
-
-function onchange_check_advanced_view() {
-    if ($('input#check_advanced_view').prop("checked")==true) {
-        Cookies.set('advanced_view','1')
-        $('.advanced-view').show();
-    } else {
-        Cookies.remove('advanced_view')
-        $('.advanced-view').hide();
-    }
-}
-
 $("#ZYNTHIAN_JALV_FILTER").on('keydown', function(e) {
     if (e.which == 13) {
         e.preventDefault();
@@ -136,7 +112,6 @@ $("#ZYNTHIAN_JALV_FILTER").on('keydown', function(e) {
 });
 
 $(document).ready(function() {
-    restore_advanced_view();
     filter_plugins();
 });
 
