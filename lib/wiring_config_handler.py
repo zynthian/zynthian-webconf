@@ -29,7 +29,7 @@ from collections import OrderedDict
 from subprocess import check_output
 from enum import Enum
 
-from zynconf import CustomSwitchActionType, CustomUiAction
+from zynconf import CustomSwitchActionType, CustomUiAction, ZynaptikADActionType
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
@@ -222,171 +222,97 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'advanced': True,
 			'disabled': custom_options_disabled
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'] = {
+
+		zynaptik_config = os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG',"")
+		config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
 			'type': 'select',
-			'title': 'Custom Switch-1 Action',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01'),
-			'options': CustomSwitchActionType
+			'title': "Zynaptik Config",
+			'value': zynaptik_config,
+			'options': ["", "16xSWITCH", "8xSWITCH", "4xAD", "16xSWITCH + 4xAD", "8xSWITCH + 4xAD"],
+			'advanced': True,
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_SHORT'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Short-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_SHORT'),
-			'options': CustomUiAction
+
+		# Customizable Switches
+		config['_SECTION_CUSTOM_SWITCHES_'] = {
+			'type': 'html',
+			'content': "<h3>Customizable Switches</h3>"
 		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_BOLD'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Bold-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_BOLD'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_LONG'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Long-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__UI_LONG'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_CHAN'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-			'type': 'select',
-			'title': 'Channel',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_CHAN'),
-			'options': ["Active"] + [str(i) for i in range(1,17)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_01__MIDI_NUM'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-			'type': 'select',
-			'title': 'Number',
-			'value': self.get_custom_midi_num(1),
-			'options': [str(i) for i in range(0,128)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'] = {
-			'type': 'select',
-			'title': 'Custom Switch-2 Action',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02'),
-			'options': CustomSwitchActionType
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_SHORT'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Short-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_SHORT'),
-			'options': CustomUiAction,
-			'advanced': True
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_BOLD'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Bold-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_BOLD'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_LONG'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Long-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__UI_LONG'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_CHAN'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-			'type': 'select',
-			'title': 'Channel',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_CHAN'),
-			'options': ["Active"] + [str(i) for i in range(1,17)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_02__MIDI_NUM'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
-			'type': 'select',
-			'title': 'Number',
-			'value': self.get_custom_midi_num(2),
-			'options': [str(i) for i in range(0,128)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'] = {
-			'type': 'select',
-			'title': 'Custom Switch-3 Action',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03'),
-			'options': CustomSwitchActionType
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_SHORT'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Short-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_SHORT'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_BOLD'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Bold-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_BOLD'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_LONG'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Long-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__UI_LONG'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_CHAN'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-			'type': 'select',
-			'title': 'Channel',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_CHAN'),
-			'options': ["Active"] + [str(i) for i in range(1,17)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_03__MIDI_NUM'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
-			'type': 'select',
-			'title': 'Number',
-			'value': self.get_custom_midi_num(3),
-			'options': [str(i) for i in range(0,128)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'] = {
-			'type': 'select',
-			'title': 'Custom Switch-4 Action',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04'),
-			'options': CustomSwitchActionType
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_SHORT'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Short-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_SHORT'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_BOLD'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Bold-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_BOLD'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_LONG'] = {
-			'enabling_options': 'UI_ACTION',
-			'type': 'select',
-			'title': 'Long-push',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__UI_LONG'),
-			'options': CustomUiAction
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_CHAN'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-			'type': 'select',
-			'title': 'Channel',
-			'value': os.environ.get('ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_CHAN'),
-			'options': ["Active"] + [str(i) for i in range(1,17)]
-		}
-		config['ZYNTHIAN_WIRING_CUSTOM_SWITCH_04__MIDI_NUM'] = {
-			'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE', 
-			'type': 'select',
-			'title': 'Number',
-			'value': self.get_custom_midi_num(4),
-			'options': [str(i) for i in range(0,128)]
-		}
+		try:
+			n_custom_switches = max(0, len(os.environ.get('ZYNTHIAN_WIRING_SWITCHES').split(",")) - 4)
+		except:
+			n_custom_switches = 0
+		for i in range(1, n_custom_switches + 1):
+			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}'.format(i) 
+			config[base_name] = {
+				'type': 'select',
+				'title': 'Custom Switch-{} Action'.format(i),
+				'value': os.environ.get(base_name),
+				'options': CustomSwitchActionType
+			}
+			config[base_name + '__UI_SHORT'] = {
+				'enabling_options': 'UI_ACTION',
+				'type': 'select',
+				'title': 'Short-push',
+				'value': os.environ.get(base_name + '__UI_SHORT'),
+				'options': CustomUiAction
+			}
+			config[base_name + '__UI_BOLD'] = {
+				'enabling_options': 'UI_ACTION',
+				'type': 'select',
+				'title': 'Bold-push',
+				'value': os.environ.get(base_name + '__UI_BOLD'),
+				'options': CustomUiAction
+			}
+			config[base_name + '__UI_LONG'] = {
+				'enabling_options': 'UI_ACTION',
+				'type': 'select',
+				'title': 'Long-push',
+				'value': os.environ.get(base_name + '__UI_LONG'),
+				'options': CustomUiAction
+			}
+			config[base_name + '__MIDI_CHAN'] = {
+				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+				'type': 'select',
+				'title': 'Channel',
+				'value': os.environ.get(base_name + '__MIDI_CHAN'),
+				'options': ["Active"] + [str(i) for i in range(1,17)]
+			}
+			config[base_name + '__MIDI_NUM'] = {
+				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+				'type': 'select',
+				'title': 'Number',
+				'value': self.get_custom_midi_num(i),
+				'options': [str(i) for i in range(0,128)]
+			}
+
+		# Zynaptik ADC input
+		if "4xAD" in zynaptik_config:
+			config['_SECTION_ZYNAPTIK_AD_'] = {
+				'type': 'html',
+				'content': "<h3>Zynaptik Analog Input</h3>"
+			}
+			for i in range(1,5):
+				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}'.format(i)
+				config[base_name] = {
+					'type': 'select',
+					'title': 'Zynaptik AD-{} Action'.format(i),
+					'value': os.environ.get(base_name),
+					'options': ZynaptikADActionType
+				}
+				config[base_name + '__MIDI_CHAN'] = {
+					'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
+					'type': 'select',
+					'title': 'Channel',
+					'value': os.environ.get(base_name + '__MIDI_CHAN'),
+					'options': ["Active"] + [str(i) for i in range(1,17)]
+				}
+				config[base_name + '__MIDI_NUM'] = {
+					'enabling_options': 'MIDI_CC',
+					'type': 'select',
+					'title': 'Number',
+					'value': self.get_zynaptik_ad_midi_num(i),
+					'options': [str(i) for i in range(0,128)]
+				}
 
 		super().get("Wiring", config, errors)
 
@@ -396,6 +322,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		v = os.environ.get("{}__MIDI_NUM".format(switch_base_name))
 		if v is None:
 			v = os.environ.get("{}__CC_NUM".format(switch_base_name),"")
+		return v
+
+
+	def get_zynaptik_ad_midi_num(self, i):
+		switch_base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}".format(i)
+		v = os.environ.get("{}__MIDI_NUM".format(switch_base_name),"")
 		return v
 
 
