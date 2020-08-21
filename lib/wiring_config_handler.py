@@ -228,7 +228,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'type': 'select',
 			'title': "Zynaptik Config",
 			'value': zynaptik_config,
-			'options': ["", "16xSWITCH", "8xSWITCH", "4xAD", "16xSWITCH + 4xAD", "8xSWITCH + 4xAD"],
+			'options': ["", "16xSWITCH", "4xAD", "16xSWITCH + 4xAD"],
 			'advanced': True,
 		}
 
