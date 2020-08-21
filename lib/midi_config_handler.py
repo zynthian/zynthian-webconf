@@ -307,11 +307,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'div_class': "col-xs-2",
 				'inline': 1
 			}],
-			['ZYNTHIAN_MIDI_SYS_ENABLED', {
-				'type': 'boolean',
-				'title': 'Enable System Messages (Transport)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1')
-			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
 				'type': 'boolean',
 				'title': 'Single Channel Mode (Active Channel receives all external events)',
@@ -326,6 +321,16 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'boolean',
 				'title': 'Preload Presets with Note-On events',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1')
+			}],
+			['ZYNTHIAN_MIDI_FILTER_OUTPUT', {
+				'type': 'boolean',
+				'title': 'Route MIDI Filter to Output Ports',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_OUTPUT','1')
+			}],
+			['ZYNTHIAN_MIDI_SYS_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable System Messages (Transport)',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1')
 			}],
 			['ZYNTHIAN_MIDI_RTPMIDI_ENABLED', {
 				'type': 'boolean',
@@ -433,6 +438,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_MIDI_FILTER_OUTPUT'] = self.request.arguments.get('ZYNTHIAN_MIDI_FILTER_OUTPUT','0')
 		self.request.arguments['ZYNTHIAN_MIDI_SYS_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_SYS_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
 		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
