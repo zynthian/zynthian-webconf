@@ -59,12 +59,12 @@
                   <div class="row plugin" >
                       <div class="col-md-1 plugin-installed" >
                               <input type="checkbox"
-                                     name="ZYNTHIAN_JALV_ENABLE_{{escape(pluginname)}}"
+                                     name="ZYNTHIAN_JALV_ENABLE_{{pluginname}}"
                                      {% if config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['ENABLED'] %} checked="checked" {% end %}
                             />
                       </div>
                       <div class="col-md-4 one-line-truncated plugin-name">
-                          {{ escape(pluginname) }}
+                          {{ pluginname }}
                       </div>
                       <div class="col-md-2 plugin-type">
                           {% if 'CLASS' in config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname] %}
@@ -72,7 +72,7 @@
                           {% end %}
                       </div>
                       <div class="col-md-5 one-line-truncated plugin-url">
-			<a href="{{ config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL'] }}" target="_blank">
+                          <a href="{{ config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL'] }}" target="_blank">
                               {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}</a>
                       </div>
                   </div>
