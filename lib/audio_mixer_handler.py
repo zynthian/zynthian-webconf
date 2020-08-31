@@ -51,11 +51,9 @@ class AudioMixerHandler(tornado.web.RequestHandler):
 
 		try:
 			logging.debug('updating webconfig view: {} with {}'.format(ctrl, val))
-
 			for websocket_message_handler in AudioMixerHandler.websocket_message_handler_list:
 				logging.debug('message_handler: {}'.format(websocket_message_handler))
 				websocket_message_handler.update_controller_value(ctrl, val)
-
 
 		except Exception as err:
 			result['errors'] = str(err)
@@ -83,7 +81,7 @@ class AudioConfigMessageHandler(ZynthianWebSocketMessageHandler):
 
 
 	def on_websocket_message(self, action_with_parameters):
-		logging.debug("action: %s " % action_with_parameters)
+		#logging.debug("action: %s " % action_with_parameters)
 
 		(action, parm1, parm2) = action_with_parameters.split("/")
 
@@ -93,7 +91,7 @@ class AudioConfigMessageHandler(ZynthianWebSocketMessageHandler):
 			AudioMixerHandler.register_websocket(self)
 		else:
 			logging.error('Unknown action {}'.format(action))
-		logging.debug("message handled.")  # this needs to show up early to get the socket working again.
+		#logging.debug("message handled.")  # this needs to show up early to get the socket working again.
 
 
 	def on_close(self):
@@ -107,9 +105,8 @@ class AudioConfigMessageHandler(ZynthianWebSocketMessageHandler):
 				zctrl.set_value(value)
 			elif zctrl.is_integer:
 				zctrl.set_value(int(value))
-
 		except Exception as e:
-			logging.debug("Can't set controller '{}' value to '{}': {}".format(symbol, value, e))
+			logging.error("Can't set controller '{}' value to '{}': {}".format(symbol, value, e))
 
 
 	def update_controller_value(self, symbol, value):
