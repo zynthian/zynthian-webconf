@@ -131,6 +131,11 @@ soundcard_presets = OrderedDict([
 		'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:U192k -r 48000 -p 256 -n 3 -s -S -X raw',
 		'SOUNDCARD_MIXER': 'UMC404HD_192k_Output,Mic'
 	}],
+	['Behringer UMC1820', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -d alsa -d hw:UMC1820 -r 44100 -p 256 -n 2 -s -S -X raw',
+		'SOUNDCARD_MIXER': 'UMC1820 Output'
+	}],
 	['Steinberg UR22 MKII', {
 		'SOUNDCARD_CONFIG': '',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw',
