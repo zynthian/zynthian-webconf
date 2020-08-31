@@ -79,6 +79,7 @@ else:
 
 # Set root logging level
 logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
+logging.getLogger().setLevel(level=log_level)
 
 
 #------------------------------------------------------------------------------
