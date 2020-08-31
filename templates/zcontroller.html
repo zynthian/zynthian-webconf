@@ -27,7 +27,7 @@
 		{% if zctrl.is_toggle %} 
 							<input type="checkbox"
 								data-provide="checkbox"
-								id="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" name="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" value="on" {% if zctrl.get_value()==1 %}checked="checked"{% end %}" />
+								id="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" name="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" value="on" {% if zctrl.get_value()==1 %}checked="checked"{% end %} />
 		{% elif zctrl.labels %}
 							<select id="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" name="ZYNTHIAN_CONTROLLER_VALUE_{{ symbol }}" >
 			{% for label in zctrl.labels %}
@@ -65,9 +65,8 @@ $(document).ready(function() {
 	$('#display_zcontroller_panel').click(function(){
 		scMixers = $('#SOUNDCARD_MIXER')[0].value.split(',');
 		for (idx in scMixers){
-			for (idx2 in $('#ZYNTHIAN_CONTROLLER_VISIBLE_' + scMixers[idx].trim().split(" ").join("_"))) {
-				$('#ZYNTHIAN_CONTROLLER_VISIBLE_' + scMixers[idx].trim().split(" ").join("_"))[idx2].checked = true;
-			}
+			var val = scMixers[idx].trim()
+			$('input[name^=ZYNTHIAN_CONTROLLER_VISIBLE_][value="'+val+'"]').prop('checked', true);
 		}
 		$('#zcontroller_panel').modal('show');
 	});

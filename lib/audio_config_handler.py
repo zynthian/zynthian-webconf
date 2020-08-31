@@ -39,27 +39,27 @@ soundcard_presets = OrderedDict([
 	['HifiBerry DAC+ ADC PRO', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Digital,ADC,ADC Left Input,ADC Right Input'
+		'SOUNDCARD_MIXER': 'Digital Left,ADC Left,Digital Right,ADC Right,ADC Left Input,ADC Right Input'
 	}],
 	['HifiBerry DAC+ ADC', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Digital'
+		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry DAC+', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Digital'
+		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry DAC+ light', {
 		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Digital'
+		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry DAC+ RTC', {
 		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\ndtoverlay=i2c-rtc,ds130',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Digital'
+		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry Digi', {
 		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi',
@@ -74,12 +74,12 @@ soundcard_presets = OrderedDict([
 	['AudioInjector', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-wm8731-audio',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorpi -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Master,Capture'
+		'SOUNDCARD_MIXER': 'Master Left,Capture Left,Master Right,Capture Right'
 	}],
 	['AudioInjector Ultra', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorul -r 48000 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'DAC,PGA'
+		'SOUNDCARD_MIXER': 'DAC Left,DAC Right,PGA'
 	}],
 	['IQAudio DAC', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-dac',
@@ -144,17 +144,17 @@ soundcard_presets = OrderedDict([
 	['Yeti Microphone', {
 		'SOUNDCARD_CONFIG': '',
 		'JACKD_OPTIONS': '-t 2000 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Speaker,Mic'
+		'SOUNDCARD_MIXER': 'Speaker Left,Mic Left,Speaker Right,Mic Right'
 	}],
 	['RBPi Headphones', {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -p 512 -n 3 -X raw',
-		'SOUNDCARD_MIXER': 'Headphone'
+		'SOUNDCARD_MIXER': 'Headphone Left,Headphone Right'
 	}],
 	['RBPi HDMI', {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -p 512 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'HDMI'
+		'SOUNDCARD_MIXER': 'HDMI Left,HDMI Right'
 	}],
 	['Dummy device', {
 		'SOUNDCARD_CONFIG': '',
