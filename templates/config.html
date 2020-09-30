@@ -116,6 +116,7 @@
 							<li class="dropdown {% if request.uri[0:9]=="/sys-" %}active{% end %}">
 								<a href="#menu-sys" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
 								<ul class="dropdown-menu">
+									<li {% if request.uri=="/zynterm" %}class="active"{% end %}><a href="/zynterm">Terminal</a></li>
 									<li {% if request.uri=="/sys-wifi" %}class="active"{% end %}><a href="/sys-wifi">Wi-Fi</a></li>
 									<li {% if request.uri=="/sys-security" %}class="active"{% end %}><a href="/sys-security">Security / Access</a></li>
 									<li {% if request.uri=="/sys-backup" %}class="active"{% end %}><a href="/sys-backup">Backup / Restore</a></li>
@@ -144,7 +145,7 @@
 
 	<section id="section-config" class="content-section container pad-top80 pad-bot80 clearfix bg_logo_wave">
 		<div class="row">
-			<div class="col-lg-10 col-lg-offset-1 col-xs-12 col-xs-offset-0">
+			<div class="col-xs-12 col-xs-offset-0">
 				{% module Template(body, config=config, title=title, errors=errors) %}
 			</div>
 		</div>

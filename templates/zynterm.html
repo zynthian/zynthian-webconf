@@ -1,0 +1,81 @@
+
+<style>
+#dummy-screen {
+	visibility: hidden;
+	border: white solid 5px;
+	font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+	font-size: 16px;
+}
+
+#dummy-screen-rows {
+	visibility: hidden;
+}
+
+.terminal {
+	float: None;
+	font-family: "DejaVu Sans Mono", "Liberation Mono", monospace;
+	font-size: 16px;
+	line-height: 1.18em;
+}  
+</style>
+
+<script src="{{ config['xstatic']('termjs', 'term.js') }}"></script>
+<script src="/js/terminado.js"></script>
+<script>
+window.onload = function() {
+	// Test size: 25x80
+	var termRowHeight = 0.0 + 1.00*document.getElementById("dummy-screen").offsetHeight / 25;
+	var termColWidth = 0.0 + (1.02*document.getElementById("dummy-screen-rows").offsetWidth / 80);
+	document.getElementById("dummy-screen").setAttribute("style", "display: none");
+
+	var protocol = (window.location.protocol.indexOf("https") === 0) ? "wss" : "ws";
+	var ws_url = protocol+"://"+window.location.host+ "{{ config['ws_url_path'] }}";
+
+	function calculate_size(contsel) {
+		var h = $("body").innerHeight();
+		var w = $(contsel).innerWidth();
+		var rows = Math.max(2, Math.floor(h/termRowHeight)-1);
+		var cols = Math.max(3, Math.floor(w/termColWidth)-1);
+		console.log("resize:", termRowHeight, termColWidth, h, w, rows, cols);
+		return {rows: rows, cols: cols, h: h, w: w};
+	}
+
+	var contsel = "section#section-config";
+	var terminal = make_terminal($(contsel).get(0), calculate_size(contsel), ws_url);
+
+	window.onresize = function() { 
+		var geom = calculate_size(contsel);
+		terminal.term.resize(geom.cols, geom.rows);
+		terminal.socket.send(JSON.stringify(["set_size", geom.rows, geom.cols, geom.h, geom.w]));
+	};
+};
+</script>
+
+<h2>{{ title }}</h2>
+<!-- test size: 25x80 -->
+<pre id="dummy-screen">0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+0
+1
+2
+3
+4
+5
+6
+7
+8
+9
+0
+1
+2
+3
+<span id="dummy-screen-rows">01234567890123456789012345678901234567890123456789012345678901234567890123456789</span>
+</pre>

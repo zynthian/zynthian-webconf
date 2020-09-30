@@ -30,6 +30,9 @@ import random
 import logging
 import tornado.web
 import tornado.ioloop
+import tornado_xstatic
+import terminado
+from terminado import TermSocket, SingleTermManager
 
 from lib.login_handler import LoginHandler, LogoutHandler
 from lib.dashboard_handler import DashboardHandler
@@ -59,6 +62,7 @@ from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
 from lib.repository_handler import RepositoryHandler
 from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler
+from lib.zynterm_handler import ZyntermHandler
 
 #------------------------------------------------------------------------------
 
@@ -80,7 +84,6 @@ else:
 # Set root logging level
 logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
 logging.getLogger().setLevel(level=log_level)
-
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
@@ -108,14 +111,18 @@ def get_cookie_secret():
 
 
 def make_app():
+	global term_manager
 
 	settings = {
+		"xstatic_url": tornado_xstatic.url_maker('/xstatic/'),
 		"template_path": "templates",
 		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
 		"upload_progress_handler": dict()
 		#"autoescape": None
 	}
+
+	term_manager = SingleTermManager(shell_command=['./zynbash.sh'])
 
 	return tornado.web.Application([
 		(r'/$', DashboardHandler),
@@ -162,13 +169,24 @@ def make_app():
 		(r"/sys-poweroff$", PoweroffHandler),
 		(r"/wifi/list$", WifiListHandler),
 		(r'/upload$', UploadHandler),
-		(r"/ws$", ZynthianWebSocketHandler)
+		(r"/ws$", ZynthianWebSocketHandler),
+		(r"/zynterm", ZyntermHandler),
+		(r"/zynterm_ws", TermSocket, {'term_manager': term_manager}),
+		(r"/xstatic/(.*)", tornado_xstatic.XStaticFileHandler, {'allowed_modules': ['termjs']})
 	], **settings)
 
 
 if __name__ == "__main__":
 	app = make_app()
 	app.listen(os.environ.get('ZYNTHIAN_WEBCONF_PORT', 80), max_body_size=MAX_STREAMED_SIZE)
-	tornado.ioloop.IOLoop.current().start()
+
+	loop = tornado.ioloop.IOLoop.instance()
+	try:
+		loop.start()
+	except KeyboardInterrupt:
+		print(" Shutting down on SIGINT")
+	finally:
+		term_manager.shutdown()
+		loop.close()
 
 #------------------------------------------------------------------------------
