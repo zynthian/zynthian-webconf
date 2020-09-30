@@ -179,6 +179,10 @@ def make_app():
 if __name__ == "__main__":
 	app = make_app()
 	app.listen(os.environ.get('ZYNTHIAN_WEBCONF_PORT', 80), max_body_size=MAX_STREAMED_SIZE)
+	app.listen(443, max_body_size=MAX_STREAMED_SIZE, ssl_options={
+		"certfile": "cert/cert.pem",
+		"keyfile": "cert/key.pem"
+	})
 
 	loop = tornado.ioloop.IOLoop.instance()
 	try:
@@ -190,3 +194,5 @@ if __name__ == "__main__":
 		loop.close()
 
 #------------------------------------------------------------------------------
+
+
