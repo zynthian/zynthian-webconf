@@ -32,10 +32,11 @@ window.onload = function() {
 	var ws_url = protocol+"://"+window.location.host+ "{{ config['ws_url_path'] }}";
 
 	function calculate_size(contsel) {
-		var h = $("body").innerHeight();
+		var h = window.innerHeight - $("header#header .navbar-fixed-top").outerHeight();
 		var w = $(contsel).innerWidth();
 		var rows = Math.max(2, Math.floor(h/termRowHeight)-1);
 		var cols = Math.max(3, Math.floor(w/termColWidth)-1);
+		$(contsel).css({"maxHeight": h + "px"});
 		console.log("resize:", termRowHeight, termColWidth, h, w, rows, cols);
 		return {rows: rows, cols: cols, h: h, w: w};
 	}
