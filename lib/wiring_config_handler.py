@@ -29,7 +29,7 @@ from collections import OrderedDict
 from subprocess import check_output
 from enum import Enum
 
-from zynconf import CustomSwitchActionType, CustomUiAction, ZynaptikADActionType
+from zynconf import CustomSwitchActionType, CustomUiAction, ZynSensorActionType
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 #------------------------------------------------------------------------------
@@ -232,6 +232,22 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'advanced': True,
 		}
 
+		zyntof_config = os.environ.get('ZYNTHIAN_WIRING_ZYNTOF_CONFIG',"")
+		config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
+			'type': 'select',
+			'title': "Num. of Distance Sensors",
+			'value': zyntof_config,
+			'options': ["", "1", "2", "3", "4"],
+			'option_labels': {
+				'': '0',
+				'1': '1',
+				'2': '2',
+				'3': '3',
+				'4': '4'
+			},
+			'advanced': True,
+		}
+
 		# Customizable Switches
 		config['_SECTION_CUSTOM_SWITCHES_'] = {
 			'type': 'html',
@@ -245,7 +261,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}'.format(i) 
 			config[base_name] = {
 				'type': 'select',
-				'title': 'Custom Switch-{} Action'.format(i),
+				'title': 'Switch-{} Action'.format(i),
 				'value': os.environ.get(base_name),
 				'options': CustomSwitchActionType
 			}
@@ -291,13 +307,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'html',
 				'content': "<h3>Zynaptik Analog Input</h3>"
 			}
-			for i in range(1,5):
+			for i in range(1, 4+1):
 				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}'.format(i)
 				config[base_name] = {
 					'type': 'select',
-					'title': 'Zynaptik AD-{} Action'.format(i),
+					'title': 'AD-{} Action'.format(i),
 					'value': os.environ.get(base_name),
-					'options': ZynaptikADActionType
+					'options': ZynSensorActionType
 				}
 				config[base_name + '__MIDI_CHAN'] = {
 					'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
@@ -314,20 +330,56 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'options': [str(i) for i in range(0,128)]
 				}
 
+		# Zyntof input (Distance Sensor)
+		if zyntof_config:
+			n_zyntofs = int(zyntof_config)
+			config['_SECTION_ZYNTOF_'] = {
+				'type': 'html',
+				'content': "<h3>Distance Sensors Input</h3>"
+			}
+			for i in range(1, n_zyntofs+1):
+				base_name = 'ZYNTHIAN_WIRING_ZYNTOF0{}'.format(i)
+				config[base_name] = {
+					'type': 'select',
+					'title': 'TOF-{} Action'.format(i),
+					'value': os.environ.get(base_name),
+					'options': ZynSensorActionType
+				}
+				config[base_name + '__MIDI_CHAN'] = {
+					'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
+					'type': 'select',
+					'title': 'Channel',
+					'value': os.environ.get(base_name + '__MIDI_CHAN'),
+					'options': ["Active"] + [str(i) for i in range(1,17)]
+				}
+				config[base_name + '__MIDI_NUM'] = {
+					'enabling_options': 'MIDI_CC',
+					'type': 'select',
+					'title': 'Number',
+					'value': self.get_zyntof_midi_num(i),
+					'options': [str(i) for i in range(0,128)]
+				}
+
 		super().get("Wiring", config, errors)
 
 
 	def get_custom_midi_num(self, i):
-		switch_base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}".format(i)
-		v = os.environ.get("{}__MIDI_NUM".format(switch_base_name))
+		base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}".format(i)
+		v = os.environ.get("{}__MIDI_NUM".format(base_name))
 		if v is None:
-			v = os.environ.get("{}__CC_NUM".format(switch_base_name),"")
+			v = os.environ.get("{}__CC_NUM".format(base_name),"")
 		return v
 
 
 	def get_zynaptik_ad_midi_num(self, i):
-		switch_base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}".format(i)
-		v = os.environ.get("{}__MIDI_NUM".format(switch_base_name),"")
+		base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}".format(i)
+		v = os.environ.get("{}__MIDI_NUM".format(base_name),"")
+		return v
+
+
+	def get_zyntof_midi_num(self, i):
+		base_name = "ZYNTHIAN_WIRING_ZYNTOF0{}".format(i)
+		v = os.environ.get("{}__MIDI_NUM".format(base_name),"")
 		return v
 
 
