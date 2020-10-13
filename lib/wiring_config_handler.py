@@ -335,7 +335,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			n_zyntofs = int(zyntof_config)
 			config['_SECTION_ZYNTOF_'] = {
 				'type': 'html',
-				'content': "<h3>Distance Sensors Input</h3>"
+				'content': "<h3>Distance Sensors</h3>"
 			}
 			for i in range(1, n_zyntofs+1):
 				base_name = 'ZYNTHIAN_WIRING_ZYNTOF0{}'.format(i)
