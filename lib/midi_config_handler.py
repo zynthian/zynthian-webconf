@@ -60,6 +60,14 @@ def get_ports_config(current_midi_ports=""):
 			midi_out_ports.append(qmidinet_out_ports[0])
 		except:
 			pass
+		#Add RTP-Midi ports
+		rtpmidi_in_ports=client.get_ports("jackrtpmidid", is_midi=True, is_physical=False, is_output=True )
+		rtpmidi_out_ports=client.get_ports("jackrtpmidid", is_midi=True, is_physical=False, is_input=True )
+		try:
+			midi_in_ports.append(rtpmidi_in_ports[0])
+			midi_out_ports.append(rtpmidi_out_ports[0])
+		except:
+			pass
 
 		disabled_midi_in_ports=zynconf.get_disabled_midi_in_ports(current_midi_ports)
 		enabled_midi_out_ports=zynconf.get_enabled_midi_out_ports(current_midi_ports)
@@ -101,7 +109,7 @@ def get_ports_config(current_midi_ports=""):
 	except Exception as e:
 		logging.error("%s" %e)
 
-	#logging.debug("MIDI_PORTS => %s" % midi_ports)
+	logging.debug("MIDI_PORTS => %s" % midi_ports)
 	return midi_ports
 
 

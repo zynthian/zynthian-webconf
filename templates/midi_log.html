@@ -9,7 +9,8 @@
 				{% for mp in config['MIDI_PORTS'] %}
 					<option value="{{ escape(mp['name']) }}"
 						{% if config['MIDI_PORT']==mp['name'] %}selected=1{% end %}>
-						{{ escape(mp['alias'].split(':')[-1]) }}
+						{% set short_alias = escape(mp['alias'].split(':')[-1]) %}
+						{{ escape(mp['alias']) if len(short_alias)<10 else short_alias }}
 					</option>
 				{% end %}
 			</select>
