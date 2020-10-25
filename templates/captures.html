@@ -18,11 +18,11 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-5">
+		<div class="col-md-6">
 			<div id="captures-tree"></div>
 		</div>
 
-		<div id="right-panel" class="col-md-7">
+		<div id="right-panel" class="col-md-6">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE">
@@ -134,9 +134,10 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = '';
 			$('#captures-panel').hide();
 		} else {
+			var fullpath = data.fullpath.replace(new RegExp("&#39;","g"),"'")
 			$("#loading-div-background").css({ opacity: 1.0 });
 			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.name.replace(new RegExp("&#39;","g"),"'");
-			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src='?stream=' + data.fullpath.replace(new RegExp("&#39;","g"),"'");
+			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src='?stream=' + encodeURIComponent(fullpath);
 			isOgg=(data.fext=="ogg");
 			isWav=(data.fext=="wav");
 			isMP3=(data.fext=="mp3");
@@ -144,7 +145,7 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			isAudio=(isOgg || isWav || isMP3);
 			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].style.display=isAudio?"block":"none";
 			$('#ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG')[0].disabled=!isWav;
-			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = data.fullpath.replace(new RegExp("&#39;","g"),"'");
+			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = fullpath;
 			$('#captures-panel').show();
 		}
 	}

@@ -10,7 +10,7 @@
 
 	<div class="row">
 
-		<div class="col-md-5">
+		<div class="col-md-6">
 			<select id="ENGINE" name="ENGINE" onchange="load_preset_tree()">
 				{% for key in config['engines'] %}
 					<option value="{{key}}" {{ 'selected' if config['engine']==key else '' }}>{{config['engines'][key][1]}}</option>
@@ -39,7 +39,7 @@
 			</div>
 		</div>
 
-		<div id="presets-panel" class="col-md-7">
+		<div id="presets-panel" class="col-md-6">
 			<input type="hidden" id="SEL_NODE_ID" name="SEL_NODE_ID" value="{{ escape(str(config['sel_node_id'])) }}">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH">
 			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
