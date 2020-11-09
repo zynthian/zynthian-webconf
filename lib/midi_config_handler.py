@@ -317,7 +317,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
 				'type': 'boolean',
-				'title': 'Single Channel Mode (Active Channel receives all external events)',
+				'title': 'Stage Mode (Active Layer receives all external events)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
 			}],
 			['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', {
@@ -332,7 +332,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_MIDI_FILTER_OUTPUT', {
 				'type': 'boolean',
-				'title': 'Route MIDI Filter to Output Ports',
+				'title': 'Route MIDI to Output Ports',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_OUTPUT','1')
 			}],
 			['ZYNTHIAN_MIDI_SYS_ENABLED', {
