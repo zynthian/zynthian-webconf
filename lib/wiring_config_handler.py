@@ -258,7 +258,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		except:
 			n_custom_switches = 0
 		for i in range(1, n_custom_switches + 1):
-			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}'.format(i) 
+			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i) 
 			config[base_name] = {
 				'type': 'select',
 				'title': 'Switch-{} Action'.format(i),
@@ -308,7 +308,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'content': "<h3>Zynaptik Analog Input</h3>"
 			}
 			for i in range(1, 4+1):
-				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}'.format(i)
+				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}'.format(i)
 				config[base_name] = {
 					'type': 'select',
 					'title': 'AD-{} Action'.format(i),
@@ -338,7 +338,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'content': "<h3>Distance Sensors</h3>"
 			}
 			for i in range(1, n_zyntofs+1):
-				base_name = 'ZYNTHIAN_WIRING_ZYNTOF0{}'.format(i)
+				base_name = 'ZYNTHIAN_WIRING_ZYNTOF{:02d}'.format(i)
 				config[base_name] = {
 					'type': 'select',
 					'title': 'TOF-{} Action'.format(i),
