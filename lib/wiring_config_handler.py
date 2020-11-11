@@ -291,14 +291,14 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'Channel',
 				'value': os.environ.get(base_name + '__MIDI_CHAN'),
-				'options': ["Active"] + [str(i) for i in range(1,17)]
+				'options': ["Active"] + [str(j) for j in range(1,17)]
 			}
 			config[base_name + '__MIDI_NUM'] = {
 				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
 				'type': 'select',
 				'title': 'Number',
 				'value': self.get_custom_midi_num(i),
-				'options': [str(i) for i in range(0,128)]
+				'options': [str(j) for j in range(0,128)]
 			}
 
 		# Zynaptik ADC input
@@ -327,7 +327,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'type': 'select',
 					'title': 'Number',
 					'value': self.get_zynaptik_ad_midi_num(i),
-					'options': [str(i) for i in range(0,128)]
+					'options': [str(j) for j in range(0,128)]
 				}
 
 		# Zyntof input (Distance Sensor)
@@ -350,21 +350,21 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'type': 'select',
 					'title': 'Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
-					'options': ["Active"] + [str(i) for i in range(1,17)]
+					'options': ["Active"] + [str(j) for j in range(1,17)]
 				}
 				config[base_name + '__MIDI_NUM'] = {
 					'enabling_options': 'MIDI_CC',
 					'type': 'select',
 					'title': 'Number',
 					'value': self.get_zyntof_midi_num(i),
-					'options': [str(i) for i in range(0,128)]
+					'options': [str(j) for j in range(0,128)]
 				}
 
 		super().get("Wiring", config, errors)
 
 
 	def get_custom_midi_num(self, i):
-		base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_0{}".format(i)
+		base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}".format(i)
 		v = os.environ.get("{}__MIDI_NUM".format(base_name))
 		if v is None:
 			v = os.environ.get("{}__CC_NUM".format(base_name),"")
@@ -372,13 +372,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 
 	def get_zynaptik_ad_midi_num(self, i):
-		base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD0{}".format(i)
+		base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}".format(i)
 		v = os.environ.get("{}__MIDI_NUM".format(base_name),"")
 		return v
 
 
 	def get_zyntof_midi_num(self, i):
-		base_name = "ZYNTHIAN_WIRING_ZYNTOF0{}".format(i)
+		base_name = "ZYNTHIAN_WIRING_ZYNTOF{:02d}".format(i)
 		v = os.environ.get("{}__MIDI_NUM".format(base_name),"")
 		return v
 
