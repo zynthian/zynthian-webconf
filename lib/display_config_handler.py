@@ -302,11 +302,13 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		else:
 			custom_options_disabled = False
 
+		display_names = list(self.display_presets.keys())
 		config['DISPLAY_NAME'] = {
 			'type': 'select',
 			'title': "Display",
 			'value': os.environ.get('DISPLAY_NAME'),
-			'options': list(self.display_presets.keys()),
+			'options': display_names,
+			'option_labels': OrderedDict([(opt, opt) for opt in display_names]),
 			'presets': self.display_presets,
 			'disabled': custom_options_disabled
 		}
