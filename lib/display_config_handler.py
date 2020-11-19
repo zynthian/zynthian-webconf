@@ -245,6 +245,27 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
+		['MPI5008 800x480', {
+                        'DISPLAY_CONFIG': 
+				'hdmi_force_hotplug=1\n'+
+				'dtparam=i2c_arm=on\n'+
+				'dtparam=spi=on\n'+
+				'enable_uart=1\n'+
+				'display_rotate=0\n'+
+				'max_usb_current=1\n'+
+				'config_hdmi_boost=7\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_drive=1\n'+
+				'hdmi_cvt 800 480 60 6 0 0 0\n'+
+				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
+                        'DISPLAY_WIDTH': '800',
+                        'DISPLAY_HEIGHT': '480',
+                        'FRAMEBUFFER': '/dev/fb0'
+                }],
+
+
                 ['Pi 7 Touchscreen Display 800x480', {
                         'DISPLAY_CONFIG':
                                 'lcd_rotate=2\n'+
