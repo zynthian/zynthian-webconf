@@ -99,9 +99,14 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 	def do_rename(self):
 		newName = ''
+		newNameExtension = ''
 
+		if self.get_argument('ZYNTHIAN_CAPTURES_RENAME'):
+			newName = re.split('[.](?![^][]*\])',self.get_argument('ZYNTHIAN_CAPTURES_RENAME'))[0]
 		if self.get_argument('ZYNTHIAN_CAPTURES_NAME'):
-			newName = self.get_argument('ZYNTHIAN_CAPTURES_NAME')
+			newNameExtension = re.split('[.](?![^][]*\])',self.get_argument('ZYNTHIAN_CAPTURES_NAME'))[1]
+
+		newName = '{}.{}'.format(newName, newNameExtension)
 
 		if newName:
 			sourceFolder = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
