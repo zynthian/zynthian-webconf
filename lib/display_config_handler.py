@@ -280,6 +280,15 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
+		['Generic 4k HDMI Display', {
+                        'DISPLAY_CONFIG': 
+				'disable_overscan=1\n'+
+				'hdmi_enable_4kp60=1\n',
+                        'DISPLAY_WIDTH': '',
+                        'DISPLAY_HEIGHT': '',
+                        'FRAMEBUFFER': '/dev/fb0'
+                }],
+
 		['Custom Device', {
 			'DISPLAY_CONFIG': '',
 			'DISPLAY_WIDTH': '',
