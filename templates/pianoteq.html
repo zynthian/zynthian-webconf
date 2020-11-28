@@ -50,7 +50,8 @@
 	<div id='license-key'>
 		<p>
 			<b>Licence Key:</b><br/>
-			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENSE'] }}" />
+			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENSE" class="col-md-10" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENSE'] }}" />
+			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="col-md-2 btn btn-theme">Reactivate</button>
 		</p>
 	</div>
 	{% end %}
