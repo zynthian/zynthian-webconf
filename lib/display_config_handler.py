@@ -246,7 +246,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
 		['MPI5008 800x480', {
-                        'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG': 
 				'hdmi_force_hotplug=1\n'+
 				'dtparam=i2c_arm=on\n'+
 				'dtparam=spi=on\n'+
@@ -260,20 +260,18 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_drive=1\n'+
 				'hdmi_cvt 800 480 60 6 0 0 0\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
-                        'DISPLAY_WIDTH': '800',
-                        'DISPLAY_HEIGHT': '480',
-                        'FRAMEBUFFER': '/dev/fb0'
-                }],
-
-
-                ['Pi 7 Touchscreen Display 800x480', {
-                        'DISPLAY_CONFIG':
-                                'lcd_rotate=2\n'+
-                                'dtoverlay=rpi-ft5406\n',
-                        'DISPLAY_WIDTH': '800',
-                        'DISPLAY_HEIGHT': '480',
-                        'FRAMEBUFFER': '/dev/fb0'
-                }],
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['Pi 7 Touchscreen Display 800x480', {
+			'DISPLAY_CONFIG':
+				'lcd_rotate=2\n'+
+				'dtoverlay=rpi-ft5406\n',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
 		['Generic HDMI Display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
@@ -281,14 +279,13 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['Generic 4k HDMI Display', {
-                        'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'disable_overscan=1\n'+
 				'hdmi_enable_4kp60=1\n',
-                        'DISPLAY_WIDTH': '',
-                        'DISPLAY_HEIGHT': '',
-                        'FRAMEBUFFER': '/dev/fb0'
-                }],
-
+			'DISPLAY_WIDTH': '',
+			'DISPLAY_HEIGHT': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
 		['Custom Device', {
 			'DISPLAY_CONFIG': '',
 			'DISPLAY_WIDTH': '',
