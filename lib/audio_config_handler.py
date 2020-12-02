@@ -76,6 +76,11 @@ soundcard_presets = OrderedDict([
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorpi -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Master Left,Capture Left,Master Right,Capture Right'
 	}],
+	['AudioInjector Isolated', {
+                'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-isolated-soundcard',
+                'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectoris -r 48000 -p 256 -n 2 -X raw',
+                'SOUNDCARD_MIXER': 'Master Left,Master Right'
+        }],
 	['AudioInjector Ultra', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectorul -r 48000 -p 256 -n 2 -X raw',
