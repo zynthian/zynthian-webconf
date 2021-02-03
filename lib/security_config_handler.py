@@ -123,6 +123,11 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			except Exception as e:
 				logging.error("Can't set new password! => {}".format(e))
 				return { 'REPEAT_PASSWORD': "Can't set new password!" }
+			try:
+				check_output("echo \"{}\" | vncpasswd -f > /root/.vnc/passwd; chmod go-r /root/.vnc/passwd".format(config['PASSWORD'][0]), shell=True)
+			except Exception as e:
+				logging.error("Can't set new password for VNC Server! => {}".format(e))
+				return { 'REPEAT_PASSWORD': "Can't set new password for VNC Server!" }
 
 		#Update Hostname
 		newHostname = config['HOSTNAME'][0]
