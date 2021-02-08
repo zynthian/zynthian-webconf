@@ -271,6 +271,13 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'advanced': True
 		}
 
+		if os.environ.get('SOUNDCARD_NAME')!="RBPi Headphones":
+			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
+				'type': 'boolean',
+				'title': "RBPi Headphones",
+				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES',False)
+			}
+
 
 		super().get("Audio", config, errors)
 
@@ -278,6 +285,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
+
+		if self.get_argument('SOUNDCARD_NAME')=="RBPi Headphones":
+			self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES']=['0']
 
 		try:
 			previousSoundcard = os.environ.get('SOUNDCARD_NAME')
