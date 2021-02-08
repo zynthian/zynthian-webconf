@@ -111,7 +111,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 			}],
 			['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
 				'type': 'boolean',
-				'title': 'Mixer settings on snapshots',
+				'title': 'Audio Levels on Snapshots',
 				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 			}],
 			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
@@ -130,6 +130,11 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
 				'advanced': True
 			}]
+			['ZYNTHIAN_VNCSERVER_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable VNC Server',
+				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
+			}],
 		])
 
 		super().get("User Interface", config, errors)
