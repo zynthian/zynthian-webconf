@@ -101,6 +101,9 @@
 									{% try %}{% if 'modui_uri' in info %}
 									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
 									{% end %}{% except %}{% end %}
+									{% try %}{% if 'novnc_uri' in info %}
+									<li><a href="{{ info['novnc_uri'] }}" target="_blank">VNC Viewer</a></li>
+									{% end %}{% except %}{% end %}
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/ui-" %}active{% end %}">

@@ -77,6 +77,10 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		if self.is_service_active("mod-ui"):
 			info['modui_uri']="http://{}:8888".format(self.request.host)
 
+		# If VNC Server is enabled, add access URI to info
+		if self.is_service_active("novnc"):
+			info['novnc_uri']="http://{}:6080/vnc.html".format(self.request.host)
+
 		super().render(tpl, info=info, **kwargs)
 
 

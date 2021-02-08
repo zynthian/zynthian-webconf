@@ -129,12 +129,12 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Enable cursor',
 				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
 				'advanced': True
-			}]
+			}],
 			['ZYNTHIAN_VNCSERVER_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable VNC Server',
 				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
-			}],
+			}]
 		])
 
 		super().get("User Interface", config, errors)
