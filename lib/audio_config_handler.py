@@ -275,7 +275,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
 				'type': 'boolean',
 				'title': "RBPi Headphones",
-				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES',False)
+				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES','0')
 			}
 
 
