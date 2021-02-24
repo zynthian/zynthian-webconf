@@ -221,7 +221,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['WaveShare 7 HDMI+USB', {
+		['WaveShare 7 HDMI+USB 1024x600', {
 			'DISPLAY_CONFIG':
 				'hdmi_force_hotplug=1\n'+
 				'hdmi_drive=1\n'+
@@ -231,6 +231,18 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_cvt 1024 600 60 6 0 0 0',
 			'DISPLAY_WIDTH': '1024',
 			'DISPLAY_HEIGHT': '600',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
+		['WaveShare 7 HDMI+USB 800x480', {
+			'DISPLAY_CONFIG':
+				'hdmi_force_hotplug=1\n'+
+				'hdmi_drive=1\n'+
+				'hdmi_group=2\n'+
+				'hdmi_mode=1\n'+
+				'hdmi_mode=87\n'+
+				'hdmi_cvt 800 480 60 6 0 0 0',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['Sainsmart 1.8', {
@@ -272,6 +284,12 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
+		['MIPI DSI 800x480', {
+			'DISPLAY_CONFIG': 'dtoverlay=rpi-ft5406',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'FRAMEBUFFER': '/dev/fb0'
+		}]
 		['Generic HDMI Display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
