@@ -289,7 +289,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
-		}]
+		}],
 		['Generic HDMI Display', {
 			'DISPLAY_CONFIG': 'disable_overscan=1\n',
 			'DISPLAY_WIDTH': '',
