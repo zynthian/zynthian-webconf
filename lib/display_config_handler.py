@@ -284,8 +284,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
-		['5 Inch DSI 800x480', {
-			'DISPLAY_CONFIG': '',
+		['MIPI DSI 800x480', {
+			'DISPLAY_CONFIG': 'dtoverlay=rpi-ft5406',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'FRAMEBUFFER': '/dev/fb0'
