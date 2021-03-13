@@ -537,10 +537,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		try:
 			freq = float(self.request.arguments.get('ZYNTHIAN_MIDI_FINE_TUNING', '440.0')[0])
 			if freq<392.0 or freq>493.88:
-				errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frecuency must be in the range 392.00 - 493.88 Hz!";
+				errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frequency must be in the range 392.00 - 493.88 Hz!";
 		except:
 			self.request.arguments['ZYNTHIAN_MIDI_FINE_TUNING'] = 440.0
-			errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frecuency must be a number!";
+			errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frequency must be a number!";
 
 		filter_error = self.validate_filter_rules(escaped_request_arguments);
 		if filter_error:
