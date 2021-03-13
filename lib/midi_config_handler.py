@@ -439,10 +439,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
-				'type': 'select',
+				'type': 'text',
 				'title': 'MIDI fine tuning (Hz)',
-				'value':  self.get_midi_env('ZYNTHIAN_MIDI_FINE_TUNING','440'),
-				'options': map(lambda x: str(x).zfill(2), list(range(392, 493)))
+				'value':  self.get_midi_env('ZYNTHIAN_MIDI_FINE_TUNING','440.0'),
+				#'options': map(lambda x: str(x).zfill(2), list(range(392, 493)))
 			}],
 			['ZYNTHIAN_MIDI_MASTER_CHANNEL', {
 				'type': 'select',
@@ -532,9 +532,21 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
-		filter_error = self.validate_filter_rules(escaped_request_arguments);
 		errors = {}
-		if not filter_error:
+
+		try:
+			freq = float(self.request.arguments.get('ZYNTHIAN_MIDI_FINE_TUNING', '440.0')[0])
+			if freq<392.0 or freq>493.88:
+				errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frecuency must be in the range 392.00 - 493.88 Hz!";
+		except:
+			self.request.arguments['ZYNTHIAN_MIDI_FINE_TUNING'] = 440.0
+			errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frecuency must be a number!";
+
+		filter_error = self.validate_filter_rules(escaped_request_arguments);
+		if filter_error:
+			errors['ZYNTHIAN_MIDI_FILTER_RULES'] = filter_error;
+
+		if not errors:
 			# remove fields that start with FILTER_ADD from request_args, so that they won't be passed to update_config
 			for filter_add_argument in list(escaped_request_arguments.keys()):
 				if filter_add_argument.startswith('FILTER_ADD'):
@@ -584,9 +596,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					errors['zynthian_midi_profile_new_script_name'] = 'No profile name!'
 
 			self.reload_midi_config_flag = True
-
-		else:
-			errors = { 'ZYNTHIAN_MIDI_FILTER_RULES': filter_error };
 
 		self.get(errors)
 
