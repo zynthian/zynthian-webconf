@@ -165,6 +165,14 @@
 	</div>
 	{% end %}
 
+{% if info and 'scrollTop' in info %}
+<script>
+$(document).ready(function() {
+	$(document).scrollTop({{ info['scrollTop'] }})
+});
+</script>
+{% end %}
+
 </body>
 
 </html>

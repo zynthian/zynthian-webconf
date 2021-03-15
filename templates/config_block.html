@@ -78,7 +78,15 @@
 			</textarea>
 
 		{% elif config[varname]['type']=='select' %}
-			<select name="{{ escape(varname) }}" onchange="{{ 'refresh_select_subvars(this)' if varname in root_vars else 'set_presets(this)' }}" {{ disabled }}>
+			{% set refresh_subvars = 0 %}
+			{% if varname in root_vars %}
+				{% set refresh_subvars = 1 %}
+			{% end %}
+			{% set refresh_form = 0 %}
+			{% if 'refresh_on_change' in config[varname] and config[varname]['refresh_on_change'] %}
+				{% set refresh_form = 1 %}
+			{% end %}
+			<select name="{{ escape(varname) }}" onchange="onchange_select(this,{{ refresh_subvars }}, {{ refresh_form }})" {{ disabled }}>
 				{% for option in config[varname]['options'] %}
 				<option value="{{ escape(option) }}"
 					{% if value==option %}selected=1{% end %}
@@ -118,8 +126,9 @@
 	</div>
 {% end %}
 
-<button id="button-save-config" class="btn btn-lg btn-theme btn-block" title="Save Config"><i class="fa fa-check"></i> Save</button>
-
+	<input type="hidden" id="_command" name="_command" value='SAVE'>
+	<input type="hidden" id="_scrollTop" name="_scrollTop" value='0'>
+	<button id="button-save-config" class="btn btn-lg btn-theme btn-block" title="Save Config"><i class="fa fa-check"></i> Save</button>
 </form>
 
 <script>
@@ -141,6 +150,12 @@ function set_presets(sel) {
 			//console.log(field.name+' => ' + decodeURIComponent(v))
 		}
 	});
+}
+
+function onchange_select(sel, refresh_subvars, refresh_form) {
+	if (refresh_subvars) refresh_select_subvars(sel);
+	else set_presets(sel);
+	if (refresh_form) refresh();
 }
 
 function refresh_select_subvars(sel) {
@@ -179,6 +194,12 @@ function onchange_check_advanced_view() {
 		$('.advanced-view').slideUp(500);
 	}
 	refresh_all_subvars()
+}
+
+function refresh() {
+	$('input#_command').val("REFRESH");
+	$('input#_scrollTop').val($(document).scrollTop());
+	$('form#config_block_form').submit();
 }
 
 $(document).ready(function() {
