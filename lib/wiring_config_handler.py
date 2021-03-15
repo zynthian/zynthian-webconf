@@ -40,6 +40,25 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class WiringConfigHandler(ZynthianConfigHandler):
 
 	wiring_presets=OrderedDict([
+		["MCP23017_ZynScreen_Zynface", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
+			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
+			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "2",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "7",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "16xDIO + 4xAD + 4xDA",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CVGATE_IN': "2",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CVGATE_OUT': "2",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "2"
+		}],
+		["MCP23017_ZynScreen_Zynaptik", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
+			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
+			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "2",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "7",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "16xDIO + 4xAD + 4xDA",
+		}],
 		["MCP23017_ZynScreen", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
@@ -182,6 +201,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'advanced': True,
 			'disabled': custom_options_disabled
 		}
+		# Calculate Num of Custom Switches
+		try:
+			n_extra_switches = max(0, len(os.environ.get('ZYNTHIAN_WIRING_SWITCHES').split(",")) - 4)
+		except:
+			n_extra_switches = 0
+
 		config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
 			'type': 'select',
 			'title': "MCP23017 INT-A Pin",
@@ -223,14 +248,50 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'disabled': custom_options_disabled
 		}
 
+		# Zynaptik Config
 		zynaptik_config = os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG',"")
 		config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
 			'type': 'select',
 			'title': "Zynaptik Config",
 			'value': zynaptik_config,
-			'options': ["", "16xSWITCH", "4xAD", "4xDA", "16xSWITCH + 4xAD", "16xSWITCH + 4xDA", "4xAD + 4xDA", "16xSWITCH + 4xAD + 4xDA"],
+			'options': ["", "16xDIO", "4xAD", "4xDA", "16xDIO + 4xAD", "16xDIO + 4xDA", "4xAD + 4xDA", "16xDIO + 4xAD + 4xDA"],
 			'advanced': True,
+			'refresh_on_change': True
 		}
+		if "16xDIO" in zynaptik_config:
+			n_zynaptik_switches = 16
+
+		# Zynaptik CV/GATE IN Config
+		if "16xDIO" in zynaptik_config and "4xAD" in zynaptik_config:
+			zynaptik_cvgate_in = os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_CVGATE_IN',"")
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_CVGATE_IN'] = {
+				'type': 'select',
+				'title': "Num. of CV/Gate In",
+				'value': zynaptik_cvgate_in,
+				'options': ["0", "1", "2", "3", "4"],
+				'advanced': True,
+				'refresh_on_change': True
+			}
+		try:
+			zynaptik_cvgate_in = int(zynaptik_cvgate_in)
+		except:
+			zynaptik_cvgate_in = 0
+
+		# Zynaptik CV/GATE OUT Config
+		if "16xDIO" in zynaptik_config and "4xDA" in zynaptik_config:
+			zynaptik_cvgate_out = os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_CVGATE_OUT',"")
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_CVGATE_OUT'] = {
+				'type': 'select',
+				'title': "Num. of CV/Gate Out",
+				'value': zynaptik_cvgate_out,
+				'options': ["0", "1", "2", "3", "4"],
+				'advanced': True,
+				'refresh_on_change': True
+			}
+		try:
+			zynaptik_cvgate_out = int(zynaptik_cvgate_out)
+		except:
+			zynaptik_cvgate_out = 0
 
 		zyntof_config = os.environ.get('ZYNTHIAN_WIRING_ZYNTOF_CONFIG',"")
 		config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
@@ -246,6 +307,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'4': '4'
 			},
 			'advanced': True,
+			'refresh_on_change': True
 		}
 
 		# Customizable Switches
@@ -253,53 +315,56 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'type': 'html',
 			'content': "<h3>Customizable Switches</h3>"
 		}
-		try:
-			n_custom_switches = max(0, len(os.environ.get('ZYNTHIAN_WIRING_SWITCHES').split(",")) - 4)
-		except:
-			n_custom_switches = 0
+		n_custom_switches = n_extra_switches + n_zynaptik_switches
 		for i in range(1, n_custom_switches + 1):
-			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i) 
-			config[base_name] = {
-				'type': 'select',
-				'title': 'Switch-{} Action'.format(i),
-				'value': os.environ.get(base_name),
-				'options': CustomSwitchActionType
-			}
-			config[base_name + '__UI_SHORT'] = {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Short-push',
-				'value': os.environ.get(base_name + '__UI_SHORT'),
-				'options': CustomUiAction
-			}
-			config[base_name + '__UI_BOLD'] = {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Bold-push',
-				'value': os.environ.get(base_name + '__UI_BOLD'),
-				'options': CustomUiAction
-			}
-			config[base_name + '__UI_LONG'] = {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Long-push',
-				'value': os.environ.get(base_name + '__UI_LONG'),
-				'options': CustomUiAction
-			}
-			config[base_name + '__MIDI_CHAN'] = {
-				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-				'type': 'select',
-				'title': 'Channel',
-				'value': os.environ.get(base_name + '__MIDI_CHAN'),
-				'options': ["Active"] + [str(j) for j in range(1,17)]
-			}
-			config[base_name + '__MIDI_NUM'] = {
-				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-				'type': 'select',
-				'title': 'Number',
-				'value': self.get_custom_midi_num(i),
-				'options': [str(j) for j in range(0,128)]
-			}
+			if (i>n_extra_switches and i<=(n_extra_switches+zynaptik_cvgate_out)) or (i>(n_extra_switches+8) and i<=(n_extra_switches+8+zynaptik_cvgate_in)):
+				config['_CUSTOM_SWITCH_{:02d}_'.format(i)] = {
+					'type': 'html',
+					'content': "<label>Switch-{} Action</label>: Reserved for CV/Gate<br>".format(i)
+				}
+			else:
+				base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i) 
+				config[base_name] = {
+					'type': 'select',
+					'title': 'Switch-{} Action'.format(i),
+					'value': os.environ.get(base_name),
+					'options': CustomSwitchActionType
+				}
+				config[base_name + '__UI_SHORT'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'select',
+					'title': 'Short-push',
+					'value': os.environ.get(base_name + '__UI_SHORT'),
+					'options': CustomUiAction
+				}
+				config[base_name + '__UI_BOLD'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'select',
+					'title': 'Bold-push',
+					'value': os.environ.get(base_name + '__UI_BOLD'),
+					'options': CustomUiAction
+				}
+				config[base_name + '__UI_LONG'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'select',
+					'title': 'Long-push',
+					'value': os.environ.get(base_name + '__UI_LONG'),
+					'options': CustomUiAction
+				}
+				config[base_name + '__MIDI_CHAN'] = {
+					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+					'type': 'select',
+					'title': 'Channel',
+					'value': os.environ.get(base_name + '__MIDI_CHAN'),
+					'options': ["Active"] + [str(j) for j in range(1,17)]
+				}
+				config[base_name + '__MIDI_NUM'] = {
+					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+					'type': 'select',
+					'title': 'Number',
+					'value': self.get_custom_midi_num(i),
+					'options': [str(j) for j in range(0,128)]
+				}
 
 		# Zynaptik ADC input
 		if "4xAD" in zynaptik_config:
@@ -308,27 +373,68 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'content': "<h3>Zynaptik Analog Input</h3>"
 			}
 			for i in range(1, 4+1):
-				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}'.format(i)
-				config[base_name] = {
-					'type': 'select',
-					'title': 'AD-{} Action'.format(i),
-					'value': os.environ.get(base_name),
-					'options': ZynSensorActionType
-				}
-				config[base_name + '__MIDI_CHAN'] = {
-					'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
-					'type': 'select',
-					'title': 'Channel',
-					'value': os.environ.get(base_name + '__MIDI_CHAN'),
-					'options': ["Active"] + [str(i) for i in range(1,17)]
-				}
-				config[base_name + '__MIDI_NUM'] = {
-					'enabling_options': 'MIDI_CC',
-					'type': 'select',
-					'title': 'Number',
-					'value': self.get_zynaptik_ad_midi_num(i),
-					'options': [str(j) for j in range(0,128)]
-				}
+				if i<=zynaptik_cvgate_in:
+					config['_ZYNAPTIK_AD{:02d}_'.format(i)] = {
+						'type': 'html',
+						'content': "<label>AD-{} Action</label>: Reserved for CV/Gate<br>".format(i)
+					}
+				else:
+					base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}'.format(i)
+					config[base_name] = {
+						'type': 'select',
+						'title': 'AD-{} Action'.format(i),
+						'value': os.environ.get(base_name),
+						'options': ZynSensorActionType
+					}
+					config[base_name + '__MIDI_CHAN'] = {
+						'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
+						'type': 'select',
+						'title': 'Channel',
+						'value': os.environ.get(base_name + '__MIDI_CHAN'),
+						'options': ["Active"] + [str(i) for i in range(1,17)]
+					}
+					config[base_name + '__MIDI_NUM'] = {
+						'enabling_options': 'MIDI_CC',
+						'type': 'select',
+						'title': 'Number',
+						'value': self.get_zynaptik_ad_midi_num(i),
+						'options': [str(j) for j in range(0,128)]
+					}
+
+		# Zynaptik DAC output
+		if "4xDA" in zynaptik_config:
+			config['_SECTION_ZYNAPTIK_DA_'] = {
+				'type': 'html',
+				'content': "<h3>Zynaptik Analog Output</h3>"
+			}
+			for i in range(1, 4+1):
+				if i<=zynaptik_cvgate_out:
+					config['_ZYNAPTIK_DA{:02d}_'.format(i)] = {
+						'type': 'html',
+						'content': "<label>DA-{} Action</label>: Reserved for CV/Gate<br>".format(i)
+					}
+				else:
+					base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_DA{:02d}'.format(i)
+					config[base_name] = {
+						'type': 'select',
+						'title': 'DA-{} Action'.format(i),
+						'value': os.environ.get(base_name),
+						'options': ZynSensorActionType
+					}
+					config[base_name + '__MIDI_CHAN'] = {
+						'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
+						'type': 'select',
+						'title': 'Channel',
+						'value': os.environ.get(base_name + '__MIDI_CHAN'),
+						'options': ["Active"] + [str(i) for i in range(1,17)]
+					}
+					config[base_name + '__MIDI_NUM'] = {
+						'enabling_options': 'MIDI_CC',
+						'type': 'select',
+						'title': 'Number',
+						'value': self.get_zynaptik_ad_midi_num(i),
+						'options': [str(j) for j in range(0,128)]
+					}
 
 		# Zyntof input (Distance Sensor)
 		if zyntof_config:
@@ -385,10 +491,17 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		errors=self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
-		self.rebuild_zyncoder()
-		if not self.reboot_flag:
-			self.restart_ui_flag = True
+		command = self.get_argument('_command', '')
+		logging.info("COMMAND = {}".format(command))
+		if command=='REFRESH':
+			errors = None
+			self.config_env(tornado.escape.recursive_unicode(self.request.arguments))
+		else:
+			errors = self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+			self.rebuild_zyncoder()
+			if not self.reboot_flag:
+				self.restart_ui_flag = True
+
 		self.get(errors)
 
 
