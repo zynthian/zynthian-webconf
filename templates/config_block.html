@@ -2,7 +2,7 @@
 {% autoescape None %}
 
 <div class="pull-right">
-	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span>Advanced view</span>
+	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span><label for="check_advanced_view">Advanced view</label></span>
 </div>
 
 <h2>{{ escape(title) }}</h2>
@@ -28,7 +28,7 @@
 	<div class="{{ div_class }}" {% try %} {{ "root_var=\"{}\"".format(config[varname]['root_var']) }} {% except %} {% end %} {% try %} {{ "enabling_options=\"{}\"".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
 
 		{% if config[varname]['type'] not in ['button', 'hidden', 'html', 'jscript'] %}
-			<label>{{ escape(config[varname]['title']) }}:</label>
+			<label for="{{ escape(config[varname]) }}">{{ escape(config[varname]['title']) }}:</label>
 			{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 		{% end %}
 
