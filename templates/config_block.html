@@ -28,7 +28,7 @@
 	<div class="{{ div_class }}" {% try %} {{ "root_var=\"{}\"".format(config[varname]['root_var']) }} {% except %} {% end %} {% try %} {{ "enabling_options=\"{}\"".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
 
 		{% if config[varname]['type'] not in ['button', 'hidden', 'html', 'jscript'] %}
-			<label for="{{ escape(config[varname]) }}">{{ escape(config[varname]['title']) }}:</label>
+			<label for="{{ escape(varname) }}">{{ escape(config[varname]['title']) }}:</label>
 			{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 		{% end %}
 
