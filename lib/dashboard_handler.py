@@ -252,7 +252,7 @@ class DashboardHandler(ZynthianBasicHandler):
 	def get_git_info(self, path):
 		branch = check_output("cd %s; git branch | grep '*'" % path, shell=True).decode()[2:-1]
 		gitid = check_output("cd %s; git rev-parse HEAD" % path, shell=True).decode()[:-1]
-		update = check_output("cd %s; git status --porcelain -bs | grep behind | wc -l" % path, shell=True).decode()
+		update = check_output("cd %s; git remote update; git status --porcelain -bs | grep behind | wc -l" % path, shell=True).decode()
 		return { "branch": branch, "gitid": gitid, "update": update }
 
 
