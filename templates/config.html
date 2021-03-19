@@ -137,32 +137,6 @@
 									<li><a href="http://wiki.zynthian.org/index.php/Command_Line_User_Guide" target="_blank">Command Line</a></li>
 									<li><a href="http://wiki.zynthian.org/index.php/Accessing_Zynthian_from_your_computer" target="_blank">Accessing Zynthian</a></li>
 									<li><a href="https://discourse.zynthian.org" target="_blank">Forum</a></li>
-									<li><a href="https://github.com/zynthian/zynthian-issue-tracking/issues/new?body=**Describe%20the%20bug**%0AA%20clear%20and%20concise%20description%20of%20what%20the%20bug%20is.%0A%0A**To%20Reproduce**%0ASteps%20to%20reproduce%20the%20behaviour:%0A1.%20Go%20to%20%27...%27%0A2.%20Click%20on%20%27....%27%0A3.%20Scroll%20down%20to%20%27....%27%0A4.%20See%20error%0A%0A**Expected%20behaviour**%0AA%20clear%20and%20concise%20description%20of%20what%20you%20expected%20to%20happen.%0A%0A**Actual%20behaviour**%0AA%20clear%20and%20concise%20description%20of%20what%20actally%20happens.%0A%0A**Screenshots**%0AIf%20applicable,%20add%20screenshots%20to%20help%20explain%20your%20problem.
-									%0A%0A**Hardware**%0A
-									{% for param in config['HARDWARE']['info'] %}
-									-%20{{url_escape(config['HARDWARE']['info'][param]['title'].strip())}}
-									{% if 'value' in config['HARDWARE']['info'][param] %}
-									:%20{{url_escape(config['HARDWARE']['info'][param]['value'].strip())}}
-									{% end %}
-									%0A
-									{% end %}
-									%0A**System**%0A
-									{% for param in config['SYSTEM']['info'] %}
-									-%20{{url_escape(config['SYSTEM']['info'][param]['title'].strip())}}
-									{% if 'value' in config['SYSTEM']['info'][param] %}
-									:%20{{url_escape(config['SYSTEM']['info'][param]['value'].strip())}}
-									{% end %}
-									%0A
-									{% end %}
-									%0A**Software**%0A
-									{% for param in config['SOFTWARE']['info'] %}
-									-%20{{url_escape(config['SOFTWARE']['info'][param]['title'].strip())}}
-									{% if 'value' in config['SOFTWARE']['info'][param] %}
-									:%20{{url_escape(config['SOFTWARE']['info'][param]['value'].strip())}}
-									{% end %}
-									%0A
-									{% end %}
-									%0A**Additional%20context**%0AAdd%20any%20other%20context%20about%20the%20problem%20here.%0A" target="_blank">Report Issuse</a></li>
 								</ul>
 							</li>
 						{% end %}
