@@ -43,8 +43,8 @@ class RepositoryHandler(ZynthianConfigHandler):
 	zynthian_base_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian")
 
 	repository_list = [
-		['zynthian-ui', False],
-		['zynthian-webconf', False],
+		['zynthian-ui', True],
+		['zynthian-webconf', True],
 		['zynthian-sys', True],
 		['zynthian-data', True],
 		['zyncoder', True]
@@ -62,11 +62,22 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 		errors = {}
 		changed_repos = 0
+		try:
+			is_stable = (postedConfig['TESTING'][0] == '0')
+		except:
+			is_stable = True
 		for posted_config_key in postedConfig:
 			repo_name = posted_config_key[14:]
 			try:
-				if self.set_repo_branch(repo_name, postedConfig[posted_config_key][0]):
-					changed_repos += 1
+				branch = postedConfig[posted_config_key][0]
+				if is_stable:
+					if self.set_repo_branch(repo_name, 'stable'):
+						changed_repos += 1
+				else:
+					if branch == 'stable':
+						branch = 'testing'
+					if self.set_repo_branch(repo_name, branch):
+						changed_repos += 1
 			except Exception as err:
 				logging.error(err)
 				errors["ZYNTHIAN_REPO_{}".format(repo_name)]=err
@@ -83,6 +94,13 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 	def get_config_info(self):
 		config = OrderedDict([])
+		config["TESTING"] = {
+				'type': 'boolean',
+				'title': 'Testing',
+				'value': '0',
+				'advanced': False
+			}
+		testing_overall = False
 		for repitem in self.repository_list:
 			options = self.get_repo_branch_list(repitem[0])
 			config["ZYNTHIAN_REPO_{}".format(repitem[0])] = {
@@ -93,6 +111,8 @@ class RepositoryHandler(ZynthianConfigHandler):
 				'option_labels': OrderedDict([(opt, opt) for opt in options]),
 				'advanced': repitem[1]
 			}
+			testing_overall |= (self.get_repo_current_branch(repitem[0]) != 'stable')
+		config["TESTING"]['value'] = '1' if testing_overall else '0'
 		return config
 
 
