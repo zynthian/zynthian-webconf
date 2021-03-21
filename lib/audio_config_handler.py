@@ -270,6 +270,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'addPanelConfig': zc_config,
 			'advanced': True
 		}
+		config['JAMULUS_OPTIONS'] = {
+			'type': 'text',
+			'title': "Jamulus Options",
+			'value': os.environ.get('JAMULUS_OPTIONS',"-n -j"),
+			'advanced': True
+		}
 
 		if os.environ.get('SOUNDCARD_NAME')!="RBPi Headphones":
 			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
