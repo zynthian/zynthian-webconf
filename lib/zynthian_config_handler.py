@@ -33,6 +33,10 @@ from subprocess import check_output
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
 
+#Avoid unwanted debug messages from zynconf module
+zynconf_logger = logging.getLogger('zynconf')
+zynconf_logger.setLevel(logging.INFO)
+
 #------------------------------------------------------------------------------
 # Zynthian-UI OSC Address
 #------------------------------------------------------------------------------
@@ -80,6 +84,9 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		# If VNC Server is enabled, add access URI to info
 		if self.is_service_active("novnc"):
 			info['novnc_uri']="http://{}:6080/vnc.html".format(self.request.host)
+
+		# Restore scroll position
+		info['scrollTop'] = int(self.get_argument('_scrollTop', '0'))
 
 		super().render(tpl, info=info, **kwargs)
 
@@ -150,7 +157,14 @@ class ZynthianConfigHandler(ZynthianBasicHandler):
 	def update_config(self, config):
 		sconfig={}
 		for vn in config:
-			sconfig[vn]=config[vn][0]
+			if vn[0]!='_':
+				sconfig[vn]=config[vn][0]
 
 		zynconf.save_config(sconfig, update_sys=True)
+
+
+	def config_env(self, config):
+		for vn in config:
+			if vn[0]!='_':
+				os.environ[vn]=config[vn][0]
 
