@@ -24,6 +24,7 @@
 
 import os
 import re
+import copy
 import logging
 import tornado.web
 from collections import OrderedDict
@@ -223,12 +224,20 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		else:
 			custom_options_disabled = False
 
+		scpresets = copy.copy(soundcard_presets)
+		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0')=='1':
+			try:
+				del scpresets['RBPi Headphones']
+				del scpresets['RBPi HDMI']
+			except:
+				pass
+
 		config['SOUNDCARD_NAME'] = {
 			'type': 'select',
 			'title': "Soundcard",
 			'value': os.environ.get('SOUNDCARD_NAME'),
-			'options': list(soundcard_presets.keys()),
-			'presets': soundcard_presets,
+			'options': list(scpresets.keys()),
+			'presets': scpresets,
 			'disabled': custom_options_disabled
 		}
 		config['SOUNDCARD_CONFIG'] = {
@@ -253,6 +262,18 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS',"-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 			'advanced': True
 		}
+		config['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = {
+			'type': 'boolean',
+			'title': "Disable RBPi Audio",
+			'value': os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0'),
+			'advanced': True
+		}
+		config['ZYNTHIAN_DISABLE_OTG'] = {
+			'type': 'boolean',
+			'title': "Disable OTG",
+			'value': os.environ.get('ZYNTHIAN_DISABLE_OTG','0'),
+			'advanced': True
+		}
 		config['ZYNTHIAN_LIMIT_USB_SPEED'] = {
 			'type': 'boolean',
 			'title': "Limit USB speed to 12Mb/s",
@@ -271,13 +292,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'advanced': True
 		}
 
-		if os.environ.get('SOUNDCARD_NAME')!="RBPi Headphones":
+		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0')=='0' and os.environ.get('SOUNDCARD_NAME')!="RBPi Headphones":
 			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
 				'type': 'boolean',
 				'title': "RBPi Headphones",
 				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES','0')
 			}
-
 
 		super().get("Audio", config, errors)
 
@@ -285,15 +305,16 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def post(self):
 		self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
-
-		if self.get_argument('SOUNDCARD_NAME')=="RBPi Headphones":
-			self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES']=['0']
+		self.request.arguments['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = self.request.arguments.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0')
+		self.request.arguments['ZYNTHIAN_DISABLE_OTG'] = self.request.arguments.get('ZYNTHIAN_DISABLE_OTG', '0')
 
 		try:
 			previousSoundcard = os.environ.get('SOUNDCARD_NAME')
 			currentSoundcard = self.get_argument('SOUNDCARD_NAME')
 			if currentSoundcard.startswith('AudioInjector') and currentSoundcard!=previousSoundcard:
 				self.persist_update_sys_flag()
+			if currentSoundcard=="RBPi Headphones":
+				self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES']=['0']
 		except:
 			pass
 

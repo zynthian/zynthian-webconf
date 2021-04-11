@@ -144,27 +144,27 @@ class DashboardHandler(ZynthianBasicHandler):
 				'info': OrderedDict([
 					['ZYNCODER', {
 						'title': 'zyncoder',
-						'value': "{} ({})".format(git_info_zyncoder['branch'], git_info_zyncoder['gitid'][0:7]),
+						'value': "%s (%s) %s" % (git_info_zyncoder['branch'], git_info_zyncoder['gitid'][0:7], 'Update available' if git_info_zyncoder['update'] == '1' else ''),
 						'url': "https://github.com/zynthian/zyncoder/commit/{}".format(git_info_zyncoder['gitid'])
 					}],
 					['UI', {
 						'title': 'zynthian-ui',
-						'value': "{} ({})".format(git_info_ui['branch'], git_info_ui['gitid'][0:7]),
+						'value': "{} ({})".format(git_info_ui['branch'], git_info_ui['gitid'][0:7], 'Update available' if git_info_ui['update'] == '1' else ''),
 						'url': "https://github.com/zynthian/zynthian-ui/commit/{}".format(git_info_ui['gitid'])
 					}],
 					['SYS', {
 						'title': 'zynthian-sys',
-						'value': "{} ({})".format(git_info_sys['branch'], git_info_sys['gitid'][0:7]),
+						'value': "{} ({})".format(git_info_sys['branch'], git_info_sys['gitid'][0:7], 'Update available' if git_info_sys['update'] == '1' else ''),
 						'url': "https://github.com/zynthian/zynthian-sys/commit/{}".format(git_info_sys['gitid'])
 					}],
 					['DATA', {
 						'title': 'zynthian-data',
-						'value': "{} ({})".format(git_info_data['branch'], git_info_data['gitid'][0:7]),
+						'value': "{} ({})".format(git_info_data['branch'], git_info_data['gitid'][0:7], 'Update available' if git_info_data['update'] == '1' else ''),
 						'url': "https://github.com/zynthian/zynthian-data/commit/{}".format(git_info_data['gitid'])
 					}],
 					['WEBCONF', {
 						'title': 'zynthian-webconf',
-						'value': "{} ({})".format(git_info_webconf['branch'], git_info_webconf['gitid'][0:7]),
+						'value': "{} ({})".format(git_info_webconf['branch'], git_info_webconf['gitid'][0:7], 'Update available' if git_info_webconf['update'] == '1' else ''),
 						'url': "https://github.com/zynthian/zynthian-webconf/commit/{}".format(git_info_webconf['gitid'])
 					}]
 				])
@@ -252,7 +252,8 @@ class DashboardHandler(ZynthianBasicHandler):
 	def get_git_info(self, path):
 		branch = check_output("cd %s; git branch | grep '*'" % path, shell=True).decode()[2:-1]
 		gitid = check_output("cd %s; git rev-parse HEAD" % path, shell=True).decode()[:-1]
-		return { "branch": branch, "gitid": gitid }
+		update = check_output("cd %s; git remote update; git status --porcelain -bs | grep behind | wc -l" % path, shell=True).decode()
+		return { "branch": branch, "gitid": gitid, "update": update }
 
 
 	def get_host_name(self):

@@ -312,14 +312,17 @@ div#loading-div {
 }
 div.normal-view {
   background: rgba(221, 221, 221, 0.4);
-  padding-bottom: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
 }
 div.advanced-view {
   display: none;
   background: rgba(221, 221, 221, 0.7);
-  padding-bottom: 1em;
+  padding-top: 0.5em;
+  padding-bottom: 0.5em;
 }
 div.tab-content div.advanced-view {
+  padding-top: 0em;
   padding-bottom: 0em;
 }
 div#midi_filter_rule_panel input:disabled,
