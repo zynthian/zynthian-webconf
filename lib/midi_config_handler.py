@@ -414,6 +414,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'Enable System Messages (Transport)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1')
 			}],
+			['ZYNTHIAN_MIDI_CC_AUTOMODE', {
+				'type': 'boolean',
+				'title': 'Autodetect CC relative mode',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_CC_AUTOMODE','1')
+			}],
 			['ZYNTHIAN_MIDI_RTPMIDI_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable RTP-MIDI (AppleMIDI network)',
@@ -522,6 +527,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_MIDI_FILTER_OUTPUT'] = self.request.arguments.get('ZYNTHIAN_MIDI_FILTER_OUTPUT','0')
 		self.request.arguments['ZYNTHIAN_MIDI_SYS_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_SYS_ENABLED','0')
+		self.request.arguments['ZYNTHIAN_MIDI_CC_AUTOMODE'] = self.request.arguments.get('ZYNTHIAN_MIDI_CC_AUTOMODE','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
 		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','0')
