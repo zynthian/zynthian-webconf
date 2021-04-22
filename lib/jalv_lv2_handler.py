@@ -96,6 +96,8 @@ class JalvLv2Handler(ZynthianBasicHandler):
 		zynthian_lv2.generate_plugins_config_file()
 		zynthian_lv2.get_plugins_by_type()
 		zynthian_lv2.generate_all_presets_cache(False)
+		self.restart_ui_flag = True
+		self.restart_webconf_flag = True
 
 
 #------------------------------------------------------------------------------
