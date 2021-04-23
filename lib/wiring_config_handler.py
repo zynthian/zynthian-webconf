@@ -260,6 +260,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		}
 		if "16xDIO" in zynaptik_config:
 			n_zynaptik_switches = 16
+		else:
+			n_zynaptik_switches = 0
 
 		# Zynaptik CV/GATE IN Config
 		if "16xDIO" in zynaptik_config and "4xAD" in zynaptik_config:
