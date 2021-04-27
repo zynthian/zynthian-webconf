@@ -249,10 +249,13 @@ class DashboardHandler(ZynthianBasicHandler):
 		super().get("dashboard_block.html", "Dashboard", config, None)
 
 
-	def get_git_info(self, path):
+	def get_git_info(self, path, check_updates=False):
 		branch = check_output("cd %s; git branch | grep '*'" % path, shell=True).decode()[2:-1]
 		gitid = check_output("cd %s; git rev-parse HEAD" % path, shell=True).decode()[:-1]
-		update = check_output("cd %s; git remote update; git status --porcelain -bs | grep behind | wc -l" % path, shell=True).decode()
+		if check_updates:
+			update = check_output("cd %s; git remote update; git status --porcelain -bs | grep behind | wc -l" % path, shell=True).decode()
+		else:
+			update = None
 		return { "branch": branch, "gitid": gitid, "update": update }
 
 

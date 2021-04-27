@@ -51,6 +51,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	reboot_flag = False
 	restart_ui_flag = False
+	restart_webconf_flag = False
 	reload_midi_config_flag = False
 	reload_key_binding_flag = False
 
@@ -69,6 +70,11 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 				self.genjson=True
 		except:
 			pass
+
+
+	def on_finish(self):
+		if self.restart_webconf_flag:
+			self.restart_webconf()
 
 
 	def render(self, tpl, **kwargs):
@@ -100,12 +106,12 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 		if self.restart_ui_flag:
 			self.restart_ui()
+		else:
+			if self.reload_midi_config_flag:
+				self.reload_midi_config()
 
-		if self.reload_midi_config_flag:
-			self.reload_midi_config()
-
-		if self.reload_key_binding_flag:
-			self.reload_key_binding()
+			if self.reload_key_binding_flag:
+				self.reload_key_binding()
 
 		if self.genjson:
 			self.write(config)
@@ -119,17 +125,28 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	def restart_ui(self):
 		try:
-			check_output("systemctl daemon-reload;systemctl restart zynthian", shell=True)
+			check_output("systemctl restart zynthian", shell=True)
+			self.restart_ui_flag = False
 		except Exception as e:
 			logging.error("Restarting UI: %s" % e)
 
 
+	def restart_webconf(self):
+		try:
+			check_output("systemctl restart zynthian-webconf", shell=True)
+			self.restart_webconf_flag = False
+		except Exception as e:
+			logging.error("Restarting Webconf: %s" % e)
+
+
 	def reload_midi_config(self):
 		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_MIDI_CONFIG")
+		self.reload_midi_config_flag = False
 
 
 	def reload_key_binding(self):
 		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_KEY_BINDING")
+		self.reload_key_binding_flag = False
 
 
 	def persist_update_sys_flag(self):

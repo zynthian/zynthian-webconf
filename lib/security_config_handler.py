@@ -128,6 +128,11 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 			except Exception as e:
 				logging.error("Can't set new password for VNC Server! => {}".format(e))
 				return { 'REPEAT_PASSWORD': "Can't set new password for VNC Server!" }
+			try:
+				self.update_hostapd_conf("wpa_passphrase", config['PASSWORD'][0])
+			except Exception as e:
+				logging.error("Can't set new password for WIFI HotSpot! => {}".format(e))
+				return { 'REPEAT_PASSWORD': "Can't set new password for WIFI HotSpot!" }
 
 		#Update Hostname
 		newHostname = config['HOSTNAME'][0]
@@ -152,4 +157,26 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
 			check_output(["hostnamectl", "set-hostname", newHostname])
 
+			try:
+				self.update_hostapd_conf("ssid", newHostname)
+			except Exception as e:
+				logging.error("Can't set WIFI HotSpot name! => {}".format(e))
+				return { 'HOSTNAME': "Can't set WIFI HotSpot name!" }
+
 			#self.reboot_flag=True
+
+
+	def update_hostapd_conf(self, vname, val):
+		fpath = '/etc/hostapd/hostapd.conf'
+		conf = OrderedDict()
+		with open(fpath,'r+') as f:
+			lines = f.readlines()
+			for l in lines:
+				parts = l.split("=",1)
+				conf[parts[0]] = parts[1]
+			conf[vname] = val + "\n"
+			f.seek(0)
+			f.truncate()
+			for k,v in conf.items():
+				f.write("{}={}".format(k,v))
+			f.close()
