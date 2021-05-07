@@ -82,6 +82,11 @@ class MidiLogHandler(ZynthianBasicHandler):
 			'alias': "ZynMidiRouter MIDI-OUT",
 		})
 		midi_in_ports.append({
+			'name': "ZynMaster:midi_out",
+			'shortname': "midi_out",
+			'alias': "ZynMaster MIDI-OUT",
+		})
+		midi_in_ports.append({
 			'name': "ZynMidiRouter:net_out",
 			'shortname': "net_out",
 			'alias': "ZynMidiRouter Network" 
