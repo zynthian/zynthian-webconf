@@ -101,8 +101,11 @@
 									{% try %}{% if 'modui_uri' in info %}
 									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
 									{% end %}{% except %}{% end %}
-									{% try %}{% if 'novnc_uri' in info %}
-									<li><a href="{{ info['novnc_uri'] }}" target="_blank">VNC Viewer</a></li>
+									{% try %}{% if 'novnc0_uri' in info %}
+									<li><a href="{{ info['novnc0_uri'] }}" target="_blank">Main VNC Viewer</a></li>
+									{% end %}{% except %}{% end %}
+									{% try %}{% if 'novnc1_uri' in info %}
+									<li><a href="{{ info['novnc1_uri'] }}" target="_blank">Secondary VNC Viewer</a></li>
 									{% end %}{% except %}{% end %}
 								</ul>
 							</li>
