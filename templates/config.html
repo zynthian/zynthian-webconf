@@ -98,15 +98,6 @@
 									<li {% if request.uri=="/sw-pìanoteq" %}class="active"{% end %}><a href="/sw-pianoteq">Pianoteq</a></li>
 									<li {% if request.uri=="/sw-update" %}class="active"{% end %}><a href="/sw-update">Update</a></li>
 									<li {% if request.uri=="/sw-repos" %}class="active"{% end %}><a href="/sw-repos">Repositories</a></li>
-									{% try %}{% if 'modui_uri' in info %}
-									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
-									{% end %}{% except %}{% end %}
-									{% try %}{% if 'novnc0_uri' in info %}
-									<li><a href="{{ info['novnc0_uri'] }}" target="_blank">Main VNC Viewer</a></li>
-									{% end %}{% except %}{% end %}
-									{% try %}{% if 'novnc1_uri' in info %}
-									<li><a href="{{ info['novnc1_uri'] }}" target="_blank">Secondary VNC Viewer</a></li>
-									{% end %}{% except %}{% end %}
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:8]=="/ui-" %}active{% end %}">
@@ -117,12 +108,23 @@
 									<li {% if request.uri=="/ui-log" %}class="active"{% end %}><a href="/ui-log">UI Log</a></li>
 									<li {% if request.uri=="/ui-midi-options" %}class="active"{% end %}><a href="/ui-midi-options">MIDI Options</a></li>
 									<li {% if request.uri=="/ui-midi-log" %}class="active"{% end %}><a href="/ui-midi-log">MIDI Log</a></li>
+									<li><hr></li>
+									{% try %}{% if 'modui_uri' in info %}
+									<li><a href="{{ info['modui_uri'] }}" target="_blank">MOD-UI</a></li>
+									{% end %}{% except %}{% end %}
+									{% try %}{% if 'novnc0_uri' in info %}
+									<li><a href="{{ info['novnc0_uri'] }}" target="_blank">VNC-UI</a></li>
+									{% end %}{% except %}{% end %}
+									{% try %}{% if 'novnc1_uri' in info %}
+									<li><a href="{{ info['novnc1_uri'] }}" target="_blank">VNC-Engines</a></li>
+									{% end %}{% except %}{% end %}
+									<li {% if request.uri=="/zynterm" %}class="active"{% end %}><a href="/zynterm">Terminal</a></li>
+
 								</ul>
 							</li>
 							<li class="dropdown {% if request.uri[0:9]=="/sys-" %}active{% end %}">
 								<a href="#menu-sys" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">System <span class="caret"></span></a>
 								<ul class="dropdown-menu">
-									<li {% if request.uri=="/zynterm" %}class="active"{% end %}><a href="/zynterm">Terminal</a></li>
 									<li {% if request.uri=="/sys-wifi" %}class="active"{% end %}><a href="/sys-wifi">Wi-Fi</a></li>
 									<li {% if request.uri=="/sys-security" %}class="active"{% end %}><a href="/sys-security">Security / Access</a></li>
 									<li {% if request.uri=="/sys-backup" %}class="active"{% end %}><a href="/sys-backup">Backup / Restore</a></li>
