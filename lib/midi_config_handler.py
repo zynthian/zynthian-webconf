@@ -60,12 +60,22 @@ def get_ports_config(current_midi_ports=""):
 			midi_out_ports.append(qmidinet_out_ports[0])
 		except:
 			pass
+
 		#Add RTP-Midi ports
 		rtpmidi_in_ports=client.get_ports("jackrtpmidid", is_midi=True, is_physical=False, is_output=True )
 		rtpmidi_out_ports=client.get_ports("jackrtpmidid", is_midi=True, is_physical=False, is_input=True )
 		try:
 			midi_in_ports.append(rtpmidi_in_ports[0])
 			midi_out_ports.append(rtpmidi_out_ports[0])
+		except:
+			pass
+
+		#Add TouchOSC-Midi ports
+		touchosc_in_ports=client.get_ports("TouchOSC Bridge", is_midi=True, is_physical=False, is_output=True )
+		touchosc_out_ports=client.get_ports("TouchOSC Bridge", is_midi=True, is_physical=False, is_input=True )
+		try:
+			midi_in_ports.append(touchosc_in_ports[0])
+			midi_out_ports.append(touchosc_out_ports[0])
 		except:
 			pass
 
