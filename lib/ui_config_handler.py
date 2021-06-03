@@ -35,17 +35,26 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 
 class UiConfigHandler(ZynthianConfigHandler):
 
-	font_families=[
+	font_families = [
 		"Audiowide",
 		"Helvetica",
 		"Economica",
 		"Orbitron",
 		"Abel"
 	]
+	
+	impsight_voices_dpath = "/usr/share/festival/voices"
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+		
+		impsight_voices = os.listdir(self.impsight_voices_dpath + "/english") + os.listdir(self.impsight_voices_dpath + "/us")
+	
 		config=OrderedDict([
+			['_SECTION_UI_STYLE_', {
+				'type': 'html',
+				'content': "<h3>Look & Feel</h3>"
+			}],
 			['ZYNTHIAN_UI_FONT_SIZE', {
 				'type': 'text',
 				'title': 'Font Size',
@@ -94,6 +103,42 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
 				'advanced': True
 			}],
+			['_SECTION_UI_ACCESSIBILITY_', {
+				'type': 'html',
+				'content': "<h3>Accessibility</h3>"
+			}],
+			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
+				'type': 'boolean',
+				'title': 'Enable Onscreen Buttons',
+				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
+			}],
+			['ZYNTHIAN_UI_TOUCH_WIDGETS', {
+				'type': 'boolean',
+				'title': 'Enable Touch Widgets',
+				'value': os.environ.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
+			}],
+			['ZYNTHIAN_UI_ENABLE_CURSOR', {
+				'type': 'boolean',
+				'title': 'Enable cursor',
+				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+				'advanced': True
+			}],
+			['ZYNTHIAN_SIGHT_IMPAIRED_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable Sight Impaired Assistance',
+				'value': os.environ.get('ZYNTHIAN_SIGHT_IMPAIRED_ENABLED', '0')
+			}],
+			['ZYNTHIAN_SIGHT_IMPAIRED_VOICE', {
+				'type': 'select',
+				'title': 'Sight Impaired Assistance Voice',
+				'value': os.environ.get('ZYNTHIAN_SIGHT_IMPAIRED_VOICE', 'kal_diphone'),
+				'options': impsight_voices,
+				'advanced': True
+			}],
+			['_SECTION_UI_OPTIONS_', {
+				'type': 'html',
+				'content': "<h3>Miscelanea</h3>"
+			}],
 			['ZYNTHIAN_UI_METER_SELECTION', {
 				'type': 'select',
 				'title': 'Meter',
@@ -114,26 +159,10 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Audio Levels on Snapshots',
 				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 			}],
-			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
-				'type': 'boolean',
-				'title': 'Enable Onscreen Buttons',
-				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
-			}],
-			['ZYNTHIAN_UI_TOUCH_WIDGETS', {
-				'type': 'boolean',
-				'title': 'Enable Touch Widgets',
-				'value': os.environ.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0'),
-			}],
-			['ZYNTHIAN_UI_ENABLE_CURSOR', {
-				'type': 'boolean',
-				'title': 'Enable cursor',
-				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
-				'advanced': True
-			}],
 			['ZYNTHIAN_VNCSERVER_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable VNC Server',
-				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
+				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0')
 			}]
 		])
 
@@ -147,6 +176,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 		self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
+		self.request.arguments['ZYNTHIAN_IMPAIRED_SIGHT_ENABLED'] = self.request.arguments.get('ZYNTHIAN_IMPAIRED_SIGHT_ENABLED', '0')
 
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
