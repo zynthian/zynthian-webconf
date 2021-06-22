@@ -49,7 +49,11 @@
 			<input name="{{ escape(varname) }}" type="password" {{ disabled }}>
 
 		{% elif config[varname]['type']=='boolean' %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }}>
+			{% set refresh_form = 0 %}
+			{% if 'refresh_on_change' in config[varname] and config[varname]['refresh_on_change'] %}
+				{% set refresh_form = 1 %}
+			{% end %}
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }} {% if refresh_form %}onchange="refresh()" {% end %}>
 
 		{% elif config[varname]['type']=='hidden' %}
 			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
