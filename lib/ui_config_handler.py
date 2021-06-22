@@ -48,7 +48,11 @@ class UiConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		
-		impsight_voices = os.listdir(self.impsight_voices_dpath + "/english") + os.listdir(self.impsight_voices_dpath + "/us")
+		impsight_enabled = os.environ.get('ZYNTHIAN_SIGHT_IMPAIRED_ENABLED', '0')
+		if impsight_enabled:
+			impsight_voices = os.listdir(self.impsight_voices_dpath + "/english") + os.listdir(self.impsight_voices_dpath + "/us")
+		else:
+			impsight_voices = []
 	
 		config=OrderedDict([
 			['_SECTION_UI_STYLE_', {
@@ -126,14 +130,14 @@ class UiConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_SIGHT_IMPAIRED_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable Sight Impaired Assistance',
-				'value': os.environ.get('ZYNTHIAN_SIGHT_IMPAIRED_ENABLED', '0')
+				'value': impsight_enabled,
+				'refresh_on_change': True
 			}],
 			['ZYNTHIAN_SIGHT_IMPAIRED_VOICE', {
 				'type': 'select',
 				'title': 'Sight Impaired Assistance Voice',
 				'value': os.environ.get('ZYNTHIAN_SIGHT_IMPAIRED_VOICE', 'kal_diphone'),
-				'options': impsight_voices,
-				'advanced': True
+				'options': impsight_voices
 			}],
 			['_SECTION_UI_OPTIONS_', {
 				'type': 'html',
@@ -166,6 +170,9 @@ class UiConfigHandler(ZynthianConfigHandler):
 			}]
 		])
 
+		if impsight_enabled=='0':
+			del config['ZYNTHIAN_SIGHT_IMPAIRED_VOICE']
+
 		super().get("User Interface", config, errors)
 
 
@@ -176,18 +183,22 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 		self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
-		self.request.arguments['ZYNTHIAN_IMPAIRED_SIGHT_ENABLED'] = self.request.arguments.get('ZYNTHIAN_IMPAIRED_SIGHT_ENABLED', '0')
+		self.request.arguments['ZYNTHIAN_SIGHT_IMPAIRED_ENABLED'] = self.request.arguments.get('ZYNTHIAN_SIGHT_IMPAIRED_ENABLED', '0')
 
-		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
+		command = self.get_argument('_command', '')
+		logging.info("COMMAND = {}".format(command))
+		if command=='REFRESH':
+			errors = None
+			self.config_env(tornado.escape.recursive_unicode(self.request.arguments))
 
-		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]=='CPU Usage':
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
 		else:
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
+			escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
+			if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]=='CPU Usage':
+				escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
+			else:
+				escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
+			del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
+			errors=self.update_config(escaped_arguments)
+			self.restart_ui_flag = True
 
-		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
-
-		errors=self.update_config(escaped_arguments)
-
-		self.restart_ui_flag = True
 		self.get(errors)
