@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Reboot Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import logging
 import tornado.web
@@ -28,24 +28,24 @@ from os import system
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Reboot Handler
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class RebootHandler(ZynthianBasicHandler):
 
-	@tornado.web.authenticated
-	def get(self):
-		self.reboot_flag = False
-		super().get("reboot_confirm_block.html", "Reboot", None, None)
+    @tornado.web.authenticated
+    def get(self):
+        self.reboot_flag = False
+        super().get("reboot_confirm_block.html", "Reboot", None, None)
 
+    @tornado.web.authenticated
+    def post(self):
+        self.reboot_flag = False
+        super().get("reboot_block.html", "Reboot", None, None)
 
-	@tornado.web.authenticated
-	def post(self):
-		self.reboot_flag = False
-		super().get("reboot_block.html", "Reboot", None, None)
-
-		try:
-			system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
-		except Exception as e:
-			logging.error(e)
+        try:
+            system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
+        except Exception as e:
+            logging.error(e)

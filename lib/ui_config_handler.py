@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # UI Configuration Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import logging
@@ -29,135 +29,142 @@ from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # UI Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class UiConfigHandler(ZynthianConfigHandler):
 
-	font_families=[
-		"Audiowide",
-		"Helvetica",
-		"Economica",
-		"Orbitron",
-		"Abel"
-	]
+    font_families = [
+        "Audiowide",
+        "Helvetica",
+        "Economica",
+        "Orbitron",
+        "Abel"
+    ]
 
-	@tornado.web.authenticated
-	def get(self, errors=None):
-		config=OrderedDict([
-			['ZYNTHIAN_UI_FONT_SIZE', {
-				'type': 'text',
-				'title': 'Font Size',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
-			}],
-			['ZYNTHIAN_UI_FONT_FAMILY', {
-				'type': 'select',
-				'title': 'Font Family',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
-				'options': self.font_families,
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_BG', {
-				'type': 'text',
-				'title': 'Background Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_TX', {
-				'type': 'text',
-				'title': 'Text Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_ON', {
-				'type': 'text',
-				'title': 'Light Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_PANEL_BG', {
-				'type': 'text',
-				'title': 'Panel Background Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_SWITCH_BOLD_MS', {
-				'type': 'text',
-				'title': 'Bold Push Time (ms)',
-				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_BOLD_MS', '300'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_SWITCH_LONG_MS', {
-				'type': 'text',
-				'title': 'Long Push Time (ms)',
-				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_METER_SELECTION', {
-				'type': 'select',
-				'title': 'Meter',
-				'value':  'CPU Usage' if os.environ.get('ZYNTHIAN_UI_SHOW_CPU_STATUS')=='1' else 'Audio Level',
-				'options': ['Audio Level', 'CPU Usage'],
-				'option_labels': {
-					'Audio Level': 'Audio Level',
-					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
-				}
-			}],
-			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
-				'type': 'boolean',
-				'title': 'Restore last state on startup',
-				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
-			}],
-			['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
-				'type': 'boolean',
-				'title': 'Audio Levels on Snapshots',
-				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
-			}],
-			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
-				'type': 'boolean',
-				'title': 'Enable Onscreen Buttons',
-				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
-			}],
-			['ZYNTHIAN_UI_TOUCH_WIDGETS', {
-				'type': 'boolean',
-				'title': 'Enable Touch Widgets',
-				'value': os.environ.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0'),
-			}],
-			['ZYNTHIAN_UI_ENABLE_CURSOR', {
-				'type': 'boolean',
-				'title': 'Enable cursor',
-				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_VNCSERVER_ENABLED', {
-				'type': 'boolean',
-				'title': 'Enable VNC Server',
-				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
-			}]
-		])
+    @tornado.web.authenticated
+    def get(self, errors=None):
+        config = OrderedDict([
+            ['ZYNTHIAN_UI_FONT_SIZE', {
+                'type': 'text',
+                'title': 'Font Size',
+                        'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
+            }],
+            ['ZYNTHIAN_UI_FONT_FAMILY', {
+                'type': 'select',
+                'title': 'Font Family',
+                        'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
+                        'options': self.font_families,
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_COLOR_BG', {
+                'type': 'text',
+                'title': 'Background Color',
+                        'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_COLOR_TX', {
+                'type': 'text',
+                'title': 'Text Color',
+                        'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_COLOR_ON', {
+                'type': 'text',
+                'title': 'Light Color',
+                        'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_COLOR_PANEL_BG', {
+                'type': 'text',
+                'title': 'Panel Background Color',
+                        'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_SWITCH_BOLD_MS', {
+                'type': 'text',
+                'title': 'Bold Push Time (ms)',
+                        'value': os.environ.get('ZYNTHIAN_UI_SWITCH_BOLD_MS', '300'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_SWITCH_LONG_MS', {
+                'type': 'text',
+                'title': 'Long Push Time (ms)',
+                        'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_UI_METER_SELECTION', {
+                'type': 'select',
+                'title': 'Meter',
+                        'value':  'CPU Usage' if os.environ.get('ZYNTHIAN_UI_SHOW_CPU_STATUS') == '1' else 'Audio Level',
+                        'options': ['Audio Level', 'CPU Usage'],
+                        'option_labels': {
+                            'Audio Level': 'Audio Level',
+                            # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
+                            'CPU Usage': 'CPU Usage',
+                        }
+            }],
+            ['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
+                'type': 'boolean',
+                'title': 'Restore last state on startup',
+                        'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+            }],
+            ['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
+                'type': 'boolean',
+                'title': 'Audio Levels on Snapshots',
+                        'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
+            }],
+            ['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
+                'type': 'boolean',
+                'title': 'Enable Onscreen Buttons',
+                        'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
+            }],
+            ['ZYNTHIAN_UI_TOUCH_WIDGETS', {
+                'type': 'boolean',
+                'title': 'Enable Touch Widgets',
+                        'value': os.environ.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0'),
+            }],
+            ['ZYNTHIAN_UI_ENABLE_CURSOR', {
+                'type': 'boolean',
+                'title': 'Enable cursor',
+                        'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+                        'advanced': True
+            }],
+            ['ZYNTHIAN_VNCSERVER_ENABLED', {
+                'type': 'boolean',
+                'title': 'Enable VNC Server',
+                        'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
+            }]
+        ])
 
-		super().get("User Interface", config, errors)
+        super().get("User Interface", config, errors)
 
+    @tornado.web.authenticated
+    def post(self):
+        self.request.arguments['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get(
+            'ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
+        self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get(
+            'ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
+        self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get(
+            'ZYNTHIAN_UI_ENABLE_CURSOR', '0')
+        self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get(
+            'ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
+        self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get(
+            'ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
 
-	@tornado.web.authenticated
-	def post(self):
-		self.request.arguments['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
-		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
-		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
-		self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
-		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
+        escaped_arguments = tornado.escape.recursive_unicode(
+            self.request.arguments)
 
-		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
+        if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0] == 'CPU Usage':
+            escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
+        else:
+            escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
 
-		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]=='CPU Usage':
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
-		else:
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
+        del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
 
-		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
+        errors = self.update_config(escaped_arguments)
 
-		errors=self.update_config(escaped_arguments)
-
-		self.restart_ui_flag = True
-		self.get(errors)
+        self.restart_ui_flag = True
+        self.get(errors)
