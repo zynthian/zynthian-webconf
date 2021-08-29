@@ -94,7 +94,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 			info['novnc1_uri']="http://{}:6081/vnc.html".format(self.request.host)
 
 		# Restore scroll position
-		info['scrollTop'] = int(self.get_argument('_scrollTop', '0'))
+		info['scrollTop'] = int(float(self.get_argument('_scrollTop', '0')))
 
 		super().render(tpl, info=info, **kwargs)
 
