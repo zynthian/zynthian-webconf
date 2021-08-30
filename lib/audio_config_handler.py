@@ -78,9 +78,9 @@ soundcard_presets = OrderedDict([
 		'SOUNDCARD_MIXER': 'Master Left,Capture Left,Master Right,Capture Right'
 	}],
 	['AudioInjector Isolated', {
-                'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-isolated-soundcard',
-                'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectoris -r 48000 -p 256 -n 2 -X raw',
-                'SOUNDCARD_MIXER': 'Master Left,Master Right'
+		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-isolated-soundcard',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:audioinjectoris -r 48000 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Master Left,Master Right'
         }],
 	['AudioInjector Ultra', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
@@ -144,8 +144,13 @@ soundcard_presets = OrderedDict([
 	}],
 	['Steinberg UR22 MKII', {
 		'SOUNDCARD_CONFIG': '',
-		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:0 -r 44100 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:UR22 -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Clock_Source_41_Validity'
+	}],
+	['LogicLink UA0099', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:ICUSBAUDIO7D -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
 	}],
 	['Edirol UA1-EX', {
 		'SOUNDCARD_CONFIG': '',
