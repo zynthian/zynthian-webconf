@@ -197,6 +197,7 @@ function load_preset_tree() {
 					$('#button-upload').html("<i class=\"fa fa-upload\"></i> Upload (" + engine_formats + ")")
 				}
 				if ("presets" in data) {
+					$("#SEL_NODE_ID").val("-1")
 					renderPresetsTree(data['presets'])
 				}
 			} else {
@@ -301,10 +302,15 @@ function renderPresetsTree(data) {
 	if (engine_methods.includes("zynapi_martifact_formats")) $('#presets-search-panel').show();
 	else $('#presets-search-panel').hide();
 
-	var node_id = parseInt($("#SEL_NODE_ID").val())
 	$('#presets-tree').treeview('collapseAll', { silent: true });
-	$('#presets-tree').treeview('revealNode', [ node_id, { silent: true } ]);
-	$('#presets-tree').treeview('selectNode', node_id);
+	var node_id = parseInt($("#SEL_NODE_ID").val())
+	if (node_id>=0) {
+		$('#presets-tree').treeview('revealNode', [ node_id, { silent: true } ]);
+		$('#presets-tree').treeview('selectNode', node_id);
+	} else if (data && data.length==1) {
+		$('#presets-tree').treeview('expandNode', 0);
+	}
+	
 }
 
 function renderSearchResults(data) {
