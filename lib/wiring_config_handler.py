@@ -46,7 +46,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
 			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "2",
 			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "7",
-			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "16xDIO + 4xAD + 4xDA",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "Zynaptik-2 (16xDIO + 4xAD + 4xDA)",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "2"
 		}],
 		["MCP23017_ZynScreen_Zynaptik", {
@@ -55,7 +55,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
 			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "2",
 			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "7",
-			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "16xDIO + 4xAD + 4xDA",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "Zynaptik-2 (16xDIO + 4xAD + 4xDA)",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
 		}],
 		["MCP23017_ZynScreen", {
@@ -302,7 +302,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'type': 'select',
 			'title': "Zynaptik Config",
 			'value': zynaptik_config,
-			'options': ["", "16xDIO", "4xAD", "4xDA", "16xDIO + 4xAD", "16xDIO + 4xDA", "4xAD + 4xDA", "16xDIO + 4xAD + 4xDA"],
+			'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)"],
 			'advanced': True,
 			'refresh_on_change': True
 		}
