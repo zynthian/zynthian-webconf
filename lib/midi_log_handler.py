@@ -100,7 +100,7 @@ class MidiLogHandler(ZynthianBasicHandler):
 			midi_in_ports.append({
 				'name': "ZynMidiRouter:ch{}_out".format(i),
 				'shortname': "ch{}_out".format(i),
-				'alias': "ZynMidiRouter CH#{}".format(i) 
+				'alias': "ZynMidiRouter CH#{}".format(i+1) 
 			})
 		return midi_in_ports
 
