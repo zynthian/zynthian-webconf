@@ -326,6 +326,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
 			self.request.arguments['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = self.request.arguments.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0')
 			self.request.arguments['ZYNTHIAN_DISABLE_OTG'] = self.request.arguments.get('ZYNTHIAN_DISABLE_OTG', '0')
+			self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES'] = self.request.arguments.get('ZYNTHIAN_RBPI_HEADPHONES', '0')
 
 			try:
 				previousSoundcard = os.environ.get('SOUNDCARD_NAME')
