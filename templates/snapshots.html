@@ -298,7 +298,7 @@ $("#LAYOUTS_TABLE").bootstrapTable({
 $("#MIDI_PROFILE_STATE").bootstrapTable({
 	data: []
 });
-createTree(JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;") %}'),
+createTree(JSON.parse('{% raw config['SNAPSHOTS'].replace("'", "&#39;").replace("\\:",":") %}'),
 	{% raw config['SEL_NODE_ID'] %});
 
 $('#snapshot-info-modal').on('show.bs.modal', function(e) {
