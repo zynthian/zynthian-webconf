@@ -40,6 +40,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 # ------------------------------------------------------------------------------
 
 class RepositoryHandler(ZynthianConfigHandler):
+	ZYNTHIAN_REPO_POST_VAR = "ZYNTHIAN_REPO_"
 	zynthian_base_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian")
 
 	repository_list = [
@@ -65,21 +66,23 @@ class RepositoryHandler(ZynthianConfigHandler):
 			is_stable = (postedConfig['TESTING'][0] == '0')
 		except:
 			is_stable = True
+		logging.debug(F"is_stable: {is_stable}")
 		for posted_config_key in postedConfig:
-			repo_name = posted_config_key[14:]
-			try:
-				branch = postedConfig[posted_config_key][0]
-				if is_stable:
-					if self.set_repo_branch(repo_name, 'stable'):
-						changed_repos += 1
-				else:
-					if branch == 'stable':
-						branch = 'testing'
-					if self.set_repo_branch(repo_name, branch):
-						changed_repos += 1
-			except Exception as err:
-				logging.error(err)
-				errors["ZYNTHIAN_REPO_{}".format(repo_name)] = err
+			if posted_config_key.startswith(self.ZYNTHIAN_REPO_POST_VAR):
+				repo_name = posted_config_key[len(self.ZYNTHIAN_REPO_POST_VAR):]
+				try:
+					branch = postedConfig[posted_config_key][0]
+					if is_stable:
+						if self.set_repo_branch(repo_name, 'stable'):
+							changed_repos += 1
+					else:
+						if branch == 'stable':
+							branch = 'testing'
+						if self.set_repo_branch(repo_name, branch):
+							changed_repos += 1
+				except Exception as err:
+					logging.error(err)
+					errors[F"{self.ZYNTHIAN_REPO_POST_VAR}{repo_name}"] = err
 
 		config = self.get_config_info()
 		if changed_repos > 0:
@@ -87,6 +90,7 @@ class RepositoryHandler(ZynthianConfigHandler):
 				'type': 'html',
 				'content': "<div class='alert alert-success'>Some repo changed its branch. You may want to <a href='/sw-update'>update the software</a> for getting the latest changes.</div>"
 			}
+			self.reboot_flag = True
 
 		super().get("Repositories", config, errors)
 
@@ -101,10 +105,12 @@ class RepositoryHandler(ZynthianConfigHandler):
 		testing_overall = False
 		for repitem in self.repository_list:
 			options = self.get_repo_branch_list(repitem[0])
-			config["ZYNTHIAN_REPO_{}".format(repitem[0])] = {
+			branch = self.get_repo_current_branch(repitem[0])
+			config[F"{self.ZYNTHIAN_REPO_POST_VAR}{repitem[0]}"] = {
 				'type': 'select',
+				'disabled': branch == "stable",
 				'title': repitem[0],
-				'value': self.get_repo_current_branch(repitem[0]),
+				'value': branch,
 				'options': options,
 				'option_labels': OrderedDict([(opt, opt) for opt in options]),
 				'advanced': repitem[1]
