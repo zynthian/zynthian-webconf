@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Audio Configuration Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import re
@@ -34,12 +34,12 @@ from lib.audio_config_handler import AudioConfigHandler
 from lib.display_config_handler import DisplayConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 
-#------------------------------------------------------------------------------
+
+# ------------------------------------------------------------------------------
 # GIT Repository Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 class RepositoryHandler(ZynthianConfigHandler):
-
 	zynthian_base_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian")
 
 	repository_list = [
@@ -53,7 +53,6 @@ class RepositoryHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		super().get("Repositories", self.get_config_info(), errors)
-
 
 	@tornado.web.authenticated
 	def post(self):
@@ -80,10 +79,10 @@ class RepositoryHandler(ZynthianConfigHandler):
 						changed_repos += 1
 			except Exception as err:
 				logging.error(err)
-				errors["ZYNTHIAN_REPO_{}".format(repo_name)]=err
+				errors["ZYNTHIAN_REPO_{}".format(repo_name)] = err
 
 		config = self.get_config_info()
-		if changed_repos>0:
+		if changed_repos > 0:
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
 				'content': "<div class='alert alert-success'>Some repo changed its branch. You may want to <a href='/sw-update'>update the software</a> for getting the latest changes.</div>"
@@ -91,15 +90,14 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 		super().get("Repositories", config, errors)
 
-
 	def get_config_info(self):
 		config = OrderedDict([])
 		config["TESTING"] = {
-				'type': 'boolean',
-				'title': 'Testing',
-				'value': '0',
-				'advanced': False
-			}
+			'type': 'boolean',
+			'title': 'Testing',
+			'value': '0',
+			'advanced': False
+		}
 		testing_overall = False
 		for repitem in self.repository_list:
 			options = self.get_repo_branch_list(repitem[0])
@@ -115,7 +113,6 @@ class RepositoryHandler(ZynthianConfigHandler):
 		config["TESTING"]['value'] = '1' if testing_overall else '0'
 		return config
 
-
 	def get_repo_tag_list(self, repo_name):
 		result = ["master"]
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
@@ -126,14 +123,13 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 		return result
 
-
 	def get_repo_branch_list(self, repo_name):
 		result = ["master"]
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
 
 		check_output("cd {}; git remote update origin --prune".format(repo_dir), shell=True)
 		for byteLine in check_output("cd {}; git branch -a".format(repo_dir), shell=True).splitlines():
-			bname=byteLine.decode("utf-8").strip()
+			bname = byteLine.decode("utf-8").strip()
 			if bname.startswith("*"):
 				bname = bname[2:]
 			if bname.startswith("remotes/origin/"):
@@ -145,13 +141,12 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 		return result
 
-
 	def get_repo_current_branch(self, repo_name):
 		repo_dir = self.zynthian_base_dir + "/" + repo_name
 
-		for byteLine in check_output("cd {}; git branch | grep \* | cut -d ' ' -f2".format(repo_dir), shell=True).splitlines():
+		for byteLine in check_output("cd {}; git branch | grep \* | cut -d ' ' -f2".format(repo_dir),
+									 shell=True).splitlines():
 			return byteLine.decode("utf-8")
-
 
 	def set_repo_tag(self, repo_name, tag_name):
 		logging.info("Changing repository '{}' to tag '{}'".format(repo_name, tag_name))
@@ -164,9 +159,11 @@ class RepositoryHandler(ZynthianConfigHandler):
 			if tag_name == 'master':
 				check_output("cd {}; git checkout .; git checkout {}".format(repo_dir, tag_name), shell=True)
 			else:
-				check_output("cd {}; git checkout .; git branch -d {}; git checkout tags/{} -b {}".format(repo_dir, tag_name, tag_name, tag_name), shell=True)
+				check_output(
+					"cd {}; git checkout .; git branch -d {}; git checkout tags/{} -b {}".format(repo_dir, tag_name,
+																								 tag_name, tag_name),
+					shell=True)
 			return True
-
 
 	def set_repo_branch(self, repo_name, branch_name):
 		logging.info("Changing repository '{}' to branch '{}'".format(repo_name, branch_name))
