@@ -138,6 +138,8 @@ class PianoteqHandler(ZynthianBasicHandler):
 		if result != "Activation Key Saved !\n":
 			logging.error("Pianoteq License Activation Failed: {}".format(result))
 			return result
+		else:
+			self.pianoteq_autoconfig()
 
 
 	def do_update_presets_cache(self):

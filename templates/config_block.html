@@ -88,6 +88,9 @@
 			{% if 'refresh_on_change' in config[varname] and config[varname]['refresh_on_change'] %}
 				{% set refresh_form = 1 %}
 			{% end %}
+			{% if disabled %}
+			<input type="hidden" name="{{ escape(varname) }}" value="{{ value }}" />
+			{% end %}
 			<select name="{{ escape(varname) }}" onchange="onchange_select(this,{{ refresh_subvars }}, {{ refresh_form }})" {{ disabled }}>
 				{% for option in config[varname]['options'] %}
 				<option value="{{ escape(option) }}"
