@@ -304,12 +304,21 @@ function renderPresetsTree(data) {
 
 	$('#presets-tree').treeview('collapseAll', { silent: true });
 	var node_id = parseInt($("#SEL_NODE_ID").val())
-	if (node_id>=0) {
-		$('#presets-tree').treeview('revealNode', [ node_id, { silent: true } ]);
-		$('#presets-tree').treeview('selectNode', node_id);
-	} else if (data && data.length==1) {
-		$('#presets-tree').treeview('expandNode', 0);
+	if (data.length == 0){
+		$('#presets-file-panel').hide();
+		$('#download-panel').hide();
+	} else {
+		if (node_id >= 0) {
+			$('#presets-tree').treeview('revealNode', [node_id, {silent: true}]);
+			$('#presets-tree').treeview('selectNode', node_id);
+
+		} else if (data && data.length == 1) {
+			$('#presets-tree').treeview('expandNode', 0);
+		}
 	}
+
+
+
 	
 }
 
