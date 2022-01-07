@@ -36,6 +36,21 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class DisplayConfigHandler(ZynthianConfigHandler):
 
 	display_presets=OrderedDict([
+		['Z2 Display', {
+			'DISPLAY_CONFIG': 
+				'hdmi_force_hotplug:0=0\n'+
+				'hdmi_force_hotplug:1=1\n'+
+				'hdmi_drive:1=1\n'+
+				'hdmi_group:1=2\n'+
+				'hdmi_mode:1=87\n'+
+				'hdmi_cvt:1 1024 600 60 6 0 0 0\n'+
+				'#config_hdmi_boost:1=4\n'+
+				'display_rotate=2\n'+
+				'dtoverlay=goodix_z2',
+			'DISPLAY_WIDTH': '1024',
+			'DISPLAY_HEIGHT': '600',
+			'FRAMEBUFFER': '/dev/fb0'
+		}],
 		['ZynScreen 3.5 (v1)', {
 			'DISPLAY_CONFIG': 'dtoverlay=piscreen2r-notouch,rotate=270\n'+
 				'dtoverlay=ads7846,speed=2000000,cs=1,penirq=17,penirq_pull=2,swapxy=1,xohms=100,pmax=255',

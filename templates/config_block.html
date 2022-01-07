@@ -25,7 +25,9 @@
 	{% else %}
 		{% set div_class = div_class + " normal-view" %}
 	{% end %}
+	{% if config[varname]['type'] not in ['hidden'] %}
 	<div class="{{ div_class }}" {% try %} {{ "root_var=\"{}\"".format(config[varname]['root_var']) }} {% except %} {% end %} {% try %} {{ "enabling_options=\"{}\"".format(config[varname]['enabling_options']) }} {% except %} {% end %}>
+	{% end %}
 
 		{% if config[varname]['type'] not in ['button', 'hidden', 'html', 'jscript'] %}
 			<label for="{{ escape(varname) }}">{{ escape(config[varname]['title']) }}:</label>
@@ -128,7 +130,9 @@
 		{% if config[varname]['type'] not in ('hidden', 'html', 'jscript', 'button') %}
 		{% if errors and varname in errors %}<div class="alert alert-danger">{{ errors[varname] }}</div>{% end %}
 		{% end %}
+	{% if config[varname]['type'] not in ['hidden'] %}
 	</div>
+	{% end %}
 {% end %}
 
 	<input type="hidden" id="_command" name="_command" value='SAVE'>

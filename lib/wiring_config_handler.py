@@ -40,6 +40,24 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class WiringConfigHandler(ZynthianConfigHandler):
 
 	wiring_presets=OrderedDict([
+		["Z2_V2", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
+		}],
+		["Z2_V1", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
+		}],
 		["MCP23017_ZynScreen_Zynface", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
@@ -220,114 +238,154 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		else:
 			custom_options_disabled = False
 
+		wiring_layout = os.environ.get('ZYNTHIAN_WIRING_LAYOUT',"")
+		wiring_switches = os.environ.get('ZYNTHIAN_WIRING_SWITCHES',"")
+		zynaptik_config = os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG',"")
+		zyntof_config = os.environ.get('ZYNTHIAN_WIRING_ZYNTOF_CONFIG',"")
+
 		config['ZYNTHIAN_WIRING_LAYOUT'] = {
 			'type': 'select',
 			'title': 'Wiring Layout',
-			'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
+			'value': wiring_layout,
 			'options': list(self.wiring_presets.keys()),
 			'presets': self.wiring_presets,
 			'disabled': custom_options_disabled
 		}
-		config['ZYNTHIAN_WIRING_ENCODER_A'] = {
-			'type': 'text',
-			'title': "Encoders A-pins",
-			'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
-			'advanced': True,
-			'disabled': custom_options_disabled
-		}
-		config['ZYNTHIAN_WIRING_ENCODER_B'] = {
-			'type': 'text',
-			'title': "Encoders B-pins",
-			'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
-			'advanced': True,
-			'disabled': custom_options_disabled
-		}
-		config['ZYNTHIAN_WIRING_SWITCHES'] = {
-			'type': 'text',
-			'title': "Switches Pins",
-			'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES'),
-			'advanced': True,
-			'disabled': custom_options_disabled
-		}
-		# Calculate Num of Custom Switches
-		try:
-			n_extra_switches = min(4,max(0, len(os.environ.get('ZYNTHIAN_WIRING_SWITCHES').split(",")) - 4))
-		except:
-			n_extra_switches = 0
 
-		config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
-			'type': 'select',
-			'title': "MCP23017 INT-A Pin",
-			'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-			'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
-			'option_labels': {
-				'': 'Default', 
-				'0': 'WPi-GPIO 0 (pin 11)',
-				'2': 'WPi-GPIO 2 (pin 13)',
-				'3': 'WPi-GPIO 3 (pin 15)',
-				'4': 'WPi-GPIO 4 (pin 16)',
-				'5': 'WPi-GPIO 5 (pin 18)',
-				'6': 'WPi-GPIO 6 (pin 22)',
-				'7': 'WPi-GPIO 7 (pin 7)',
-				'25': 'WPi-GPIO 25 (pin 37)',
-				'27': 'WPi-GPIO 27 (pin 36)'
-			},
-			'advanced': True,
-			'disabled': custom_options_disabled
-		}
-		config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
-			'type': 'select',
-			'title': "MCP23017 INT-B Pin",
-			'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
-			'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
-			'option_labels': {
-				'': 'Default', 
-				'0': 'WPi-GPIO 0 (pin 11)',
-				'2': 'WPi-GPIO 2 (pin 13)',
-				'3': 'WPi-GPIO 3 (pin 15)',
-				'4': 'WPi-GPIO 4 (pin 16)',
-				'5': 'WPi-GPIO 5 (pin 18)',
-				'6': 'WPi-GPIO 6 (pin 22)',
-				'7': 'WPi-GPIO 7 (pin 7)',
-				'25': 'WPi-GPIO 25 (pin 37)',
-				'27': 'WPi-GPIO 27 (pin 36)'
-			},
-			'advanced': True,
-			'disabled': custom_options_disabled
-		}
+		if not wiring_layout.startswith("Z2"):
+			ui_action_select = True
+			try:
+				# Calculate Num of Custom Switches
+				n_extra_switches = min(4,max(0, len(wiring_switches.split(",")) - 4))
+			except:
+				n_extra_switches = 0
 
-		# Zynaptik Config
-		zynaptik_config = os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG',"")
-		config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
-			'type': 'select',
-			'title': "Zynaptik Config",
-			'value': zynaptik_config,
-			'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)"],
-			'advanced': True,
-			'refresh_on_change': True
-		}
+			config['ZYNTHIAN_WIRING_ENCODER_A'] = {
+				'type': 'text',
+				'title': "Encoders A-pins",
+				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A'),
+				'advanced': True,
+				'disabled': custom_options_disabled
+			}
+			config['ZYNTHIAN_WIRING_ENCODER_B'] = {
+				'type': 'text',
+				'title': "Encoders B-pins",
+				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B'),
+				'advanced': True,
+				'disabled': custom_options_disabled
+			}
+			config['ZYNTHIAN_WIRING_SWITCHES'] = {
+				'type': 'text',
+				'title': "Switches Pins",
+				'value': wiring_switches,
+				'advanced': True,
+				'disabled': custom_options_disabled
+			}
+		else:
+			ui_action_select = False
+			n_extra_switches = 32
+
+			config['ZYNTHIAN_WIRING_ENCODER_A'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A')
+			}
+			config['ZYNTHIAN_WIRING_ENCODER_B'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_B')
+			}
+			config['ZYNTHIAN_WIRING_SWITCHES'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES')
+			}
+
+		if wiring_layout.startswith("MCP23017") or wiring_layout.startswith("I2C"):
+			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
+				'type': 'select',
+				'title': "MCP23017 INT-A Pin",
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
+				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+				'option_labels': {
+					'': 'Default', 
+					'0': 'WPi-GPIO 0 (pin 11)',
+					'2': 'WPi-GPIO 2 (pin 13)',
+					'3': 'WPi-GPIO 3 (pin 15)',
+					'4': 'WPi-GPIO 4 (pin 16)',
+					'5': 'WPi-GPIO 5 (pin 18)',
+					'6': 'WPi-GPIO 6 (pin 22)',
+					'7': 'WPi-GPIO 7 (pin 7)',
+					'25': 'WPi-GPIO 25 (pin 37)',
+					'27': 'WPi-GPIO 27 (pin 36)'
+				},
+				'advanced': True,
+				'disabled': custom_options_disabled
+			}
+			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
+				'type': 'select',
+				'title': "MCP23017 INT-B Pin",
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
+				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+				'option_labels': {
+					'': 'Default', 
+					'0': 'WPi-GPIO 0 (pin 11)',
+					'2': 'WPi-GPIO 2 (pin 13)',
+					'3': 'WPi-GPIO 3 (pin 15)',
+					'4': 'WPi-GPIO 4 (pin 16)',
+					'5': 'WPi-GPIO 5 (pin 18)',
+					'6': 'WPi-GPIO 6 (pin 22)',
+					'7': 'WPi-GPIO 7 (pin 7)',
+					'25': 'WPi-GPIO 25 (pin 37)',
+					'27': 'WPi-GPIO 27 (pin 36)'
+				},
+				'advanced': True,
+				'disabled': custom_options_disabled
+			}
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
+				'type': 'select',
+				'title': "Zynaptik Config",
+				'value': zynaptik_config,
+				'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)"],
+				'advanced': True,
+				'refresh_on_change': True
+			}
+			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
+				'type': 'select',
+				'title': "Num. of Distance Sensors",
+				'value': zyntof_config,
+				'options': ["", "1", "2", "3", "4"],
+				'option_labels': {
+					'': '0',
+					'1': '1',
+					'2': '2',
+					'3': '3',
+					'4': '4'
+				},
+				'advanced': True,
+				'refresh_on_change': True
+			}
+
+		else:
+			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN')
+			}
+			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
+			}
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
+				'type': 'hidden',
+				'value': zynaptik_config
+			}
+			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
+				'type': 'hidden',
+				'value': zyntof_config
+			}
+
 		if "16xDIO" in zynaptik_config:
 			n_zynaptik_switches = 16
 		else:
 			n_zynaptik_switches = 0
 
-
-		zyntof_config = os.environ.get('ZYNTHIAN_WIRING_ZYNTOF_CONFIG',"")
-		config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
-			'type': 'select',
-			'title': "Num. of Distance Sensors",
-			'value': zyntof_config,
-			'options': ["", "1", "2", "3", "4"],
-			'option_labels': {
-				'': '0',
-				'1': '1',
-				'2': '2',
-				'3': '3',
-				'4': '4'
-			},
-			'advanced': True,
-			'refresh_on_change': True
-		}
 
 		# Customizable Switches
 		config['_SECTION_CUSTOM_SWITCHES_'] = {
@@ -359,27 +417,47 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'options': CustomSwitchActionType,
 				'refresh_on_change': True
 			}
-			config[base_name + '__UI_SHORT'] = {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Short-push',
-				'value': os.environ.get(base_name + '__UI_SHORT'),
-				'options': CustomUiAction
-			}
-			config[base_name + '__UI_BOLD'] = {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Bold-push',
-				'value': os.environ.get(base_name + '__UI_BOLD'),
-				'options': CustomUiAction
-			}
-			config[base_name + '__UI_LONG'] = {
-				'enabling_options': 'UI_ACTION',
-				'type': 'select',
-				'title': 'Long-push',
-				'value': os.environ.get(base_name + '__UI_LONG'),
-				'options': CustomUiAction
-			}
+			if ui_action_select:
+				config[base_name + '__UI_SHORT'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'select',
+					'title': 'Short-push',
+					'value': os.environ.get(base_name + '__UI_SHORT'),
+					'options': CustomUiAction
+				}
+				config[base_name + '__UI_BOLD'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'select',
+					'title': 'Bold-push',
+					'value': os.environ.get(base_name + '__UI_BOLD'),
+					'options': CustomUiAction
+				}
+				config[base_name + '__UI_LONG'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'select',
+					'title': 'Long-push',
+					'value': os.environ.get(base_name + '__UI_LONG'),
+					'options': CustomUiAction
+				}
+			else:
+				config[base_name + '__UI_SHORT'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'text',
+					'title': 'Short-push',
+					'value': os.environ.get(base_name + '__UI_SHORT')
+				}
+				config[base_name + '__UI_BOLD'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'text',
+					'title': 'Bold-push',
+					'value': os.environ.get(base_name + '__UI_BOLD')
+				}
+				config[base_name + '__UI_LONG'] = {
+					'enabling_options': 'UI_ACTION',
+					'type': 'text',
+					'title': 'Long-push',
+					'value': os.environ.get(base_name + '__UI_LONG')
+				}
 			config[base_name + '__MIDI_CHAN'] = {
 				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT',
 				'type': 'select',

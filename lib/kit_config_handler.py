@@ -41,6 +41,8 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
+		'Z2_V2',
+		'Z2_V1',
 		'V4',
 		'V3-PRO',
 		'V3',
@@ -81,8 +83,16 @@ class KitConfigHandler(ZynthianConfigHandler):
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version!="Custom":
-			if kit_version in ("V4", "V3-PRO"):
-				soundcard_name = "HifiBerry DAC+ ADC PRO"
+			if kit_version in ("Z2_V2"):
+				soundcard_name = "ZynADAC"
+				display_name = "Z2 Display"
+				wiring_layout = "Z2_V2"
+			elif kit_version=="Z2_V1":
+				soundcard_name = "ZynADAC"
+				display_name = "Z2 Display"
+				wiring_layout = "Z2_V1"
+			elif kit_version in ("V4", "V3-PRO"):
+				soundcard_name = "ZynADAC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
 			elif kit_version=="V3":
