@@ -445,14 +445,18 @@ function getLayoutData(snapshotDetails){
 		}
 		if (layer.zs3_list && layer.zs3_list.find(z => z !== null)) {
 			zs3_infos = "<table data-toggle='table' class='table table-condensed values'><thead><tr><th></th>";
-                        for (key in layer.zs3_list.find(z => z !== null).controllers_dict) {
-                          zs3_infos += "<th class='rotate'><div><span>" + key + "</th></div></span>";
-                        }
-                        zs3_infos += "</tr></thead><tbody>";
+			zs3_infos += "<th class='rotate'><div><span>Bank</span></div></th>";
+			zs3_infos += "<th class='rotate'><div><span>Preset</span></div></th>";
+			for (key in layer.zs3_list.find(z => z !== null).controllers_dict) {
+			  zs3_infos += "<th class='rotate'><div><span>" + key + "</span></div></th>";
+			}
+			zs3_infos += "</tr></thead><tbody>";
 			for (zs3Idx in layer.zs3_list) {
 				zs3 = layer.zs3_list[zs3Idx];
 				if (zs3){
-                                        zs3_infos += "<tr><td>#" + zs3Idx + "</td>";
+                    zs3_infos += "<tr><td>#" + zs3Idx + "</td>";
+                    zs3_infos += "<td>" + zs3.bank_name + "</td>";
+                    zs3_infos += "<td>" + zs3.preset_name + "</td>";
 					for (key in zs3.controllers_dict) {
                                           const v = zs3.controllers_dict[key].value;
                                           if (v != layer.controllers_dict[key].value) {
@@ -464,7 +468,7 @@ function getLayoutData(snapshotDetails){
 					zs3_infos += "</tr>";
 				}
 			}
-                        zs3_infos += "</tbody></table>";
+            zs3_infos += "</tbody></table>";
 			if (zs3_infos){
 				layer_infos += ['<h3>ZS3 Controller Values</h3>',
 					'<div class="container">',
