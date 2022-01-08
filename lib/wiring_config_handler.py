@@ -387,112 +387,114 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			n_zynaptik_switches = 0
 
 
+
 		# Customizable Switches
-		config['_SECTION_CUSTOM_SWITCHES_'] = {
-			'type': 'html',
-			'content': "<h3>Customizable Switches</h3>"
-		}
 		n_custom_switches = n_extra_switches + n_zynaptik_switches
 		cvgate_in = []
 		cvgate_out = []
-		for i in range(0, n_custom_switches):
-			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i+1)
+		if n_custom_switches>0:
+			config['_SECTION_CUSTOM_SWITCHES_'] = {
+				'type': 'html',
+				'content': "<h3>Customizable Switches</h3>"
+			}
+			for i in range(n_custom_switches):
+				base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i+1)
 
-			if i<n_extra_switches:
-				title = 'Extra Switch-{} Action'.format(i+1)
-			else:
-				title = 'Zynaptik Switch-{} Action'.format(i+1-n_extra_switches)
+				if i<n_extra_switches:
+					title = 'Extra Switch-{} Action'.format(i+1)
+				else:
+					title = 'Zynaptik Switch-{} Action'.format(i+1-n_extra_switches)
 
-			action_type = os.environ.get(base_name)
-			cvchan = int(os.environ.get(base_name + '__CV_CHAN', 1))
-			if action_type=="CVGATE_IN":
-				cvgate_in.append(cvchan)
-			elif action_type=="CVGATE_OUT":
-				cvgate_out.append(cvchan)
+				action_type = os.environ.get(base_name)
+				cvchan = int(os.environ.get(base_name + '__CV_CHAN', 1))
+				if action_type=="CVGATE_IN":
+					cvgate_in.append(cvchan)
+				elif action_type=="CVGATE_OUT":
+					cvgate_out.append(cvchan)
 
-			config[base_name] = {
-				'type': 'select',
-				'title': title,
-				'value': action_type,
-				'options': CustomSwitchActionType,
-				'refresh_on_change': True
-			}
-			if ui_action_select:
-				config[base_name + '__UI_SHORT'] = {
-					'enabling_options': 'UI_ACTION',
+				config[base_name] = {
 					'type': 'select',
-					'title': 'Short-push',
-					'value': os.environ.get(base_name + '__UI_SHORT'),
-					'options': CustomUiAction
+					'title': title,
+					'value': action_type,
+					'options': CustomSwitchActionType,
+					'refresh_on_change': True
 				}
-				config[base_name + '__UI_BOLD'] = {
-					'enabling_options': 'UI_ACTION',
+				if ui_action_select:
+					config[base_name + '__UI_SHORT'] = {
+						'enabling_options': 'UI_ACTION',
+						'type': 'select',
+						'title': 'Short-push',
+						'value': os.environ.get(base_name + '__UI_SHORT'),
+						'options': CustomUiAction
+					}
+					config[base_name + '__UI_BOLD'] = {
+						'enabling_options': 'UI_ACTION',
+						'type': 'select',
+						'title': 'Bold-push',
+						'value': os.environ.get(base_name + '__UI_BOLD'),
+						'options': CustomUiAction
+					}
+					config[base_name + '__UI_LONG'] = {
+						'enabling_options': 'UI_ACTION',
+						'type': 'select',
+						'title': 'Long-push',
+						'value': os.environ.get(base_name + '__UI_LONG'),
+						'options': CustomUiAction
+					}
+				else:
+					config[base_name + '__UI_SHORT'] = {
+						'enabling_options': 'UI_ACTION',
+						'type': 'text',
+						'title': 'Short-push',
+						'value': os.environ.get(base_name + '__UI_SHORT')
+					}
+					config[base_name + '__UI_BOLD'] = {
+						'enabling_options': 'UI_ACTION',
+						'type': 'text',
+						'title': 'Bold-push',
+						'value': os.environ.get(base_name + '__UI_BOLD')
+					}
+					config[base_name + '__UI_LONG'] = {
+						'enabling_options': 'UI_ACTION',
+						'type': 'text',
+						'title': 'Long-push',
+						'value': os.environ.get(base_name + '__UI_LONG')
+					}
+				config[base_name + '__MIDI_CHAN'] = {
+					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT',
 					'type': 'select',
-					'title': 'Bold-push',
-					'value': os.environ.get(base_name + '__UI_BOLD'),
-					'options': CustomUiAction
+					'title': 'MIDI Channel',
+					'value': os.environ.get(base_name + '__MIDI_CHAN'),
+					'options': ["Active"] + [str(j) for j in range(1,17)]
 				}
-				config[base_name + '__UI_LONG'] = {
-					'enabling_options': 'UI_ACTION',
+				config[base_name + '__MIDI_NUM'] = {
+					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
 					'type': 'select',
-					'title': 'Long-push',
-					'value': os.environ.get(base_name + '__UI_LONG'),
-					'options': CustomUiAction
+					'title': 'MIDI Number',
+					'value': os.environ.get(base_name + '__MIDI_NUM'),
+					'options': [str(j) for j in range(0,128)]
 				}
-			else:
-				config[base_name + '__UI_SHORT'] = {
-					'enabling_options': 'UI_ACTION',
-					'type': 'text',
-					'title': 'Short-push',
-					'value': os.environ.get(base_name + '__UI_SHORT')
+				config[base_name + '__MIDI_VAL'] = {
+					'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN',
+					'type': 'select',
+					'title': 'MIDI Value',
+					'value': os.environ.get(base_name + '__MIDI_VAL', 127),
+					'options': [str(j) for j in range(0,128)]
 				}
-				config[base_name + '__UI_BOLD'] = {
-					'enabling_options': 'UI_ACTION',
-					'type': 'text',
-					'title': 'Bold-push',
-					'value': os.environ.get(base_name + '__UI_BOLD')
+				config[base_name + '__CV_CHAN'] = {
+					'enabling_options': 'CVGATE_IN CVGATE_OUT',
+					'type': 'select',
+					'title': 'CV Channel',
+					'value': str(cvchan),
+					'options': ['0', '1', '2', '3'],
+					'option_labels': {
+						'0': '1',
+						'1': '2',
+						'2': '3',
+						'3': '4'
+					},
+					'refresh_on_change': True
 				}
-				config[base_name + '__UI_LONG'] = {
-					'enabling_options': 'UI_ACTION',
-					'type': 'text',
-					'title': 'Long-push',
-					'value': os.environ.get(base_name + '__UI_LONG')
-				}
-			config[base_name + '__MIDI_CHAN'] = {
-				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT',
-				'type': 'select',
-				'title': 'MIDI Channel',
-				'value': os.environ.get(base_name + '__MIDI_CHAN'),
-				'options': ["Active"] + [str(j) for j in range(1,17)]
-			}
-			config[base_name + '__MIDI_NUM'] = {
-				'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
-				'type': 'select',
-				'title': 'MIDI Number',
-				'value': os.environ.get(base_name + '__MIDI_NUM'),
-				'options': [str(j) for j in range(0,128)]
-			}
-			config[base_name + '__MIDI_VAL'] = {
-				'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN',
-				'type': 'select',
-				'title': 'MIDI Value',
-				'value': os.environ.get(base_name + '__MIDI_VAL', 127),
-				'options': [str(j) for j in range(0,128)]
-			}
-			config[base_name + '__CV_CHAN'] = {
-				'enabling_options': 'CVGATE_IN CVGATE_OUT',
-				'type': 'select',
-				'title': 'CV Channel',
-				'value': str(cvchan),
-				'options': ['0', '1', '2', '3'],
-				'option_labels': {
-					'0': '1',
-					'1': '2',
-					'2': '3',
-					'3': '4'
-				},
-				'refresh_on_change': True
-			}
 
 		# Zynaptik ADC input
 		if "4xAD" in zynaptik_config:
