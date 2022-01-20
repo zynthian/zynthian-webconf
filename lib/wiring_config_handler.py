@@ -23,8 +23,9 @@
 #********************************************************************
 
 import os
-import tornado.web
+import re
 import logging
+import tornado.web
 from collections import OrderedDict
 from subprocess import check_output
 from enum import Enum
@@ -38,6 +39,7 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 
 
 class WiringConfigHandler(ZynthianConfigHandler):
+	PROFILES_DIRECTORY = "{}/wiring-profiles".format(os.environ.get("ZYNTHIAN_CONFIG_DIR"))
 
 	wiring_presets=OrderedDict([
 		["Z2_V2", {
@@ -224,6 +226,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+
+	def prepare(self):
+		super().prepare()
+		self.current_custom_profile = os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE',"")
+		self.load_custom_profiles()
+
+
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
@@ -252,14 +261,23 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'disabled': custom_options_disabled
 		}
 
-		if not wiring_layout.startswith("Z2"):
-			ui_action_select = True
+		if wiring_layout.startswith("Z2"):
+			encoders_config_flag = False
+			ui_action_select = False
+			n_extra_switches = 32
+		else:
+			encoders_config_flag = True
+			if self.current_custom_profile:
+				ui_action_select = False
+			else:
+				ui_action_select = True
 			try:
 				# Calculate Num of Custom Switches
 				n_extra_switches = min(4,max(0, len(wiring_switches.split(",")) - 4))
 			except:
 				n_extra_switches = 0
 
+		if encoders_config_flag:
 			config['ZYNTHIAN_WIRING_ENCODER_A'] = {
 				'type': 'text',
 				'title': "Encoders A-pins",
@@ -282,9 +300,6 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'disabled': custom_options_disabled
 			}
 		else:
-			ui_action_select = False
-			n_extra_switches = 32
-
 			config['ZYNTHIAN_WIRING_ENCODER_A'] = {
 				'type': 'hidden',
 				'value': os.environ.get('ZYNTHIAN_WIRING_ENCODER_A')
@@ -386,7 +401,40 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		else:
 			n_zynaptik_switches = 0
 
-
+		# Wiring Layout Profiles
+		config['ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE'] = {
+			'type': 'select',
+			'title': 'Customization Profile',
+			'value': self.current_custom_profile,
+			'options': self.custom_profiles.keys(),
+			'presets': self.custom_profiles,
+			'refresh_on_change': True,
+			'div_class': "col-xs-8"
+		}
+		config['zynthian_wiring_layout_saveas_script'] = {
+			'type': 'button',
+			'title': 'Save as ...',
+			'button_type': 'button',
+			'class': 'btn-theme btn-block',
+			'icon' : 'fa fa-plus',
+			'script_file': 'wiring_layout_saveas.js',
+			'div_class': "col-xs-2",
+			'inline': 1
+		}
+		config['zynthian_wiring_layout_delete_script'] = {
+			'type': 'button',
+			'title': 'Delete',
+			'button_type': 'submit',
+			'class': 'btn-danger btn-block',
+			'icon' : 'fa fa-trash-o',
+			'script_file': 'wiring_layout_delete.js',
+			'div_class': "col-xs-2",
+			'inline': 1
+		}
+		config['zynthian_wiring_layout_saveas_fname'] = {
+			'type': 'hidden',
+			'value': ''
+		}
 
 		# Customizable Switches
 		n_custom_switches = n_extra_switches + n_zynaptik_switches
@@ -395,7 +443,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		if n_custom_switches>0:
 			config['_SECTION_CUSTOM_SWITCHES_'] = {
 				'type': 'html',
-				'content': "<h3>Customizable Switches</h3>"
+				'content': "<h3>Customizable Switches</h3>",
+				'advanced': True
 			}
 			for i in range(n_custom_switches):
 				base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i+1)
@@ -417,7 +466,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': title,
 					'value': action_type,
 					'options': CustomSwitchActionType,
-					'refresh_on_change': True
+					'refresh_on_change': True,
+					'advanced': True
 				}
 				if ui_action_select:
 					config[base_name + '__UI_SHORT'] = {
@@ -425,61 +475,70 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'type': 'select',
 						'title': 'Short-push',
 						'value': os.environ.get(base_name + '__UI_SHORT'),
-						'options': CustomUiAction
+						'options': CustomUiAction,
+						'advanced': True
 					}
 					config[base_name + '__UI_BOLD'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'select',
 						'title': 'Bold-push',
 						'value': os.environ.get(base_name + '__UI_BOLD'),
-						'options': CustomUiAction
+						'options': CustomUiAction,
+						'advanced': True
 					}
 					config[base_name + '__UI_LONG'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'select',
 						'title': 'Long-push',
 						'value': os.environ.get(base_name + '__UI_LONG'),
-						'options': CustomUiAction
+						'options': CustomUiAction,
+						'advanced': True
 					}
 				else:
 					config[base_name + '__UI_SHORT'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'text',
 						'title': 'Short-push',
-						'value': os.environ.get(base_name + '__UI_SHORT')
+						'value': os.environ.get(base_name + '__UI_SHORT'),
+						'advanced': True
 					}
 					config[base_name + '__UI_BOLD'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'text',
 						'title': 'Bold-push',
-						'value': os.environ.get(base_name + '__UI_BOLD')
+						'value': os.environ.get(base_name + '__UI_BOLD'),
+						'advanced': True
 					}
 					config[base_name + '__UI_LONG'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'text',
 						'title': 'Long-push',
-						'value': os.environ.get(base_name + '__UI_LONG')
+						'value': os.environ.get(base_name + '__UI_LONG'),
+						'advanced': True
 					}
 				config[base_name + '__MIDI_CHAN'] = {
 					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT',
 					'type': 'select',
 					'title': 'MIDI Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
-					'options': ["Active"] + [str(j) for j in range(1,17)]
+					'options': ["Active"] + [str(j) for j in range(1,17)],
+					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
 					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
 					'type': 'select',
 					'title': 'MIDI Number',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
-					'options': [str(j) for j in range(0,128)]
+					'options': [str(j) for j in range(0,128)],
+					'advanced': True
 				}
 				config[base_name + '__MIDI_VAL'] = {
 					'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN',
 					'type': 'select',
 					'title': 'MIDI Value',
 					'value': os.environ.get(base_name + '__MIDI_VAL', 127),
-					'options': [str(j) for j in range(0,128)]
+					'options': [str(j) for j in range(0,128)],
+					'advanced': True
 				}
 				config[base_name + '__CV_CHAN'] = {
 					'enabling_options': 'CVGATE_IN CVGATE_OUT',
@@ -493,85 +552,98 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'2': '3',
 						'3': '4'
 					},
-					'refresh_on_change': True
+					'refresh_on_change': True,
+					'advanced': True
 				}
 
 		# Zynaptik ADC input
 		if "4xAD" in zynaptik_config:
 			config['_SECTION_ZYNAPTIK_AD_'] = {
 				'type': 'html',
-				'content': "<h3>Zynaptik Analog Input</h3>"
+				'content': "<h3>Zynaptik Analog Input</h3>",
+				'advanced': True
 			}
 			for i in range(0, 4):
 				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}'.format(i+1)
 				if i in cvgate_in:
 					config['_ZYNAPTIK_AD{:02d}_'.format(i+1)] = {
 						'type': 'html',
-						'content': "<label>AD-{} Action</label>: Reserved for CV/Gate<br>".format(i+1)
+						'content': "<label>AD-{} Action</label>: Reserved for CV/Gate<br>".format(i+1),
+						'advanced': True
 					}
 					config[base_name] = {
 						'type': 'hidden',
 						'value': "CVGATE_IN",
+						'advanced': True
 					}
 				else:
 					config[base_name] = {
 						'type': 'select',
 						'title': 'AD-{} Action'.format(i+1),
 						'value': os.environ.get(base_name),
-						'options': ZynSensorActionType
+						'options': ZynSensorActionType,
+						'advanced': True
 					}
 					config[base_name + '__MIDI_CHAN'] = {
 						'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
 						'type': 'select',
 						'title': 'Channel',
 						'value': os.environ.get(base_name + '__MIDI_CHAN'),
-						'options': ["Active"] + [str(j) for j in range(1,17)]
+						'options': ["Active"] + [str(j) for j in range(1,17)],
+						'advanced': True
 					}
 					config[base_name + '__MIDI_NUM'] = {
 						'enabling_options': 'MIDI_CC',
 						'type': 'select',
 						'title': 'Number',
 						'value': os.environ.get(base_name + '__MIDI_NUM'),
-						'options': [str(j) for j in range(0,128)]
+						'options': [str(j) for j in range(0,128)],
+						'advanced': True
 					}
 
 		# Zynaptik DAC output
 		if "4xDA" in zynaptik_config:
 			config['_SECTION_ZYNAPTIK_DA_'] = {
 				'type': 'html',
-				'content': "<h3>Zynaptik Analog Output</h3>"
+				'content': "<h3>Zynaptik Analog Output</h3>",
+				'advanced': True
 			}
 			for i in range(0, 4):
 				base_name = 'ZYNTHIAN_WIRING_ZYNAPTIK_DA{:02d}'.format(i+1)
 				if i in cvgate_out:
 					config['_ZYNAPTIK_DA{:02d}_'.format(i+1)] = {
 						'type': 'html',
-						'content': "<label>DA-{} Action</label>: Reserved for CV/Gate<br>".format(i+1)
+						'content': "<label>DA-{} Action</label>: Reserved for CV/Gate<br>".format(i+1),
+						'advanced': True
 					}
 					config[base_name] = {
 						'type': 'hidden',
-						'value': "CVGATE_OUT"
+						'value': "CVGATE_OUT",
+						'advanced': True
 					}
 				else:
 					config[base_name] = {
 						'type': 'select',
 						'title': 'DA-{} Action'.format(i+1),
 						'value': os.environ.get(base_name),
-						'options': ZynSensorActionType
+						'options': ZynSensorActionType,
+						'advanced': True
 					}
 					config[base_name + '__MIDI_CHAN'] = {
 						'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
 						'type': 'select',
 						'title': 'Channel',
 						'value': os.environ.get(base_name + '__MIDI_CHAN'),
-						'options': ["Active"] + [str(j) for j in range(1,17)]
+						'options': ["Active"] + [str(j) for j in range(1,17)],
+						'advanced': True
 					}
 					config[base_name + '__MIDI_NUM'] = {
 						'enabling_options': 'MIDI_CC',
 						'type': 'select',
 						'title': 'Number',
 						'value': os.environ.get(base_name + '__MIDI_NUM'),
-						'options': [str(j) for j in range(0,128)]
+						'options': [str(j) for j in range(0,128)],
+						'advanced': True
 					}
 
 		# Zyntof input (Distance Sensor)
@@ -579,7 +651,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			n_zyntofs = int(zyntof_config)
 			config['_SECTION_ZYNTOF_'] = {
 				'type': 'html',
-				'content': "<h3>Distance Sensors</h3>"
+				'content': "<h3>Distance Sensors</h3>",
+				'advanced': True
 			}
 			for i in range(0, n_zyntofs):
 				base_name = 'ZYNTHIAN_WIRING_ZYNTOF{:02d}'.format(i+1)
@@ -587,22 +660,31 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'type': 'select',
 					'title': 'TOF-{} Action'.format(i+1),
 					'value': os.environ.get(base_name),
-					'options': ZynSensorActionType
+					'options': ZynSensorActionType,
+					'advanced': True
 				}
 				config[base_name + '__MIDI_CHAN'] = {
 					'enabling_options': 'MIDI_CC MIDI_PITCH_BEND MIDI_CHAN_PRESS',
 					'type': 'select',
 					'title': 'Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
-					'options': ["Active"] + [str(j) for j in range(1,17)]
+					'options': ["Active"] + [str(j) for j in range(1,17)],
+					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
 					'enabling_options': 'MIDI_CC',
 					'type': 'select',
 					'title': 'Number',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
-					'options': [str(j) for j in range(0,128)]
+					'options': [str(j) for j in range(0,128)],
+					'advanced': True
 				}
+
+		# Add Spacer
+		config['_SPACER_'] = {
+			'type': 'html',
+			'content': "<br>"
+		}
 
 		super().get("Wiring", config, errors)
 
@@ -611,16 +693,159 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		command = self.get_argument('_command', '')
 		logging.info("COMMAND = {}".format(command))
+		self.request_data = tornado.escape.recursive_unicode(self.request.arguments)
 		if command=='REFRESH':
 			errors = None
-			self.config_env(tornado.escape.recursive_unicode(self.request.arguments))
+			self.current_custom_profile = self.get_argument('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE', '')
+			logging.debug("CURRENT CUSTOM PROFILE => {}".format(self.current_custom_profile))
+			self.config_env(self.request_data)
+		elif command=="SAVEAS":
+			fname = self.get_argument('zynthian_wiring_layout_saveas_fname', '')
+			errors = self.save_custom_profile(fname, self.request_data)
+			self.current_custom_profile = fname
+			self.load_custom_profiles()
+			self.config_env(self.request_data)
+		elif command=="DELETE":
+			fname = self.get_argument('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE', '')
+			errors = self.delete_custom_profile(fname)
+			del(self.custom_profiles[fname])
+			self.current_custom_profile = next(iter(self.custom_profiles.items()))[0]
+			self.config_env(self.request_data)
 		else:
-			errors = self.update_config(tornado.escape.recursive_unicode(self.request.arguments))
+			errors = self.update_config(self.request_data)
 			self.rebuild_zyncoder()
 			if not self.reboot_flag:
 				self.restart_ui_flag = True
 
 		self.get(errors)
+
+
+	def complete_custom_profile(self, data):
+		res = OrderedDict()
+		for i in range(36):
+			base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}".format(i+1)
+			subvars = {
+				"": "NONE",
+				"__UI_SHORT": "NONE",
+				"__UI_BOLD": "NONE",
+				"__UI_LONG": "NONE",
+				"__MIDI_CHAN": "0",
+				"__MIDI_NUM": "0",
+				"__MIDI_VAL": "0",
+				"__CV_CHAN": "0"
+			}
+			for sn,sv  in subvars.items():
+				try:
+					vname = base_name + sn
+					if vname in data:
+						res[vname] = data[vname]
+					else:
+						res[vname] = sv
+				except Exception as e:
+					logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
+
+		for i in range(4):
+			base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}".format(i+1)
+			subvars = {
+				"": "NONE",
+				"__MIDI_CHAN": "0",
+				"__MIDI_NUM": "0"
+			}
+			for sn,sv  in subvars.items():
+				try:
+					vname = base_name + sn
+					if vname in data:
+						res[vname] = data[vname]
+					else:
+						res[vname] = sv
+				except Exception as e:
+					logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
+
+		for i in range(4):
+			base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_DA{:02d}".format(i+1)
+			subvars = {
+				"": "NONE",
+				"__MIDI_CHAN": "0",
+				"__MIDI_NUM": "0"
+			}
+			for sn,sv  in subvars.items():
+				try:
+					vname = base_name + sn
+					if vname in data:
+						res[vname] = data[vname]
+					else:
+						res[vname] = sv
+				except Exception as e:
+					logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
+
+		for i in range(4):
+			base_name = 'ZYNTHIAN_WIRING_ZYNTOF{:02d}'.format(i+1)
+			subvars = {
+				"": "NONE",
+				"__MIDI_CHAN": "0",
+				"__MIDI_NUM": "0"
+			}
+			for sn,sv  in subvars.items():
+				try:
+					vname = base_name + sn
+					if vname in data:
+						res[vname] = data[vname]
+					else:
+						res[vname] = sv
+				except Exception as e:
+					logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
+
+		return res
+
+
+	# Load custom profiles
+	def load_custom_profiles(self):
+		self.custom_profiles = OrderedDict()
+		p = re.compile("(\w*)=\"(.*)\"")
+
+		self.custom_profiles[""] = OrderedDict()
+		for fname in sorted(os.listdir(self.PROFILES_DIRECTORY)):
+			profile_values = OrderedDict()
+			fpath = "{}/{}".format(self.PROFILES_DIRECTORY,fname)
+			try:
+				with open(fpath) as f:
+					for line in f:
+						try:
+							if line[0]=='#':
+								continue
+							m = p.match(line)
+							if m:
+								profile_values[m.group(1)] = m.group(2)
+						except Exception as e:
+							logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
+				try:
+					self.custom_profiles[fname] = self.complete_custom_profile(profile_values)
+					logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
+				except Exception as e:
+					logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))
+			except Exception as e:
+				logging.warning("Invalid wiring custom profile '{}' will be ignored: {}".format(fpath, e))
+
+
+	def save_custom_profile(self, fname, data):
+		try:
+			fpath = "{}/{}".format(self.PROFILES_DIRECTORY,fname)
+			with open(fpath, "w") as f:
+				for k,v in data.items():
+					if k.startswith("ZYNTHIAN_WIRING_CUSTOM_SWITCH_") or k.startswith("ZYNTHIAN_WIRING_ZYNAPTIK") or k.startswith("ZYNTHIAN_WIRING_ZYNTOF"):
+						f.write("{}=\"{}\"\n".format(k,v[0]))
+			logging.debug("SAVED WIRING CUSTOM PROFILE '{}'".format(fpath))
+		except Exception as e:
+			logging.warning("Can't save wiring custom profile '{}': {}".format(fpath, e))
+
+
+	def delete_custom_profile(self, fname):
+		try:
+			fpath = "{}/{}".format(self.PROFILES_DIRECTORY,fname)
+			os.remove(fpath)
+			logging.debug("DELETED WIRING CUSTOM PROFILE '{}'".format(fpath))
+		except Exception as e:
+			logging.warning("Can't delete wiring custom profile '{}': {}".format(fpath, e))
 
 
 	@classmethod

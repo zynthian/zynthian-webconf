@@ -101,7 +101,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 	@tornado.web.authenticated
 	def get(self, body, title, config, errors=None):
-		logging.debug(config)
+		#logging.debug(config)
 
 		if self.reboot_flag:
 			self.persist_reboot_flag()

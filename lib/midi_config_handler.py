@@ -371,7 +371,17 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'options': self.midi_profile_scripts,
 				'option_labels': {script_name: os.path.basename(script_name).split('.')[0] for script_name  in self.midi_profile_scripts},
 				'presets': self.midi_profile_presets,
-				'div_class': "col-xs-10"
+				'div_class': "col-xs-8"
+			}],
+			['zynthian_midi_profile_saveas_script', {
+				'type': 'button',
+				'title': 'Save as ...',
+				'button_type': 'button',
+				'class': 'btn-theme btn-block',
+				'icon' : 'fa fa-plus',
+				'script_file': 'midi_profile_saveas.js',
+				'div_class': "col-xs-2",
+				'inline': 1
 			}],
 			['zynthian_midi_profile_delete_script', {
 				'type': 'button',
@@ -383,21 +393,9 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'div_class': "col-xs-2",
 				'inline': 1
 			}],
-			['zynthian_midi_profile_new_script_name', {
-				'type': 'text',
-				'title': 'New MIDI profile',
-				'value': '',
-				'div_class': "col-xs-10"
-			}],
-			['zynthian_midi_profile_new_script', {
-				'type': 'button',
-				'title': 'Create',
-				'button_type': 'button',
-				'class': 'btn-theme btn-block',
-				'icon' : 'fa fa-plus',
-				'script_file': 'midi_profile_new.js',
-				'div_class': "col-xs-2",
-				'inline': 1
+			['zynthian_midi_profile_saveas_fname', {
+				'type': 'hidden',
+				'value': ''
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
 				'type': 'boolean',
@@ -568,11 +566,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				if filter_add_argument.startswith('FILTER_ADD'):
 					del escaped_request_arguments[filter_add_argument]
 
-			new_profile_script_name = self.get_argument('zynthian_midi_profile_new_script_name')
+			profile_saveas_fname = self.get_argument('zynthian_midi_profile_saveas_fname')
 
-			if new_profile_script_name:
+			if profile_saveas_fname:
 				#New MIDI profile
-				self.current_midi_profile_script = self.PROFILES_DIRECTORY + '/' + new_profile_script_name + '.sh'
+				self.current_midi_profile_script = self.PROFILES_DIRECTORY + '/' + profile_saveas_fname + '.sh'
 				try:
 					#create file as copy of default:
 					zynconf.get_midi_config_fpath(self.current_midi_profile_script)
@@ -583,7 +581,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					errors = zynconf.save_config({'ZYNTHIAN_SCRIPT_MIDI_PROFILE':self.current_midi_profile_script})
 					self.load_midi_profile_directories()
 				except:
-					errors['zynthian_midi_profile_new_script_name'] = "Can't create new profile!"
+					errors['zynthian_midi_profile_saveas_script'] = "Can't create new profile!"
 
 			elif 'zynthian_midi_profile_delete_script' in self.request.arguments and self.get_argument('zynthian_midi_profile_delete_script') == "1":
 				#DELETE
@@ -593,7 +591,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 					errors = zynconf.save_config({'ZYNTHIAN_SCRIPT_MIDI_PROFILE':self.current_midi_profile_script})
 					self.load_midi_profile_directories()
 				else:
-					errors['zynthian_midi_profile_delete_script'] = 'You can only delete user profiles!'
+					errors['zynthian_midi_profile_delete_script'] = 'You are allowed to delete user profiles only!'
     
 			else:
 				#SAVE
@@ -670,7 +668,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				invalidFiles.append(midi_profile_script)
 
 		for midi_profile_script in invalidFiles:
-			logging.warning("Invalid profile will be ignored: " + midi_profile_script)
+			logging.warning("Invalid MIDI profile will be ignored: " + midi_profile_script)
 			self.midi_profile_scripts.remove(midi_profile_script)
 
 		if self.current_midi_profile_script:
