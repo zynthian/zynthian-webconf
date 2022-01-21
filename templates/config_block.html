@@ -55,14 +55,14 @@
 			{% if 'refresh_on_change' in config[varname] and config[varname]['refresh_on_change'] %}
 				{% set refresh_form = 1 %}
 			{% end %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }} {% if refresh_form %}onchange="refresh()" {% end %}>
-
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }} {% if refresh_form %}onchange="refresh()" {% end %} {% if 'class' in config[varname] %}class="{{ config[varname]['class'] }}"{% end %}">
 		{% elif config[varname]['type']=='hidden' %}
 			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
 
 		{% elif config[varname]['type']=='button' %}
 			{% if 'inline' in config[varname] and config[varname]['inline'] %} <label>&nbsp;</label> {% end %}
-			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}" class="btn {{ config[varname]['class'] }}" {{ disabled }}>
+			<button id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="{{ config[varname]['button_type'] }}"
+			class="btn {% if 'class' in config[varname] %}{{ config[varname]['class'] }}{% end %}" {{ disabled }}>
 				{% if 'icon' in config[varname] %}
 					<i class="{{ config[varname]['icon'] }}"></i>
 				{% end %}
@@ -93,7 +93,8 @@
 			{% if disabled %}
 			<input type="hidden" name="{{ escape(varname) }}" value="{{ value }}" />
 			{% end %}
-			<select name="{{ escape(varname) }}" onchange="onchange_select(this,{{ refresh_subvars }}, {{ refresh_form }})" {{ disabled }}>
+			<select name="{{ escape(varname) }}" onchange="onchange_select(this,{{ refresh_subvars }}, {{ refresh_form }})"
+			{% if 'class' in config[varname] %}class="{{ config[varname]['class'] }}"{% end %} {{ disabled }}>
 				{% for option in config[varname]['options'] %}
 				<option value="{{ escape(option) }}"
 					{% if value==option %}selected=1{% end %}

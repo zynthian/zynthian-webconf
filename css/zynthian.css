@@ -310,20 +310,33 @@ div#loading-div {
   -moz-border-radius: 5px;
   border-radius: 5px;
 }
+form#config_block_form {
+  background: #eaeaea;
+}
+div.nopadding-view {
+  padding: 0px !important;
+}
 div.normal-view {
-  background: rgba(221, 221, 221, 0.4);
+  background: #eaeaea;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
 }
 div.advanced-view {
   display: none;
-  background: rgba(221, 221, 221, 0.7);
+  background: #eaeaea;
   padding-top: 0.5em;
   padding-bottom: 0.5em;
 }
 div.tab-content div.advanced-view {
   padding-top: 0em;
   padding-bottom: 0em;
+}
+div.normal-view hr,
+div.advanced-view hr {
+  border-top: solid 1px #d4d4d4;
+  margin: 0px;
+  padding: 0px;
+  margin-top: 0.5em;
 }
 div#midi_filter_rule_panel input:disabled,
 div#midi_filter_rule_panel select:disabled,

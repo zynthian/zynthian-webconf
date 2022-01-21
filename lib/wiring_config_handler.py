@@ -424,7 +424,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'class': 'btn-theme btn-block',
 			'icon' : 'fa fa-plus',
 			'script_file': 'wiring_layout_saveas.js',
-			'div_class': "col-xs-2",
+			'div_class': "col-sm-2",
 			'inline': 1
 		}
 		config['zynthian_wiring_layout_delete_script'] = {
@@ -434,7 +434,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'class': 'btn-danger btn-block',
 			'icon' : 'fa fa-trash-o',
 			'script_file': 'wiring_layout_delete.js',
-			'div_class': "col-xs-2",
+			'div_class': "col-sm-2",
 			'inline': 1
 		}
 		config['zynthian_wiring_layout_saveas_fname'] = {
@@ -467,37 +467,52 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				elif action_type=="CVGATE_OUT":
 					cvgate_out.append(cvchan)
 
+				div_class = "col-sm-3"
+
 				config[base_name] = {
 					'type': 'select',
 					'title': title,
 					'value': action_type,
 					'options': CustomSwitchActionType,
 					'refresh_on_change': True,
+					'div_class': div_class,
 					'advanced': True
 				}
 				if ui_action_select:
+					v = os.environ.get(base_name + '__UI_SHORT',"")
+					if v:
+						v = v.split()[0]
 					config[base_name + '__UI_SHORT'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'select',
 						'title': 'Short-push',
-						'value': os.environ.get(base_name + '__UI_SHORT'),
+						'value': v,
 						'options': CustomUiAction,
+						'div_class': div_class,
 						'advanced': True
 					}
+					v = os.environ.get(base_name + '__UI_BOLD',"")
+					if v:
+						v = v.split()[0]
 					config[base_name + '__UI_BOLD'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'select',
 						'title': 'Bold-push',
-						'value': os.environ.get(base_name + '__UI_BOLD'),
+						'value': v,
 						'options': CustomUiAction,
+						'div_class': div_class,
 						'advanced': True
 					}
+					v = os.environ.get(base_name + '__UI_LONG',"")
+					if v:
+						v = v.split()[0]
 					config[base_name + '__UI_LONG'] = {
 						'enabling_options': 'UI_ACTION',
 						'type': 'select',
 						'title': 'Long-push',
-						'value': os.environ.get(base_name + '__UI_LONG'),
+						'value': v,
 						'options': CustomUiAction,
+						'div_class': div_class,
 						'advanced': True
 					}
 				else:
@@ -506,6 +521,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'type': 'text',
 						'title': 'Short-push',
 						'value': os.environ.get(base_name + '__UI_SHORT'),
+						'div_class': div_class,
 						'advanced': True
 					}
 					config[base_name + '__UI_BOLD'] = {
@@ -513,6 +529,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'type': 'text',
 						'title': 'Bold-push',
 						'value': os.environ.get(base_name + '__UI_BOLD'),
+						'div_class': div_class,
 						'advanced': True
 					}
 					config[base_name + '__UI_LONG'] = {
@@ -520,6 +537,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'type': 'text',
 						'title': 'Long-push',
 						'value': os.environ.get(base_name + '__UI_LONG'),
+						'div_class': div_class,
 						'advanced': True
 					}
 				config[base_name + '__MIDI_CHAN'] = {
@@ -528,6 +546,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'MIDI Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
 					'options': ["Active"] + [str(j) for j in range(1,17)],
+					'div_class': div_class,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
@@ -536,6 +555,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'MIDI Number',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
 					'options': [str(j) for j in range(0,128)],
+					'div_class': div_class,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_VAL'] = {
@@ -544,6 +564,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'MIDI Value',
 					'value': os.environ.get(base_name + '__MIDI_VAL', 127),
 					'options': [str(j) for j in range(0,128)],
+					'div_class': div_class,
 					'advanced': True
 				}
 				config[base_name + '__CV_CHAN'] = {
@@ -559,6 +580,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'3': '4'
 					},
 					'refresh_on_change': True,
+					'div_class': div_class,
+					'advanced': True
+				}
+				# Add Separator
+				config['_SEP_SW_{}_'.format(i)] = {
+					'type': 'html',
+					'content': "<hr>",
 					'advanced': True
 				}
 
@@ -588,6 +616,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'AD-{} Action'.format(i+1),
 						'value': os.environ.get(base_name),
 						'options': ZynSensorActionType,
+						'div_class': div_class,
 						'advanced': True
 					}
 					config[base_name + '__MIDI_CHAN'] = {
@@ -596,6 +625,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Channel',
 						'value': os.environ.get(base_name + '__MIDI_CHAN'),
 						'options': ["Active"] + [str(j) for j in range(1,17)],
+						'div_class': div_class,
 						'advanced': True
 					}
 					config[base_name + '__MIDI_NUM'] = {
@@ -604,8 +634,15 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Number',
 						'value': os.environ.get(base_name + '__MIDI_NUM'),
 						'options': [str(j) for j in range(0,128)],
+						'div_class': div_class,
 						'advanced': True
 					}
+				# Add Separator
+				config['_SEP_AD_{}_'.format(i)] = {
+					'type': 'html',
+					'content': "<hr>",
+					'advanced': True
+				}
 
 		# Zynaptik DAC output
 		if "4xDA" in zynaptik_config:
@@ -633,6 +670,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'DA-{} Action'.format(i+1),
 						'value': os.environ.get(base_name),
 						'options': ZynSensorActionType,
+						'div_class': div_class,
 						'advanced': True
 					}
 					config[base_name + '__MIDI_CHAN'] = {
@@ -641,6 +679,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Channel',
 						'value': os.environ.get(base_name + '__MIDI_CHAN'),
 						'options': ["Active"] + [str(j) for j in range(1,17)],
+						'div_class': div_class,
 						'advanced': True
 					}
 					config[base_name + '__MIDI_NUM'] = {
@@ -649,8 +688,15 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Number',
 						'value': os.environ.get(base_name + '__MIDI_NUM'),
 						'options': [str(j) for j in range(0,128)],
+						'div_class': div_class,
 						'advanced': True
 					}
+				# Add Separator
+				config['_SEP_DA_{}_'.format(i)] = {
+					'type': 'html',
+					'content': "<hr>",
+					'advanced': True
+				}
 
 		# Zyntof input (Distance Sensor)
 		if zyntof_config:
@@ -667,6 +713,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'TOF-{} Action'.format(i+1),
 					'value': os.environ.get(base_name),
 					'options': ZynSensorActionType,
+					'div_class': div_class,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_CHAN'] = {
@@ -675,6 +722,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
 					'options': ["Active"] + [str(j) for j in range(1,17)],
+					'div_class': div_class,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
@@ -683,6 +731,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'Number',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
 					'options': [str(j) for j in range(0,128)],
+					'div_class': div_class,
+					'advanced': True
+				}
+				# Add Separator
+				config['_SEP_ZT_{}_'.format(i)] = {
+					'type': 'html',
+					'content': "<hr>",
 					'advanced': True
 				}
 

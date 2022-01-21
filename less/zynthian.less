@@ -401,15 +401,23 @@ div#loading-div {
 	border-radius: 5px;
 }
 
+form#config_block_form {
+	background: lighten(@lightgrey,10%);
+}
+
+div.nopadding-view {
+	padding: 0px !important;
+}
+
 div.normal-view {
-	background: fade(lighten(@lightgrey,5%),40%);
+	background: lighten(@lightgrey,10%);
 	padding-top: 0.5em;
 	padding-bottom: 0.5em;
 }
 
 div.advanced-view {
 	display: none;
-	background: fade(lighten(@lightgrey,5%),70%);
+	background: lighten(@lightgrey,10%);
 	padding-top: 0.5em;
 	padding-bottom: 0.5em;
 }
@@ -417,6 +425,14 @@ div.advanced-view {
 div.tab-content div.advanced-view {
 	padding-top: 0em;
 	padding-bottom: 0em;
+}
+
+div.normal-view hr,
+div.advanced-view hr {
+	border-top: solid 1px #d4d4d4;
+	margin: 0px;
+	padding: 0px;
+	margin-top: 0.5em;
 }
 
 div#midi_filter_rule_panel input:disabled,
