@@ -541,7 +541,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'advanced': True
 					}
 				config[base_name + '__MIDI_CHAN'] = {
-					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT',
+					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT GATE_OUT',
 					'type': 'select',
 					'title': 'MIDI Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
@@ -550,7 +550,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
-					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE',
+					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE GATE_OUT',
 					'type': 'select',
 					'title': 'MIDI Number',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
@@ -559,7 +559,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'advanced': True
 				}
 				config[base_name + '__MIDI_VAL'] = {
-					'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN',
+					'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN GATE_OUT',
 					'type': 'select',
 					'title': 'MIDI Value',
 					'value': os.environ.get(base_name + '__MIDI_VAL', 127),
