@@ -552,16 +552,16 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				config[base_name + '__MIDI_NUM'] = {
 					'enabling_options': 'MIDI_CC MIDI_NOTE MIDI_PROG_CHANGE GATE_OUT',
 					'type': 'select',
-					'title': 'MIDI Number',
+					'title': 'MIDI Number/Note',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
 					'options': [str(j) for j in range(0,128)],
 					'div_class': div_class,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_VAL'] = {
-					'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN GATE_OUT',
+					'enabling_options': 'MIDI_CC MIDI_NOTE CVGATE_IN',
 					'type': 'select',
-					'title': 'MIDI Value',
+					'title': 'MIDI Value/Velocity',
 					'value': os.environ.get(base_name + '__MIDI_VAL', 127),
 					'options': [str(j) for j in range(0,128)],
 					'div_class': div_class,
