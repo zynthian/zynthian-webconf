@@ -100,7 +100,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "25",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
-			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_stage'
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
 		}],
 		["MCP23017_ENCODERS", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
@@ -781,7 +781,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		self.get(errors)
 
 
-	def complete_custom_profile(self, data):
+	@classmethod
+	def complete_custom_profile(cls, data):
 		res = OrderedDict()
 		for i in range(36):
 			base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}".format(i+1)
@@ -880,7 +881,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						except Exception as e:
 							logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
 				try:
-					self.custom_profiles[fname] = self.complete_custom_profile(profile_values)
+					self.custom_profiles[fname] = WiringConfigHandler.complete_custom_profile(profile_values)
 					logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
 				except Exception as e:
 					logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))
@@ -916,4 +917,33 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			check_output(cmd, shell=True)
 		except Exception as e:
 			logging.error("Rebuilding Zyncoder Library: %s" % e)
+
+	
+	# Load and return a custom profile
+	@classmethod
+	def get_custom_profile(cls, fname):
+		p = re.compile("(\w*)=\"(.*)\"")
+
+		profile_values = OrderedDict()
+		fpath = "{}/{}".format(cls.PROFILES_DIRECTORY,fname)
+		try:
+			with open(fpath) as f:
+				for line in f:
+					try:
+						if line[0]=='#':
+							continue
+						m = p.match(line)
+						if m:
+							profile_values[m.group(1)] = m.group(2)
+					except Exception as e:
+						logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
+			try:
+				profile_values = cls.complete_custom_profile(profile_values)
+				logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
+			except Exception as e:
+				logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))
+		except Exception as e:
+			logging.warning("Invalid wiring custom profile '{}' will be ignored: {}".format(fpath, e))
+
+		return profile_values
 

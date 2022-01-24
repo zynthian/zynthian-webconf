@@ -87,30 +87,37 @@ class KitConfigHandler(ZynthianConfigHandler):
 				soundcard_name = "ZynADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V2"
+				wiring_layout_custom_profile = "z2_v1"
 			elif kit_version=="Z2_V1":
 				soundcard_name = "ZynADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V1"
+				wiring_layout_custom_profile = "z2_v1"
 			elif kit_version in ("V4", "V3-PRO"):
 				soundcard_name = "ZynADAC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
+				wiring_layout_custom_profile = "v4_studio"
 			elif kit_version=="V3":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
+				wiring_layout_custom_profile = "v4_studio"
 			elif kit_version=="V2+":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "PiScreen 3.5 (v2)"
 				wiring_layout = "MCP23017_EXTRA"
+				wiring_layout_custom_profile = "v4_studio"
 			elif kit_version=="V2":
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiScreen 3.5 (v2)"
 				wiring_layout = "MCP23017_EXTRA"
+				wiring_layout_custom_profile = "v4_studio"
 			elif kit_version=="V1":
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiTFT 2.8 Resistive"
 				wiring_layout = "PROTOTYPE-4"
+				wiring_layout_custom_profile = ""
 
 			pconfig['SOUNDCARD_NAME']=[soundcard_name]
 			for k,v in soundcard_presets[soundcard_name].items():
@@ -122,6 +129,10 @@ class KitConfigHandler(ZynthianConfigHandler):
 
 			pconfig['ZYNTHIAN_WIRING_LAYOUT']=[wiring_layout]
 			for k,v in WiringConfigHandler.wiring_presets[wiring_layout].items():
+				pconfig[k]=[v]
+
+			pconfig['ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE']=[wiring_layout_custom_profile]
+			for k,v in WiringConfigHandler.get_custom_profile(wiring_layout_custom_profile).items():
 				pconfig[k]=[v]
 
 		errors = self.update_config(pconfig)
