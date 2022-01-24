@@ -231,6 +231,14 @@ class DashboardHandler(ZynthianBasicHandler):
 			}]
 		])
 
+		if os.environ.get('ZYNTHIAN_WIRING_LAYOUT').startswith("Z2"):
+			del(config['HARDWARE']['info']['GPIO_EXPANDER'])
+			config['HARDWARE']['info']['CUSTOM_WIRING_PROFILE'] = {
+				'title': "Profile",
+				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE'),
+				'url': "/hw-wiring"
+			}
+	
 		media_usb0_info = self.get_media_info('/media/usb0')
 		if media_usb0_info:
 			config['SYSTEM']['info']['MEDIA_USB0'] = {
