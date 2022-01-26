@@ -60,7 +60,7 @@ table.values > tbody > tr > td {
 					<span class="input-group-addon">
 						<label>New bank</label>
 					</span>
-					<input id="NEW_BANK_NUM" name="NEW_BANK_NUM" aria-label="New Bank" value="{{ config['NEXT_BANK_NUM'] }}" class="form-control">
+					<input type="number" id="NEW_BANK_NUM" name="NEW_BANK_NUM" aria-label="New Bank" value="{{ config['NEXT_BANK_NUM'] }}" class="form-control">
 					<span class="input-group-btn">
 						<button id="button-new_bank" class="btn btn-theme btn-block"
 								onclick="return do_action('new_bank')"
