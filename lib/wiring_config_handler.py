@@ -462,7 +462,9 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 				action_type = os.environ.get(base_name)
 				cvchan = int(os.environ.get(base_name + '__CV_CHAN', 1))
-				if action_type=="CVGATE_IN":
+				if action_type=="UI_ACTION":
+					action_type="UI_ACTION_RELEASE"
+				elif action_type=="CVGATE_IN":
 					cvgate_in.append(cvchan)
 				elif action_type=="CVGATE_OUT":
 					cvgate_out.append(cvchan)
@@ -479,11 +481,23 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'advanced': True
 				}
 				if ui_action_select:
+					v = os.environ.get(base_name + '__UI_PUSH',"")
+					if v:
+						v = v.split()[0]
+					config[base_name + '__UI_PUSH'] = {
+						'enabling_options': 'UI_ACTION_PUSH',
+						'type': 'select',
+						'title': 'Push',
+						'value': v,
+						'options': CustomUiAction,
+						'div_class': div_class,
+						'advanced': True
+					}
 					v = os.environ.get(base_name + '__UI_SHORT',"")
 					if v:
 						v = v.split()[0]
 					config[base_name + '__UI_SHORT'] = {
-						'enabling_options': 'UI_ACTION',
+						'enabling_options': 'UI_ACTION_RELEASE',
 						'type': 'select',
 						'title': 'Short-push',
 						'value': v,
@@ -495,7 +509,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					if v:
 						v = v.split()[0]
 					config[base_name + '__UI_BOLD'] = {
-						'enabling_options': 'UI_ACTION',
+						'enabling_options': 'UI_ACTION_RELEASE',
 						'type': 'select',
 						'title': 'Bold-push',
 						'value': v,
@@ -507,7 +521,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					if v:
 						v = v.split()[0]
 					config[base_name + '__UI_LONG'] = {
-						'enabling_options': 'UI_ACTION',
+						'enabling_options': 'UI_ACTION_RELEASE',
 						'type': 'select',
 						'title': 'Long-push',
 						'value': v,
@@ -516,8 +530,16 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'advanced': True
 					}
 				else:
+					config[base_name + '__UI_PUSH'] = {
+						'enabling_options': 'UI_ACTION_PUSH',
+						'type': 'text',
+						'title': 'Push',
+						'value': os.environ.get(base_name + '__UI_PUSH'),
+						'div_class': div_class,
+						'advanced': True
+					}
 					config[base_name + '__UI_SHORT'] = {
-						'enabling_options': 'UI_ACTION',
+						'enabling_options': 'UI_ACTION_RELEASE',
 						'type': 'text',
 						'title': 'Short-push',
 						'value': os.environ.get(base_name + '__UI_SHORT'),
@@ -525,7 +547,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'advanced': True
 					}
 					config[base_name + '__UI_BOLD'] = {
-						'enabling_options': 'UI_ACTION',
+						'enabling_options': 'UI_ACTION_RELEASE',
 						'type': 'text',
 						'title': 'Bold-push',
 						'value': os.environ.get(base_name + '__UI_BOLD'),
@@ -533,7 +555,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'advanced': True
 					}
 					config[base_name + '__UI_LONG'] = {
-						'enabling_options': 'UI_ACTION',
+						'enabling_options': 'UI_ACTION_RELEASE',
 						'type': 'text',
 						'title': 'Long-push',
 						'value': os.environ.get(base_name + '__UI_LONG'),
@@ -788,6 +810,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}".format(i+1)
 			subvars = {
 				"": "NONE",
+				"__UI_PUSH": "NONE",
 				"__UI_SHORT": "NONE",
 				"__UI_BOLD": "NONE",
 				"__UI_LONG": "NONE",
