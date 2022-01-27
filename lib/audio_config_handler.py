@@ -285,18 +285,12 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'advanced': True,
 			'refresh_on_change': True
 		}
-		config['ZYNTHIAN_DISABLE_OTG'] = {
-			'type': 'boolean',
-			'title': "Disable OTG",
-			'value': os.environ.get('ZYNTHIAN_DISABLE_OTG','0'),
-			'advanced': True
-		}
-		config['ZYNTHIAN_LIMIT_USB_SPEED'] = {
-			'type': 'boolean',
-			'title': "Limit USB speed to 12Mb/s",
-			'value': os.environ.get('ZYNTHIAN_LIMIT_USB_SPEED','0'),
-			'advanced': True
-		}
+		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0')=='0' and os.environ.get('SOUNDCARD_NAME')!="RBPi Headphones":
+			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
+				'type': 'boolean',
+				'title': "RBPi Headphones",
+				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES','0')
+			}
 		config['SOUNDCARD_MIXER'] = {
 			'type': 'textarea',
 			'title': "Mixer Controls",
@@ -308,46 +302,40 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'addPanelConfig': zc_config,
 			'advanced': True
 		}
-
-		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0')=='0' and os.environ.get('SOUNDCARD_NAME')!="RBPi Headphones":
-			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
-				'type': 'boolean',
-				'title': "RBPi Headphones",
-				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES','0')
-			}
+		config['_SPACER_'] = {
+			'type': 'html',
+			'content': "<br>"
+		}
 
 		super().get("Audio", config, errors)
 
 
 	@tornado.web.authenticated
 	def post(self):
+		self.request.arguments['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = self.request.arguments.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0')
+		self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES'] = self.request.arguments.get('ZYNTHIAN_RBPI_HEADPHONES', '0')
+		try:
+			previousSoundcard = os.environ.get('SOUNDCARD_NAME')
+			currentSoundcard = self.get_argument('SOUNDCARD_NAME')
+			if currentSoundcard.startswith('AudioInjector') and currentSoundcard!=previousSoundcard:
+				self.persist_update_sys_flag()
+			if currentSoundcard=="RBPi Headphones":
+				self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES']=['0']
+		except:
+			pass
+
+		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+
 		command = self.get_argument('_command', '')
 		logging.info("COMMAND = {}".format(command))
+
 		if command=='REFRESH':
 			errors = None
-			self.config_env(tornado.escape.recursive_unicode(self.request.arguments))
-
+			self.config_env(postedConfig)
 		else:
-			self.request.arguments['ZYNTHIAN_LIMIT_USB_SPEED'] = self.request.arguments.get('ZYNTHIAN_LIMIT_USB_SPEED', '0')
-			self.request.arguments['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = self.request.arguments.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0')
-			self.request.arguments['ZYNTHIAN_DISABLE_OTG'] = self.request.arguments.get('ZYNTHIAN_DISABLE_OTG', '0')
-			self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES'] = self.request.arguments.get('ZYNTHIAN_RBPI_HEADPHONES', '0')
-
-			try:
-				previousSoundcard = os.environ.get('SOUNDCARD_NAME')
-				currentSoundcard = self.get_argument('SOUNDCARD_NAME')
-				if currentSoundcard.startswith('AudioInjector') and currentSoundcard!=previousSoundcard:
-					self.persist_update_sys_flag()
-				if currentSoundcard=="RBPi Headphones":
-					self.request.arguments['ZYNTHIAN_RBPI_HEADPHONES']=['0']
-			except:
-				pass
-
-			postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
 			for k in list(postedConfig):
 				if k.startswith('ZYNTHIAN_CONTROLLER'):
 					del postedConfig[k]
-
 			errors=self.update_config(postedConfig)
 			self.reboot_flag = True
 
@@ -374,5 +362,4 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		except Exception as err:
 			logging.error(err)
 			return []
-
 

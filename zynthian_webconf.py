@@ -45,10 +45,10 @@ from lib.ui_config_handler import UiConfigHandler
 from lib.ui_keybind_handler import UiKeybindHandler
 from lib.kit_config_handler import KitConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
+from lib.hwoptions_config_handler import HWOptionsConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
 from lib.wifi_list_handler import WifiListHandler
-from lib.snapshot_config_handler import SnapshotConfigHandler, SnapshotRemoveOptionHandler, SnapshotAddOptionsHandler, \
-	SnapshotDownloadHandler, SnapshotRemoveLayerHandler
+from lib.snapshot_config_handler import SnapshotConfigHandler, SnapshotRemoveOptionHandler, SnapshotAddOptionsHandler, SnapshotDownloadHandler, SnapshotRemoveLayerHandler
 from lib.midi_config_handler import MidiConfigHandler
 from lib.upload_handler import UploadHandler
 from lib.system_backup_handler import SystemBackupHandler
@@ -153,6 +153,7 @@ def make_app():
 		(r"/hw-audio-mixer/(.*)/(.*)$", AudioMixerHandler),
 		(r"/hw-display$", DisplayConfigHandler),
 		(r"/hw-wiring$", WiringConfigHandler),
+		(r"/hw-options$", HWOptionsConfigHandler),
 		(r"/sw-update$", SoftwareUpdateHandler),
 		(r"/sw-pianoteq$", PianoteqHandler),
 		(r"/sw-jalv-lv2$", JalvLv2Handler),
