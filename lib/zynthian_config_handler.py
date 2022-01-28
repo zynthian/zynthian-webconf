@@ -55,6 +55,11 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	reload_midi_config_flag = False
 	reload_key_binding_flag = False
 
+	restart_ui_flag_fpath = "/tmp/zynthian_restart_ui"
+	restart_webconf_flag_fpath = "/tmp/zynthian_restart_webconf"
+	reboot_flag_fpath = "/tmp/zynthian_reboot"
+
+
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
@@ -129,6 +134,8 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		try:
 			check_output("systemctl restart zynthian", shell=True)
 			self.restart_ui_flag = False
+			if os.path.isfile(self.restart_ui_flag_fpath):
+				os.remove(self.restart_ui_flag_fpath)
 		except Exception as e:
 			logging.error("Restarting UI: %s" % e)
 
@@ -137,6 +144,8 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		try:
 			check_output("systemctl restart zynthian-webconf", shell=True)
 			self.restart_webconf_flag = False
+			if os.path.isfile(self.restart_webconf_flag_fpath):
+				os.remove(self.restart_webconf_flag_fpath)
 		except Exception as e:
 			logging.error("Restarting Webconf: %s" % e)
 
