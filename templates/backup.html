@@ -1,5 +1,5 @@
 <div class="pull-right">
-        <input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span><label for="check_advanced_view">Advanced view</label></span>
+	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span><label for="check_advanced_view">Advanced view</label></span>
 </div>
 
 <h2>{{ title }}</h2>
@@ -9,185 +9,213 @@
 </form>
 
 <form id="backup-form" enctype="multipart/form-data" method="post">
+	<input type="hidden" id="_command" name="_command" value='BACKUP'>
+	<input type="hidden" id="ACTIVE_TAB" name="ACTIVE_TAB" value="{{ config['ACTIVE_TAB'] }}">
+
 	<ul class="nav nav-tabs" role="tablist">
-		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == 'SYSTEM_BACKUP' %}active{% end %}"><a href="#system_backup" role="tab" data-toggle="tab">System Backup</a></li>
-		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == 'DATA_BACKUP' %}active{% end %}"><a href="#data_backup" role="tab" data-toggle="tab">Data Backup</a></li>
-		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == 'RESTORE' %}active{% end %}"><a href="#restore" role="tab" data-toggle="tab">Restore</a></li>
+		<li class="{% if config['ACTIVE_TAB'] == 'BACKUP/RESTORE' %}active{% end %}"><a href="#backup_restore" role="tab" data-toggle="tab">Backup/Restore</a></li>
+		<li class="{% if config['ACTIVE_TAB'] == 'CONFIG_ITEMS' %}active{% end %}"><a href="#config_items" role="tab" data-toggle="tab">Config Items</a></li>
+		<li class="{% if config['ACTIVE_TAB'] == 'DATA_ITEMS' %}active{% end %}"><a href="#data_items" role="tab" data-toggle="tab">Data Items</a></li>
 	</ul>
 
+	<div class="tab-content">
+		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'BACKUP/RESTORE' %}active{% end %}" id="backup_restore">
+			<div class="container-fluid">
+				<div class="row normal-view">
+					<select id="backup_select">
+						<option value="BACKUP_ALL">All</option>
+						<option value="BACKUP_CONFIG">Config</option>
+						<option value="BACKUP_DATA">Data</option>
+					</select>
+				</div>
+				<div class="row normal-view">
+					<button id="backup_button" title="Backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i> Backup</button>
+				</div>
+				<div class="row normal-view">
+					<button id="upload_show" title="Restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i> Restore</button>
+				</div>
+				<div class="row">
+					<div id="restore-log" class="log-panel"></div>
+				</div>
+			</div>
+		</div>
+	
+		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'CONFIG_ITEMS' %}active{% end %}" id="config_items">
+			<div class="container-fluid">
+				<div class="row normal-view">
+					<label>Directories containing config files (full path):</label>
+					<textarea id="CONFIG_BACKUP_DIRS" name="CONFIG_BACKUP_DIRS" rows="5">
+						{% for d in config['CONFIG_BACKUP_DIRS'] %}{{ d }}
+						{% end %}
+					</textarea>
+				</div>
+				<div class="row advanced-view">
+					<label>Excluded directories or files (full path):</label>
+					<textarea id="CONFIG_BACKUP_DIRS_EXCLUDED" name="CONFIG_BACKUP_DIRS_EXCLUDED" rows="5">
+						{% for d in config['CONFIG_BACKUP_DIRS_EXCLUDED'] %}{{ d }}
+						{% end %}
+					</textarea>
+				</div>
+				<div class="row normal-view">
+					<button id="save_config_items_button" title="Save Config Backup Items" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i> Save</button>
+				</div>
+				<div class="row normal-view">
+					<label>Resolved config items to backup:</label>
+					<table class="table table-striped table-bordered table-condensed">
+					{% for item in config['CONFIG_BACKUP_ITEMS'] %}
+						{% if config['CONFIG_BACKUP_ITEMS'][item] %}
+						<tr>
+							<td title="{{ item }}"><b>{{ item }}</b><br>
+							{% for f in config['CONFIG_BACKUP_ITEMS'][item] %}{{ escape(f) }}<br>{% end %}
+							</td>
+						</tr>
+						{% end %}
+					{% end %}
+					</table>
+				</div>
+			</div>
+		</div>
 
-<div class="tab-content">
-	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'SYSTEM_BACKUP' %}active{% end %}" id="system_backup">
-		<div class="container-fluid">
-			<div class="row advanced-view">
-			 <label>Directories containing system files:</label>
-			 <textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES" rows="5">
-				 {% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES'] %}{{ system_backup_directory }}
-				 {% end %}
-			 </textarea>
-		 </div>
-		 <div class="row advanced-view">
-			<label>Excluded directories or files (full path):</label>
-			<textarea id="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
-				{% for system_backup_directory in config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ system_backup_directory }}
-				{% end %}
-			</textarea>
-		</div>
-		<div class="row advanced-view">
-		 <button name="ZYNTHIAN_BACKUP_ACTION" value="SAVE_SYSTEM_BACKUP_DIRECTORIES" class="btn btn-lg btn-theme btn-block">SAVE</button>
-	 	</div>
-		  <div class="row">
-		    <label>Resolved backup items as defined in /zynthian/config/system_backup_items.txt</label>
-		    <table class="table table-striped table-bordered table-condensed">
-		    {% for backupItem in config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'] %}
-		    {% if config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'][backupItem] %}
-		    <tr>
-		      <td title="{% for backupItemFile in  config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'][backupItem] %}{{ escape(backupItemFile + '\n') }}{% end %}">{{ escape(backupItem)}} </td>
-		    </tr>
-		    {% end %}
-		    {% end %}
-		    </table>
-		  </div>
-		  <div class="row">
-		    <button name="ZYNTHIAN_BACKUP_ACTION" value="SYSTEM_BACKUP" class="btn btn-lg btn-theme btn-block">BACKUP</button>
-		  </div>
-  	</div>
-	</div>
-	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'DATA_BACKUP' %}active{% end %}" id="data_backup">
-		<div class="row advanced-view">
-		 <label>Directories containing data files:</label>
-		 <textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES" rows="5">
-			 {% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES'] %}{{ data_backup_directory }}
-			 {% end %}
-		 </textarea>
-	 </div>
-	 <div class="row advanced-view">
-		<label>Excluded directories or files (full path): </label>
-		<textarea id="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" name="ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS" rows="5">
-			{% for data_backup_directory in config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS'] %}{{ data_backup_directory }}
-			{% end %}
-		</textarea>
-	</div>
-	<div class="row advanced-view">
-	 <button name="ZYNTHIAN_BACKUP_ACTION" value="SAVE_DATA_BACKUP_DIRECTORIES" class="btn btn-lg btn-theme btn-block">SAVE</button>
-	</div>
-		<div class="row">
-			<label>Backup items as defined in /zynthian/config/data_backup_items.txt</label>
-			<table class="table table-striped table-bordered table-condensed">
-			{% for backupItem in config['ZYNTHIAN_DATA_BACKUP_ITEMS'] %}
-			{% if config['ZYNTHIAN_DATA_BACKUP_ITEMS'][backupItem] %}
-			<tr>
-				<td title="{% for backupItemFile in  config['ZYNTHIAN_DATA_BACKUP_ITEMS'][backupItem] %}{{ escape(backupItemFile + '\n') }}{% end %}">{{ escape(backupItem)}} </td>
-			</tr>
-			{% end %}
-			{% end %}
-			</table>
-		</div>
-		<div class="row">
-			<button name="ZYNTHIAN_BACKUP_ACTION" value="DATA_BACKUP" class="btn btn-lg btn-theme btn-block">BACKUP</button>
+		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'DATA_ITEMS' %}active{% end %}" id="data_items">
+			<div class="container-fluid">
+				<div class="row normal-view">
+					<label>Directories containing data files (full path):</label>
+					<textarea id="DATA_BACKUP_DIRS" name="DATA_BACKUP_DIRS" rows="5">
+						{% for d in config['DATA_BACKUP_DIRS'] %}{{ d }}
+						{% end %}
+					</textarea>
+				</div>
+				<div class="row advanced-view">
+					<label>Excluded directories or files (full path):</label>
+					<textarea id="DATA_BACKUP_DIRS_EXCLUDED" name="DATA_BACKUP_DIRS_EXCLUDED" rows="5">
+						{% for d in config['DATA_BACKUP_DIRS_EXCLUDED'] %}{{ d }}
+						{% end %}
+					</textarea>
+				</div>
+				<div class="row normal-view">
+					<button id="save_data_items_button" title="Save Data Backup Items" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i> Save</button>
+				</div>
+				<div class="row normal-view">
+					<label>Resolved data items to backup:</label>
+					<table class="table table-striped table-bordered table-condensed">
+					{% for item in config['DATA_BACKUP_ITEMS'] %}
+						{% if config['DATA_BACKUP_ITEMS'][item] %}
+						<tr>
+							<td title="{{ item }}"><b>{{ item }}</b><br>
+							{% for f in config['DATA_BACKUP_ITEMS'][item] %}{{ escape(f) }}<br>{% end %}
+							</td>
+						</tr>
+						{% end %}
+					{% end %}
+					</table>
+				</div>
+			</div>
 		</div>
 	</div>
-	<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == 'RESTORE' %}active{% end %}" id="restore">
-		<div class="row">
-			<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="RESTORE"></input>
-		</div>
-		<div class="row">
-				<div id="restore-log" class="log-panel"></div
-		</div>
+
+	<div class="row">
+	{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
 	</div>
-</div>
-<div class="row">
-{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
-</div>
 </form>
 
 <div id="loading-div-background">
   <div id="loading-div" class="ui-corner-all">
-    PROCESSING. PLEASE WAIT...
+    Processing. Please wait ...
   </div>
 </div>
 
 <script type="text/javascript">
 
-
 $(document).ready(function (){
     $("#loading-div-background").hide();
-		$('#input-uploadfile-type')[0].value = 'zip';
+	$('#input-uploadfile-type')[0].value = 'zip';
 
-		var deferred = $.Deferred();
-		deferred.done(function(value) {
-			$("#upload_progress_panel").addClass("active");
-			var socketMessage = {"handler_name": "UploadProgressHandler",
-				"data": $('#input-uploadfile-session')[0].value};
+	$("button#backup_button").click(function() {
+		var cmd = $("select#backup_select").val()
+		$("input#ACTIVE_TAB").val("BACKUP/RESTORE");
+		$("input#_command").val(cmd);
+	});
+	$("button#save_config_items_button").click(function() {
+		$("input#ACTIVE_TAB").val("CONFIG_ITEMS");
+		$("input#_command").val("SAVE_BACKUP_CONFIG");
+	});
+	$("button#save_data_items_button").click(function() {
+		$("input#ACTIVE_TAB").val("DATA_ITEMS");
+		$("input#_command").val("SAVE_BACKUP_CONFIG");
+	});
 
-			window.zynthianSocket.send(JSON.stringify(socketMessage));
-		});
-		connectZynthianWebSocket(deferred);
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$("#upload_progress_panel").addClass("active");
+		var socketMessage = {
+			"handler_name": "UploadProgressHandler",
+			"data": $('#input-uploadfile-session')[0].value
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	});
+	connectZynthianWebSocket(deferred);
 
+	var url = window.location.href
+	var parts = url.split("/");
+	$("#restore-upload-form").attr("action", "http://" + parts[2] + "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
 
-		var url = window.location.href
-		var parts = url.split("/");
-		$("#restore-upload-form").attr("action", "http://" + parts[2] + "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
+	$('#upload_panel')[0].onuploadend = function(response){
+		console.log("upload succeeded: " + response);
+		var logDiv = $("#restore-log");
+		logDiv.addClass("updating");
+		logDiv.html('');
 
-
-		$('#upload_panel')[0].onuploadend = function(response){
-				console.log("upload succeeded: " + response);
+		var socketMessage = {
+			"handler_name": "RestoreMessageHandler",
+			"data": response
+		};
+		window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
+			if (data){
+				console.log("RestoreMessageHandler:onmessage:", data);
 				var logDiv = $("#restore-log");
- 				logDiv.addClass("updating");
- 				logDiv.html('');
-
-				var socketMessage = {"handler_name": "RestoreMessageHandler",
-					"data": response};
-				//zynthiansocket = connectWebsocket();
-
-				window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
-					if (data){
-						console.log("RestoreMessageHandler:onmessage:", data);
-						var logDiv = $("#restore-log");
-						if (data == "EOCOMMAND"){
-							logDiv.removeClass("updating");
-						} else {
-							logDiv.append(data + "<br />");
-							logDiv[0].scrollTop = logDiv[0].scrollHeight;
-						}
-					}
-				});
-				window.zynthianSocket.send(JSON.stringify(socketMessage));
-		}
-
+				if (data == "EOCOMMAND"){
+					logDiv.removeClass("updating");
+				} else {
+					logDiv.append(data + "<br />");
+					logDiv[0].scrollTop = logDiv[0].scrollHeight;
+				}
+			}
+		});
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+	}
 });
 
-
-function showProgressAnimation(){
-    $("#loading-div-background").show();
+function do_command(cmd) {
+	$("input#_command").val(cmd);
+	document.getElementById("backup-form").submit();
 }
 
+function showProgressAnimation(){
+	$("#loading-div-background").show();
+}
 
 function restore_advanced_view() {
-        if (Cookies.get('advanced_view')) {
-                $('input#check_advanced_view').prop("checked", true);
-                $('.advanced-view').show();
-        } else {
-                $('input#check_advanced_view').prop("checked", false);
-                $('.advanced-view').hide;
-        }
+	if (Cookies.get('advanced_view')) {
+		$('input#check_advanced_view').prop("checked", true);
+		$('.advanced-view').show();
+	} else {
+		$('input#check_advanced_view').prop("checked", false);
+		$('.advanced-view').hide;
+	}
 }
 
 function onchange_check_advanced_view() {
-        if ($('input#check_advanced_view').prop("checked")==true) {
-                Cookies.set('advanced_view','1')
-                $('.advanced-view').slideDown(500);
-        } else {
-                Cookies.remove('advanced_view')
-                $('.advanced-view').slideUp(500);
-        }
+	if ($('input#check_advanced_view').prop("checked")==true) {
+		Cookies.set('advanced_view','1')
+		$('.advanced-view').slideDown(500);
+	} else {
+		Cookies.remove('advanced_view')
+		$('.advanced-view').slideUp(500);
+	}
 }
 
 $(document).ready(function() {
-        restore_advanced_view()
+	restore_advanced_view()
 });
-
-
-
 
 </script>

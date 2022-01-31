@@ -171,6 +171,17 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	def read_reboot_flag(self):
 		self.reboot_flag = os.path.exists("/tmp/zynthian_reboot")
 
+
+	@classmethod
+	def update_sys(cls):
+		try:
+			zynconf.update_sys()
+			if os.path.isfile("/zynthian_update_sys"):
+				os.remove("/zynthian_update_sys")
+		except Exception as e:
+			logging.error("Updating System Config: %s" % e)
+
+
 #------------------------------------------------------------------------------
 # Zynthian Config Handler
 #------------------------------------------------------------------------------

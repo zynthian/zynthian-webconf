@@ -47,59 +47,56 @@ def get_backup_items(filename):
 
 class SystemBackupHandler(ZynthianBasicHandler):
 
-	SYSTEM_BACKUP_ITEMS_FILE = "/zynthian/config/system_backup_items.txt"
+	CONFIG_BACKUP_ITEMS_FILE = "/zynthian/config/config_backup_items.txt"
 	DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
 	EXCLUDE_SUFFIX = ".exclude"
 
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		self.do_get(None, errors)
+		self.do_get("BACKUP/RESTORE", errors)
 
 
-	def do_get(self, active_tab, errors=None):
+	def do_get(self, active_tab="BACKUP/RESTORE", errors=None):
 		config=OrderedDict([])
+		config['ACTIVE_TAB'] = active_tab
+		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
-		config['ZYNTHIAN_SYSTEM_BACKUP_ITEMS'] = OrderedDict([])
-		config['ZYNTHIAN_DATA_BACKUP_ITEMS'] = OrderedDict([])
-		config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES'] = []
-		config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS'] = []
-		config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES'] = []
-		config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS'] = []
+		config['CONFIG_BACKUP_ITEMS'] = OrderedDict([])
+		config['CONFIG_BACKUP_DIRS'] = []
+		config['CONFIG_BACKUP_DIRS_EXCLUDED'] = []
 
-		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = False
-		if active_tab:
-			config['ZYNTHIAN_ACTIVE_TAB'] = active_tab
-		else:
-			config['ZYNTHIAN_ACTIVE_TAB'] = 'DATA_BACKUP'
+		config['DATA_BACKUP_ITEMS'] = OrderedDict([])
+		config['DATA_BACKUP_DIRS'] = []
+		config['DATA_BACKUP_DIRS_EXCLUDED'] = []
 
-		system_backup_items = get_backup_items(SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE)
-		for system_backup_folder in system_backup_items:
-			if system_backup_folder.startswith("^"):
-				config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS'].append(system_backup_folder[1:])
+		config_backup_items = get_backup_items(SystemBackupHandler.CONFIG_BACKUP_ITEMS_FILE)
+		for item in config_backup_items:
+			if item.startswith("^"):
+				config['CONFIG_BACKUP_DIRS_EXCLUDED'].append(item[1:])
 			else:
-				config['ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES'].append(system_backup_folder)
+				config['CONFIG_BACKUP_DIRS'].append(item)
 
 		data_backup_items = get_backup_items(SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
-		for data_backup_folder in data_backup_items:
-			if data_backup_folder.startswith("^"):
-				config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS'].append(data_backup_folder[1:])
+		for item in data_backup_items:
+			if item.startswith("^"):
+				config['DATA_BACKUP_DIRS_EXCLUDED'].append(item[1:])
 			else:
-				config['ZYNTHIAN_DATA_BACKUP_DIRECTORIES'].append(data_backup_folder)
+				config['DATA_BACKUP_DIRS'].append(item)
 
-		def add_backup_item( dirname, subdirs, files, backup_directories_parameter ):
-			if not dirname in config[backup_directories_parameter]:
-				config[backup_directories_parameter][dirname]=[]
-			for filename in files:
-				config[backup_directories_parameter][dirname].append(filename)
+		def add_config_backup_item(dirname, subdirs, files):
+			if not dirname in config['CONFIG_BACKUP_ITEMS']:
+				config['CONFIG_BACKUP_ITEMS'][dirname]=[]
+			for fname in files:
+				config['CONFIG_BACKUP_ITEMS'][dirname].append(fname)
 
-		def add_data_backup_item( dirname, subdirs, files ):
-			add_backup_item(dirname, subdirs, files, 'ZYNTHIAN_DATA_BACKUP_ITEMS')
+		def add_data_backup_item(dirname, subdirs, files):
+			if not dirname in config['DATA_BACKUP_ITEMS']:
+				config['DATA_BACKUP_ITEMS'][dirname]=[]
+			for fname in files:
+				config['DATA_BACKUP_ITEMS'][dirname].append(fname)
 
-		def add_system_backup_item( dirname, subdirs, files ):
-			add_backup_item(dirname, subdirs, files, 'ZYNTHIAN_SYSTEM_BACKUP_ITEMS')
-
-		self.walk_backup_items(add_system_backup_item, system_backup_items)
+		self.walk_backup_items(add_config_backup_item, config_backup_items)
 		self.walk_backup_items(add_data_backup_item, data_backup_items)
 
 		super().get("backup.html", "Backup / Restore", config, errors)
@@ -107,50 +104,67 @@ class SystemBackupHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_BACKUP_ACTION')
-		if action:
+		command = self.get_argument('_command', '')
+		logging.info("COMMAND = {}".format(command))
+		if command:
 			errors = {
-				'SYSTEM_BACKUP': lambda: self.do_system_backup(),
-				'DATA_BACKUP': lambda: self.do_data_backup(),
-				'SAVE_SYSTEM_BACKUP_DIRECTORIES': lambda: self.do_save_backup_directories('ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES',
-					'ZYNTHIAN_SYSTEM_BACKUP_DIRECTORIES_EXCLUSIONS',
-					SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE,
-					'SYSTEM_BACKUP'),
-				'SAVE_DATA_BACKUP_DIRECTORIES': lambda: self.do_save_backup_directories('ZYNTHIAN_DATA_BACKUP_DIRECTORIES',
-					'ZYNTHIAN_DATA_BACKUP_DIRECTORIES_EXCLUSIONS',
-					SystemBackupHandler.DATA_BACKUP_ITEMS_FILE,
-					'DATA_BACKUP')
-			}[action]()
+				#'RESTORE': pass,
+				'BACKUP_ALL': lambda: self.do_backup_all(),
+				'BACKUP_CONFIG': lambda: self.do_backup_config(),
+				'BACKUP_DATA': lambda: self.do_backup_data(),
+				'SAVE_BACKUP_CONFIG': lambda: self.do_save_backup_config()
+			}[command]()
 
 
-	def do_save_backup_directories(self, backup_directory_parameter, backup_directory_exclusion_parameter, backup_file_name, tab_name):
-		backup_directories = ''
-		for backup_directory in self.get_argument(backup_directory_exclusion_parameter).split("\n"):
-			if backup_directory:
-				backup_directories+="^"
-				backup_directories+=backup_directory
-				backup_directories+='\n'
+	def do_save_backup_config(self):
+		# Save "Config" items
+		backup_dirs = ''
+		for dpath in self.get_argument('CONFIG_BACKUP_DIRS_EXCLUDED').split("\n"):
+			if dpath:
+				backup_dirs+="^{}\n".format(dpath)
 
-		backup_directories+=self.get_argument(backup_directory_parameter)
+		backup_dirs += self.get_argument('CONFIG_BACKUP_DIRS')
 
-		with open(backup_file_name, 'w') as backup_file:
-			backup_file.write(backup_directories)
+		with open(SystemBackupHandler.CONFIG_BACKUP_ITEMS_FILE, 'w') as backup_file:
+			backup_file.write(backup_dirs)
 
-		self.do_get(tab_name)
+		# Save "Data" items
+		backup_dirs = ''
+		for dpath in self.get_argument('DATA_BACKUP_DIRS_EXCLUDED').split("\n"):
+			if dpath:
+				backup_dirs+="^{}\n".format(dpath)
+
+		backup_dirs += self.get_argument('DATA_BACKUP_DIRS')
+
+		with open(SystemBackupHandler.DATA_BACKUP_ITEMS_FILE, 'w') as backup_file:
+			backup_file.write(backup_dirs)
+
+		# Reload active tab
+		active_tab = self.get_argument("ACTIVE_TAB", "BACKUP/RESTORE")
+		self.do_get(active_tab)
 
 
-	def do_system_backup(self):
-		self.do_backup('zynthian_system_backup',SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE)
+	def do_backup_all(self):
+		backup_items = get_backup_items(SystemBackupHandler.CONFIG_BACKUP_ITEMS_FILE)
+		backup_items += get_backup_items(SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
+		self.do_backup('zynthian_backup', backup_items)
 
 
-	def do_data_backup(self):
-		self.do_backup('zynthian_data_backup', SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
+	def do_backup_config(self):
+		backup_items = get_backup_items(SystemBackupHandler.CONFIG_BACKUP_ITEMS_FILE)
+		self.do_backup('zynthian_config_backup', backup_items)
 
 
-	def do_backup(self, backupFileNamePrefix, backupItemsFileName):
-		zipname='{0}{1}.zip'.format(backupFileNamePrefix, time.strftime("%Y%m%d-%H%M%S"))
+	def do_backup_data(self):
+		backup_items = get_backup_items(SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
+		self.do_backup('zynthian_data_backup', backup_items)
+
+
+	def do_backup(self, fname_prefix, backup_items):
+		zipname = '{0}{1}.zip'.format(fname_prefix, time.strftime("%Y%m%d-%H%M%S"))
 		f=BytesIO()
 		zf = zipfile.ZipFile(f, "w")
+
 		def zip_backup_items(dirname, subdirs, files):
 			logging.info(dirname)
 			if dirname != '/':
@@ -158,7 +172,6 @@ class SystemBackupHandler(ZynthianBasicHandler):
 			for filename in files:
 				logging.info(filename)
 				zf.write(os.path.join(dirname, filename))
-		backup_items = get_backup_items(backupItemsFileName)
 
 		self.walk_backup_items(zip_backup_items, backup_items)
 
@@ -221,13 +234,13 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
 		#fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]
 		#restoreFile = fileinfo['filename']
 		with open(restoreFile , "rb") as f:
-			validRestoreItems = get_backup_items(SystemBackupHandler.SYSTEM_BACKUP_ITEMS_FILE)
+			validRestoreItems = get_backup_items(SystemBackupHandler.CONFIG_BACKUP_ITEMS_FILE)
 			validRestoreItems += get_backup_items(SystemBackupHandler.DATA_BACKUP_ITEMS_FILE)
 
 			with zipfile.ZipFile(f,'r') as restoreZip:
 				for member in restoreZip.namelist():
 					if self.is_valid_restore_item(validRestoreItems, member):
-						logMessage = "restored: " + member
+						logMessage = "Restored: " + member
 						restoreZip.extract(member, "/")
 						logging.debug(logMessage)
 						message = ZynthianWebSocketMessage('RestoreMessageHandler', logMessage)
@@ -236,14 +249,15 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
 						if member.endswith(SystemBackupHandler.EXCLUDE_SUFFIX):
 							restoreZip.extract(member, "/")
 							with open("/" + member, 'r') as exclude_file:
-								message = ZynthianWebSocketMessage('RestoreMessageHandler',"<b>PLEASE ENSURE THAT THE FOLLOWING FILES EXIST:<br />" + exclude_file.read().replace('\n', '<br />') + "</b>")
+								message = ZynthianWebSocketMessage('RestoreMessageHandler',"<b>Please ensure that the following files does exist:<br />" + exclude_file.read().replace('\n', '<br />') + "</b>")
 								self.websocket.write_message(jsonpickle.encode(message))
 							os.remove('/' + member)
 						else:
-							logging.warn("restore of " + member + " not permitted")
+							logging.warn("Restore of " + member + " not permitted")
 
 				restoreZip.close()
 			f.close()
 		os.remove(restoreFile)
+		SystemBackupHandler.update_sys()
 		message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
-		self.websocket.write_message(jsonpickle.encode(message))
+		self.websocket.write_message(jsonpickle.encode(message))		

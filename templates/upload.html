@@ -40,7 +40,8 @@ $(document).ready(function() {
 	var random = Math.random().toString();
 	$('#input-uploadfile-session')[0].value = random;
 
-	$('#upload_show').click(function(){
+	$('#upload_show').click(function(e){
+		e.preventDefault();
 		$('#upload_panel').show(500)
 		$('#upload_progress_panel').hide(500);
 	});
