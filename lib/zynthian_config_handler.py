@@ -199,7 +199,7 @@ class ZynthianConfigHandler(ZynthianBasicHandler):
 			if vn[0]!='_':
 				sconfig[vn]=config[vn][0]
 
-		zynconf.save_config(sconfig, update_sys=True)
+		zynconf.save_config(sconfig, updsys=True)
 
 
 	def config_env(self, config):
