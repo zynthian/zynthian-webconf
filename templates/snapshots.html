@@ -132,19 +132,22 @@ table.values > tbody > tr > td {
 					<table id="LAYOUTS_TABLE"
 						   name="LAYOUTS_TABLE"
 						   data-toggle="LAYOUTS_TABLE"
+						   data-show-footer="true"
 						   class="table table-striped table-bordered table-condensed table-hidden-header">
 						<thead>
 							<tr>
-								<th data-field="details" class="col-md-10">Layout</th>
+								<th data-field="details" class="col-md-10">Channel#Engine>Patch</th>
 								<th data-field="layer_infos" class="col-md-1"
 									data-formatter="infoOperateFormatter"
-								/>&nbsp;</th>
+									data-footer-formatter="printPatchesFormatter"
+								>&nbsp;</th>
 								<th data-field="key" class="col-md-1"
 									data-formatter="removeOperateFormatter"
 									data-events="layoutEvents"
-								/>&nbsp;</th>
+								>&nbsp;</th>
 							</tr>
 						</thead>
+
 					</table>
 				</div>
 			</div>
@@ -212,8 +215,69 @@ table.values > tbody > tr > td {
 </div>
 </form>
 
-<script type="text/javascript">
+<div id="print_area" style="visibility: hidden">
 
+</div>
+
+<script type="text/javascript">
+function printPatches(itemsString) {
+
+	items = JSON.parse(atob(itemsString));
+	printableHtml = `<table>`;
+	printableHtml += `<thead><tr><th>MIDI channel#Engine</th><th rowspan="2">Bank</th><th rowspan="2">Preset</th></>tr>`;
+	printableHtml += `<tr><td>&nbsp;&nbsp;&nbsp;Program Change</td></tr><thead><tbody>`;
+
+	lastChannel = 0
+	for (k in items){
+		printableHtml += `<tr>`;
+		printableHtml += `<td><b>`;
+
+		if (lastChannel>0 && lastChannel==items[k]['channel']){
+			printableHtml += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->";
+		} else if (items[k]['channel'] > 0){
+			printableHtml += items[k]['channel'] + '#';
+
+		}
+		printableHtml += items[k]['engine_nick'];
+		printableHtml += `</b></td>`;
+		printableHtml += '<td><b>';
+		if (items[k]['bank_name']){
+			printableHtml += items[k]['bank_name'];
+		}
+		printableHtml += `</b></td>`;
+		printableHtml += `<td><b>`;
+		if ('preset_name' in items[k] && items[k]['preset_name']!=null){
+			printableHtml += items[k]['preset_name'];
+		}
+		printableHtml += `</b></td>`;
+		printableHtml += `</tr>`;
+
+		if ('zs3_list' in items[k]){
+			zs3_list = items[k]['zs3_list'];
+			for (j in zs3_list){
+				if (zs3_list[j]){
+					printableHtml += `<tr>`;
+					printableHtml += `<td>&nbsp;&nbsp;&nbsp;PC`;
+					printableHtml += j;
+					printableHtml += `</td>`;
+					printableHtml += `<td>`;
+					printableHtml += zs3_list[j]['bank_name'];
+					printableHtml += `</td>`;
+					printableHtml += `<td>`;
+					printableHtml += zs3_list[j]['preset_name'];
+					printableHtml += `</td>`;
+					printableHtml += `</tr>`;
+				}
+			}
+
+		}
+		lastChannel = items[k]['channel'];
+
+	}
+	printableHtml += `</tbody></table>`;
+	$('#print_area')[0].insertAdjacentHTML('beforeend', printableHtml);
+	window.print();
+}
 $(document).ready(function () {
 	$('#button-upload').click(function(){
 		$('#upload_panel').show(500)
@@ -320,6 +384,9 @@ function createTree(data, selectedNodeId){
 			$("#SEL_BANK")[0].disabled = data.nodes;
 			$("#SEL_PROG_NUM")[0].value = data.prog_num;
 			$("#SEL_PROG_NUM")[0].disabled = data.nodes;
+
+			$('#print_area')[0].innerHTML = `<h1>Presetlist of ` + $("#SEL_BANK")[0].value + `/` + $("#SEL_NAME")[0].value + `</h1>`;
+
 			if (data.prog_details){
 				layoutsData = getLayoutData(data.prog_details);
 				$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
@@ -514,6 +581,14 @@ function infoOperateFormatter(value, row, index) {
    	  '">',
       '<i class="fa fa-info"></i>',
       '</button>'
+    ].join('')
+}
+
+function printPatchesFormatter(items) {
+    return [
+   	  '<a class="print-patches-option btn btn-info btn-block" href="javascript:printPatches(\'' + btoa(JSON.stringify(items)) + '\');" title="Print Patches">',
+      '<i class="fa fa-print"></i>',
+      '</a>'
     ].join('')
 }
 

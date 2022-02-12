@@ -498,3 +498,41 @@ table.table tr.success th {
   color: #ffffff;
   padding-bottom: 0px;
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  #print_area, #print_area * {
+    visibility: visible;
+  }
+  #print_area {
+    position: absolute;
+    left: 0;
+    top: 0;
+  }
+}
+
+#print_area table {
+  border-collapse: collapse;
+}
+#print_area table td, #print_area table th {
+  border: 1px solid black;
+  padding: 3px;
+}
+#print_area table tr:first-child td, #print_area table tr:first-child th {
+  border-top: 0;
+}
+#print_area table tr td:first-child, #print_area table tr th:first-child {
+  border-left: 0;
+}
+#print_area table tr:last-child td {
+  border-bottom: 0;
+}
+#print_area table thead tr:last-child td {
+  border-bottom: 1px solid black;
+}
+#print_area table tr td:last-child, #print_area table tr th:last-child {
+  border-right: 0;
+}
+
