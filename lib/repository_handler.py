@@ -63,9 +63,9 @@ class RepositoryHandler(ZynthianConfigHandler):
 		errors = {}
 		changed_repos = 0
 		try:
-			is_stable = (postedConfig['TESTING'][0] == '0')
+			is_stable = (postedConfig['STABLE'][0] == '1')
 		except:
-			is_stable = True
+			is_stable = False
 		logging.debug(F"is_stable: {is_stable}")
 		for posted_config_key in postedConfig:
 			if posted_config_key.startswith(self.ZYNTHIAN_REPO_POST_VAR):
@@ -76,8 +76,6 @@ class RepositoryHandler(ZynthianConfigHandler):
 						if self.set_repo_branch(repo_name, 'stable'):
 							changed_repos += 1
 					else:
-						if branch == 'stable':
-							branch = 'testing'
 						if self.set_repo_branch(repo_name, branch):
 							changed_repos += 1
 				except Exception as err:
@@ -96,27 +94,26 @@ class RepositoryHandler(ZynthianConfigHandler):
 
 	def get_config_info(self):
 		config = OrderedDict([])
-		config["TESTING"] = {
+		config["STABLE"] = {
 			'type': 'boolean',
-			'title': 'Testing',
+			'title': 'Stable',
 			'value': '0',
 			'advanced': False
 		}
-		testing_overall = False
+		stable_overall = True
 		for repitem in self.repository_list:
 			options = self.get_repo_branch_list(repitem[0])
 			branch = self.get_repo_current_branch(repitem[0])
 			config[F"{self.ZYNTHIAN_REPO_POST_VAR}{repitem[0]}"] = {
 				'type': 'select',
-				'disabled': branch == "stable",
 				'title': repitem[0],
 				'value': branch,
 				'options': options,
 				'option_labels': OrderedDict([(opt, opt) for opt in options]),
 				'advanced': repitem[1]
 			}
-			testing_overall |= (self.get_repo_current_branch(repitem[0]) != 'stable')
-		config["TESTING"]['value'] = '1' if testing_overall else '0'
+			stable_overall &= (branch == 'stable')
+		config["STABLE"]['value'] = '1' if stable_overall else '0'
 		return config
 
 	def get_repo_tag_list(self, repo_name):
