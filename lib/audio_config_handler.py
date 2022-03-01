@@ -154,7 +154,7 @@ soundcard_presets = OrderedDict([
 	}],
 	['Steinberg UR22 MKII', {
 		'SOUNDCARD_CONFIG': '',
-		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:UR22 -r 44100 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:UR22mkII -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Clock_Source_41_Validity'
 	}],
 	['LogicLink UA0099', {
