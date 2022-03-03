@@ -44,15 +44,22 @@ class DashboardHandler(ZynthianBasicHandler):
 	@tornado.web.authenticated
 	def get(self):
 		# Get git info
-		git_info_zyncoder=self.get_git_info("/zynthian/zyncoder")
-		git_info_ui=self.get_git_info("/zynthian/zynthian-ui")
-		git_info_sys=self.get_git_info("/zynthian/zynthian-sys")
-		git_info_webconf=self.get_git_info("/zynthian/zynthian-webconf")
-		git_info_data=self.get_git_info("/zynthian/zynthian-data")
+		git_info_zyncoder = self.get_git_info("/zynthian/zyncoder")
+		git_info_ui = self.get_git_info("/zynthian/zynthian-ui")
+		git_info_sys = self.get_git_info("/zynthian/zynthian-sys")
+		git_info_webconf = self.get_git_info("/zynthian/zynthian-webconf")
+		git_info_data = self.get_git_info("/zynthian/zynthian-data")
 
 		# Get Memory & SD Card info
-		ram_info=self.get_ram_info()
-		sd_info=self.get_sd_info()
+		ram_info = self.get_ram_info()
+		sd_info = self.get_sd_info()
+
+		# get GPIO expander info
+		res = self.get_i2c_chips()
+		if len(res)>0:
+			i2c_info = ", ".join(map(str, res))
+		else:
+			i2c_info = "Not detected"
 
 		config=OrderedDict([
 			['HARDWARE', {
@@ -63,7 +70,7 @@ class DashboardHandler(ZynthianBasicHandler):
 						'title': os.environ.get('RBPI_VERSION')
 					}],
 					['SOUNDCARD_NAME', {
-						'title': 'Soundcard',
+						'title': 'Audio',
 						'value': os.environ.get('SOUNDCARD_NAME'),
 						'url': "/hw-audio"
 					}],
@@ -77,9 +84,9 @@ class DashboardHandler(ZynthianBasicHandler):
 						'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT'),
 						'url': "/hw-wiring"
 					}],
-					['GPIO_EXPANDER', {
-						'title': 'GPIO Expander',
-						'value': self.get_gpio_expander(),
+					['I2C_CHIPS', {
+						'title': 'I2C',
+						'value': i2c_info,
 						'url': "/hw-wiring"
 					}]
 				])
@@ -103,6 +110,10 @@ class DashboardHandler(ZynthianBasicHandler):
 						'title': 'SD Card',
 						'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
 					}],
+					['OVERCLOCKING', {
+						'title': 'Overclock',
+						'value': os.environ.get('ZYNTHIAN_OVERCLOCKING','Disabled')
+					}],
 					['TEMPERATURE', {
 						'title': 'Temperature',
 						'value': self.get_temperature()
@@ -118,23 +129,28 @@ class DashboardHandler(ZynthianBasicHandler):
 						'url': "/ui-midi-options"
 					}],
 					['FINE_TUNING', {
-						'title': 'Fine Tuning',
+						'title': 'Tuning',
 						'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
+						'url': "/ui-midi-options"
+					}],
+					['SINGLE_ACTIVE_CHANNEL', {
+						'title': 'Receive Mode',
+						'value': self.get_midi_receive_mode(),
+						'url': "/ui-midi-options"
+					}],
+					['ZS3_SUBSNAPSHOTS', {
+						'title': 'ZS3 Sub-SnapShots',
+						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')),
+						'url': "/ui-midi-options"
+					}],
+					['MIDI_FILTER_OUTPUT', {
+						'title': 'MIDI to Output',
+						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_FILTER_OUTPUT','1')),
 						'url': "/ui-midi-options"
 					}],
 					['MASTER_CHANNEL', {
 						'title': 'Master Channel',
 						'value': self.get_midi_master_chan(),
-						'url': "/ui-midi-options"
-					}],
-					['SINGLE_ACTIVE_CHANNEL', {
-						'title': 'Single Active Channel',
-						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')),
-						'url': "/ui-midi-options"
-					}],
-					['ZS3_SUBSNAPSHOTS', {
-						'title': 'ZS3 SubSnapShots',
-						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')),
 						'url': "/ui-midi-options"
 					}]
 				])
@@ -232,7 +248,7 @@ class DashboardHandler(ZynthianBasicHandler):
 		])
 
 		if os.environ.get('ZYNTHIAN_WIRING_LAYOUT').startswith("Z2"):
-			del(config['HARDWARE']['info']['GPIO_EXPANDER'])
+			del(config['HARDWARE']['info']['I2C_CHIPS'])
 			config['HARDWARE']['info']['CUSTOM_WIRING_PROFILE'] = {
 				'title': "Profile",
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE'),
@@ -305,18 +321,27 @@ class DashboardHandler(ZynthianBasicHandler):
 		return out
 
 
-	def get_gpio_expander(self):
-		try:
-			out=check_output("gpio i2cd", shell=True).decode().split("\n")
-			if len(out)>3 and out[3].startswith("20: 20"):
-				out2 = check_output("i2cget -y 1 0x20 0x10", shell=True).decode().strip()
-				if out2=='0x00':
-					return "MCP23008"
-				else:
-					return "MCP23017"
-		except:
-			pass
-		return "Not detected"
+	def get_i2c_chips(self):
+		out=check_output("gpio i2cd", shell=True).decode().split("\n")
+		if len(out)>3:
+			res = []
+			for i in range(1,8):
+				for adr in out[i][4:].split(" "):
+					try:
+						adr = int(adr, 16)
+						if adr>=0x20 and adr<=0x27:
+							out2 = check_output("i2cget -y 1 {} 0x10".format(adr), shell=True).decode().strip()
+							if out2=='0x00':
+								res.append("MCP23008@0x{:02X}".format(adr))
+							else:
+								res.append("MCP23017@0x{:02X}".format(adr))
+						elif adr>=0x48 and adr<=0x4B:
+							res.append("ADS1115@0x{:02X}".format(adr))
+						elif adr>=0x60 and adr<=0x67:
+							res.append("MCP4728@0x{:02X}".format(adr))
+					except:
+						pass
+		return res
 
 
 	def get_ram_info(self):
@@ -390,6 +415,13 @@ class DashboardHandler(ZynthianBasicHandler):
 			return mmc
 
 
+	def get_midi_receive_mode(self):
+		if os.environ.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0'):
+			return "Stage (Omni On)"
+		else:
+			return "Multi-timbral"
+
+
 	def is_service_active(self, service):
 		cmd="systemctl is-active %s" % service
 		try:
@@ -404,7 +436,7 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def bool2onoff(b):
 		if (isinstance(b, str) and util.strtobool(b)) or (isinstance(b, bool) and b):
-			return "on"
+			return "On"
 		else:
-			return "off"
+			return "Off"
 

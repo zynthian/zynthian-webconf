@@ -398,34 +398,45 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': ''
 			}],
 			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
-				'type': 'boolean',
-				'title': 'Stage Mode (Active Layer receives all external events)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
+				'type': 'select',
+				'title': 'Receive Mode',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0'),
+				'options': ["1", "0"],
+				'option_labels': {
+					"1": "Stage (Omni On)",
+					"0": "Multi-timbral"
+				},
+				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', {
 				'type': 'boolean',
 				'title': 'ZS3 (Capture Program Change events for SubSnapShots)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1'),
+				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', {
 				'type': 'boolean',
 				'title': 'Preload Presets with Note-On events',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_FILTER_OUTPUT', {
 				'type': 'boolean',
 				'title': 'Route MIDI to Output Ports',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_OUTPUT','1')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_OUTPUT','1'),
+				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_SYS_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable System Messages (Transport)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_CC_AUTOMODE', {
 				'type': 'boolean',
 				'title': 'Autodetect CC relative mode',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_CC_AUTOMODE','1')
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_CC_AUTOMODE','1'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_RTPMIDI_ENABLED', {
 				'type': 'boolean',
@@ -449,7 +460,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'boolean',
 				'title': 'Enable AubioNotes (Audio2MIDI)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0'),
-				'advanced': False
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_FINE_TUNING', {
 				'type': 'text',
@@ -462,7 +473,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'Master MIDI channel',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','15'),
 				'options': list(self.midi_channels.keys()),
-				'option_labels': self.midi_channels
+				'option_labels': self.midi_channels,
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_MASTER_PROGRAM_CHANGE_TYPE', {
 				'type': 'select',
