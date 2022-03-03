@@ -55,9 +55,9 @@ class DashboardHandler(ZynthianBasicHandler):
 		sd_info = self.get_sd_info()
 
 		# get GPIO expander info
-		res = self.get_i2c_chips()
-		if len(res)>0:
-			i2c_info = ", ".join(map(str, res))
+		i2c_chips = self.get_i2c_chips()
+		if len(i2c_chips)>0:
+			i2c_info = ", ".join(map(str, i2c_chips))
 		else:
 			i2c_info = "Not detected"
 
@@ -247,8 +247,7 @@ class DashboardHandler(ZynthianBasicHandler):
 			}]
 		])
 
-		if os.environ.get('ZYNTHIAN_WIRING_LAYOUT').startswith("Z2"):
-			del(config['HARDWARE']['info']['I2C_CHIPS'])
+		if len(i2c_chips)<=2:
 			config['HARDWARE']['info']['CUSTOM_WIRING_PROFILE'] = {
 				'title': "Profile",
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE'),
