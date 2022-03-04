@@ -110,13 +110,14 @@ class DashboardHandler(ZynthianBasicHandler):
 						'title': 'SD Card',
 						'value': "{} ({}/{})".format(sd_info['usage'],sd_info['used'],sd_info['total'])
 					}],
-					['OVERCLOCKING', {
-						'title': 'Overclock',
-						'value': os.environ.get('ZYNTHIAN_OVERCLOCKING','Disabled')
-					}],
 					['TEMPERATURE', {
 						'title': 'Temperature',
 						'value': self.get_temperature()
+					}],
+					['OVERCLOCKING', {
+						'title': 'Overclock',
+						'value': os.environ.get('ZYNTHIAN_OVERCLOCKING','Disabled'),
+						'url': "/hw-options"
 					}]
 				])
 			}],
