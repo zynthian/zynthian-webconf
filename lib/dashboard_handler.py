@@ -251,7 +251,7 @@ class DashboardHandler(ZynthianBasicHandler):
 		if len(i2c_chips)<=2:
 			config['HARDWARE']['info']['CUSTOM_WIRING_PROFILE'] = {
 				'title': "Profile",
-				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE'),
+				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE',''),
 				'url': "/hw-wiring"
 			}
 	
@@ -387,7 +387,11 @@ class DashboardHandler(ZynthianBasicHandler):
 			pattern = "-name \"{}\"".format(pattern)
 		else:
 			pattern = ""
-		n=check_output("find {} -type f -follow {} | wc -l".format(path, pattern), shell=True).decode()
+		try:
+			n=int(check_output("find {} -type f -follow {} | wc -l".format(path, pattern), shell=True, stderr=DEVNULL).decode())
+		except Exception as e:
+			logging.error("Can't get num of files for '{}' => {}".format(path,e))
+			n=0
 		return n
 
 
