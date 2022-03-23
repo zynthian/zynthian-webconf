@@ -104,6 +104,32 @@ class UiConfigHandler(ZynthianConfigHandler):
 					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
 				}
 			}],
+			['ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS', {
+				'type': 'select',
+				'title': 'Visible mixer strips',
+				'value':  os.environ.get('ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS'),
+				'options': ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16'],
+				'option_labels': {
+					'0': 'Automatic',
+					'1': '1',
+					'2': '2',
+					'3': '3',
+					'4': '4',
+					'5': '5',
+					'6': '6',
+					'7': '7',
+					'8': '8',
+					'9': '9',
+					'10': '10',
+					'11': '11',
+					'12': '12',
+					'13': '13',
+					'14': '14',
+					'15': '15',
+					'16': '16',
+				},
+				'advanced': True
+			}],
 			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
 				'type': 'boolean',
 				'title': 'Restore last state on startup',
