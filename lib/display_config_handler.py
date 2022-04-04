@@ -71,6 +71,12 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '320',
 			'FRAMEBUFFER': '/dev/fb1'
 		}],
+		['Ili9486 3.5 (v1)', {
+			'DISPLAY_CONFIG': 'dtoverlay=tft35a:rotate=270',
+			'DISPLAY_WIDTH': '480',
+			'DISPLAY_HEIGHT': '320',
+			'FRAMEBUFFER': '/dev/fb1'
+        }],
 		['PiTFT 2.8 Resistive', {
 			'DISPLAY_CONFIG': 'dtoverlay=pitft28-resistive,rotate=90,speed=32000000,fps=20',
 			'DISPLAY_WIDTH': '320',
