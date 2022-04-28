@@ -179,4 +179,4 @@ class PianoteqHandler(ZynthianBasicHandler):
 		for vn in config:
 			sconfig[vn]=config[vn][0]
 
-		zynconf.save_config(sconfig, update_sys=True)
+		zynconf.save_config(sconfig, updsys=True)
