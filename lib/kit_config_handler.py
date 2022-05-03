@@ -41,6 +41,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
+		'Z2_V3',
 		'Z2_V2',
 		'Z2_V1',
 		'V4',
@@ -59,7 +60,7 @@ class KitConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_KIT_VERSION', {
 				'type': 'select',
 				'title': 'Kit',
-				'value': os.environ.get('ZYNTHIAN_KIT_VERSION', 'V2+'),
+				'value': os.environ.get('ZYNTHIAN_KIT_VERSION', 'V4'),
 				'options': self.kit_options
 			}]
 		])
@@ -83,17 +84,23 @@ class KitConfigHandler(ZynthianConfigHandler):
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version!="Custom":
-			if kit_version in ("Z2_V2"):
+			if kit_version in ("Z2_V3"):
+				soundcard_name = "ZynADAC"
+				display_name = "Z2 Display"
+				wiring_layout = "Z2_V3"
+				wiring_layout_custom_profile = "z2_v2"
+				ui_font_size = "16"
+			elif kit_version in ("Z2_V2"):
 				soundcard_name = "ZynADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V2"
-				wiring_layout_custom_profile = "z2_v1"
+				wiring_layout_custom_profile = "z2_v2"
 				ui_font_size = "16"
 			elif kit_version=="Z2_V1":
 				soundcard_name = "ZynADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V1"
-				wiring_layout_custom_profile = "z2_v1"
+				wiring_layout_custom_profile = "z2_v2"
 				ui_font_size = "16"
 			elif kit_version in ("V4", "V3-PRO"):
 				soundcard_name = "ZynADAC"
