@@ -54,7 +54,7 @@ class HWOptionsConfigHandler(ZynthianConfigHandler):
 		config['ZYNTHIAN_OVERCLOCKING'] = {
 			'type': 'select',
 			'title': "Overclocking",
-			'value': os.environ.get('ZYNTHIAN_OVERCLOCKING','Disabled'),
+			'value': os.environ.get('ZYNTHIAN_OVERCLOCKING','None'),
 			'options': ['None', 'Medium', 'Maximum'],
 			'advanced': True
 		}

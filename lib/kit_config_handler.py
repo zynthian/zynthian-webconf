@@ -85,53 +85,61 @@ class KitConfigHandler(ZynthianConfigHandler):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version!="Custom":
 			if kit_version in ("Z2_V3"):
-				soundcard_name = "ZynADAC"
+				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V3"
 				wiring_layout_custom_profile = "z2_v2"
 				ui_font_size = "16"
+				overclocking = "Maximum"
 			elif kit_version in ("Z2_V2"):
-				soundcard_name = "ZynADAC"
+				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V2"
 				wiring_layout_custom_profile = "z2_v2"
 				ui_font_size = "16"
+				overclocking = "Maximum"
 			elif kit_version=="Z2_V1":
-				soundcard_name = "ZynADAC"
+				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V1"
 				wiring_layout_custom_profile = "z2_v2"
 				ui_font_size = "16"
+				overclocking = "Medium"
 			elif kit_version in ("V4", "V3-PRO"):
 				soundcard_name = "ZynADAC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
 				wiring_layout_custom_profile = "v4_studio"
 				ui_font_size = "14"
+				overclocking = "Medium"
 			elif kit_version=="V3":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
 				wiring_layout_custom_profile = "v4_studio"
 				ui_font_size = "14"
+				overclocking = "None"
 			elif kit_version=="V2+":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "PiScreen 3.5 (v2)"
 				wiring_layout = "MCP23017_EXTRA"
 				wiring_layout_custom_profile = "v4_studio"
 				ui_font_size = "14"
+				overclocking = "None"
 			elif kit_version=="V2":
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiScreen 3.5 (v2)"
 				wiring_layout = "MCP23017_EXTRA"
 				wiring_layout_custom_profile = "v4_studio"
 				ui_font_size = "14"
+				overclocking = "None"
 			elif kit_version=="V1":
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiTFT 2.8 Resistive"
 				wiring_layout = "PROTOTYPE-4"
 				wiring_layout_custom_profile = ""
 				ui_font_size = "11"
+				overclocking = "None"
 
 			pconfig['SOUNDCARD_NAME']=[soundcard_name]
 			for k,v in soundcard_presets[soundcard_name].items():
@@ -150,6 +158,7 @@ class KitConfigHandler(ZynthianConfigHandler):
 				pconfig[k]=[v]
 
 			pconfig['ZYNTHIAN_UI_FONT_SIZE']=[ui_font_size]
+			pconfig['ZYNTHIAN_OVERCLOCKING']=[overclocking]
 
 		errors = self.update_config(pconfig)
 		DisplayConfigHandler.delete_fb_splash()

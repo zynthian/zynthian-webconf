@@ -37,43 +37,48 @@ from zyngine.zynthian_engine_mixer import *
 #------------------------------------------------------------------------------
 
 soundcard_presets = OrderedDict([
-	['ZynADAC', {
-		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
+	['Z2 ADAC', {
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
-		'SOUNDCARD_MIXER': 'Digital Left,ADC Left,Digital Right,ADC Right,ADC Left Input,ADC Right Input'
+		'SOUNDCARD_MIXER': 'Digital Left,Digital Right,PGA Gain Left,PGA Gain Right,ADC Left Input,ADC Right Input,ADC Left,ADC Right'
+	}],
+	['ZynADAC', {
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Digital Left,PGA Gain Left,Digital Right,PGA Gain Right,ADC Left Input,ADC Left,ADC Right Input,ADC Right'
 	}],
 	['HifiBerry DAC+ ADC PRO', {
-		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro',
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,ADC Left,Digital Right,ADC Right,ADC Left Input,ADC Right Input'
 	}],
 	['HifiBerry DAC+ ADC', {
-		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc',
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry DAC+', {
-		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus',
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry DAC+ light', {
-		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac',
+		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry DAC+ RTC', {
-		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\ndtoverlay=i2c-rtc,ds130',
+		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-dac\ndtoverlay=i2c-rtc,ds130\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	}],
 	['HifiBerry Digi', {
-		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi',
+		'SOUNDCARD_CONFIG':'dtoverlay=hifiberry-digi\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -P -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': ''
 	}],
 	['HifiBerry Amp', {
-		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-amp',
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-amp\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': ''
 	}],
