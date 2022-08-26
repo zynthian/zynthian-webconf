@@ -153,11 +153,10 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 		}
 	}
 });
-i
+
 if (jsonTree.length > 0){
 	$('#no-captures-panel').hide();
 	$('#captures-tree').treeview('selectNode', {% raw config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] %});
 }
-
 
 </script>
