@@ -145,10 +145,10 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Enable Onscreen Buttons',
 				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
 			}],
-			['ZYNTHIAN_UI_TOUCH_WIDGETS', {
+			['ZYNTHIAN_UI_MULTICHANNEL_RECORDER', {
 				'type': 'boolean',
-				'title': 'Enable Touch Widgets',
-				'value': os.environ.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0'),
+				'title': 'Enable Multichannel Recording',
+				'value': os.environ.get('ZYNTHIAN_UI_MULTICHANNEL_RECORDER', '0'),
 			}],
 			['ZYNTHIAN_UI_ENABLE_CURSOR', {
 				'type': 'boolean',
