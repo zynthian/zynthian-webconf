@@ -32,7 +32,7 @@ from typing import Optional, Awaitable
 import tornado.web
 from lib.audio_config_handler import AudioConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
-from zyngine.zynthian_engine_mixer import *
+from zyngine.zynthian_engine_alsa_mixer import *
 
 
 #------------------------------------------------------------------------------
