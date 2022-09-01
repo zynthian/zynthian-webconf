@@ -30,7 +30,7 @@ import tornado.web
 from collections import OrderedDict
 from subprocess import check_output, call
 from lib.zynthian_config_handler import ZynthianConfigHandler
-from zyngine.zynthian_engine_mixer import *
+from zyngine.zynthian_engine_alsa_mixer import *
 
 #------------------------------------------------------------------------------
 # Soundcard Presets
@@ -200,8 +200,8 @@ soundcard_presets = OrderedDict([
 ])
 
 try:
-	zynthian_engine_mixer.init_zynapi_instance()
-	rbpi_device_name = zynthian_engine_mixer.zynapi_get_rbpi_device_name()
+	zynthian_engine_alsa_mixer.init_zynapi_instance()
+	rbpi_device_name = zynthian_engine_alsa_mixer.zynapi_get_rbpi_device_name()
 	logging.info("RBPi Device Name: '{}'".format(rbpi_device_name))
 except Exception as err:
 	rbpi_device_name = None
@@ -349,8 +349,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
 	def get_device_name(self):
 		try:
-			zynthian_engine_mixer.init_zynapi_instance()
-			device_name = zynthian_engine_mixer.zynapi_get_device_name()
+			zynthian_engine_alsa_mixer.init_zynapi_instance()
+			device_name = zynthian_engine_alsa_mixer.zynapi_get_device_name()
 		except Exception as err:
 			device_name = 0
 			logging.error(err)
@@ -361,8 +361,8 @@ class AudioConfigHandler(ZynthianConfigHandler):
 	@classmethod
 	def get_controllers(cls):
 		try:
-			zynthian_engine_mixer.init_zynapi_instance()
-			AudioConfigHandler.zctrls = zynthian_engine_mixer.zynapi_get_controllers("*")
+			zynthian_engine_alsa_mixer.init_zynapi_instance()
+			AudioConfigHandler.zctrls = zynthian_engine_alsa_mixer.zynapi_get_controllers("*")
 			return AudioConfigHandler.zctrls
 		except Exception as err:
 			logging.error(err)
