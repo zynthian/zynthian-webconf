@@ -39,6 +39,7 @@ from lib.dashboard_handler import DashboardHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.display_config_handler import DisplayConfigHandler
 from lib.reboot_handler import RebootHandler
+from lib.reboot_handler import RebootConfirmedHandler
 from lib.poweroff_handler import PoweroffHandler
 from lib.security_config_handler import SecurityConfigHandler
 from lib.ui_config_handler import UiConfigHandler
@@ -167,6 +168,7 @@ def make_app():
 		(r"/sys-backup$", SystemBackupHandler),
 		(r"/sys-security$", SecurityConfigHandler),
 		(r"/sys-reboot$", RebootHandler),
+		(r"/sys-reboot/confirmed$", RebootConfirmedHandler),
 		(r"/sys-poweroff$", PoweroffHandler),
 		(r"/wifi/list$", WifiListHandler),
 		(r'/upload$', UploadHandler),
