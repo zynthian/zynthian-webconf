@@ -41,9 +41,8 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
-		'Z2_V3',
-		'Z2_V2',
-		'Z2_V1',
+		'Z2',
+		'Z2 PROTOTYPE',
 		'V4',
 		'V3-PRO',
 		'V3',
@@ -84,27 +83,20 @@ class KitConfigHandler(ZynthianConfigHandler):
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version!="Custom":
-			if kit_version in ("Z2_V3"):
+			if kit_version == "Z2":
 				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V3"
 				wiring_layout_custom_profile = "z2"
 				ui_font_size = "16"
 				overclocking = "Maximum"
-			elif kit_version in ("Z2_V2"):
+			if kit_version == "Z2 PROTOTYPE":
 				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V2"
 				wiring_layout_custom_profile = "z2"
 				ui_font_size = "16"
 				overclocking = "Maximum"
-			elif kit_version=="Z2_V1":
-				soundcard_name = "Z2 ADAC"
-				display_name = "Z2 Display"
-				wiring_layout = "Z2_V1"
-				wiring_layout_custom_profile = "z2"
-				ui_font_size = "16"
-				overclocking = "Medium"
 			elif kit_version in ("V4", "V3-PRO"):
 				soundcard_name = "ZynADAC"
 				display_name = "ZynScreen 3.5 (v1)"
