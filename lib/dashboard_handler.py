@@ -273,7 +273,8 @@ class DashboardHandler(ZynthianBasicHandler):
 		super().get("dashboard_block.html", "Dashboard", config, None)
 
 
-	def get_git_info(self, path, check_updates=False):
+	@staticmethod
+	def get_git_info(path, check_updates=False):
 		branch = check_output("cd %s; git branch | grep '*'" % path, shell=True).decode()[2:-1]
 		gitid = check_output("cd %s; git rev-parse HEAD" % path, shell=True).decode()[:-1]
 		if check_updates:
@@ -283,18 +284,21 @@ class DashboardHandler(ZynthianBasicHandler):
 		return { "branch": branch, "gitid": gitid, "update": update }
 
 
-	def get_host_name(self):
+	@staticmethod
+	def get_host_name():
 		with open("/etc/hostname") as f:
 			hostname=f.readline()
 			return hostname
 		return ""
 
 
-	def get_os_info(self):
+	@staticmethod
+	def get_os_info():
 		return check_output("lsb_release -ds", shell=True).decode()
 
 
-	def get_build_info(self):
+	@staticmethod
+	def get_build_info():
 		info = {}
 		try:
 			zynthian_dir = os.environ.get('ZYNTHIAN_DIR',"/zynthian")
@@ -315,13 +319,15 @@ class DashboardHandler(ZynthianBasicHandler):
 		return info
 
 
-	def get_ip(self):
+	@staticmethod
+	def get_ip():
 		#out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
 		out=check_output("hostname -I", shell=True).decode()
 		return out
 
 
-	def get_i2c_chips(self):
+	@staticmethod
+	def get_i2c_chips():
 		out=check_output("gpio i2cd", shell=True).decode().split("\n")
 		if len(out)>3:
 			res = []
@@ -344,20 +350,23 @@ class DashboardHandler(ZynthianBasicHandler):
 		return res
 
 
-	def get_ram_info(self):
+	@staticmethod
+	def get_ram_info():
 		out=check_output("free -m | grep 'Mem'", shell=True).decode()
 		parts=re.split('\s+', out)
 		return { 'total': parts[1]+"M", 'used': parts[2]+"M", 'free': parts[3]+"M", 'usage': "{}%".format(int(100*float(parts[2])/float(parts[1]))) }
 
 
-	def get_temperature(self):
+	@staticmethod
+	def get_temperature():
 		try:
 			return check_output("/opt/vc/bin/vcgencmd measure_temp", shell=True).decode()[5:-3] + "ºC"
 		except:
 			return "???"
 
 
-	def get_volume_info(self, volume='/dev/root'):
+	@staticmethod
+	def get_volume_info(volume='/dev/root'):
 		try:
 			out=check_output("df -h | grep '{}'".format(volume), shell=True).decode()
 			parts=re.split('\s+', out)
@@ -366,15 +375,17 @@ class DashboardHandler(ZynthianBasicHandler):
 			return { 'total': 'NA', 'used': 'NA', 'free': 'NA', 'usage': 'NA' }
 
 
-	def get_sd_info(self):
-		return self.get_volume_info('/dev/root')
+	@staticmethod
+	def get_sd_info():
+		return DashboardHandler.get_volume_info('/dev/root')
 
 
-	def get_media_info(self, mpath="/media/usb0"):
+	@staticmethod
+	def get_media_info(mpath="/media/usb0"):
 		try:
 			out=check_output("mountpoint '{}'".format(mpath), shell=True).decode()
 			if out.startswith("{} is a mountpoint".format(mpath)):
-				return self.get_volume_info(mpath)
+				return DashboardHandler.get_volume_info(mpath)
 			else:
 				return None
 		except Exception as e:
@@ -382,7 +393,8 @@ class DashboardHandler(ZynthianBasicHandler):
 			pass
 
 
-	def get_num_of_files(self, path, pattern=None):
+	@staticmethod
+	def get_num_of_files(path, pattern=None):
 		if pattern:
 			pattern = "-name \"{}\"".format(pattern)
 		else:
@@ -395,7 +407,8 @@ class DashboardHandler(ZynthianBasicHandler):
 		return n
 
 
-	def get_num_of_presets(self, path):
+	@staticmethod
+	def get_num_of_presets(path):
 		# LV2 presets
 		n1 = int(check_output("find {}/lv2 -type f -prune -name manifest.ttl | wc -l".format(path), shell=True).decode())
 		logging.debug("LV2 presets => {}".format(n1))
@@ -411,7 +424,8 @@ class DashboardHandler(ZynthianBasicHandler):
 		return n1 + n2 + n3 + n4
 
 
-	def get_midi_master_chan(self):
+	@staticmethod
+	def get_midi_master_chan():
 		mmc = os.environ.get('ZYNTHIAN_MIDI_MASTER_CHANNEL',"16")
 		if int(mmc)==0:
 			return "off"
@@ -419,14 +433,16 @@ class DashboardHandler(ZynthianBasicHandler):
 			return mmc
 
 
-	def get_midi_receive_mode(self):
+	@staticmethod
+	def get_midi_receive_mode():
 		if os.environ.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0'):
 			return "Stage (Omni On)"
 		else:
 			return "Multi-timbral"
 
 
-	def is_service_active(self, service):
+	@staticmethod
+	def is_service_active(service):
 		cmd="systemctl is-active %s" % service
 		try:
 			result=check_output(cmd, shell=True).decode('utf-8','ignore')
