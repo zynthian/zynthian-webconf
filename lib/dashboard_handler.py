@@ -54,7 +54,7 @@ class DashboardHandler(ZynthianBasicHandler):
 		ram_info = self.get_ram_info()
 		sd_info = self.get_sd_info()
 
-		# get GPIO expander info
+		# get I2C chips info
 		i2c_chips = self.get_i2c_chips()
 		if len(i2c_chips)>0:
 			i2c_info = ", ".join(map(str, i2c_chips))
