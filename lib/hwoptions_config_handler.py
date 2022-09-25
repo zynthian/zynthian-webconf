@@ -56,7 +56,7 @@ class HWOptionsConfigHandler(ZynthianConfigHandler):
 			'title': "Overclocking",
 			'value': os.environ.get('ZYNTHIAN_OVERCLOCKING','None'),
 			'options': ['None', 'Medium', 'Maximum'],
-			'advanced': True
+			'advanced': False
 		}
 		config['ZYNTHIAN_CUSTOM_CONFIG'] = {
 			'type': 'textarea',
