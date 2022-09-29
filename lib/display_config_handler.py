@@ -45,7 +45,6 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode:1=87\n'+
 				'hdmi_cvt:1 1024 600 60 6 0 0 0\n'+
 				'#config_hdmi_boost:1=4\n'+
-				'#display_rotate=2\n'+
 				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=goodix_z2',
 			'DISPLAY_WIDTH': '1024',
@@ -184,10 +183,11 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_group=2\n'+
 				'hdmi_mode=87\n'+
 				'hdmi_timings=480 0 40 10 80 800 0 13 3 32 0 0 0 60 0 32000000 3\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=983,xmax=63241,ymin=3015,ymax=62998\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
-			'DISPLAY_KERNEL_OPTIONS': '',
+			'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,rotate=270',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['WaveShare 4.3 HDMI+GPIO', {
@@ -198,10 +198,11 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode=87\n'+
 				'hdmi_drive=1\n'+
 				'hdmi_timings=480 0 1 41 2 272 0 2 10 2 0 0 0 60 0 9009000 3\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
-			'DISPLAY_KERNEL_OPTIONS': '',
+			'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,rotate=180',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['WaveShare 5 HDMI+GPIO', {
@@ -212,6 +213,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
 				'hdmi_cvt 800 480 60 6 0 0 0\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
@@ -225,7 +227,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
-				'hdmi_cvt 800 480 60 6 0 0 0',
+				'hdmi_cvt 800 480 60 6 0 0 0'+
+				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'DISPLAY_KERNEL_OPTIONS': '',
@@ -239,6 +242,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
 				'hdmi_cvt 1024 600 60 6 0 0 0\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '1024',
 			'DISPLAY_HEIGHT': '600',
@@ -253,6 +257,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
 				'hdmi_cvt 800 480 60 6 0 0 0\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
@@ -266,7 +271,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
-				'hdmi_cvt 1024 600 60 6 0 0 0',
+				'hdmi_cvt 1024 600 60 6 0 0 0'+
+				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '1024',
 			'DISPLAY_HEIGHT': '600',
 			'DISPLAY_KERNEL_OPTIONS': '',
@@ -279,7 +285,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_group=2\n'+
 				'hdmi_mode=1\n'+
 				'hdmi_mode=87\n'+
-				'hdmi_cvt 800 480 60 6 0 0 0',
+				'hdmi_cvt 800 480 60 6 0 0 0'+
+				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'DISPLAY_KERNEL_OPTIONS': '',
@@ -312,6 +319,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode=87\n'+
 				'hdmi_drive=1\n'+
 				'hdmi_cvt 800 480 60 6 0 0 0\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
@@ -321,21 +329,25 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		['Pi 7 Touchscreen Display 800x480', {
 			'DISPLAY_CONFIG':
 				'lcd_rotate=2\n'+
+				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=rpi-ft5406\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
-			'DISPLAY_KERNEL_OPTIONS': '',
+			'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,rotate=180',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['MIPI DSI 800x480', {
-			'DISPLAY_CONFIG': '',
+			'DISPLAY_CONFIG': 
+				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'DISPLAY_KERNEL_OPTIONS': '',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['Generic HDMI Display', {
-			'DISPLAY_CONFIG': 'disable_overscan=1\n',
+			'DISPLAY_CONFIG': 
+				'disable_overscan=1\n'+
+				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
 			'DISPLAY_KERNEL_OPTIONS': '',
