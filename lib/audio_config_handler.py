@@ -179,12 +179,12 @@ soundcard_presets = OrderedDict([
 	}],
 	['RBPi Headphones', {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
-		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -p 512 -n 3 -X raw',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -o 2 -p 512 -n 3 -X raw',
 		'SOUNDCARD_MIXER': 'Headphone Left,Headphone Right'
 	}],
 	['RBPi HDMI', {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on',
-		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -p 512 -n 2 -X raw',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -o 2 -p 512 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'HDMI Left,HDMI Right'
 	}],
 	['Dummy device', {
