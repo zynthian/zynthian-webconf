@@ -130,6 +130,29 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		return zynconf.is_service_active(service)
 
 
+	def power_off(self):
+		try:
+			if self.is_service_active("zynthian"):
+				liblo.send(zynthian_ui_osc_addr, "/CUIA/POWER_OFF")
+			else:
+				system("killall -SIGQUIT zynthian_gui.py; sleep 4; poweroff")
+		except Exception as e:
+			logging.error("Power Off: {}".format(e))
+
+
+	def reboot(self):
+		try:
+			if self.is_service_active("zynthian"):
+				liblo.send(zynthian_ui_osc_addr, "/CUIA/REBOOT")
+			else:
+				system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
+			self.reboot_ui_flag = False
+			if os.path.isfile(self.reboot_ui_flag_fpath):
+				os.remove(self.reboot_ui_flag_fpath)
+		except Exception as e:
+			logging.error("Reboot: {}".format(e))
+
+
 	def restart_ui(self):
 		try:
 			check_output("systemctl restart zynthian", shell=True)

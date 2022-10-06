@@ -45,8 +45,6 @@ class PoweroffHandler(ZynthianBasicHandler):
 		if self.genjson:
 			self.write("POWEROFF")
 		else:
+			self.reboot_flag = False
 			self.render("config.html", body="poweroff_block.html", config=None, title="Power Off", errors=None)
-		try:
-			system("killall -SIGQUIT zynthian_gui.py; sleep 4; poweroff")
-		except Exception as e:
-			logging.error(e)
+		self.power_off()

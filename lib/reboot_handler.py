@@ -44,11 +44,7 @@ class RebootHandler(ZynthianBasicHandler):
 	def post(self):
 		self.reboot_flag = False
 		super().get("reboot_block.html", "Reboot", None, None)
-
-		try:
-			system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
-		except Exception as e:
-			logging.error(e)
+		self.reboot()
 
 
 class RebootConfirmedHandler(ZynthianBasicHandler):
@@ -57,9 +53,5 @@ class RebootConfirmedHandler(ZynthianBasicHandler):
 	def get(self):
 		self.reboot_flag = False
 		super().get("reboot_block.html", "Reboot", None, None)
-
-		try:
-			system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
-		except Exception as e:
-			logging.error(e)
+		self.reboot()
 
