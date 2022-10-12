@@ -38,8 +38,11 @@ from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, Zynt
 #------------------------------------------------------------------------------
 
 def get_backup_items(filename):
-	with open(filename) as f:
-		return f.read().splitlines()
+	try:
+		with open(filename) as f:
+			return f.read().splitlines()
+	except:
+		return []
 
 #------------------------------------------------------------------------------
 # Snapshot Config Handler
