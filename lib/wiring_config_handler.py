@@ -372,10 +372,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			n_extra_switches = 32
 		else:
 			encoders_config_flag = True
-			if self.current_custom_profile:
-				ui_action_select = False
-			else:
-				ui_action_select = True
+			ui_action_select = True
 			try:
 				# Calculate Num of Custom Switches
 				n_extra_switches = min(4,max(0, len(wiring_switches.split(",")) - 4))
