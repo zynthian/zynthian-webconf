@@ -221,25 +221,27 @@ table.values > tbody > tr > td {
 
 <script type="text/javascript">
 function printPatches(itemsString) {
-
 	items = JSON.parse(atob(itemsString));
-	printableHtml = `<table>`;
-	printableHtml += `<thead><tr><th>MIDI channel#Engine</th><th rowspan="2">Bank</th><th rowspan="2">Preset</th></>tr>`;
-	printableHtml += `<tr><td>&nbsp;&nbsp;&nbsp;Program Change</td></tr><thead><tbody>`;
+
+	printableHtml = `<h1>ZS3 program list: ` + $("#SEL_BANK")[0].value + `/` + $("#SEL_NAME")[0].value + `</h1>`;
+	printableHtml += `<table>`;
+	printableHtml += `<thead><tr><th>Channel#Engine</th><th>PC</th><th>Bank</th><th>Preset</th></>tr><thead><tbody>`;
 
 	lastChannel = 0
 	for (k in items){
+		if (items[k]['engine_nick'] == 'AI' || items[k]['engine_nick'] == 'MX') continue;
+
 		printableHtml += `<tr>`;
 		printableHtml += `<td><b>`;
 
 		if (lastChannel>0 && lastChannel==items[k]['channel']){
-			printableHtml += "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;->";
+			printableHtml += "&nbsp;&nbsp;&nbsp;->&nbsp;";
 		} else if (items[k]['channel'] > 0){
 			printableHtml += items[k]['channel'] + '#';
-
 		}
 		printableHtml += items[k]['engine_nick'];
 		printableHtml += `</b></td>`;
+		printableHtml += '<td><b>-</b></td>>';
 		printableHtml += '<td><b>';
 		if (items[k]['bank_name']){
 			printableHtml += items[k]['bank_name'];
@@ -252,30 +254,25 @@ function printPatches(itemsString) {
 		printableHtml += `</b></td>`;
 		printableHtml += `</tr>`;
 
+		// Add legacy ZS3 info (per-layer)
 		if ('zs3_list' in items[k]){
 			zs3_list = items[k]['zs3_list'];
 			for (j in zs3_list){
 				if (zs3_list[j]){
-					printableHtml += `<tr>`;
-					printableHtml += `<td>&nbsp;&nbsp;&nbsp;PC`;
-					printableHtml += j;
-					printableHtml += `</td>`;
-					printableHtml += `<td>`;
-					printableHtml += zs3_list[j]['bank_name'];
-					printableHtml += `</td>`;
-					printableHtml += `<td>`;
-					printableHtml += zs3_list[j]['preset_name'];
-					printableHtml += `</td>`;
+					printableHtml += '<tr>';
+					printableHtml += '<td></td>';
+					printableHtml += '<td>' + j + '</td>';
+					printableHtml += '<td>' + zs3_list[j]['bank_name'] + '</td>';
+					printableHtml += '<td>' + zs3_list[j]['preset_name'] + '</td>';
 					printableHtml += `</tr>`;
 				}
 			}
-
 		}
 		lastChannel = items[k]['channel'];
-
 	}
 	printableHtml += `</tbody></table>`;
-	$('#print_area')[0].insertAdjacentHTML('beforeend', printableHtml);
+
+	$('#print_area')[0].innerHTML = printableHtml;
 	window.print();
 }
 $(document).ready(function () {
@@ -385,8 +382,6 @@ function createTree(data, selectedNodeId){
 			$("#SEL_PROG_NUM")[0].value = data.prog_num;
 			$("#SEL_PROG_NUM")[0].disabled = data.nodes;
 
-			$('#print_area')[0].innerHTML = `<h1>Presetlist of ` + $("#SEL_BANK")[0].value + `/` + $("#SEL_NAME")[0].value + `</h1>`;
-
 			if (data.prog_details){
 				layoutsData = getLayoutData(data.prog_details);
 				$("#LAYOUTS_TABLE").bootstrapTable('load', layoutsData);
@@ -457,17 +452,32 @@ function renderControllers(ctrl) {
 }
 
 function getLayoutData(snapshotDetails){
+	learned_zs3 = snapshotDetails.learned_zs3;
+
 	result = [];
 	for (layerKey in snapshotDetails.layers){
 		layer = snapshotDetails.layers[layerKey];
+		if (layer.engine_nick == 'AI') continue;
+
+		if (learned_zs3) {
+			zs3_list = new Array(128);
+			for (zk in learned_zs3) {
+				var prognum = learned_zs3[zk]['midi_learn_prognum'];
+				zs3_list[prognum] = learned_zs3[zk]['layers'][layerKey];
+			}
+		} else {
+			zs3_list = layer.zs3_list;
+		}
+
 		result.push({
-				'key': layerKey,
-				'channel': layer.midi_chan != null? layer.midi_chan + 1 : 0,
-				'engine_nick': layer.engine_nick,
-				'bank_name': layer.bank_name,
-				'preset_name': layer.preset_name,
-				'controllers_dict': layer.controllers_dict,
-				'zs3_list': layer.zs3_list});
+			'key': layerKey,
+			'channel': layer.midi_chan != null? layer.midi_chan + 1 : 0,
+			'engine_nick': layer.engine_nick,
+			'bank_name': layer.bank_name,
+			'preset_name': layer.preset_name,
+			'controllers_dict': layer.controllers_dict,
+			'zs3_list': zs3_list
+		});
 	}
 	if (result.length > 0){
 		result.sort(compare_layer);
@@ -510,43 +520,11 @@ function getLayoutData(snapshotDetails){
 				].join('')
 			}
 		}
-		if (layer.zs3_list && layer.zs3_list.find(z => z !== null)) {
-			zs3_infos = "<table data-toggle='table' class='table table-condensed values'><thead><tr><th></th>";
-			zs3_infos += "<th class='rotate'><div><span>Bank</span></div></th>";
-			zs3_infos += "<th class='rotate'><div><span>Preset</span></div></th>";
-			for (key in layer.zs3_list.find(z => z !== null).controllers_dict) {
-			  zs3_infos += "<th class='rotate'><div><span>" + key + "</span></div></th>";
-			}
-			zs3_infos += "</tr></thead><tbody>";
-			for (zs3Idx in layer.zs3_list) {
-				zs3 = layer.zs3_list[zs3Idx];
-				if (zs3){
-                    zs3_infos += "<tr><td>#" + zs3Idx + "</td>";
-                    zs3_infos += "<td>" + zs3.bank_name + "</td>";
-                    zs3_infos += "<td>" + zs3.preset_name + "</td>";
-					for (key in zs3.controllers_dict) {
-                                          const v = zs3.controllers_dict[key].value;
-                                          if (v != layer.controllers_dict[key].value) {
-  					    zs3_infos += "<td>" + v.toFixed(1) + "</td>";
-                                          } else {
-                                            zs3_infos += "<td class='unchanged'>·</td>";
-                                          }
-					}
-					zs3_infos += "</tr>";
-				}
-			}
-            zs3_infos += "</tbody></table>";
-			if (zs3_infos){
-				layer_infos += ['<h3>ZS3 Controller Values</h3>',
-					'<div class="container">',
-                                        '<div><i>Empty values in this table are equal to the default snapshot values, and removed for clarity.</i></div>',
-					zs3_infos,
-					'</div>'
-				].join('')
-			}
-		}
 
-		if (layer_infos.length == 0){
+		zs3_infos = get_legacy_zs3_layer_info(layer)
+		if (zs3_infos) layer_infos += zs3_infos;
+
+		if (layer_infos.length == 0) {
 			layer_infos = "No data available";
 		}
 		result[idx].details = details;
@@ -554,6 +532,45 @@ function getLayoutData(snapshotDetails){
 		lastChannel = layer.channel;
 	}
 	return result;
+}
+
+
+function get_legacy_zs3_layer_info(layer) {
+	if (layer.zs3_list && layer.zs3_list.find(z => z !== null)) {
+		zs3_infos = "<table data-toggle='table' class='table table-condensed values'><thead><tr><th></th>";
+		zs3_infos += "<th class='rotate'><div><span>Bank</span></div></th>";
+		zs3_infos += "<th class='rotate'><div><span>Preset</span></div></th>";
+		for (key in layer.zs3_list.find(z => z !== null).controllers_dict) {
+			zs3_infos += "<th class='rotate'><div><span>" + key + "</span></div></th>";
+		}
+		zs3_infos += "</tr></thead><tbody>";
+
+		for (zs3Idx in layer.zs3_list) {
+			zs3 = layer.zs3_list[zs3Idx];
+			if (zs3) {
+				zs3_infos += "<tr><td>#" + zs3Idx + "</td>";
+				zs3_infos += "<td>" + zs3.bank_name + "</td>";
+				zs3_infos += "<td>" + zs3.preset_name + "</td>";
+				for (key in zs3.controllers_dict) {
+					const v = zs3.controllers_dict[key].value;
+					if (v != layer.controllers_dict[key].value) {
+						zs3_infos += "<td>" + v.toFixed(1) + "</td>";
+					} else {
+						zs3_infos += "<td class='unchanged'>·</td>";
+					}
+				}
+				zs3_infos += "</tr>";
+			}
+		}
+		zs3_infos += "</tbody></table>";
+		zs3_infos = ['<h3>ZS3 Controller Values</h3>',
+			'<div class="container">',
+			'<div><i>Empty values in this table are equal to the default snapshot values, and removed for clarity.</i></div>',
+			zs3_infos,
+			'</div>'
+		].join('')
+		return zs3_infos;
+	}
 }
 
 function compare_layer( a, b ) {
