@@ -477,7 +477,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_MIDI_MASTER_CHANNEL', {
 				'type': 'select',
 				'title': 'Master MIDI channel',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','15'),
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','0'),
 				'options': list(self.midi_channels.keys()),
 				'option_labels': self.midi_channels,
 				'advanced': True
@@ -562,6 +562,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_TOUCHOSC_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_TOUCHOSC_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_AUBIONOTES_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED','0')
+		self.request.arguments['ZYNTHIAN_MIDI_MASTER_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_MASTER_CHANNEL', '0')
 		self.request.arguments['ZYNTHIAN_MIDI_PORTS'] = self.request.arguments.get('ZYNTHIAN_MIDI_PORTS','0')
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
