@@ -329,11 +329,10 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		['Pi 7 Touchscreen Display 800x480', {
 			'DISPLAY_CONFIG':
 				'lcd_rotate=2\n'+
-				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=rpi-ft5406\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
-			'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,rotate=180',
+			'DISPLAY_KERNEL_OPTIONS': '',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['MIPI DSI 800x480', {
