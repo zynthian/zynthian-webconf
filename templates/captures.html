@@ -139,7 +139,7 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			var fullpath = data.fullpath.replace(new RegExp("&#39;","g"),"'")
 			$("#loading-div-background").css({ opacity: 1.0 });
 			$('#ZYNTHIAN_CAPTURES_NAME')[0].value=data.name.replace(new RegExp("&#39;","g"),"'");
-			$('#ZYNTHIAN_CAPTURES_RENAME')[0].value=$('#ZYNTHIAN_CAPTURES_NAME')[0].value.split(".")[0];
+			$('#ZYNTHIAN_CAPTURES_RENAME')[0].value=$('#ZYNTHIAN_CAPTURES_NAME')[0].value.substr(0, $('#ZYNTHIAN_CAPTURES_NAME')[0].value.lastIndexOf('.'));
 			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].src='?stream=' + encodeURIComponent(fullpath);
 			isOgg=(data.fext=="ogg");
 			isWav=(data.fext=="wav");
