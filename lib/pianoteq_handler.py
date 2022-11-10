@@ -26,18 +26,14 @@ import os
 import sys
 import logging
 import tornado.web
-import json
-import requests
-import subprocess
-import shlex
 import shutil
-import glob
 from subprocess import check_output
 from collections import OrderedDict
 from xml.etree import ElementTree as ET
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngine.zynthian_engine_pianoteq import *
+from zyngine.zynthian_engine_pianoteq6 import zynthian_engine_pianoteq6
 
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
@@ -56,10 +52,11 @@ class PianoteqHandler(ZynthianBasicHandler):
 	def get(self, errors=None):
 		#self.pianoteq_autoconfig()
 		config=OrderedDict([])
+		info = get_pianoteq_binary_info()
 		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = False
-		config['ZYNTHIAN_PIANOTEQ_TRIAL'] = PIANOTEQ_TRIAL
-		config['ZYNTHIAN_PIANOTEQ_VERSION'] = ".".join(str(v) for v in PIANOTEQ_VERSION)
-		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = PIANOTEQ_PRODUCT
+		config['ZYNTHIAN_PIANOTEQ_TRIAL'] = info['trial']
+		config['ZYNTHIAN_PIANOTEQ_VERSION'] = info['version_str']
+		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = info['product']
 		config['ZYNTHIAN_PIANOTEQ_LICENSE'] = self.get_license_key()
 
 		if errors:
@@ -85,7 +82,7 @@ class PianoteqHandler(ZynthianBasicHandler):
 
 	def do_install_pianoteq(self):
 		errors = None
-		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME');
+		filename = self.get_argument('ZYNTHIAN_PIANOTEQ_FILENAME')
 		if filename:
 			logging.info("Installing %s" % filename)
 
@@ -93,10 +90,10 @@ class PianoteqHandler(ZynthianBasicHandler):
 			filename_parts = os.path.splitext(filename)
 			# Pianoteq binaries
 			if filename_parts[1].lower() == '.7z':
-				errors = self.do_install_pianoteq_binary(filename);
+				errors = self.do_install_pianoteq_binary(filename)
 			# Pianoteq instruments
 			elif filename_parts[1].lower() == '.ptq':
-				errors = self.do_install_pianoteq_ptq(filename);
+				errors = self.do_install_pianoteq_ptq(filename)
 
 			# Configure Pianoteq
 			self.pianoteq_autoconfig()
@@ -123,11 +120,11 @@ class PianoteqHandler(ZynthianBasicHandler):
 
 
 	def do_activate_license(self):
-		license_serial = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENSE');
+		license_serial = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENSE')
 		logging.info("Configuring Pianoteq License Key: {}".format(license_serial))
 		
 		# Activate the License Key by calling Pianoteq binary
-		command = "{} --activate {}".format(PIANOTEQ_BINARY, license_serial)
+		command = "{} --prefs {} --activate {}".format(PIANOTEQ_BINARY, PIANOTEQ_CONFIG_FILE, license_serial)
 		result = ""
 		try:
 			result = check_output(command, shell=True).decode("utf-8")
@@ -143,7 +140,7 @@ class PianoteqHandler(ZynthianBasicHandler):
 
 
 	def do_update_presets_cache(self):
-		zynthian_engine_pianoteq(None, True)
+		zynthian_engine_pianoteq6(None, True)
 
 
 	def get_license_key(self):
@@ -164,14 +161,16 @@ class PianoteqHandler(ZynthianBasicHandler):
 		if info:
 			# Save envars
 			config = {
-				"PIANOTEQ_PRODUCT": [str(info['product'])],
-				"PIANOTEQ_VERSION": [str(info['version'])],
-				"PIANOTEQ_TRIAL": [str(info['trial'])]
+				"ZYNTHIAN_PIANOTEQ_PRODUCT": [info["product"]],
+				"ZYNTHIAN_PIANOTEQ_VERSION": [info["version_str"]],
+				"ZYNTHIAN_PIANOTEQ_TRIAL": ["1" if info["trial"] else "0"]
 			}
-			errors=self.update_config(config)
+			errors = self.update_config(config)
 
-		# Regenerate presets cache
-		zynthian_engine_pianoteq(None, True)
+			if not info['api']:
+				# Regenerate presets cache
+				self.do_update_presets_cache()
+		return errors
 
 
 	def update_config(self, config):
