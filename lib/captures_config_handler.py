@@ -102,19 +102,18 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		newNameExtension = ''
 
 		if self.get_argument('ZYNTHIAN_CAPTURES_RENAME'):
-			newName = re.split('[.](?![^][]*\])',self.get_argument('ZYNTHIAN_CAPTURES_RENAME'))[0]
+			newName = self.get_argument('ZYNTHIAN_CAPTURES_RENAME')
 		if self.get_argument('ZYNTHIAN_CAPTURES_NAME'):
-			newNameExtension = re.split('[.](?![^][]*\])',self.get_argument('ZYNTHIAN_CAPTURES_NAME'))[1]
+			newNameExtension = os.path.splitext(self.get_argument('ZYNTHIAN_CAPTURES_NAME'))[1]
 
-		newName = '{}.{}'.format(newName, newNameExtension)
-
-		if newName:
+		if newName and newNameExtension:
+			newName = '{}{}'.format(newName, newNameExtension)
 			sourceFolder = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
 			m = re.match('(.*/)(.*)', sourceFolder, re.M | re.I | re.S)
 			if m:
 				destinationFolder = m.group(1) + newName
 				shutil.move(sourceFolder, destinationFolder)
-				self.selected_full_path = destinationFolder;
+				self.selected_full_path = destinationFolder
 
 
 	def do_download(self, fullpath):
