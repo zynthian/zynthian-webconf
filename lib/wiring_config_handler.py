@@ -26,9 +26,9 @@ import os
 import re
 import logging
 import tornado.web
-from collections import OrderedDict
-from subprocess import check_output
 from enum import Enum
+from subprocess import check_output
+from collections import OrderedDict
 
 from zynconf import CustomSwitchActionType, CustomUiAction, ZynSensorActionType
 from lib.zynthian_config_handler import ZynthianConfigHandler
@@ -44,9 +44,9 @@ MCP4728_I2C_ADDRESS = ""
 
 for i2chip in DashboardHandler.get_i2c_chips():
 	parts = i2chip.split('@')
-	if parts[0]=='ADS1115':
+	if parts[0] == 'ADS1115':
 		ADS1115_I2C_ADDRESS = parts[1]
-	elif parts[0]=='MCP4728':
+	elif parts[0] == 'MCP4728':
 		MCP4728_I2C_ADDRESS = parts[1]
 
 #------------------------------------------------------------------------------
@@ -327,6 +327,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
 		}],
 		["CUSTOM", {
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': ADS1115_I2C_ADDRESS,
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS
 		}]
 	])
 
@@ -418,7 +420,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES')
 			}
 
-		if wiring_layout.startswith("MCP23017"):
+		if wiring_layout.startswith("MCP23017") or wiring_layout == "CUSTOM":
 			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "MCP23017 I2C Address",

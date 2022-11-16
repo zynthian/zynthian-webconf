@@ -61,7 +61,7 @@ class DashboardHandler(ZynthianBasicHandler):
 		else:
 			i2c_info = "Not detected"
 
-		config=OrderedDict([
+		config = OrderedDict([
 			['HARDWARE', {
 				#'icon': 'glyphicon glyphicon-wrench',
 				'icon': 'glyphicon glyphicon-cog',
@@ -287,9 +287,8 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def get_host_name():
 		with open("/etc/hostname") as f:
-			hostname=f.readline()
+			hostname = f.readline()
 			return hostname
-		return ""
 
 
 	@staticmethod
@@ -328,10 +327,10 @@ class DashboardHandler(ZynthianBasicHandler):
 
 	@staticmethod
 	def get_i2c_chips():
-		out=check_output("gpio i2cd", shell=True).decode().split("\n")
-		if len(out)>3:
-			res = []
-			for i in range(1,8):
+		res = []
+		out = check_output("gpio i2cd", shell=True).decode().split("\n")
+		if len(out) > 3:
+			for i in range(1, 8):
 				for adr in out[i][4:].split(" "):
 					try:
 						adr = int(adr, 16)
