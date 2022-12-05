@@ -108,7 +108,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': 'Visible mixer strips',
 				'value':  os.environ.get('ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS'),
-				'options': ['0','1','2','3','4','5','6','7','8','9','10','11','12','13','14','15','16'],
+				'options': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'],
 				'option_labels': {
 					'0': 'Automatic',
 					'1': '1',
@@ -126,8 +126,14 @@ class UiConfigHandler(ZynthianConfigHandler):
 					'13': '13',
 					'14': '14',
 					'15': '15',
-					'16': '16',
+					'16': '16'
 				},
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_POWER_SAVE_MINUTES', {
+				'type': 'text',
+				'title': 'Power Save Delay (minutes)',
+				'value': os.environ.get('ZYNTHIAN_UI_POWER_SAVE_MINUTES', '10'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
@@ -177,14 +183,14 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 
-		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0]=='CPU Usage':
+		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0] == 'CPU Usage':
 			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
 		else:
 			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
 
 		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
 
-		errors=self.update_config(escaped_arguments)
+		errors = self.update_config(escaped_arguments)
 
 		self.restart_ui_flag = True
 		self.get(errors)
