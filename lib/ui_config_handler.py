@@ -133,7 +133,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 			['ZYNTHIAN_UI_POWER_SAVE_MINUTES', {
 				'type': 'text',
 				'title': 'Power Save Delay (minutes)',
-				'value': os.environ.get('ZYNTHIAN_UI_POWER_SAVE_MINUTES', '60'),
+				'value': os.environ.get('ZYNTHIAN_UI_POWER_SAVE_MINUTES', '10'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
