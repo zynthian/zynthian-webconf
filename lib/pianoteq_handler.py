@@ -27,7 +27,7 @@ import sys
 import logging
 import tornado.web
 import shutil
-from subprocess import check_output
+from subprocess import check_output, STDOUT
 from collections import OrderedDict
 from xml.etree import ElementTree as ET
 
@@ -61,11 +61,7 @@ class PianoteqHandler(ZynthianBasicHandler):
 
 		if errors:
 			logging.error("Pianoteq Action Failed: %s" % format(errors))
-			self.clear()
-			self.set_status(400)
-			self.finish("Pianoteq Action Failed: %s" % format(errors))
-		else:
-			super().get("pianoteq.html", "Pianoteq", config, errors)
+		super().get("pianoteq.html", "Pianoteq", config, errors)
 
 
 	@tornado.web.authenticated
@@ -106,17 +102,23 @@ class PianoteqHandler(ZynthianBasicHandler):
 
 	def do_install_pianoteq_binary(self, filename):
 		# Install new binary package
-		command = self.recipes_dir + "/install_pianoteq_binary.sh {}".format(filename)
-		check_output(command, shell=True)
+		command = self.recipes_dir + "/install_pianoteq_binary.sh {}; exit 0".format(filename)
+		result = check_output(command, shell=True, stderr=STDOUT).decode("utf-8")
+		# TODO! if result is OK, return None!
+		return result
 
 
 	def do_install_pianoteq_ptq(self, filename):
-		# Create "Addons" directory if not already exist
-		if not os.path.isdir(PIANOTEQ_ADDON_DIR):
-			os.makedirs(PIANOTEQ_ADDON_DIR)
-
-		logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
-		shutil.move(filename, PIANOTEQ_ADDON_DIR + "/" + os.path.basename(filename))
+		try:
+			# Create "Addons" directory if not already exist
+			if not os.path.isdir(PIANOTEQ_ADDON_DIR):
+				os.makedirs(PIANOTEQ_ADDON_DIR)
+			# Copy uploaded file
+			logging.info("Moving %s to %s" % (filename, PIANOTEQ_ADDON_DIR))
+			shutil.move(filename, PIANOTEQ_ADDON_DIR + "/" + os.path.basename(filename))
+		except Exception as e:
+			logging.error("PTQ install failed: {}".format(e))
+			return "PTQ install failed: {}".format(e)
 
 
 	def do_activate_license(self):
@@ -124,16 +126,15 @@ class PianoteqHandler(ZynthianBasicHandler):
 		logging.info("Configuring Pianoteq License Key: {}".format(license_serial))
 		
 		# Activate the License Key by calling Pianoteq binary
-		command = "{} --prefs {} --activate {}".format(PIANOTEQ_BINARY, PIANOTEQ_CONFIG_FILE, license_serial)
-		result = ""
+		command = "{} --prefs {} --activate {}; exit 0".format(PIANOTEQ_BINARY, PIANOTEQ_CONFIG_FILE, license_serial)
 		try:
-			result = check_output(command, shell=True).decode("utf-8")
+			result = check_output(command, shell=True, stderr=STDOUT).decode("utf-8")
 		except Exception as e:
-			logging.error("Pianoteq License Activation Failed: {}".format(e))
+			logging.error(format(e))
 			result = format(e)
 
 		if result != "Activation Key Saved !\n":
-			logging.error("Pianoteq License Activation Failed: {}".format(result))
+			logging.error(result)
 			return result
 		else:
 			self.pianoteq_autoconfig()
@@ -165,12 +166,11 @@ class PianoteqHandler(ZynthianBasicHandler):
 				"ZYNTHIAN_PIANOTEQ_VERSION": [info["version_str"]],
 				"ZYNTHIAN_PIANOTEQ_TRIAL": ["1" if info["trial"] else "0"]
 			}
-			errors = self.update_config(config)
+			self.update_config(config)
 
+			# Regenerate presets cache
 			if not info['api']:
-				# Regenerate presets cache
 				self.do_update_presets_cache()
-		return errors
 
 
 	def update_config(self, config):

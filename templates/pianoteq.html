@@ -92,7 +92,7 @@
 
 
 	<div>
-		{% if errors %}<div class="alert alert-danger">{{ str(errors) }}</div>{% end %}
+		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}
 	</div>
 
 </form>
