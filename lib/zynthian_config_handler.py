@@ -61,7 +61,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	def get_current_user(self):
-		return self.get_secure_cookie("user")
+		return self.get_secure_cookie("user", max_age_days=5200)
 
 
 	def prepare(self):
