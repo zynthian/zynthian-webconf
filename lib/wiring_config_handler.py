@@ -56,7 +56,19 @@ for i2chip in DashboardHandler.get_i2c_chips():
 class WiringConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "{}/wiring-profiles".format(os.environ.get("ZYNTHIAN_CONFIG_DIR"))
 
-	wiring_presets=OrderedDict([
+	wiring_presets = OrderedDict([
+		["V5", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
+		}],
 		["Z2_V3", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",

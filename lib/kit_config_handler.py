@@ -41,6 +41,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
+		'V5',
 		'Z2',
 		'Z2 PROTOTYPE',
 		'V4',
@@ -82,15 +83,22 @@ class KitConfigHandler(ZynthianConfigHandler):
 
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
-		if kit_version!="Custom":
-			if kit_version == "Z2":
+		if kit_version != "Custom":
+			if kit_version == "V5":
+				soundcard_name = "Z2 ADAC"
+				display_name = "MIPI DSI 800x480 (inverted)"
+				wiring_layout = "V5"
+				wiring_layout_custom_profile = "v5"
+				ui_font_size = "16"
+				overclocking = "Maximum"
+			elif kit_version == "Z2":
 				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V3"
 				wiring_layout_custom_profile = "z2"
 				ui_font_size = "16"
 				overclocking = "Maximum"
-			if kit_version == "Z2 PROTOTYPE":
+			elif kit_version == "Z2 PROTOTYPE":
 				soundcard_name = "Z2 ADAC"
 				display_name = "Z2 Display"
 				wiring_layout = "Z2_V2"
