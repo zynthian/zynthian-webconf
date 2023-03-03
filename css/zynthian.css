@@ -209,6 +209,16 @@ textarea.input-zynthian {
 .input-zynthian::-ms-input-placeholder {
   color: #606060;
 }
+.col-fixheight input,
+.col-fixheight select {
+  margin: 0px;
+  margin-top: 0px;
+  box-sizing: border-box;
+  height: 1.9em;
+}
+.col-extra {
+  padding-left: 0px !important;
+}
 @media (max-width: 1200px) {
   header#header ul.navbar-nav li a {
     font-size: 12px;
@@ -261,6 +271,15 @@ textarea.input-zynthian {
   }
   .collapsing {
     overflow: hidden!important;
+  }
+}
+@media (min-width: 768px) {
+  .col-thin-padding {
+    padding-left: 0px !important;
+  }
+  .col-thin-padding-extra {
+    padding-left: 0px !important;
+    padding-right: 0.3em !important;
   }
 }
 div.dashboard-block h3 {
@@ -456,9 +475,6 @@ div.one-line-truncated {
   white-space: nowrap;
   text-overflow: ellipsis;
   overflow: hidden;
-}
-div[root_var] {
-  padding-left: 2em;
 }
 div#presets-search-result .action-buttons {
   font-size: 120%;

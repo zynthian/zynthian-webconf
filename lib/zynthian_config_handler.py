@@ -52,6 +52,7 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	reboot_flag = False
 	restart_ui_flag = False
 	restart_webconf_flag = False
+	reload_wiring_layout_flag = False
 	reload_midi_config_flag = False
 	reload_key_binding_flag = False
 
@@ -114,6 +115,9 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		if self.restart_ui_flag:
 			self.restart_ui()
 		else:
+			if self.reload_wiring_layout_flag:
+				self.reload_wiring_layout()
+
 			if self.reload_midi_config_flag:
 				self.reload_midi_config()
 
@@ -171,6 +175,11 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 				os.remove(self.restart_webconf_flag_fpath)
 		except Exception as e:
 			logging.error("Restarting Webconf: %s" % e)
+
+
+	def reload_wiring_layout(self):
+		liblo.send(zynthian_ui_osc_addr, "/CUIA/RELOAD_WIRING_LAYOUT")
+		self.reload_wiring_layout_flag = False
 
 
 	def reload_midi_config(self):
