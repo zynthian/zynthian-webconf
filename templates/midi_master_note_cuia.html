@@ -1,0 +1,272 @@
+<style>
+div.piano_container {
+  overflow-x: scroll;
+  scrollbar-width: none;
+  scrollbar-height: none;
+
+}
+div.piano_container::-webkit-scrollbar{
+  display: none;
+}
+
+ul.piano {
+  box-sizing: border-box;
+  margin: auto;
+  width: 200em;
+  height: 22em;
+}
+
+ul.piano li {
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+  padding-left: 2em;
+  list-style:none;
+  position:relative;
+  float:left;
+  font-size: 10px;
+}
+
+ul.piano li.A,
+ul.piano li.B,
+ul.piano li.C,
+ul.piano li.D,
+ul.piano li.E,
+ul.piano li.F,
+ul.piano li.G {
+  height:15em;
+  width:4em;
+  z-index:1;
+  border-left:1px solid #bbb;
+  border-bottom:1px solid #bbb;
+  border-radius:0 0 5px 5px;
+  box-shadow:-1px 0 0 rgba(255,255,255,0.8) inset,0 0 5px #ccc inset,0 0 3px rgba(0,0,0,0.2);
+  background:linear-gradient(to bottom,#eee 0%,#fff 100%);
+}
+
+ul.piano li.A:active,
+ul.piano li.B:active,
+ul.piano li.C:active,
+ul.piano li.D:active,
+ul.piano li.E:active,
+ul.piano li.F:active,
+ul.piano li.G:active {
+  border-top:1px solid #777;
+  border-left:1px solid #999;
+  border-bottom:1px solid #999;
+  box-shadow:2px 0 3px rgba(0,0,0,0.1) inset,-5px 5px 20px rgba(0,0,0,0.2) inset,0 0 3px rgba(0,0,0,0.2);
+  background:linear-gradient(to bottom,#fff 0%,#e9e9e9 100%);
+}
+
+ul.piano li.CS,
+ul.piano li.DS,
+ul.piano li.FS,
+ul.piano li.GS,
+ul.piano li.AS {
+  height: 8em;
+  width: 2em;
+  margin:0 0 0 -1em;
+  z-index: 2;
+  border: 1px solid #bbb;
+  border-radius: 0 0 3px 3px;
+  box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset, 0 -5px 2px 3px rgba(0,0,0,0.6) inset, 0 2px 4px rgba(0,0,0,0.5);
+  background: linear-gradient(45deg, #222 0%, #555 100%);
+}
+
+ul.piano li.CS:active,
+ul.piano li.DS:active,
+ul.piano li.FS:active,
+ul.piano li.GS:active,
+ul.piano li.AS:active {
+  box-shadow: -1px -1px 2px rgba(255,255,255,0.2) inset, 0 -2px 2px 3px rgba(0,0,0,0.6) inset, 0 1px 2px rgba(0,0,0,0.5);
+  background: linear-gradient(to right, #444 0%, #222 100%);
+}
+
+ul.piano li.A,
+ul.piano li.B,
+ul.piano li.D,
+ul.piano li.E,
+ul.piano li.G {
+  margin: 0 0 0 -1em;
+}
+
+ul.piano li:first-child {
+  border-radius: 5px 0 5px 5px;
+}
+
+ul.piano li:last-child {
+  border-radius: 0 5px 5px 5px;
+}
+
+ul.piano li .note_info {
+  position: absolute;
+  top: 5em;
+  left: 0px;
+  width: 1em;
+  height: 20em;
+  text-align: left;
+  writing-mode: vertical-rl;
+  color: #FFFFFF;
+  transform-origin: 11em 3em;
+  transform: rotate(-45deg);
+  /*border: solid 1px black;*/
+  font-size: 12px;
+}
+
+ul.piano li.CS .note_info,
+ul.piano li.DS .note_info,
+ul.piano li.FS .note_info,
+ul.piano li.GS .note_info,
+ul.piano li.AS .note_info {
+  transform-origin: 10.5em 4em;
+}
+
+ul.piano li .note_info .busy {
+  font-weight: bold;
+  color: #F8F800;
+}
+ul.piano li .note_info .free {
+  font-weight: bold;
+  color: #00B000;
+}
+</style>
+
+<div id="midi_master_note_cuia_panel" class="modal fade">
+	<div class="modal-content">
+
+		<div class="modal-header">
+			<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
+			<h4 class="modal-title">Master Note UI Action</h4>
+		</div>
+
+		<div class="modal-body">
+			<div class="row piano_container">
+				<ul class="piano" id="master_cuia_piano"></ul>
+			</div>
+
+			<div class="row clear" id="cuia_editor">
+				<div  class="col-md-4">
+					<input type="hidden" id="CUIA_NUM" name="CUIA_NUM">
+				</div>
+				<div  class="col-md-1 col-fixheight">
+					<label for="CUIA_NOTE">Note:</label>
+					<input id="CUIA_NOTE" name="CUIA_NOTE" readonly>
+				</div>
+				<div  class="col-md-2 col-fixheight">
+					<label for="CUIA_NAME">CUIA:</label>
+					<select id="CUIA_NAME" name="CUIA_NAME" onchange="onchange_cuia_editor()">
+					{% for cuia in config['CUIA_LIST'] %}
+						<option value="{{ escape(cuia) }}" >{{ escape(cuia) }}</option>
+					{% end %}
+					</select>
+				</div>
+				<div  class="col-md-1 col-fixheight">
+					<label for="CUIA_PARAM">Param:</label>
+					<input id="CUIA_PARAM" name="CUIA_PARAM" onchange="onchange_cuia_editor()">
+				</div>
+			</div>
+
+			<div class="row"><br><br><br></div>
+		</div>
+		
+		<div class="modal-footer">
+			<button id="midi-master-note-cuia-save" class="btn btn-theme btn-block" data-dismiss="modal" type="button"><span aria-hidden="true">OK</span></button>
+		</div>
+
+	</div>
+</div>
+
+<script>
+
+$(document).ready(function() {
+	$('#display_midi_master_note_cuia_panel').click(function(){
+		refreshMidiMasterNoteCuiaPanel()
+		$('#midi_master_note_cuia_panel').modal('show')
+	});
+
+	$('#midi_filter_rule_panel .close').click(function(){
+		$('#midi_master_note_cuia_panel').modal('hide')
+	});
+
+	window.onclick = function(event) {
+		if (event.target == document.getElementById('midi_master_note_cuia_panel')) {
+			$('#midi_master_note_cuia_panel').modal('hide')
+		}
+	}
+
+	$("button#midi-master-note-cuia-save").click(function(){
+		saveMidiMasterNoteCuia()
+	});
+
+	const element = document.querySelector("div.piano_container");
+	element.addEventListener('wheel', (event) => {
+  		event.preventDefault();
+  		element.scrollBy({
+    		left: event.deltaY < 0 ? -50 : 50,
+  		});
+	});
+});
+
+function saveMidiMasterNoteCuia(){
+	var master_note_cuia_text = "";
+	for (var i=0; i<127; i++) {
+		if (note_cuia[i]) {
+			master_note_cuia_text += i + ': ' + note_cuia[i] + "\n";
+		}
+	}
+	$('textarea#ZYNTHIAN_MIDI_MASTER_NOTE_CUIA').val(master_note_cuia_text)
+	return true;
+}
+
+function refreshMidiMasterNoteCuiaPanel() {
+	note_names = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+	note_classes = ["C", "CS", "D", "DS", "E", "F", "FS", "G", "GS", "A", "AS", "B"];
+	piano_html = "";
+	for (var i=0; i<127; i++) {
+		var nscale = (i/12)>>0;
+		var nclass = note_classes[i%12];
+		var nid = nclass + nscale;
+		var nname = note_names[i%12] + nscale;
+		var ninfo;
+		if (note_cuia[i]) {
+			ninfo = "<span class='busy'>" + nname + "</span> " + note_cuia[i];
+		} else {
+			ninfo = "<span class='free'>" + nname + "</span>";
+		}
+		piano_html += "<li class='" + nclass +"' name='" + nname + "' id='note_" + nid + "' index='" + i + "'><span class='note_info'>" + ninfo + "</span></li>\n";
+	}
+	$('ul#master_cuia_piano').html(piano_html);
+
+	$('ul#master_cuia_piano li').click(function(){
+		var index = $(this).attr('index');
+		var note = $(this).attr('name');
+		var parts = note_cuia[index].split(' ', 2);
+		$('input#CUIA_NUM').val(index);
+		$('input#CUIA_NOTE').val(note);
+		$('select#CUIA_NAME').val(parts[0]);
+		if (parts.length>1) {
+			$('input#CUIA_PARAM').val(parts[1]);
+		} else {
+			$('input#CUIA_PARAM').val("");
+		}
+	});
+}
+
+function onchange_cuia_editor() {
+	var index = $('input#CUIA_NUM').val();
+	if (index>=0) {
+		note_cuia[index] = $('select#CUIA_NAME').val() + ' ' + $('input#CUIA_PARAM').val();
+		refreshMidiMasterNoteCuiaPanel()
+	}
+}
+
+note_cuia = new Array()
+{% for note in range(127) %}
+	{% if str(note) in config['CURRENT_NOTE_CUIA'] %}
+		note_cuia[{{ note }}] = '{{ config['CURRENT_NOTE_CUIA'][str(note)] }}'
+	{% else %}
+		note_cuia[{{ note }}] = ''
+	{% end %}
+{% end %}
+
+</script>
