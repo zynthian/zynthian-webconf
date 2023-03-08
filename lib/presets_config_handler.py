@@ -39,6 +39,7 @@ from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngui.zynthian_gui_engine import *
+from zyngine.zynthian_chain_manager import zynthian_chain_manager
 
 #------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -63,13 +64,13 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 	def post(self, action):
 		try:
 			self.engine = self.get_argument('ENGINE', 'ZY')
-			self.engine_info = zynthian_gui_engine.engine_info[self.engine]
-			self.engine_cls = self.engine_info[4]
-			if self.engine_cls==zynthian_engine_jalv:
-				self.engine_cls.init_zynapi_instance(self.engine_info[0], self.engine_info[2])
+			engine_info = self.get_engine_info()[self.engine]
+			self.engine_cls = engine_info[4]
+			if self.engine_cls == zynthian_engine_jalv:
+				self.engine_cls.init_zynapi_instance(engine_info[0], engine_info[2])
 
 		except Exception as e:
-			logging.error("Can't initialize engine '{}': {}".format(self.engine,e))
+			logging.error("Can't initialize engine '{}': {}".format(self.engine, e))
 
 		try:
 			result = {
@@ -328,8 +329,8 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 
 	def get_engine_info(self):
-		engine_info = copy.copy(zynthian_gui_engine.engine_info)
-		for e in zynthian_gui_engine.engine_info:
+		engine_info = copy.copy(zynthian_chain_manager.get_engine_info())
+		for e in list(engine_info):
 			if not engine_info[e][5] or not hasattr(engine_info[e][4], "zynapi_get_banks"):
 				del engine_info[e]
 		return engine_info

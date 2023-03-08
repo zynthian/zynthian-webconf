@@ -49,7 +49,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 from lib.hwoptions_config_handler import HWOptionsConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
 from lib.wifi_list_handler import WifiListHandler
-from lib.snapshot_config_handler import SnapshotConfigHandler, SnapshotRemoveOptionHandler, SnapshotAddOptionsHandler, SnapshotDownloadHandler, SnapshotRemoveLayerHandler
+from lib.snapshot_config_handler import SnapshotConfigHandler, SnapshotRemoveOptionHandler, SnapshotAddOptionsHandler, SnapshotDownloadHandler, SnapshotRemoveChainHandler
 from lib.midi_config_handler import MidiConfigHandler
 from lib.upload_handler import UploadHandler
 from lib.system_backup_handler import SystemBackupHandler
@@ -142,7 +142,7 @@ def make_app():
 		(r"/lib-snapshot/ajax/(.*)$", SnapshotConfigHandler),
 		(r"/lib-snapshot/download/(.*)$", SnapshotDownloadHandler),
 		(r"/lib-snapshot/remove/(.*)/(.*)$", SnapshotRemoveOptionHandler),
-		(r"/lib-snapshot/remove-layer/(.*)/(.*)$", SnapshotRemoveLayerHandler),
+		(r"/lib-snapshot/remove-chain/(.*)/(.*)$", SnapshotRemoveChainHandler),
 		(r"/lib-snapshot/add/(.*)/(.*)$", SnapshotAddOptionsHandler),
 		(r"/lib-presets$", PresetsConfigHandler),
 		(r"/lib-presets/(.*)$", PresetsConfigHandler),

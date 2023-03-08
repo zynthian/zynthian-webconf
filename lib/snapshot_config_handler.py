@@ -33,6 +33,7 @@ import tornado.web
 from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
+from zyngine.zynthian_legacy_snapshot import zynthian_legacy_snapshot
 
 #------------------------------------------------------------------------------
 # Snapshot Config Handler
@@ -279,7 +280,7 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 
 					with open(fullpath) as ssfile:
 						try:
-							prog_details = json.load(ssfile)
+							prog_details = zynthian_legacy_snapshot().convert_state(json.load(ssfile))
 						except:
 							pass
 						ssfile.close()
@@ -346,21 +347,21 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 		shutil.move(fpath, destination)
 
 
-class SnapshotRemoveLayerHandler(tornado.web.RequestHandler):
+class SnapshotRemoveChainHandler(tornado.web.RequestHandler):
 
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
 	@tornado.web.authenticated
-	def post(self, snapshot_file_b64, layer):
+	def post(self, snapshot_file_b64, chain):
 		result = {}
 		snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
 		try:
-			logging.info("Removing layer {} in {}".format(layer, snapshot_file))
+			logging.info("Removing chain {} in {}".format(chain, snapshot_file))
 			data = []
 			with open(snapshot_file, "r") as fp:
 				data = json.load(fp)
-				del data['layers'][int(layer)]
+				del data['chains'][chain]
 
 			with open(snapshot_file, "w") as fp:
 				json.dump(data, fp)
