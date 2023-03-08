@@ -36,6 +36,7 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 
 import zynconf
 from zyngine.zynthian_midi_filter import MidiFilterScript
+from zyngui.zynthian_gui import zynthian_gui
 
 #sys.path.append(os.environ.get('ZYNTHIAN_SW_DIR')+"/mod-ui")
 #import mod.utils
@@ -326,11 +327,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	midi_event_types = OrderedDict([
 		['NON', 'Note-On'],
 		['NOFF', 'Note-Off'],
-		['PC', 'Program change'],
+		['PC', 'Program Change'],
+		['CC', 'Continuous Controller Change (CC)'],
 		['KP', 'Polyphonic Key Pressure (Aftertouch)'],
 		['CP', 'Channel Pressure (Aftertouch)'],
-		['PB', 'Pitch Bending'],
-		['CC', 'Continuous Controller Change']
+		['PB', 'Pitch Bending']
 	])
 
 
@@ -348,10 +349,9 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS',self.DEFAULT_MIDI_PORTS)
 		current_midi_ports = current_midi_ports.replace("\\n","\n")
 		#logging.debug("MIDI_PORTS = %s" % current_midi_ports)
-		ports_config = { 'MIDI_PORTS': get_ports_config(current_midi_ports) }
+		ports_config = {'MIDI_PORTS': get_ports_config(current_midi_ports)}
 
-
-		mfr_config=OrderedDict([
+		mfr_config = OrderedDict([
 			['RULE_EVENT_TYPES', {
 				'options': list(self.midi_event_types.keys()),
 				'option_labels': self.midi_event_types
@@ -360,6 +360,21 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'option_labels': self.midi_cc_labels
 			}]
 		])
+
+		cuia_list = [""] + zynthian_gui.get_cuia_list()
+		current_note_cuia_text = self.get_midi_env('ZYNTHIAN_MASTER_NOTE_CUIA', None)
+		if current_note_cuia_text:
+			current_note_cuia = {}
+			for row in current_note_cuia_text.split("\n"):
+				parts = row.strip().split(':')
+				if len(parts) > 1:
+					current_note_cuia[parts[0].strip()] = parts[1].strip()
+		else:
+			current_note_cuia_text = ""
+			current_note_cuia = zynconf.NoteCuiaDefault
+			for note, cuia in current_note_cuia.items():
+				current_note_cuia_text += "{}: {}\n".format(note, cuia)
+		mmncuia_config = {'CUIA_LIST': cuia_list, 'CURRENT_NOTE_CUIA': current_note_cuia}
 
 		#upper case ZYNTHIAN_MIDI will be stored in profile file
 		#other upper case in zynthian_envar
@@ -424,7 +439,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'boolean',
 				'title': 'Preload Presets with Note-On events',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','1'),
-				'advanced': True
+				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_FILTER_OUTPUT', {
 				'type': 'boolean',
@@ -436,7 +451,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'boolean',
 				'title': 'Enable System Messages (Transport)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED','1'),
-				'advanced': True
+				'advanced': False
 			}],
 			['ZYNTHIAN_MIDI_CC_AUTOMODE', {
 				'type': 'boolean',
@@ -473,11 +488,39 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'title': 'MIDI fine tuning (Hz)',
 				'value':  self.get_midi_env('ZYNTHIAN_MIDI_FINE_TUNING','440.0'),
 				#'options': map(lambda x: str(x).zfill(2), list(range(392, 493)))
+				'advanced': False
+			}],
+			['ZYNTHIAN_MIDI_PORTS', {
+				'type': 'textarea',
+				'title': 'MIDI Ports',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_PORTS'),
+				'cols': 50,
+				'rows': 2,
+				'addButton': 'display_midi_ports_panel',
+				'addPanel': 'midi_ports.html',
+				'addPanelConfig': ports_config,
+				'advanced': False
+			}],
+			['ZYNTHIAN_MIDI_FILTER_RULES', {
+				'type': 'textarea',
+				'title': 'Midi filter rules',
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_RULES'),
+				'cols': 50,
+				'rows': 5,
+				'addButton': 'display_midi_filter_rule_panel',
+				'addPanel': 'midi_filter_rule.html',
+				'addPanelConfig': mfr_config,
+				'advanced': True
+			}],
+			['_SECTION_MASTER_CHANNEL_', {
+				'type': 'html',
+				'content': "<h3>Master Channel</h3>",
+				'advanced': True
 			}],
 			['ZYNTHIAN_MIDI_MASTER_CHANNEL', {
 				'type': 'select',
 				'title': 'Master MIDI channel',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL','0'),
+				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_CHANNEL', '0'),
 				'options': list(self.midi_channels.keys()),
 				'option_labels': self.midi_channels,
 				'advanced': True
@@ -522,26 +565,15 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_MASTER_BANK_CHANGE_DOWN'),
 				'advanced': True
 			}],
-			['ZYNTHIAN_MIDI_FILTER_RULES', {
+			['ZYNTHIAN_MIDI_MASTER_NOTE_CUIA', {
 				'type': 'textarea',
-				'title': 'Midi filter rules',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_RULES'),
+				'title': 'Master Key Actions',
+				'value': current_note_cuia_text,
 				'cols': 50,
-				'rows': 5,
-				'addButton': 'display_midi_filter_rule_panel',
-				'addPanel': 'midi_filter_rule.html',
-				'addPanelConfig': mfr_config,
-				'advanced': True
-			}],
-			['ZYNTHIAN_MIDI_PORTS', {
-				'type': 'textarea',
-				'title': 'MIDI Ports',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_PORTS'),
-				'cols': 50,
-				'rows': 2,
-				'addButton': 'display_midi_ports_panel',
-				'addPanel': 'midi_ports.html',
-				'addPanelConfig': ports_config,
+				'rows': 4,
+				'addButton': 'display_midi_master_note_cuia_panel',
+				'addPanel': 'midi_master_note_cuia.html',
+				'addPanelConfig': mmncuia_config,
 				'advanced': True
 			}]
 		])

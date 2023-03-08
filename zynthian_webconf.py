@@ -117,9 +117,10 @@ def make_app():
 	settings = {
 		"xstatic_url": tornado_xstatic.url_maker('/xstatic/'),
 		"template_path": "templates",
+		"template_whitespace": "single",
 		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
-		"upload_progress_handler": dict()
+		"upload_progress_handler": dict(),
 		#"autoescape": None
 	}
 
