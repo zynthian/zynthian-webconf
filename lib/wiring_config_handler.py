@@ -993,12 +993,11 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			logging.debug("CURRENT CUSTOM PROFILE => {}".format(self.current_custom_profile))
 			self.config_env(self.request_data)
 			changed = self.get_argument('_changed', '')
-			logging.debug("CHANGED '{}'".format(changed))
+			#logging.debug("CHANGED '{}'".format(changed))
 			# If changed "wiring layout" => force loading custom profile from preset
 			if changed == "ZYNTHIAN_WIRING_LAYOUT":
 				try:
 					for k, v in self.custom_profiles[self.current_custom_profile].items():
-						logging.debug("CUSTOM PROFILE {} => {}".format(k,v))
 						os.environ[k] = v
 				except:
 					pass
