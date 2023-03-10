@@ -362,10 +362,10 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		])
 
 		cuia_list = [""] + zynthian_gui.get_cuia_list()
-		current_note_cuia_text = self.get_midi_env('ZYNTHIAN_MASTER_NOTE_CUIA', None)
+		current_note_cuia_text = self.get_midi_env('ZYNTHIAN_MIDI_MASTER_NOTE_CUIA', None)
 		if current_note_cuia_text:
 			current_note_cuia = {}
-			for row in current_note_cuia_text.split("\n"):
+			for row in current_note_cuia_text.split("\\n"):
 				parts = row.strip().split(':')
 				if len(parts) > 1:
 					current_note_cuia[parts[0].strip()] = parts[1].strip()
