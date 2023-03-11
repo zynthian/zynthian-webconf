@@ -369,7 +369,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def get(self, errors=None):
 		config = OrderedDict()
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		if os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
@@ -390,12 +390,16 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'options': list(self.wiring_presets.keys()),
 			'presets': self.wiring_presets,
 			'disabled': custom_options_disabled,
+			'refresh_on_change': True,
 			'div_class': "col-sm-12"
 		}
 
 		if wiring_layout.startswith("Z2"):
 			encoders_config_flag = False
 			n_extra_switches = 32
+		elif wiring_layout.startswith("V5"):
+			encoders_config_flag = False
+			n_extra_switches = 24
 		else:
 			encoders_config_flag = True
 			try:
@@ -663,7 +667,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		cuia_list = [""] + zynthian_gui.get_cuia_list()
 		cvgate_in = []
 		cvgate_out = []
-		if self.n_custom_switches>0:
+		if self.n_custom_switches > 0:
 			config['_SECTION_CUSTOM_SWITCHES_'] = {
 				'type': 'html',
 				'content': "<h3>Customizable Switches</h3>",
@@ -677,7 +681,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				else:
 					title = 'Zynaptik Switch-{} Action'.format(i+1-n_extra_switches)
 
-				action_type = os.environ.get(base_name)
+				action_type = os.environ.get(base_name, "NONE")
 				cvchan = int(os.environ.get(base_name + '__CV_CHAN', 1))
 				if action_type == "UI_ACTION":
 					action_type = "UI_ACTION_RELEASE"
@@ -988,6 +992,15 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			self.current_custom_profile = self.get_argument('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE', '')
 			logging.debug("CURRENT CUSTOM PROFILE => {}".format(self.current_custom_profile))
 			self.config_env(self.request_data)
+			changed = self.get_argument('_changed', '')
+			#logging.debug("CHANGED '{}'".format(changed))
+			# If changed "wiring layout" => force loading custom profile from preset
+			if changed == "ZYNTHIAN_WIRING_LAYOUT":
+				try:
+					for k, v in self.custom_profiles[self.current_custom_profile].items():
+						os.environ[k] = v
+				except:
+					pass
 		elif command == "SAVEAS":
 			fname = self.get_argument('zynthian_wiring_layout_saveas_fname', '')
 			errors = self.save_custom_profile(fname, self.request_data)
@@ -1137,6 +1150,24 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		return res
 
 
+	@classmethod
+	def tweak_custom_profile(cls, data):
+		for i in range(64):
+			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i + 1)
+			for k in ("PUSH", "SHORT", "BOLD", "LONG"):
+				base_subname = base_name + '__UI_' + k
+				try:
+					parts = data[base_subname].split(" ", 2)
+					data[base_subname + '__CUIA_NAME'] = parts[0]
+					try:
+						data[base_subname + '__CUIA_PARAM'] = parts[1]
+					except:
+						data[base_subname + '__CUIA_PARAM'] = ""
+				except:
+					pass
+		return data
+
+
 	# Load custom profiles
 	def load_custom_profiles(self):
 		self.custom_profiles = OrderedDict()
@@ -1150,7 +1181,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				with open(fpath) as f:
 					for line in f:
 						try:
-							if line[0]=='#':
+							if line[0] == '#':
 								continue
 							m = p.match(line)
 							if m:
@@ -1158,7 +1189,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						except Exception as e:
 							logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
 				try:
-					self.custom_profiles[fname] = WiringConfigHandler.complete_custom_profile(profile_values)
+					profile_values = WiringConfigHandler.complete_custom_profile(profile_values)
+					self.custom_profiles[fname] = WiringConfigHandler.tweak_custom_profile(profile_values)
 					logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
 				except Exception as e:
 					logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))
