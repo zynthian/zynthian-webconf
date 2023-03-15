@@ -1026,11 +1026,14 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			for k in ("PUSH", "SHORT", "BOLD", "LONG"):
 				base_subname = base_name + '__UI_' + k
 				try:
-					data[base_subname] = [data[base_subname + '__CUIA_NAME'][0] + " " + data[base_subname + '__CUIA_PARAM'][0]]
+					cuia_str = data[base_subname + '__CUIA_NAME'][0] + " " + data[base_subname + '__CUIA_PARAM'][0]
+					data[base_subname] = [cuia_str.strip()]
 					del data[base_subname + '__CUIA_NAME']
 					del data[base_subname + '__CUIA_PARAM']
-				except:
+				except KeyError:
 					pass
+				except Exception as e:
+					logging.error(e)
 		return data
 
 
