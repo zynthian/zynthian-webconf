@@ -105,7 +105,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 3.2B', {
 			'DISPLAY_CONFIG':
-				'dtoverlay=waveshare32b-overlay:rotate=270,swapxy=1\n'+
+				'dtoverlay=waveshare32b:rotate=270,swapxy=1\n'+
+				'#dtoverlay=waveshare32b:rotate=90,swapxy=1,invertx=1\n'+
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '320',
 			'DISPLAY_HEIGHT': '240',
@@ -115,6 +116,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		['WaveShare 3.2C', {
 			'DISPLAY_CONFIG':
 				'dtoverlay=waveshare32c-overlay:rotate=270,swapxy=1\n'+
+				'#dtoverlay=waveshare32c-overlay:rotate=90,swapxy=1,invertx=1\n'+
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=0,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '320',
 			'DISPLAY_HEIGHT': '240',
@@ -123,7 +125,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 3.5A', {
 			'DISPLAY_CONFIG':
-				'dtoverlay=waveshare35a-overlay:rotate=270,swapxy=1\n'+
+				'dtoverlay=waveshare35a:rotate=270,swapxy=1\n'+
+				'#dtoverlay=waveshare35a:rotate=90,swapxy=1,invertx=1\n'+
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
@@ -132,7 +135,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 3.5B', {
 			'DISPLAY_CONFIG': 
-				'dtoverlay=waveshare35b-overlay\n'+
+				'dtoverlay=waveshare35b\n'+
+				'#dtoverlay=waveshare35b:rotate=90,swapxy=1,invertx=1\n'+
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
@@ -141,7 +145,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 3.5B V2', {
 			'DISPLAY_CONFIG': 
-				'dtoverlay=waveshare35b-v2-overlay\n'+
+				'dtoverlay=waveshare35b-v2\n'+
+				'#dtoverlay=waveshare35b-v2:rotate=90,swapxy=1,invertx=1\n'+
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
@@ -150,7 +155,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 3.5C', {
 			'DISPLAY_CONFIG':
-				'dtoverlay=waveshare35c-overlay:rotate=90\n'+
+				'dtoverlay=waveshare35c:rotate=90\n'+
+				'#dtoverlay=waveshare35c:rotate=90,swapxy=1,invertx=1\n'+				
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
@@ -159,7 +165,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		}],
 		['WaveShare 4A GPIO-only', {
 			'DISPLAY_CONFIG': 
-				'dtoverlay=waveshare35a-overlay:rotate=90\n'+
+				'dtoverlay=waveshare35a:rotate=90\n'+
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
 			'DISPLAY_HEIGHT': '320',
