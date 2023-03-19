@@ -1,40 +1,290 @@
-<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
-<div class="pull-right">
-	<input id="enable_keybinding" type="checkbox" name="enable_keybinding" onChange="document.getElementById('btn-save').click()" {% if config['UI_KEYBINDING_ENABLED'] %} checked {% end %}/><span>Enable Keybinding</span>
-</div>
+<style> input[id=new_keysym]:focus { background-color: lightblue; }</style>
+
+<script>
+	// Map of keyboard scan codes mapped by HTML/js code
+	var html_code2keycode = {
+		"Escape": 9,
+		"Minus":20,
+		"Backspace": 22,
+		"Tab": 23,
+		"BracketLeft": 34,
+		"BracketRight": 35,
+		"Enter": 64,
+		"ControlLeft": 37,
+		"Semicolon": 47,
+		"Quote": 48,
+		"Backquote": 49,
+		"ShiftLeft": 50,
+		"Backslash": 94,
+		"Comma": 59,
+		"Period": 60,
+		"Slash": 64,
+		"ShiftRight": 62,
+		"NumpadMultiply": 63,
+		"AltLeft": 64,
+		"Space": 65,
+		"CapsLock": 66,
+		"Pause": 127,
+		"ScrollLock": 78,
+		"NumpadSubtract": 82,
+		"NumpadAdd": 86,
+		"NumpadDecimal": 91,
+		"NumpadEnter": 104,
+		"ControlRight": 105,
+		"NumpadDivide": 106,
+		"AltRight": 108,
+		"NumLock": 77,
+		"Home": 110,
+		"ArrowUp": 111,
+		"PageUp": 112,
+		"ArrowLeft": 113,
+		"ArrowRight": 114,
+		"End": 115,
+		"ArrowDown": 116,
+		"PageDown": 114,
+		"Insert": 118,
+		"Delete": 119,
+		"ContextMenu": 135,
+		"BrowserForward": 167,
+		"BrowserBack": 166,
+		"Numpad0": 90,
+		"Numpad1": 87,
+		"Numpad2": 88,
+		"Numpad3": 89,
+		"Numpad4": 83,
+		"Numpad5": 84,
+		"Numpad6": 85,
+		"Numpad7": 79,
+		"Numpad8": 80,
+		"Numpad9": 81,
+		"Digit0": 19,
+		"Equal": 21,
+		"IntlBackslash": 94
+	}
+	for (i=1; i<13; ++i)
+		html_code2keycode["F"+i] = 66 + i; //!@todo add F13..F24
+	for (i=1; i < 10; ++i)
+		html_code2keycode["Digit"+i] = 9 + i;
+	for (i=0; i<10; ++i)
+		html_code2keycode["Key" + "QWERTYUIOP"[i]] = 24 + i;
+	for (i=0; i<9; ++i)
+		html_code2keycode["Key" + "ASDFGHJKL"[i]] = 38 + i;
+	for (i=0; i<7; ++i)
+		html_code2keycode["Key" + "ZXCVBNM"[i]] = 52 + i;
+	// Unsupported keys: NumpadEqual,KanaMode,Lang2,Lang1,IntlRo,Convert,NonConvert,IntlYen,AudioVolumeMute,LaunchApp2,MediaPlayPause,MediaStop,VolumeDown==AudioVolumeDown,VolumeUp==AudioVolumeUp,BrowserHome,PrintScreen,OSLeft==MetaLeft,OSRight==MetaRight,Power,Sleep,WakeUp,BrowserSearch,BrowserFavorites,BrowserRefresh,BrowserStop,LaunchApp1,LaunchMail,MediaSelect
+	code2keycode2html = {};
+	for (var key in html_code2keycode)
+		code2keycode2html[html_code2keycode[key]] = key;
+
+	var modifier_list = ["all","shift","caps","ctrl","alt","num"]; //,"shift_r","super","altgr"];
+	var cuia_list = [{% for cuia in config["cuia_list"] %}"{{cuia}}",{% end %}];
+	cuia_list.pop();
+	var key_map = {
+		{% for key_mod, val in config["map"].items() %} "{{key_mod}}": "{{val}}",
+		{% end %}};
+
+	document.addEventListener("DOMContentLoaded", function() {
+		for (key_mod in key_map) {
+			var parts = key_map[key_mod].split(" ", 2);
+			if (parts.length > 1) {
+				var action = parts[0];
+				var params = parts[1];
+			} else {
+				var action = parts[0];
+				var params = "";
+			}
+			do_add_binding(key_mod, action, params);
+		}
+	});
+
+	function get_key_name(key) {
+		return code2keycode2html[key];
+	}
+
+	function get_modifier_name(index) {
+		if (index < modifier_list.length)
+			return modifier_list[index];
+		return "all";
+	}
+
+	function update_modifiers(state) {
+		for (i=1; i<modifier_list.length; ++i)
+			document.getElementById("new_"+modifier_list[i]).disabled = state;
+	}
+
+	function remove_binding(key) {
+		el = document.getElementById("row" + key);
+		if (el)
+			el.remove();
+	}
+
+	function on_new_keycode(event, element) {
+		if(!document.getElementById("new_all").checked) {
+			mod = true;
+			if (event.keyCode == 16)
+				document.getElementById("new_shift").checked = !document.getElementById("new_shift").checked
+			else if (event.keyCode == 17)
+				document.getElementById("new_ctrl").checked = !document.getElementById("new_ctrl").checked
+			else if (event.keyCode == 18)
+				document.getElementById("new_alt").checked = !document.getElementById("new_alt").checked
+			else if (event.keyCode == 91)
+				document.getElementById("new_super").checked = !document.getElementById("new_super").checked
+			else
+				mod = false;
+			if (mod)
+				return;
+		}
+		try {
+			key = html_code2keycode[event.code];
+			if (key != null) {
+				document.getElementById("new_keycode").innerHTML = key;
+				element.value = event.code;
+			}
+		} catch(err) {
+		}
+		return false;
+	}
+
+	function select_row(key) {
+		all_checked = document.getElementById("all"+key).checked;
+		document.getElementById("new_all").checked = all_checked
+		for (i=1; i < modifers.length; ++i) {
+			var param = modifier_list[i];
+			document.getElementById("new_" + param).checked = document.getElementById("param" + key).checked;
+			document.getElementById("new_" + param).disabled = all_checked
+		}
+		document.getElementById("new_action").value = document.getElementById("action" + key).value;
+		document.getElementById("new_params").value = document.getElementById("params" + key).value;
+		document.getElementById("new_keycode").innerHTML = document.getElementById("keycode" + key).innerHTML;
+		document.getElementById("new_keysym").value = document.getElementById("keysym" + key).innerHTML;
+	}
+
+	function add_binding() {
+		var key = document.getElementById("new_keycode").innerHTML;
+		if (key == "")
+			return;
+		var key_mod = key;
+		var mod_str = "";
+		if (!document.getElementById("new_all").checked) {
+			var mod = 0;
+			for(i=1; i < modifier_list.length; ++i) {
+				if (document.getElementById("new_" + modifier_list[i]).checked) {
+					mod |= 1 << (i - 1);
+					mod_str += modifier_list[i] + "+";
+				}
+			}
+			key_mod = key + " " + mod;
+		}
+		el = document.getElementById("row" + key_mod);
+		if (!el || confirm("Replace binding for " + mod_str + code2keycode2html[key] + "?"))
+			do_add_binding(key_mod, document.getElementById("new_action").value, document.getElementById("new_params").value);
+	}
+
+	function do_add_binding(key_mod, action, params) {
+		remove_binding(key_mod);
+		var parts = key_mod.split(" ");
+		var key = key_mod;
+		var mod = null;
+		if (parts.length > 1) {
+			key = parts[0];
+			mod = parts[1];
+		}
+		var table = document.getElementById("kb_table");
+		var row = table.insertRow(2);
+		row.id = "row" + key_mod;
+		row.onclick = "select_row(" + key_mod + ");";
+		var cell = row.insertCell();
+		cell.innerHTML = key;
+		cell.id = "row" + key_mod;
+		cell = row.insertCell();
+		cell.id="keysym" + key_mod
+		cell.innerHTML = get_key_name(parseInt(key));
+		cell = row.insertCell();
+		var input = document.createElement("INPUT");
+		input.type = "checkbox";
+		input.id = "all" + key_mod;
+		input.disabled = true;
+		input.checked = (mod == null);
+		cell.appendChild(input);
+		for (i=1; i<modifier_list.length; ++i) {
+			param = modifier_list[i];
+			cell = row.insertCell();
+			input = document.createElement("INPUT");
+			input.type = "checkbox";
+			input.id = param + key_mod;
+			input.disabled = true;
+			input.checked = ((mod & (1 << (i-1))) != 0);
+			cell.appendChild(input);
+		}
+		cell = row.insertCell();
+		input = document.createElement("SELECT");
+		input.id = "action" + key_mod;
+		input.name == key_mod + ":action";
+		for (i=0; i<cuia_list.length; ++i) {
+			var option = document.createElement("option");
+			option.text = cuia_list[i];
+			option.value = cuia_list[i];
+			input.add(option);
+			if (cuia_list[i] == action)
+				option.selected="selected";
+		}
+		cell.appendChild(input);
+		cell = row.insertCell();
+		input = document.createElement("INPUT");
+		input.type = "text";
+		input.id = "params" + key_mod;
+		input.name = key_mod + ":params";
+		input.value = params;
+		cell.appendChild(input);
+		cell = row.insertCell();
+		input = document.createElement("BUTTON");
+		input.innerHTML = '<i class="fa fa-trash-o"></i>';
+		input.setAttribute("id", "button-remove");
+		input.setAttribute("class", "btn btn-danger btn-block");
+		input.setAttribute("onclick", "remove_binding('" + key_mod + "');");
+		cell.appendChild(input);
+	}
+</script>
 
 <h2>{{ title }}</h2>
-	<div id='keybind_table' {% if not config['UI_KEYBINDING_ENABLED'] %} style="display:none;" {% end %}>
-		<table class="table table-condensed">
-		<thead>
+<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
+<table id="kb_table" class="table table-condensed">
+	<thead>
 		<tr class="success">
-			<th scope="col">Action</th>
+			<th scope="col">Keycode</th>
+			<th scope="col">Keysym</th>
+			<th scope="col">All</th>
 			<th scope="col">Shift</th>
+			<th scope="col">CapsLock</th>
 			<th scope="col">Ctrl</th>
 			<th scope="col">Alt</th>
-			<th scope="col">CapsLock</th>
-			<th scope="col">Key</th>
+			<th scope="col">NumLock</th>
+			<th scope="col">Action</th>
+			<th scope="col">Params</th>
 		</tr>
-		</thead>
-		<tbody>
-		{% for cuia in sorted(config['UI_KEYBINDING_MAP']) %}
-		<tr>
-			<th scope="row">{{escape(cuia)}}</th>
-			<td><input type="checkbox" name="{{cuia}}:shift" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 1 %} checked {% end %}></td>
-			<td><input type="checkbox" name="{{cuia}}:ctrl" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 4 %} checked {% end %}></td>
-			<td><input type="checkbox" name="{{cuia}}:alt" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 8 %} checked {% end %}></td>
-			<td><input type="checkbox" name="{{cuia}}:caps" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 2 %} checked {% end %}></td>
-			<td><input name="{{cuia}}:keysym" type="text" value="{{escape(config['UI_KEYBINDING_MAP'][cuia]['keysym'])}}"></td>
+	</thead>
+	<tbody>
+		<th scope="row" id="new_keycode"></th>
+			<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);" onfocusin=""></td>
+			<td><input type="checkbox" id="new_all" checked onchange="update_modifiers(this.checked);"></td>
+			{% for name in ["shift","caps","ctrl","alt","num"] %}
+			<td><input type="checkbox" id="new_{{name}}" disabled></td>
+			{% end %}
+			<td><select id="new_action">
+				{% for cuia in config["cuia_list"] %}
+				<option value="{{cuia}}">{{cuia}}</option>
+				{% end %}
+			</select></td>
+			<td><input id="new_params" type="text"></td>
+			<td><button type="button" id="button-add" class="btn btn-theme btn-block" onclick="add_binding();"><i class="fa fa-check"></i></button></td>
 		</tr>
-		{% end %}
-		</tbody>
-		</table>
+	</tbody>
+</table>
 
-		<div class="container-fluid">
-			<div class="row"><br/></div>
-			<div class="row">
-				<button id="btn-save" name="UI_KEYBINDING_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
-			</div>
+	<div class="container-fluid">
+		<div class="row"><br/></div>
+		<div class="row">
+			<button id="btn-save" name="UI_KEYBINDING_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
 		</div>
 	</div>
 	<div class="container-fluid">
