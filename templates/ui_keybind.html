@@ -94,7 +94,16 @@
 			}
 			do_add_binding(key_mod, action, params);
 		}
+		document.getElementById("new_keysym").focus();
 	});
+
+	constrained = true;
+	window.addEventListener('keydown', constrained_input);
+
+	function constrained_input(e) {
+		if(constrained && e.key != "Tab")
+			e.preventDefault();
+	}
 
 	function get_key_name(key) {
 		return code2keycode2html[key];
@@ -159,7 +168,6 @@
 			}
 		} catch(err) {
 		}
-		return true;
 	}
 
 	function select_row(key_map) {
@@ -279,12 +287,12 @@
 		input.setAttribute("id", "button-remove");
 		input.setAttribute("class", "btn btn-danger btn-block");
 		input.setAttribute("onclick", "remove_binding('" + key_mod + "');");
+		input.setAttribute("type", "button");
 		cell.appendChild(input);
 	}
 </script>
 
 <h2>{{ title }}</h2>
-<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
 <table id="kb_table" class="table table-condensed">
 	<thead>
 		<tr class="success">
@@ -301,9 +309,8 @@
 		</tr>
 	</thead>
 	<tbody>
-		<tr>
 		<th scope="row" id="new_keycode"></th>
-			<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);"></td>
+			<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);" onfocusin="constrained=true;" onfocusout="constrained=false;"></td>
 			<td><input type="checkbox" id="new_all" checked onchange="update_modifiers();"></td>
 			{% for name in ["shift","caps","ctrl","alt","num"] %}
 			<td><input type="checkbox" id="new_{{name}}" disabled></td>
@@ -319,6 +326,7 @@
 	</tbody>
 </table>
 
+<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
 	<div class="container-fluid">
 		<div class="row"><br/></div>
 		<div class="row">
