@@ -85,7 +85,7 @@
 
 	document.addEventListener("DOMContentLoaded", function() {
 		for (key_mod in key_map) {
-			var parts = key_map[key_mod].split(" ", 2);
+			var parts = key_map[key_mod].split(/ (.*)/s);
 			if (parts.length > 1) {
 				var action = parts[0];
 				var params = parts[1];
@@ -148,9 +148,9 @@
 	function select_row(key) {
 		all_checked = document.getElementById("all"+key).checked;
 		document.getElementById("new_all").checked = all_checked
-		for (i=1; i < modifers.length; ++i) {
+		for (i=1; i < modifier_list.length; ++i) {
 			var param = modifier_list[i];
-			document.getElementById("new_" + param).checked = document.getElementById("param" + key).checked;
+			document.getElementById("new_" + param).checked = document.getElementById(param + key).checked;
 			document.getElementById("new_" + param).disabled = all_checked
 		}
 		document.getElementById("new_action").value = document.getElementById("action" + key).value;
@@ -176,7 +176,13 @@
 			key_mod = key + " " + mod;
 		}
 		el = document.getElementById("row" + key_mod);
-		if (!el || confirm("Replace binding for " + mod_str + code2keycode2html[key] + "?"))
+		var action_cell = document.getElementById("action" + key_mod);
+		var params_cell = document.getElementById("params" + key_mod);
+		if (action_cell && params_cell)
+			var old_conf = action_cell.value + " " + params_cell.value;
+		else
+			var old_conf = ""
+		if (!el || confirm("Replace binding for " + mod_str + code2keycode2html[key] + "?\n\nCurrent action: " + old_conf))
 			do_add_binding(key_mod, document.getElementById("new_action").value, document.getElementById("new_params").value);
 	}
 
@@ -192,10 +198,10 @@
 		var table = document.getElementById("kb_table");
 		var row = table.insertRow(2);
 		row.id = "row" + key_mod;
-		row.onclick = "select_row(" + key_mod + ");";
+		row.setAttribute("onclick", "select_row('" + key_mod + "');");
 		var cell = row.insertCell();
 		cell.innerHTML = key;
-		cell.id = "row" + key_mod;
+		cell.id = "keycode" + key_mod;
 		cell = row.insertCell();
 		cell.id="keysym" + key_mod
 		cell.innerHTML = get_key_name(parseInt(key));
@@ -219,7 +225,7 @@
 		cell = row.insertCell();
 		input = document.createElement("SELECT");
 		input.id = "action" + key_mod;
-		input.name == key_mod + ":action";
+		input.name = key_mod + ":action";
 		for (i=0; i<cuia_list.length; ++i) {
 			var option = document.createElement("option");
 			option.text = cuia_list[i];
