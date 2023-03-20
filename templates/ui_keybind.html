@@ -1,4 +1,4 @@
-<style> input[id=new_keysym]:focus { background-color: lightblue; }</style>
+<style> input[id=learn]:focus { background-color: lightblue; }</style>
 
 <script>
 	// Map of keyboard scan codes mapped by HTML/js code
@@ -94,7 +94,14 @@
 			}
 			do_add_binding(key_mod, action, params);
 		}
-		document.getElementById("new_keysym").focus();
+		keysym_sel = document.getElementById("new_keysym");
+		for (key_name in html_code2keycode) {
+			var option = document.createElement("option");
+			option.text = key_name;
+			option.value = html_code2keycode[key_name];
+			keysym_sel.appendChild(option);
+		}
+		document.getElementById("learn").focus();
 	});
 
 	constrained = true;
@@ -130,8 +137,9 @@
 			el.remove();
 	}
 
-	function on_new_keycode(event, element) {
+	function on_learn(event) {
 		var numpad = event.code.startsWith("Numpad");
+		element = document.getElementById("new_keysym");
 		if(!document.getElementById("new_all").checked) {
 			mod = null;
 			switch(event.code) {
@@ -163,8 +171,7 @@
 		try {
 			var key = html_code2keycode[event.code];
 			if (key != null) {
-				document.getElementById("new_keycode").innerHTML = key;
-				element.value = event.code;
+				element.value = html_code2keycode[event.code];
 			}
 		} catch(err) {
 		}
@@ -190,13 +197,12 @@
 		}
 		document.getElementById("new_action").value = document.getElementById("action" + key_map).value;
 		document.getElementById("new_params").value = document.getElementById("params" + key_map).value;
-		document.getElementById("new_keycode").innerHTML = document.getElementById("keycode" + key_map).innerHTML;
-		document.getElementById("new_keysym").value = document.getElementById("keysym" + key_map).innerHTML;
+		document.getElementById("new_keysym").value = key;
 		update_modifiers()
 	}
 
 	function add_binding() {
-		var key = document.getElementById("new_keycode").innerHTML;
+		var key = document.getElementById("new_keysym").value;
 		if (key == "")
 			return;
 		var key_mod = key;
@@ -310,8 +316,8 @@
 			</tr>
 		</thead>
 		<tbody>
-			<th scope="row" id="new_keycode"></th>
-				<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);" onfocusin="constrained=true;" onfocusout="constrained=false;"></td>
+			<th scope="row"><input type="text" value="LEARN" size="5" readonly id="learn" onkeydown="on_learn(event);" onfocusin="constrained=true;" onfocusout="constrained=false;"></th>
+				<td><select id="new_keysym"></td>
 				<td><input type="checkbox" id="new_all" checked onchange="update_modifiers();"></td>
 				{% for name in ["shift","caps","ctrl","alt","num"] %}
 				<td><input type="checkbox" id="new_{{name}}" disabled></td>

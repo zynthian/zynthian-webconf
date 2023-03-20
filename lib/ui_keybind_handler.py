@@ -41,6 +41,7 @@ class UiKeybindHandler(ZynthianBasicHandler):
 		config = OrderedDict()
 		config["map"] = zynthian_gui_keybinding.map
 		config["cuia_list"] = zynthian_gui.get_cuia_list()
+		config["key_map"] = zynthian_gui_keybinding
 
 		super().get("ui_keybind.html", "Keyboard Binding", config, errors)
 
