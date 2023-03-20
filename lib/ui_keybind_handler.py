@@ -49,30 +49,16 @@ class UiKeybindHandler(ZynthianBasicHandler):
 	def post(self):
 		action = self.get_argument('UI_KEYBINDING_ACTION')
 		if action:
-			if action.startswith('REMOVE '):
-				action, params = action.split(" ", 1)
-			else:
-				params = None
 			errors = {
-				'SAVE': lambda p: self.do_save(p),
-				'RESET': lambda p: self.do_reset(p),
-				'REMOVE' : lambda p: self.do_remove(p)
-			}[action](params)
+				'SAVE': lambda : self.do_save(),
+				'RESET': lambda : self.do_reset(),
+			}[action]()
 		self.get(errors)
 
 	def do_test(self, params=None):
 		logging.warning("Test")
 
-	def do_remove(self, param):
-		try:
-			zynthian_gui_keybinding.remove_binding(param)
-			self.reload_key_binding_flag = False
-		except Exception as e:
-			logging.error("Removing keyboard binding failed: {}".format(e))
-			return format(e)
-
-
-	def do_save(self, params):
+	def do_save(self):
 		try:
 			data = tornado.escape.recursive_unicode(self.request.arguments)
 			zynthian_gui_keybinding.map = {}
@@ -99,10 +85,9 @@ class UiKeybindHandler(ZynthianBasicHandler):
 			return format(e)
 
 
-	def do_reset(self, params):
+	def do_reset(self):
 		try:
 			zynthian_gui_keybinding.reset_config()
-			#zynthian_gui_keybinding.save()
 			self.reload_key_binding_flag = True
 
 		except Exception as e:

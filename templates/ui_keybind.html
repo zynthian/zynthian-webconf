@@ -293,40 +293,39 @@
 </script>
 
 <h2>{{ title }}</h2>
-<table id="kb_table" class="table table-condensed">
-	<thead>
-		<tr class="success">
-			<th scope="col">Keycode</th>
-			<th scope="col">Keysym</th>
-			<th scope="col">All</th>
-			<th scope="col">Shift</th>
-			<th scope="col">CapsLock</th>
-			<th scope="col">Ctrl</th>
-			<th scope="col">Alt</th>
-			<th scope="col">NumLock</th>
-			<th scope="col">Action</th>
-			<th scope="col">Params</th>
-		</tr>
-	</thead>
-	<tbody>
-		<th scope="row" id="new_keycode"></th>
-			<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);" onfocusin="constrained=true;" onfocusout="constrained=false;"></td>
-			<td><input type="checkbox" id="new_all" checked onchange="update_modifiers();"></td>
-			{% for name in ["shift","caps","ctrl","alt","num"] %}
-			<td><input type="checkbox" id="new_{{name}}" disabled></td>
-			{% end %}
-			<td><select id="new_action">
-				{% for cuia in config["cuia_list"] %}
-				<option value="{{cuia}}">{{cuia}}</option>
+<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post" onkeydown="return event.key != 'Enter';">
+	<table id="kb_table" class="table table-condensed">
+		<thead>
+			<tr class="success">
+				<th scope="col">Keycode</th>
+				<th scope="col">Keysym</th>
+				<th scope="col">All</th>
+				<th scope="col">Shift</th>
+				<th scope="col">CapsLock</th>
+				<th scope="col">Ctrl</th>
+				<th scope="col">Alt</th>
+				<th scope="col">NumLock</th>
+				<th scope="col">Action</th>
+				<th scope="col">Params</th>
+			</tr>
+		</thead>
+		<tbody>
+			<th scope="row" id="new_keycode"></th>
+				<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);" onfocusin="constrained=true;" onfocusout="constrained=false;"></td>
+				<td><input type="checkbox" id="new_all" checked onchange="update_modifiers();"></td>
+				{% for name in ["shift","caps","ctrl","alt","num"] %}
+				<td><input type="checkbox" id="new_{{name}}" disabled></td>
 				{% end %}
-			</select></td>
-			<td><input id="new_params" type="text"></td>
-			<td><button type="button" id="button-add" class="btn btn-theme btn-block" onclick="add_binding();"><i class="fa fa-check"></i></button></td>
-		</tr>
-	</tbody>
-</table>
-
-<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
+				<td><select id="new_action">
+					{% for cuia in config["cuia_list"] %}
+					<option value="{{cuia}}">{{cuia}}</option>
+					{% end %}
+				</select></td>
+				<td><input id="new_params" type="text"></td>
+				<td><button type="button" id="button-add" class="btn btn-theme btn-block" onclick="add_binding();"><i class="fa fa-check"></i></button></td>
+			</tr>
+		</tbody>
+	</table>
 	<div class="container-fluid">
 		<div class="row"><br/></div>
 		<div class="row">
