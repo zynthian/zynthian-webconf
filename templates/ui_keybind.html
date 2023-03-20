@@ -107,9 +107,13 @@
 		return "all";
 	}
 
-	function update_modifiers(state) {
+	function update_modifiers() {
+		state = document.getElementById("new_all").checked;
 		for (i=1; i<modifier_list.length; ++i)
 			document.getElementById("new_"+modifier_list[i]).disabled = state;
+		var keysym= document.getElementById("new_keysym").value;
+		if (!keysym.startsWith("Numpad"))
+			document.getElementById("new_num").disabled = true;
 	}
 
 	function remove_binding(key) {
@@ -119,23 +123,37 @@
 	}
 
 	function on_new_keycode(event, element) {
+		var numpad = event.code.startsWith("Numpad");
 		if(!document.getElementById("new_all").checked) {
-			mod = true;
-			if (event.keyCode == 16)
-				document.getElementById("new_shift").checked = !document.getElementById("new_shift").checked
-			else if (event.keyCode == 17)
-				document.getElementById("new_ctrl").checked = !document.getElementById("new_ctrl").checked
-			else if (event.keyCode == 18)
-				document.getElementById("new_alt").checked = !document.getElementById("new_alt").checked
-			else if (event.keyCode == 91)
-				document.getElementById("new_super").checked = !document.getElementById("new_super").checked
-			else
-				mod = false;
-			if (mod)
+			mod = null;
+			switch(event.code) {
+				case "ShiftLeft":
+				case "ShiftRight":
+					mod = "new_shift";
+					break;
+				case "ControlLeft":
+				case "ControlRight":
+					mod = "new_ctrl";
+					break;
+				case "AltLeft":
+					mod = "new_alt";
+					break;
+				case "CapsLock":
+					mod = "new_caps";
+					break;
+				case "NumLock":
+					mod = "new_num";
+					break;
+				default:
+					document.getElementById("new_num").disabled = !numpad;
+			}
+			if (mod) {
+				document.getElementById(mod).checked = !document.getElementById(mod).checked
 				return;
+			}
 		}
 		try {
-			key = html_code2keycode[event.code];
+			var key = html_code2keycode[event.code];
 			if (key != null) {
 				document.getElementById("new_keycode").innerHTML = key;
 				element.value = event.code;
@@ -145,18 +163,29 @@
 		return false;
 	}
 
-	function select_row(key) {
-		all_checked = document.getElementById("all"+key).checked;
+	function select_row(key_map) {
+		var key = key_map;
+		var mod = null;
+		var parts = key_map.split(" ");
+		if (parts.length > 1) {
+			key = parts[0];
+			mod = parts[1];
+		}
+		all_checked = mod == null;
 		document.getElementById("new_all").checked = all_checked
 		for (i=1; i < modifier_list.length; ++i) {
 			var param = modifier_list[i];
-			document.getElementById("new_" + param).checked = document.getElementById(param + key).checked;
+			var flag = false;
+			if (mod)
+				flag = (mod & 1 << (i - 1)) != 0;
+			document.getElementById("new_" + param).checked = flag;
 			document.getElementById("new_" + param).disabled = all_checked
 		}
-		document.getElementById("new_action").value = document.getElementById("action" + key).value;
-		document.getElementById("new_params").value = document.getElementById("params" + key).value;
-		document.getElementById("new_keycode").innerHTML = document.getElementById("keycode" + key).innerHTML;
-		document.getElementById("new_keysym").value = document.getElementById("keysym" + key).innerHTML;
+		document.getElementById("new_action").value = document.getElementById("action" + key_map).value;
+		document.getElementById("new_params").value = document.getElementById("params" + key_map).value;
+		document.getElementById("new_keycode").innerHTML = document.getElementById("keycode" + key_map).innerHTML;
+		document.getElementById("new_keysym").value = document.getElementById("keysym" + key_map).innerHTML;
+		update_modifiers()
 	}
 
 	function add_binding() {
@@ -166,8 +195,11 @@
 		var key_mod = key;
 		var mod_str = "";
 		if (!document.getElementById("new_all").checked) {
+			var numpad = code2keycode2html[key].startsWith("Numpad");
 			var mod = 0;
 			for(i=1; i < modifier_list.length; ++i) {
+				if (!numpad && i == 5)
+					continue;
 				if (document.getElementById("new_" + modifier_list[i]).checked) {
 					mod |= 1 << (i - 1);
 					mod_str += modifier_list[i] + "+";
@@ -272,7 +304,7 @@
 	<tbody>
 		<th scope="row" id="new_keycode"></th>
 			<td><input id="new_keysym" type="text" readonly maxlength="9" size="9" onkeydown="on_new_keycode(event, this);" onfocusin=""></td>
-			<td><input type="checkbox" id="new_all" checked onchange="update_modifiers(this.checked);"></td>
+			<td><input type="checkbox" id="new_all" checked onchange="update_modifiers();"></td>
 			{% for name in ["shift","caps","ctrl","alt","num"] %}
 			<td><input type="checkbox" id="new_{{name}}" disabled></td>
 			{% end %}
