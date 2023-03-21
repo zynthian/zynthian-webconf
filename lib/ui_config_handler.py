@@ -94,16 +94,6 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
 				'advanced': True
 			}],
-			['ZYNTHIAN_UI_METER_SELECTION', {
-				'type': 'select',
-				'title': 'Meter',
-				'value':  'CPU Usage' if os.environ.get('ZYNTHIAN_UI_SHOW_CPU_STATUS')=='1' else 'Audio Level',
-				'options': ['Audio Level', 'CPU Usage'],
-				'option_labels': {
-					'Audio Level': 'Audio Level',
-					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
-				}
-			}],
 			['ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS', {
 				'type': 'select',
 				'title': 'Visible mixer strips',
@@ -180,16 +170,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
 		self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get('ZYNTHIAN_VNCSERVER_ENABLED', '0')
-
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-
-		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0] == 'CPU Usage':
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
-		else:
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
-
-		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
-
 		errors = self.update_config(escaped_arguments)
 
 		self.restart_ui_flag = True
