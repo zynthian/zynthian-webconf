@@ -27,9 +27,8 @@ import tornado.web
 from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
-from zyngui.zynthian_gui_keybinding import zynthian_gui_keybinding
-from zyngui.zynthian_gui import zynthian_gui
-
+from zyngui import zynthian_gui_keybinding
+from zyngui import zynthian_gui
 #------------------------------------------------------------------------------
 # UI Configuration
 #------------------------------------------------------------------------------
@@ -39,9 +38,9 @@ class UiKeybindHandler(ZynthianBasicHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config = OrderedDict()
-		config["map"] = zynthian_gui_keybinding.map
-		config["cuia_list"] = zynthian_gui.get_cuia_list()
-		config["key_map"] = zynthian_gui_keybinding
+		config["map"] = zynthian_gui_keybinding.get_html_map()
+		config["cuia_list"] = zynthian_gui.zynthian_gui.get_cuia_list()
+		#config["key_map"] = zynthian_gui_keybinding
 
 		super().get("ui_keybind.html", "Keyboard Binding", config, errors)
 
@@ -62,20 +61,15 @@ class UiKeybindHandler(ZynthianBasicHandler):
 	def do_save(self):
 		try:
 			data = tornado.escape.recursive_unicode(self.request.arguments)
-			zynthian_gui_keybinding.map = {}
-			for x, val in data.items():
+			map = {}
+			for key_mod, action in data.items():
+				if key_mod == "UI_KEYBINDING_ACTION":
+					continue
 				try:
-					val = val[0]
-					key, param = x.split(":")
-					if key in zynthian_gui_keybinding.map:
-						if param == "action":
-							zynthian_gui_keybinding.map[key] = f"{val} {zynthian_gui_keybinding.map[key]}".strip()
-						elif param == "params":
-							zynthian_gui_keybinding.map[key] = f"{zynthian_gui_keybinding.map[key]} {val}".strip()
-					else:
-						zynthian_gui_keybinding.map[key] = val
+					map[key_mod] = action[0].strip()
 				except:
 					pass
+			zynthian_gui_keybinding.set_html_map(map)
 			if zynthian_gui_keybinding.save():
 				self.reload_key_binding_flag = True
 			else:
@@ -88,7 +82,7 @@ class UiKeybindHandler(ZynthianBasicHandler):
 
 	def do_reset(self):
 		try:
-			zynthian_gui_keybinding.reset_config()
+			zynthian_gui_keybinding.reset()
 			self.reload_key_binding_flag = True
 
 		except Exception as e:
