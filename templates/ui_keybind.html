@@ -6,83 +6,14 @@
 <script>
 	// Map of keyboard scan codes mapped by HTML/js code
 	var html2tk = {
-		"Escape": 9,
-		"Digit0": 19,
-		"Minus":20,
-		"Equal": 21,
-		"Backspace": 22,
-		"Tab": 23,
-		"BracketLeft": 34,
-		"BracketRight": 35,
-		"Enter": 36,
-		"ControlLeft": 37,
-		"Semicolon": 47,
-		"Quote": 48,
-		"Backquote": 49,
-		"ShiftLeft": 50,
-		"Comma": 59,
-		"Period": 60,
-		"Slash": 61,
-		"ShiftRight": 62,
-		"NumpadMultiply": 63,
-		"AltLeft": 64,
-		"Space": 65,
-		"CapsLock": 66,
-		"NumLock": 77,
-		"ScrollLock": 78,
-		"Numpad7": 79,
-		"Numpad8": 80,
-		"Numpad9": 81,
-		"NumpadSubtract": 82,
-		"Numpad4": 83,
-		"Numpad5": 84,
-		"Numpad6": 85,
-		"NumpadAdd": 86,
-		"Numpad1": 87,
-		"Numpad2": 88,
-		"Numpad3": 89,
-		"Numpad0": 90,
-		"NumpadDecimal": 91,
-		"IntlBackslash": 94,
-		"NumpadEnter": 104,
-		"ControlRight": 105,
-		"NumpadDivide": 106,
-		"AltRight": 108,
-		"Home": 110,
-		"ArrowUp": 111,
-		"PageUp": 112,
-		"ArrowLeft": 113,
-		"ArrowRight": 114,
-		"End": 115,
-		"ArrowDown": 116,
-		"PageDown": 117,
-		"Insert": 118,
-		"Delete": 119,
-		"Pause": 127,
-		"ContextMenu": 135,
-		"BrowserBack": 166,
-		"BrowserForward": 167,
-		"BrowserReload": 181
+		{% for key,value in config["keys"].items() %}"{{key}}": {{value}},
+		{% end %}
 	}
-	for (i=1; i<13; ++i)
-		html2tk["F"+i] = 66 + i; //!@todo add F13..F24
-	for (i=1; i < 10; ++i)
-		html2tk["Digit"+i] = 9 + i;
-	for (i=0; i<10; ++i)
-		html2tk["Key" + "QWERTYUIOP"[i]] = 24 + i;
-	for (i=0; i<9; ++i)
-		html2tk["Key" + "ASDFGHJKL"[i]] = 38 + i;
-	for (i=0; i<7; ++i)
-		html2tk["Key" + "ZXCVBNM"[i]] = 52 + i;
-	// Unsupported keys: NumpadEqual,KanaMode,Lang2,Lang1,IntlRo,Convert,NonConvert,IntlYen,AudioVolumeMute,LaunchApp2,MediaPlayPause,MediaStop,VolumeDown==AudioVolumeDown,VolumeUp==AudioVolumeUp,BrowserHome,PrintScreen,OSLeft==MetaLeft,OSRight==MetaRight,Power,Sleep,WakeUp,BrowserSearch,BrowserFavorites,BrowserRefresh,BrowserStop,LaunchApp1,LaunchMail,MediaSelect
-	code2keycode2html = {};
-	for (var key in html2tk)
-		code2keycode2html[html2tk[key]] = key;
 
 	var modifier_list = ["shift","caps","ctrl","alt","num"]; //,"shift_r","super","altgr"];
-	var cuia_list = [{% for cuia in config["cuia_list"] %}"{{cuia}}",{% end %}];
+	var cuia_list = [{% for cuia in config["cuias"] %}"{{cuia}}",{% end %}];
 	var key_map = {
-		{% for key_mod, val in config["map"].items() %} "{{key_mod}}": "{{val}}",
+		{% for key_mod, val in config["bindings"].items() %} "{{key_mod}}": "{{val}}",
 		{% end %}};
 
 	document.addEventListener("DOMContentLoaded", function() {
@@ -98,10 +29,10 @@
 			do_add_binding(key_mod, action, params);
 		}
 		keysym_sel = document.getElementById("new_keysym");
+		// Add key trigger names to keysym select control
 		for (key_name in html2tk) {
 			option = document.createElement("option");
 			option.text = key_name;
-			//option.value = html2tk[key_name];
 			option.value = key_name;
 			keysym_sel.appendChild(option);
 		}
@@ -162,11 +93,19 @@
 	}
 
 	function select_row(key_map) {
-		var parts = key_map.split(",");
-		key = parts[0];
+		var parts = key_map.split("+");
+		key = null
+		for (i in parts) {
+			if (modifier_list.includes(parts[i]))
+				continue;
+			key = parts[i];
+			break;
+		}
+		if (!key)
+			return;
 		for (var i in modifier_list) {
 			var param = modifier_list[i];
-			var flag = parts.includes(param, 1);
+			var flag = parts.includes(param);
 			document.getElementById("new_" + param).checked = flag;
 		}
 		document.getElementById("new_action").value = document.getElementById("action" + key_map).value;
@@ -179,21 +118,16 @@
 		var key = document.getElementById("new_keysym").value;
 		if (key == "")
 			return;
-		var key_mod = key;
-		var mod_str = "";
+		var key_mod = "";
 		var numpad = key.startsWith("Numpad");
-		var mod = "";
 		for(i=0; i < modifier_list.length; ++i) {
 			if (!numpad && i == 5)
 				continue;
 			if (document.getElementById("new_" + modifier_list[i]).checked) {
-				if (mod)
-					mod += ",";
-				mod += modifier_list[i];
+				key_mod += modifier_list[i] + "+";
 			}
 		}
-		if (mod)
-			key_mod = key + "," + mod;
+		key_mod += key;
 		el = document.getElementById("row" + key_mod);
 		var action_cell = document.getElementById("action" + key_mod);
 		var params_cell = document.getElementById("params" + key_mod);
@@ -201,18 +135,19 @@
 			var old_conf = action_cell.value + " " + params_cell.value;
 		else
 			var old_conf = ""
-		if (mod)
-			prefix =  mod.replace(",","+") + "+";
-		else
-			prefix = "";
-		if (!el || confirm("Replace binding for " + prefix + key + "?\n\nCurrent action: " + old_conf))
+		if (!el || confirm("Replace binding for " + key_mod + "?\n\nCurrent action: " + old_conf))
 			do_add_binding(key_mod, document.getElementById("new_action").value, document.getElementById("new_params").value);
 	}
 
 	function do_add_binding(key_mod, action, params) {
 		remove_binding(key_mod);
-		var parts = key_mod.split(",");
-		var key = parts[0];
+		var parts = key_mod.split("+");
+		for (i in parts) {
+			if (modifier_list.includes(parts[i]))
+				continue;
+			var key = parts[i];
+			break;
+		}
 		var table = document.getElementById("kb_table");
 		var row = table.insertRow(-1);
 		row.id = "row" + key_mod;
@@ -232,7 +167,7 @@
 			input.type = "checkbox";
 			input.id = param + key_mod;
 			input.disabled = true;
-			input.checked = (parts.includes(modifier_list[i], 1));
+			input.checked = (parts.includes(modifier_list[i]));
 			cell.appendChild(input);
 		}
 		cell = row.insertCell();
@@ -288,7 +223,7 @@
 				<td><input type="checkbox" id="new_{{name}}"{% if name=="num" %} disabled {% end %}></td>
 				{% end %}
 				<td><select id="new_action">
-					{% for cuia in config["cuia_list"] %}
+					{% for cuia in config["cuias"] %}
 					<option value="{{cuia}}">{{cuia}}</option>
 					{% end %}
 				</select></td>

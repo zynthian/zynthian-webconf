@@ -38,9 +38,9 @@ class UiKeybindHandler(ZynthianBasicHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		config = OrderedDict()
-		config["map"] = zynthian_gui_keybinding.get_html_map()
-		config["cuia_list"] = zynthian_gui.zynthian_gui.get_cuia_list()
-		#config["key_map"] = zynthian_gui_keybinding
+		config["bindings"] = zynthian_gui_keybinding.get_html_map()
+		config["cuias"] = zynthian_gui.zynthian_gui.get_cuia_list()
+		config["keys"] = zynthian_gui_keybinding.html2tk
 
 		super().get("ui_keybind.html", "Keyboard Binding", config, errors)
 
@@ -82,7 +82,7 @@ class UiKeybindHandler(ZynthianBasicHandler):
 
 	def do_reset(self):
 		try:
-			zynthian_gui_keybinding.reset()
+			zynthian_gui_keybinding.reset(True)
 			self.reload_key_binding_flag = True
 
 		except Exception as e:
