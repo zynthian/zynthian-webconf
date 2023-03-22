@@ -60,6 +60,8 @@
 	}
 
 	function on_learn(event) {
+		if (event.repeat)
+			return;
 		element = document.getElementById("new_keysym");
 		mod = null;
 		switch(event.code) {
@@ -92,7 +94,7 @@
 		update_locks();
 	}
 
-	function select_row(key_map) {
+	function select_row(key_map, action, params) {
 		var parts = key_map.split("+");
 		key = null
 		for (i in parts) {
@@ -108,8 +110,8 @@
 			var flag = parts.includes(param);
 			document.getElementById("new_" + param).checked = flag;
 		}
-		document.getElementById("new_action").value = document.getElementById("action" + key_map).value;
-		document.getElementById("new_params").value = document.getElementById("params" + key_map).value;
+		document.getElementById("new_action").value = action;
+		document.getElementById("new_params").value = params;
 		document.getElementById("new_keysym").value = key;
 		update_locks()
 	}
@@ -136,10 +138,10 @@
 		else
 			var old_conf = ""
 		if (!el || confirm("Replace binding for " + key_mod + "?\n\nCurrent action: " + old_conf))
-			do_add_binding(key_mod, document.getElementById("new_action").value, document.getElementById("new_params").value);
+			do_add_binding(key_mod, document.getElementById("new_action").value, document.getElementById("new_params").value, 1);
 	}
 
-	function do_add_binding(key_mod, action, params) {
+	function do_add_binding(key_mod, action, params, pos=-1) {
 		remove_binding(key_mod);
 		var parts = key_mod.split("+");
 		for (i in parts) {
@@ -149,45 +151,18 @@
 			break;
 		}
 		var table = document.getElementById("kb_table");
-		var row = table.insertRow(-1);
+		var row = table.insertRow(pos);
 		row.id = "row" + key_mod;
-		row.setAttribute("onclick", "select_row('" + key_mod + "');");
+		row.setAttribute("onclick", "select_row('" + key_mod + "', '" + action + "','" + params +"');");
 		cell = row.insertCell();
-		cell.id="keysym" + key_mod
-		cell.innerHTML = key;
+		cell.innerHTML = key_mod;
 		input = document.createElement("INPUT");
 		input.name = key_mod;
 		input.value = action + " " + params;
 		input.hidden = true;
 		cell.appendChild(input);
-		for (i=0; i<modifier_list.length; ++i) {
-			param = modifier_list[i];
-			cell = row.insertCell();
-			input = document.createElement("INPUT");
-			input.type = "checkbox";
-			input.id = param + key_mod;
-			input.disabled = true;
-			input.checked = (parts.includes(modifier_list[i]));
-			cell.appendChild(input);
-		}
 		cell = row.insertCell();
-		input = document.createElement("SELECT");
-		input.id = "action" + key_mod;
-		for (i=0; i<cuia_list.length; ++i) {
-			var option = document.createElement("option");
-			option.text = cuia_list[i];
-			option.value = cuia_list[i];
-			input.add(option);
-			if (cuia_list[i] == action)
-				option.selected="selected";
-		}
-		cell.appendChild(input);
-		cell = row.insertCell();
-		input = document.createElement("INPUT");
-		input.type = "text";
-		input.id = "params" + key_mod;
-		input.value = params;
-		cell.appendChild(input);
+		cell.innerHTML = action + " " + params;
 		cell = row.insertCell();
 		input = document.createElement("BUTTON");
 		input.innerHTML = '<i class="fa fa-trash-o"></i>';
@@ -201,36 +176,44 @@
 
 <h2>{{ title }}</h2>
 <input type="text" value="LEARN" size="5" readonly id="learn" onkeydown="on_learn(event);" onfocusin="constrained=true;" onfocusout="constrained=false;">
+<table class="table table-condensed">
+	<thead>
+		<tr class="success">
+			<th scope="col">CapsLock</th>
+			<th scope="col">NumLock</th>
+			<th scope="col">Shift</th>
+			<th scope="col">Ctrl</th>
+			<th scope="col">Alt</th>
+			<th scope="col">Key</th>
+			<th scope="col">Action</th>
+			<th scope="col">Params</th>
+			<th scope="col"></th>
+		</tr>
+	</thead>
+	<tbody>
+		<tr>
+			{% for name in ["caps","num","shift","ctrl","alt"] %}
+			<td><input type="checkbox" id="new_{{name}}"{% if name=="num" %} disabled {% end %}></td>
+			{% end %}
+			<td><select id="new_keysym" onchange="update_locks();"></td>
+			<td><select id="new_action">
+				{% for cuia in config["cuias"] %}
+				<option value="{{cuia}}">{{cuia}}</option>
+				{% end %}
+			</select></td>
+			<td><input id="new_params" type="text"></td>
+			<td><button type="button" id="button-add" class="btn btn-theme btn-block" onclick="add_binding();"><i class="fa fa-check"></i></button></td>
+		</tr>
+	</tbody>
+</table>
 <form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post" onkeydown="return event.key != 'Enter';">
 	<table id="kb_table" class="table table-condensed">
 		<thead>
 			<tr class="success">
-				<th scope="col">Keysym</th>
-				<th scope="col">Shift</th>
-				<th scope="col">CapsLock</th>
-				<th scope="col">Ctrl</th>
-				<th scope="col">Alt</th>
-				<th scope="col">NumLock</th>
-				<th scope="col">Action</th>
-				<th scope="col">Params</th>
-				<th scope="col"></th>
+				<th scope="col">Trigger</th>
+				<th scope="col">Event</th>
 			</tr>
 		</thead>
-		<tbody>
-			<tr>
-				<td><select id="new_keysym" onchange="update_locks();"></td>
-				{% for name in ["shift","caps","ctrl","alt","num"] %}
-				<td><input type="checkbox" id="new_{{name}}"{% if name=="num" %} disabled {% end %}></td>
-				{% end %}
-				<td><select id="new_action">
-					{% for cuia in config["cuias"] %}
-					<option value="{{cuia}}">{{cuia}}</option>
-					{% end %}
-				</select></td>
-				<td><input id="new_params" type="text"></td>
-				<td><button type="button" id="button-add" class="btn btn-theme btn-block" onclick="add_binding();"><i class="fa fa-check"></i></button></td>
-			</tr>
-		</tbody>
 	</table>
 	<div class="container-fluid">
 		<div class="row"><br/></div>
