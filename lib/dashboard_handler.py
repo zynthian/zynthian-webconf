@@ -321,8 +321,12 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def get_ip():
 		#out=check_output("hostname -I | cut -f1 -d' '", shell=True).decode()
-		out=check_output("hostname -I", shell=True).decode()
-		return out
+		ips = []
+		for ip in check_output("hostname -I", shell=True).decode().split(" "):
+			# Filter ip6 addresses
+			if '.' in ip:
+				ips.append(ip)
+		return " ".join(ips)
 
 
 	@staticmethod
