@@ -34,22 +34,22 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 #------------------------------------------------------------------------------
 
 class DisplayConfigHandler(ZynthianConfigHandler):
-
-	display_presets=OrderedDict([
+	display_presets = OrderedDict([
 		['Z2 Display', {
 			'DISPLAY_CONFIG': 
 				'hdmi_force_hotplug:0=0\n'+
 				'hdmi_force_hotplug:1=1\n'+
-				'hdmi_drive:1=1\n'+
-				'hdmi_group:1=2\n'+
-				'hdmi_mode:1=87\n'+
-				'hdmi_cvt:1 1024 600 60 6 0 0 0\n'+
+				'#hdmi_drive:1=1\n'+
+				'#hdmi_group:1=2\n'+
+				'#hdmi_mode:1=87\n'+
+				'#hdmi_cvt:1 1024 600 70 6 0 0 0\n'+
 				'#config_hdmi_boost:1=4\n'+
+				'#display_hdmi_rotate=2\n'+
 				'dtoverlay=vc4-kms-v3d\n'+
 				'dtoverlay=goodix_z2',
 			'DISPLAY_WIDTH': '1024',
 			'DISPLAY_HEIGHT': '600',
-			'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-2:1024x600M@60,rotate=180',
+			'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-2:1024x600M@70,rotate=180',
 			'FRAMEBUFFER': '/dev/fb0'
 		}],
 		['ZynScreen 3.5 (v1)', {
