@@ -85,7 +85,7 @@ class KitConfigHandler(ZynthianConfigHandler):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version != "Custom":
 			if kit_version == "V5":
-				soundcard_name = "Z2 ADAC"
+				soundcard_name = "V5 ADAC"
 				display_name = "MIPI DSI 800x480 (inverted)"
 				wiring_layout = "V5"
 				wiring_layout_custom_profile = "v5"
