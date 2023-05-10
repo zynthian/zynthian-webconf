@@ -45,69 +45,64 @@ class UiConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		config=OrderedDict([
-			['ZYNTHIAN_UI_FONT_SIZE', {
+		config = OrderedDict([
+			['ZYNTHIAN_UI_POWER_SAVE_MINUTES', {
 				'type': 'text',
-				'title': 'Font Size',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE')
+				'title': 'Power-Save delay (minutes)',
+				'value': os.environ.get('ZYNTHIAN_UI_POWER_SAVE_MINUTES', '60')
 			}],
-			['ZYNTHIAN_UI_FONT_FAMILY', {
+			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
+				'type': 'boolean',
+				'title': 'Restore last state on startup',
+				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+			}],
+			['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
+				'type': 'boolean',
+				'title': 'Audio levels on snapshots',
+				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
+			}],
+			['ZYNTHIAN_UI_MULTICHANNEL_RECORDER', {
+				'type': 'boolean',
+				'title': 'Enable multichannel recording',
+				'value': os.environ.get('ZYNTHIAN_UI_MULTICHANNEL_RECORDER', '1'),
+			}],
+			['ZYNTHIAN_VNCSERVER_ENABLED', {
+				'type': 'boolean',
+				'title': 'Enable VNC server',
+				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
+			}],
+			['_SECTION_UI_GRAPHICS_', {
+				'type': 'html',
+				'content': "<h3>Graphics & Usability</h3>",
+			}],
+			['ZYNTHIAN_UI_GRAPHIC_LAYOUT', {
 				'type': 'select',
-				'title': 'Font Family',
-				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY'),
-				'options': self.font_families,
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_BG', {
-				'type': 'text',
-				'title': 'Background Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_TX', {
-				'type': 'text',
-				'title': 'Text Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_ON', {
-				'type': 'text',
-				'title': 'Light Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_COLOR_PANEL_BG', {
-				'type': 'text',
-				'title': 'Panel Background Color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_SWITCH_BOLD_MS', {
-				'type': 'text',
-				'title': 'Bold Push Time (ms)',
-				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_BOLD_MS', '300'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_SWITCH_LONG_MS', {
-				'type': 'text',
-				'title': 'Long Push Time (ms)',
-				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
-				'advanced': True
-			}],
-			['ZYNTHIAN_UI_METER_SELECTION', {
-				'type': 'select',
-				'title': 'Meter',
-				'value':  'CPU Usage' if os.environ.get('ZYNTHIAN_UI_SHOW_CPU_STATUS')=='1' else 'Audio Level',
-				'options': ['Audio Level', 'CPU Usage'],
+				'title': 'Graphic layout',
+				'value': os.environ.get('ZYNTHIAN_UI_GRAPHIC_LAYOUT', ''),
+				'options': ["", "V4", "Z2"],
 				'option_labels': {
-					'Audio Level': 'Audio Level',
-					'CPU Usage': 'CPU Usage', # these option_labels are2 needed, because otherwise 'Cpu Usage' is generatted
-				}
+					'': "Auto",
+					'V4': "Knobs at corners (V1-V4)",
+					'Z2': "Knobs at right (Z2 & V5)",
+				},
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
+				'type': 'boolean',
+				'title': 'Enable onscreen buttons',
+				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_ENABLE_CURSOR', {
+				'type': 'boolean',
+				'title': 'Enable cursor',
+				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+				'advanced': True
 			}],
 			['ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS', {
 				'type': 'select',
 				'title': 'Visible mixer strips',
-				'value':  os.environ.get('ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS'),
+				'value':  os.environ.get('ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS', "0"),
 				'options': ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16'],
 				'option_labels': {
 					'0': 'Automatic',
@@ -130,45 +125,108 @@ class UiConfigHandler(ZynthianConfigHandler):
 				},
 				'advanced': True
 			}],
-			['ZYNTHIAN_UI_POWER_SAVE_MINUTES', {
+			['ZYNTHIAN_UI_SWITCH_BOLD_MS', {
 				'type': 'text',
-				'title': 'Power Save Delay (minutes)',
-				'value': os.environ.get('ZYNTHIAN_UI_POWER_SAVE_MINUTES', '60'),
+				'title': 'Bold-push time (ms)',
+				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_BOLD_MS', '300'),
+			}],
+			['ZYNTHIAN_UI_SWITCH_LONG_MS', {
+				'type': 'text',
+				'title': 'Long-push time (ms)',
+				'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
+			}],
+			['_SECTION_UI_COLORS_', {
+				'type': 'html',
+				'content': "<h3>Font & Colors</h3>",
+			}],
+			['ZYNTHIAN_UI_FONT_SIZE', {
+				'type': 'text',
+				'title': 'Font size',
+				'value': os.environ.get('ZYNTHIAN_UI_FONT_SIZE', "16")
+			}],
+			['ZYNTHIAN_UI_FONT_FAMILY', {
+				'type': 'select',
+				'title': 'Font family',
+				'value': os.environ.get('ZYNTHIAN_UI_FONT_FAMILY', "Audiowide"),
+				'options': self.font_families,
 				'advanced': True
 			}],
-			['ZYNTHIAN_UI_RESTORE_LAST_STATE', {
-				'type': 'boolean',
-				'title': 'Restore last state on startup',
-				'value': os.environ.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '1')
+			['ZYNTHIAN_UI_COLOR_INFO', {
+				'type': 'text',
+				'title': 'Info color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_INFO', "#8080ff"),
 			}],
-			['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', {
-				'type': 'boolean',
-				'title': 'Audio Levels on Snapshots',
-				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
+			['ZYNTHIAN_UI_COLOR_MIDI', {
+				'type': 'text',
+				'title': 'MIDI color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_MIDI', "#ff00ff"),
 			}],
-			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
-				'type': 'boolean',
-				'title': 'Enable Onscreen Buttons',
-				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
+			['ZYNTHIAN_UI_COLOR_ERROR', {
+				'type': 'text',
+				'title': 'Error color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ERROR', "#ff0000"),
 			}],
-			['ZYNTHIAN_UI_MULTICHANNEL_RECORDER', {
-				'type': 'boolean',
-				'title': 'Enable Multichannel Recording',
-				'value': os.environ.get('ZYNTHIAN_UI_MULTICHANNEL_RECORDER', '0'),
-			}],
-			['ZYNTHIAN_UI_ENABLE_CURSOR', {
-				'type': 'boolean',
-				'title': 'Enable cursor',
-				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
+			['ZYNTHIAN_UI_COLOR_BG', {
+				'type': 'text',
+				'title': 'Background color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_BG', "#000000"),
 				'advanced': True
 			}],
-			['ZYNTHIAN_VNCSERVER_ENABLED', {
-				'type': 'boolean',
-				'title': 'Enable VNC Server',
-				'value': os.environ.get('ZYNTHIAN_VNCSERVER_ENABLED', '0'),
+			['ZYNTHIAN_UI_COLOR_TX', {
+				'type': 'text',
+				'title': 'Text color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX', "#ffffff"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_TX_OFF', {
+				'type': 'text',
+				'title': 'Text-Off color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_TX_OFF', "#e0e0e0"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_ON', {
+				'type': 'text',
+				'title': 'On color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ON', "#ff0000"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_LOW_ON', {
+				'type': 'text',
+				'title': 'Low-On color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_LOW_ON', "#b00000"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_OFF', {
+				'type': 'text',
+				'title': 'Off color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_OFF', "#5a626d"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_HL', {
+				'type': 'text',
+				'title': 'Highlight color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_HL', "#00b000"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_ML', {
+				'type': 'text',
+				'title': 'Midlight color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ML', "#f0f000"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_PANEL_BG', {
+				'type': 'text',
+				'title': 'Panel background color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_BG', "#3a424d"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_UI_COLOR_PANEL_HL', {
+				'type': 'text',
+				'title': 'Panel highlight color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_HL', "#2a323d"),
+				'advanced': True
 			}]
 		])
-
 		super().get("User Interface", config, errors)
 
 
@@ -180,16 +238,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
 		self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get('ZYNTHIAN_VNCSERVER_ENABLED', '0')
-
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-
-		if escaped_arguments['ZYNTHIAN_UI_METER_SELECTION'][0] == 'CPU Usage':
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '1'
-		else:
-			escaped_arguments['ZYNTHIAN_UI_SHOW_CPU_STATUS'] = '0'
-
-		del escaped_arguments['ZYNTHIAN_UI_METER_SELECTION']
-
 		errors = self.update_config(escaped_arguments)
 
 		self.restart_ui_flag = True

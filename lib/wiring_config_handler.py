@@ -717,11 +717,29 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'div_class': div_class2x,
 					'advanced': True
 				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_PUSH')
+				config[base_name + '__UI_ALT_PUSH__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_PUSH',
+					'type': 'select',
+					'title': 'ALT Push',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_PUSH__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_PUSH',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
 				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_SHORT')
 				config[base_name + '__UI_SHORT__CUIA_NAME'] = {
 					'enabling_options': 'UI_ACTION_RELEASE',
 					'type': 'select',
-					'title': 'Short-push',
+					'title': 'Short',
 					'value': cuia_name,
 					'options': cuia_list,
 					'div_class': div_class2,
@@ -739,7 +757,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				config[base_name + '__UI_BOLD__CUIA_NAME'] = {
 					'enabling_options': 'UI_ACTION_RELEASE',
 					'type': 'select',
-					'title': 'Bold-push',
+					'title': 'Bold',
 					'value': cuia_name,
 					'options': cuia_list,
 					'div_class': div_class2,
@@ -757,13 +775,73 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				config[base_name + '__UI_LONG__CUIA_NAME'] = {
 					'enabling_options': 'UI_ACTION_RELEASE',
 					'type': 'select',
-					'title': 'Long-push',
+					'title': 'Long',
 					'value': cuia_name,
 					'options': cuia_list,
 					'div_class': div_class2,
 					'advanced': True
 				}
 				config[base_name + '__UI_LONG__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				config['_SECTION_CUSTOM_SWITCHES_SPACER_' + base_name] = {
+					'type': 'html',
+					'content': "",
+					'div_class': div_class,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_SHORT')
+				config[base_name + '__UI_ALT_SHORT__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'ALT Short',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_SHORT__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_BOLD')
+				config[base_name + '__UI_ALT_BOLD__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'ALT Bold',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_BOLD__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_LONG')
+				config[base_name + '__UI_ALT_LONG__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'ALT Long',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_LONG__CUIA_PARAM'] = {
 					'enabling_options': 'UI_ACTION_RELEASE',
 					'type': 'text',
 					'title': '',
@@ -1023,7 +1101,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		data = tornado.escape.recursive_unicode(self.request.arguments)
 		for i in range(64):
 			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i + 1)
-			for k in ("PUSH", "SHORT", "BOLD", "LONG"):
+			for k in ("PUSH", "SHORT", "BOLD", "LONG","ALT_PUSH", "ALT_SHORT", "ALT_BOLD", "ALT_LONG"):
 				base_subname = base_name + '__UI_' + k
 				try:
 					cuia_str = data[base_subname + '__CUIA_NAME'][0] + " " + data[base_subname + '__CUIA_PARAM'][0]
@@ -1084,6 +1162,10 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				"__UI_SHORT": "NONE",
 				"__UI_BOLD": "NONE",
 				"__UI_LONG": "NONE",
+				"__UI_ALT_PUSH": "NONE",
+				"__UI_ALT_SHORT": "NONE",
+				"__UI_ALT_BOLD": "NONE",
+				"__UI_ALT_LONG": "NONE",
 				"__MIDI_CHAN": "0",
 				"__MIDI_NUM": "0",
 				"__MIDI_VAL": "0",
@@ -1157,7 +1239,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def tweak_custom_profile(cls, data):
 		for i in range(64):
 			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i + 1)
-			for k in ("PUSH", "SHORT", "BOLD", "LONG"):
+			for k in ("PUSH", "SHORT", "BOLD", "LONG","ALT_PUSH", "ALT_SHORT", "ALT_BOLD", "ALT_LONG"):
 				base_subname = base_name + '__UI_' + k
 				try:
 					parts = data[base_subname].split(" ", 2)
