@@ -452,7 +452,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': "MCP23017 I2C Address",
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'),
-				'options': ['' ,'0x20', '0x21', '0x22', '0x23', '0x24', '0x25', '0x26', '0x27'],
+				'options': ['', '0x20', '0x21', '0x22', '0x23', '0x24', '0x25', '0x26', '0x27'],
 				'advanced': True,
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
@@ -461,7 +461,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': "MCP23017 INT-A Pin",
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+				'options': ['', '0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
 					'': 'Default', 
 					'0': 'WPi-GPIO 0 (pin 11)',
@@ -482,7 +482,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': "MCP23017 INT-B Pin",
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+				'options': ['', '0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
 					'': 'Default', 
 					'0': 'WPi-GPIO 0 (pin 11)',
@@ -540,51 +540,6 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				},
 				'advanced': True,
 				'refresh_on_change': True
-			}
-		elif wiring_layout.startswith("I2C"):
-			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
-				'type': 'select',
-				'title': "INT Pin",
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
-				'option_labels': {
-					'': 'Default', 
-					'0': 'WPi-GPIO 0 (pin 11)',
-					'2': 'WPi-GPIO 2 (pin 13)',
-					'3': 'WPi-GPIO 3 (pin 15)',
-					'4': 'WPi-GPIO 4 (pin 16)',
-					'5': 'WPi-GPIO 5 (pin 18)',
-					'6': 'WPi-GPIO 6 (pin 22)',
-					'7': 'WPi-GPIO 7 (pin 7)',
-					'25': 'WPi-GPIO 25 (pin 37)',
-					'27': 'WPi-GPIO 27 (pin 36)'
-				},
-				'advanced': True,
-				'disabled': custom_options_disabled
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
-				'type': 'hidden',
-				'value': zynaptik_config
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
-				'type': 'hidden',
-				'value': zyntof_config
 			}
 		else:
 			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
