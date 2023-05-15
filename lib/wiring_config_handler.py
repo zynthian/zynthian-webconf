@@ -58,6 +58,18 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "{}/wiring-profiles".format(os.environ.get("ZYNTHIAN_CONFIG_DIR"))
 
 	wiring_presets = OrderedDict([
+		["V5_ZYNFACE", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "Zynface-V5 (16xDIO + 4xAD + 4xDA)",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': ADS1115_I2C_ADDRESS,
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5_zynface'
+		}],
 		["V5", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
@@ -396,12 +408,29 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 		if wiring_layout.startswith("Z2"):
 			encoders_config_flag = False
+			mcp23017_config_flag = False
+			zynaptik_config_flag = False
+			zyntof_config_flag = False
 			n_extra_switches = 32
 		elif wiring_layout.startswith("V5"):
 			encoders_config_flag = False
+			mcp23017_config_flag = False
+			if wiring_layout == "V5_ZYNFACE":
+				zynaptik_config_flag = True
+			else:
+				zynaptik_config_flag = False
+			zyntof_config_flag = False
 			n_extra_switches = 24
 		else:
 			encoders_config_flag = True
+			if wiring_layout.startswith("MCP23017") or wiring_layout == "CUSTOM":
+				mcp23017_config_flag = True
+				zynaptik_config_flag = True
+				zyntof_config_flag = True
+			else:
+				mcp23017_config_flag = False
+				zynaptik_config_flag = False
+				zyntof_config_flag = False
 			try:
 				# Calculate Num of Custom Switches
 				n_extra_switches = min(4,max(0, len(wiring_switches.split(",")) - 4))
@@ -447,7 +476,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES')
 			}
 
-		if wiring_layout.startswith("MCP23017") or wiring_layout == "CUSTOM":
+		if mcp23017_config_flag:
 			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "MCP23017 I2C Address",
@@ -499,11 +528,26 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
 			}
+		else:
+			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS')
+			}
+			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN')
+			}
+			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
+			}
+
+		if zynaptik_config_flag:
 			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
 				'type': 'select',
 				'title': "Zynaptik Config",
 				'value': zynaptik_config,
-				'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (4xAD + 4xDA)"],
+				'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (4xAD + 4xDA)", "Zynface-V5 (16xDIO + 4xAD + 4xDA)"],
 				'advanced': True,
 				'refresh_on_change': True,
 				'div_class': "col-sm-4"
@@ -511,8 +555,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "ADS1115 I2C Address",
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'),
-				'options': ['' ,'0x48', '0x49', '0x4A', '0x4B'],
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS', ADS1115_I2C_ADDRESS),
+				'options': ['', '0x48', '0x49', '0x4A', '0x4B'],
 				'advanced': True,
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
@@ -520,12 +564,27 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "MCP4728 I2C Address",
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'),
-				'options': ['' ,'0x60', '0x61', '0x62', '0x63', '0x64', '0x65', '0x66', '0x67'],
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS', MCP4728_I2C_ADDRESS),
+				'options': ['', '0x60', '0x61', '0x62', '0x63', '0x64', '0x65', '0x66', '0x67'],
 				'advanced': True,
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
 			}
+		else:
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
+				'type': 'hidden',
+				'value': zynaptik_config
+			}
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS', ADS1115_I2C_ADDRESS)
+			}
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS', MCP4728_I2C_ADDRESS)
+			}
+
+		if zyntof_config_flag:
 			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
 				'type': 'select',
 				'title': "Num. of Distance Sensors",
@@ -542,30 +601,6 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'refresh_on_change': True
 			}
 		else:
-			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN')
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
-				'type': 'hidden',
-				'value': zynaptik_config
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS')
-			}
 			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
 				'type': 'hidden',
 				'value': zyntof_config
