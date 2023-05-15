@@ -789,7 +789,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'div_class': div_class2x,
 					'advanced': True
 				}
-				config['_SECTION_CUSTOM_SWITCHES_SPACER_' + base_name] = {
+				config[base_name + '__SPACER'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
 					'type': 'html',
 					'content': "",
 					'div_class': div_class,
