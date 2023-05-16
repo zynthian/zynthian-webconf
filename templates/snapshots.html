@@ -441,9 +441,9 @@ function getMidiProfileStateData(snapshotDetails){
 function renderControllers(ctrl) {
   let result = '<div>';
   for (key in ctrl) {
-    result += '<div class="row"><div class="col-md-3">';
+    result += '<div class="row"><div class="col-md-6">';
     result += key;
-    result += '</div><div class="col-md-9">';
+    result += '</div><div class="col-md-6">';
     result += ctrl[key].value;
     result += "</div></div>"
   }
@@ -499,15 +499,21 @@ function getLayoutData(snapshotDetails){
 		if (layer.preset_name) details += layer.preset_name;
 		if (layer.controllers_dict) {
 			layer_controller_infos = "";
-
 			for (ctrlIdx in layer.controllers_dict) {
+			    var learn_info = "";
+    			if (layer.controllers_dict[ctrlIdx].midi_learn_cc>0) {
+      				learn_info = "CH"+layer.controllers_dict[ctrlIdx].midi_learn_chan + ", CC" + layer.controllers_dict[ctrlIdx].midi_learn_cc;
+    			}
 				layer_controller_infos += ['<div class="row">',
-					'<div class="col-xs-6"><strong>',
+					'<div class="col-xs-5"><strong>',
 					ctrlIdx,
 					'</strong></div>',
 					'<div class="col-xs-1"></div>',
-					'<div class="col-xs-5">',
+					'<div class="col-xs-4">',
 					layer.controllers_dict[ctrlIdx].value,
+					'</div>',
+					'<div class="col-xs-2">',
+					learn_info,
 					'</div>',
 					'</div>'
 				].join('')
