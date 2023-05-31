@@ -1,40 +1,225 @@
-<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post">
-<div class="pull-right">
-	<input id="enable_keybinding" type="checkbox" name="enable_keybinding" onChange="document.getElementById('btn-save').click()" {% if config['UI_KEYBINDING_ENABLED'] %} checked {% end %}/><span>Enable Keybinding</span>
-</div>
+<style>
+	input[id=learn]:focus { background-color: lightblue; }
+	input[id=learn] {text-align: center; }
+</style>
+
+<script>
+	// Map of keyboard scan codes mapped by HTML/js code
+	var html2tk = {
+		{% for key,value in config["keys"].items() %}"{{key}}": {{value}},
+		{% end %}
+	}
+
+	var modifier_list = ["shift","caps","ctrl","alt","num"]; //,"shift_r","super","altgr"];
+	var cuia_list = [{% for cuia in config["cuias"] %}"{{cuia}}",{% end %}];
+	var key_map = {
+		{% for key_mod, val in config["bindings"].items() %} "{{key_mod}}": "{{val}}",
+		{% end %}};
+
+	document.addEventListener("DOMContentLoaded", function() {
+		for (key_mod in key_map) {
+			parts = key_map[key_mod].split(/ (.*)/s);
+			if (parts.length > 1) {
+				action = parts[0];
+				params = parts[1];
+			} else {
+				action = parts[0];
+				params = "";
+			}
+			do_add_binding(key_mod, action, params);
+		}
+		keysym_sel = document.getElementById("new_keysym");
+		// Add key trigger names to keysym select control
+		for (key_name in html2tk) {
+			option = document.createElement("option");
+			option.text = key_name;
+			option.value = key_name;
+			keysym_sel.appendChild(option);
+		}
+		document.getElementById("learn").focus();
+	});
+
+	constrained = true;
+	window.addEventListener('keydown', constrained_input);
+
+	function constrained_input(e) {
+		if(constrained && e.key != "Tab")
+			e.preventDefault();
+	}
+
+	function update_locks() {
+		sel = document.getElementById("new_keysym");
+		document.getElementById("new_num").disabled = !sel.options[sel.selectedIndex].text.startsWith("Numpad");
+		document.getElementById("new_caps").disabled = sel.options[sel.selectedIndex].text.startsWith("Numpad");
+	}
+
+	function remove_binding(key) {
+		el = document.getElementById("row" + key);
+		if (el)
+			el.remove();
+	}
+
+	function on_learn(event) {
+		if (event.repeat)
+			return;
+		element = document.getElementById("new_keysym");
+		mod = null;
+		switch(event.code) {
+			case "ShiftLeft":
+			case "ShiftRight":
+				mod = "new_shift";
+				break;
+			case "ControlLeft":
+			case "ControlRight":
+				mod = "new_ctrl";
+				break;
+			case "AltLeft":
+				mod = "new_alt";
+				break;
+			case "CapsLock":
+				mod = "new_caps";
+				break;
+			case "NumLock":
+				mod = "new_num";
+				break;
+		}
+		if (mod) {
+			document.getElementById(mod).checked = !document.getElementById(mod).checked
+			return;
+		}
+		try {
+			element.value = event.code;
+		} catch(err) {
+		}
+		update_locks();
+	}
+
+	function select_row(key_map, action, params) {
+		var parts = key_map.split("+");
+		key = null
+		for (i in parts) {
+			if (modifier_list.includes(parts[i]))
+				continue;
+			key = parts[i];
+			break;
+		}
+		if (!key)
+			return;
+		for (var i in modifier_list) {
+			var param = modifier_list[i];
+			var flag = parts.includes(param);
+			document.getElementById("new_" + param).checked = flag;
+		}
+		document.getElementById("new_action").value = action;
+		document.getElementById("new_params").value = params;
+		document.getElementById("new_keysym").value = key;
+		update_locks()
+	}
+
+	function add_binding() {
+		var key = document.getElementById("new_keysym").value;
+		if (key == "")
+			return;
+		var key_mod = "";
+		var numpad = key.startsWith("Numpad");
+		for(i=0; i < modifier_list.length; ++i) {
+			if (!numpad && i == 5)
+				continue;
+			if (document.getElementById("new_" + modifier_list[i]).checked) {
+				key_mod += modifier_list[i] + "+";
+			}
+		}
+		key_mod += key;
+		el = document.getElementById("row" + key_mod);
+		var action_cell = document.getElementById("action" + key_mod);
+		var params_cell = document.getElementById("params" + key_mod);
+		if (action_cell && params_cell)
+			var old_conf = action_cell.value + " " + params_cell.value;
+		else
+			var old_conf = ""
+		if (!el || confirm("Replace binding for " + key_mod + "?\n\nCurrent action: " + old_conf))
+			do_add_binding(key_mod, document.getElementById("new_action").value, document.getElementById("new_params").value, 1);
+	}
+
+	function do_add_binding(key_mod, action, params, pos=-1) {
+		remove_binding(key_mod);
+		var parts = key_mod.split("+");
+		for (i in parts) {
+			if (modifier_list.includes(parts[i]))
+				continue;
+			var key = parts[i];
+			break;
+		}
+		var table = document.getElementById("kb_table");
+		var row = table.insertRow(pos);
+		row.id = "row" + key_mod;
+		row.setAttribute("onclick", "select_row('" + key_mod + "', '" + action + "','" + params +"');");
+		cell = row.insertCell();
+		cell.innerHTML = key_mod;
+		input = document.createElement("INPUT");
+		input.name = key_mod;
+		input.value = action + " " + params;
+		input.hidden = true;
+		cell.appendChild(input);
+		cell = row.insertCell();
+		cell.innerHTML = action + " " + params;
+		cell = row.insertCell();
+		input = document.createElement("BUTTON");
+		input.innerHTML = '<i class="fa fa-trash-o"></i>';
+		input.setAttribute("id", "button-remove");
+		input.setAttribute("class", "btn btn-danger btn-block");
+		input.setAttribute("onclick", "remove_binding('" + key_mod + "');");
+		input.setAttribute("type", "button");
+		cell.appendChild(input);
+	}
+</script>
 
 <h2>{{ title }}</h2>
-	<div id='keybind_table' {% if not config['UI_KEYBINDING_ENABLED'] %} style="display:none;" {% end %}>
-		<table class="table table-condensed">
-		<thead>
+<input type="text" value="LEARN" size="5" readonly id="learn" onkeydown="on_learn(event);" onfocusin="constrained=true;" onfocusout="constrained=false;">
+<table class="table table-condensed">
+	<thead>
 		<tr class="success">
-			<th scope="col">Action</th>
+			<th scope="col">CapsLock</th>
+			<th scope="col">NumLock</th>
 			<th scope="col">Shift</th>
 			<th scope="col">Ctrl</th>
 			<th scope="col">Alt</th>
-			<th scope="col">CapsLock</th>
 			<th scope="col">Key</th>
+			<th scope="col">Action</th>
+			<th scope="col">Params</th>
+			<th scope="col"></th>
 		</tr>
-		</thead>
-		<tbody>
-		{% for cuia in sorted(config['UI_KEYBINDING_MAP']) %}
+	</thead>
+	<tbody>
 		<tr>
-			<th scope="row">{{escape(cuia)}}</th>
-			<td><input type="checkbox" name="{{cuia}}:shift" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 1 %} checked {% end %}></td>
-			<td><input type="checkbox" name="{{cuia}}:ctrl" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 4 %} checked {% end %}></td>
-			<td><input type="checkbox" name="{{cuia}}:alt" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 8 %} checked {% end %}></td>
-			<td><input type="checkbox" name="{{cuia}}:caps" {% if config['UI_KEYBINDING_MAP'][cuia]['modifier'] & 2 %} checked {% end %}></td>
-			<td><input name="{{cuia}}:keysym" type="text" value="{{escape(config['UI_KEYBINDING_MAP'][cuia]['keysym'])}}"></td>
+			{% for name in ["caps","num","shift","ctrl","alt"] %}
+			<td><input type="checkbox" id="new_{{name}}"{% if name=="num" %} disabled {% end %}></td>
+			{% end %}
+			<td><select id="new_keysym" onchange="update_locks();"></td>
+			<td><select id="new_action">
+				{% for cuia in config["cuias"] %}
+				<option value="{{cuia}}">{{cuia}}</option>
+				{% end %}
+			</select></td>
+			<td><input id="new_params" type="text"></td>
+			<td><button type="button" id="button-add" class="btn btn-theme btn-block" onclick="add_binding();"><i class="fa fa-check"></i></button></td>
 		</tr>
-		{% end %}
-		</tbody>
-		</table>
-
-		<div class="container-fluid">
-			<div class="row"><br/></div>
-			<div class="row">
-				<button id="btn-save" name="UI_KEYBINDING_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
-			</div>
+	</tbody>
+</table>
+<form id="ui-keybind-form" action="/ui-keybind" enctype="multipart/form-data" method="post" onkeydown="return event.key != 'Enter';">
+	<table id="kb_table" class="table table-condensed">
+		<thead>
+			<tr class="success">
+				<th scope="col">Trigger</th>
+				<th scope="col">Event</th>
+				<th scope="col"/>
+			</tr>
+		</thead>
+	</table>
+	<div class="container-fluid">
+		<div class="row"><br/></div>
+		<div class="row">
+			<button id="btn-save" name="UI_KEYBINDING_ACTION" value="SAVE" class="btn btn-lg btn-theme btn-block advanced-view">Save</button>
 		</div>
 	</div>
 	<div class="container-fluid">

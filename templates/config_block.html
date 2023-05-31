@@ -30,7 +30,7 @@
 	{% end %}
 
 		{% if config[varname]['type'] not in ['button', 'hidden', 'html', 'jscript'] %}
-			<label for="{{ escape(varname) }}">{{ escape(config[varname]['title']) }}:</label>
+			<label for="{{ escape(varname) }}">{{ escape(config[varname]['title']) }}&nbsp;</label>
 			{% if config[varname]['type'] != 'boolean' %} <br>{% end %}
 		{% end %}
 
@@ -55,7 +55,7 @@
 			{% if 'refresh_on_change' in config[varname] and config[varname]['refresh_on_change'] %}
 				{% set refresh_form = 1 %}
 			{% end %}
-			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }} {% if refresh_form %}onchange="refresh()" {% end %} {% if 'class' in config[varname] %}class="{{ config[varname]['class'] }}"{% end %}">
+			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="checkbox" {% if escape(value)=='1' %}checked{% end %} value="1" {{ disabled }} {% if refresh_form %}onchange="refresh(this.name)" {% end %} {% if 'class' in config[varname] %}class="{{ config[varname]['class'] }}"{% end %}">
 		{% elif config[varname]['type']=='hidden' %}
 			<input id="{{ escape(varname) }}" name="{{ escape(varname) }}" type="hidden" value="{{ escape(value) }}" />
 
@@ -74,7 +74,7 @@
 
 		{% elif config[varname]['type']=='textarea' %}
 			{% if 'addButton' in config[varname] %}
-				<button id="{{ config[varname]['addButton'] }}" class="btn-block" type="button">+</button>
+				<button id="{{ config[varname]['addButton'] }}" class="btn-block" type="button">...</button>
 			{% end %}
 			{% if 'addPanel' in config[varname] %}
 				{% module Template(config[varname]['addPanel'], config=config[varname]['addPanelConfig']) %}
@@ -137,6 +137,7 @@
 {% end %}
 
 	<input type="hidden" id="_command" name="_command" value='SAVE'>
+	<input type="hidden" id="_changed" name="_changed" value=''>
 	<input type="hidden" id="_scrollTop" name="_scrollTop" value='0'>
 	<button id="button-save-config" class="btn btn-lg btn-theme btn-block" title="Save Config"><i class="fa fa-check"></i> Save</button>
 </form>
@@ -165,7 +166,7 @@ function set_presets(sel) {
 function onchange_select(sel, refresh_subvars, refresh_form) {
 	if (refresh_subvars) refresh_select_subvars(sel);
 	else set_presets(sel);
-	if (refresh_form) refresh();
+	if (refresh_form) refresh(sel.name);
 }
 
 function refresh_select_subvars(sel) {
@@ -206,8 +207,9 @@ function onchange_check_advanced_view() {
 	refresh_all_subvars()
 }
 
-function refresh() {
+function refresh(wid) {
 	$('input#_command').val("REFRESH");
+	$('input#_changed').val(wid);
 	$('input#_scrollTop').val($(document).scrollTop());
 	$('form#config_block_form').submit();
 }

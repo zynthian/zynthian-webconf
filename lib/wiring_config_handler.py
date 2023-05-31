@@ -30,9 +30,10 @@ from enum import Enum
 from subprocess import check_output
 from collections import OrderedDict
 
-from zynconf import CustomSwitchActionType, CustomUiAction, ZynSensorActionType
+from zynconf import CustomSwitchActionType, ZynSensorActionType
 from lib.zynthian_config_handler import ZynthianConfigHandler
 from lib.dashboard_handler import DashboardHandler
+from zyngui.zynthian_gui import zynthian_gui
 
 
 #------------------------------------------------------------------------------
@@ -56,7 +57,31 @@ for i2chip in DashboardHandler.get_i2c_chips():
 class WiringConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "{}/wiring-profiles".format(os.environ.get("ZYNTHIAN_CONFIG_DIR"))
 
-	wiring_presets=OrderedDict([
+	wiring_presets = OrderedDict([
+		["V5_ZYNFACE", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "Zynface-V5 (16xDIO + 4xAD + 4xDA)",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': ADS1115_I2C_ADDRESS,
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5_zynface'
+		}],
+		["V5", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
+		}],
 		["Z2_V3", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
@@ -332,6 +357,19 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		}]
 	])
 
+	def get_cuia(self, envar):
+		v = os.environ.get(envar, "")
+		try:
+			parts = v.split(" ", 2)
+			cuia_name = parts[0]
+			try:
+				cuia_param = parts[1]
+			except:
+				cuia_param = ""
+		except:
+			cuia_name = ""
+			cuia_param = ""
+		return cuia_name, cuia_param
 
 	def prepare(self):
 		super().prepare()
@@ -341,10 +379,9 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
+		config = OrderedDict()
 
-		config=OrderedDict()
-
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		if os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
@@ -365,16 +402,35 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'options': list(self.wiring_presets.keys()),
 			'presets': self.wiring_presets,
 			'disabled': custom_options_disabled,
+			'refresh_on_change': True,
 			'div_class': "col-sm-12"
 		}
 
 		if wiring_layout.startswith("Z2"):
 			encoders_config_flag = False
-			ui_action_select = False
+			mcp23017_config_flag = False
+			zynaptik_config_flag = False
+			zyntof_config_flag = False
 			n_extra_switches = 32
+		elif wiring_layout.startswith("V5"):
+			encoders_config_flag = False
+			mcp23017_config_flag = False
+			if wiring_layout == "V5_ZYNFACE":
+				zynaptik_config_flag = True
+			else:
+				zynaptik_config_flag = False
+			zyntof_config_flag = False
+			n_extra_switches = 24
 		else:
 			encoders_config_flag = True
-			ui_action_select = True
+			if wiring_layout.startswith("MCP23017") or wiring_layout == "CUSTOM":
+				mcp23017_config_flag = True
+				zynaptik_config_flag = True
+				zyntof_config_flag = True
+			else:
+				mcp23017_config_flag = False
+				zynaptik_config_flag = False
+				zyntof_config_flag = False
 			try:
 				# Calculate Num of Custom Switches
 				n_extra_switches = min(4,max(0, len(wiring_switches.split(",")) - 4))
@@ -420,12 +476,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_WIRING_SWITCHES')
 			}
 
-		if wiring_layout.startswith("MCP23017") or wiring_layout == "CUSTOM":
+		if mcp23017_config_flag:
 			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "MCP23017 I2C Address",
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'),
-				'options': ['' ,'0x20', '0x21', '0x22', '0x23', '0x24', '0x25', '0x26', '0x27'],
+				'options': ['', '0x20', '0x21', '0x22', '0x23', '0x24', '0x25', '0x26', '0x27'],
 				'advanced': True,
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
@@ -434,7 +490,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': "MCP23017 INT-A Pin",
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+				'options': ['', '0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
 					'': 'Default', 
 					'0': 'WPi-GPIO 0 (pin 11)',
@@ -455,7 +511,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'type': 'select',
 				'title': "MCP23017 INT-B Pin",
 				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
+				'options': ['', '0', '2', '3', '4', '5', '6', '7', '25', '27'],
 				'option_labels': {
 					'': 'Default', 
 					'0': 'WPi-GPIO 0 (pin 11)',
@@ -472,11 +528,26 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
 			}
+		else:
+			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS')
+			}
+			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN')
+			}
+			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
+			}
+
+		if zynaptik_config_flag:
 			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
 				'type': 'select',
 				'title': "Zynaptik Config",
 				'value': zynaptik_config,
-				'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (4xAD + 4xDA)"],
+				'options': ["", "Custom 16xDIO", "Custom 4xAD", "Custom 4xDA", "Custom 16xDIO + 4xAD", "Custom 16xDIO + 4xDA", "Custom 4xAD + 4xDA", "Custom 16xDIO + 4xAD + 4xDA", "Zynaptik-2 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (16xDIO + 4xAD + 4xDA)", "Zynaptik-3 (4xAD + 4xDA)", "Zynface-V5 (16xDIO + 4xAD + 4xDA)"],
 				'advanced': True,
 				'refresh_on_change': True,
 				'div_class': "col-sm-4"
@@ -484,8 +555,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "ADS1115 I2C Address",
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'),
-				'options': ['' ,'0x48', '0x49', '0x4A', '0x4B'],
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS', ADS1115_I2C_ADDRESS),
+				'options': ['', '0x48', '0x49', '0x4A', '0x4B'],
 				'advanced': True,
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
@@ -493,12 +564,27 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
 				'type': 'select',
 				'title': "MCP4728 I2C Address",
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'),
-				'options': ['' ,'0x60', '0x61', '0x62', '0x63', '0x64', '0x65', '0x66', '0x67'],
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS', MCP4728_I2C_ADDRESS),
+				'options': ['', '0x60', '0x61', '0x62', '0x63', '0x64', '0x65', '0x66', '0x67'],
 				'advanced': True,
 				'disabled': custom_options_disabled,
 				'div_class': "col-sm-4"
 			}
+		else:
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
+				'type': 'hidden',
+				'value': zynaptik_config
+			}
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS', ADS1115_I2C_ADDRESS)
+			}
+			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
+				'type': 'hidden',
+				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS', MCP4728_I2C_ADDRESS)
+			}
+
+		if zyntof_config_flag:
 			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
 				'type': 'select',
 				'title': "Num. of Distance Sensors",
@@ -514,76 +600,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				'advanced': True,
 				'refresh_on_change': True
 			}
-		elif wiring_layout.startswith("I2C"):
-			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
-				'type': 'select',
-				'title': "INT Pin",
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN'),
-				'options': ['' ,'0', '2', '3', '4', '5', '6', '7', '25', '27'],
-				'option_labels': {
-					'': 'Default', 
-					'0': 'WPi-GPIO 0 (pin 11)',
-					'2': 'WPi-GPIO 2 (pin 13)',
-					'3': 'WPi-GPIO 3 (pin 15)',
-					'4': 'WPi-GPIO 4 (pin 16)',
-					'5': 'WPi-GPIO 5 (pin 18)',
-					'6': 'WPi-GPIO 6 (pin 22)',
-					'7': 'WPi-GPIO 7 (pin 7)',
-					'25': 'WPi-GPIO 25 (pin 37)',
-					'27': 'WPi-GPIO 27 (pin 36)'
-				},
-				'advanced': True,
-				'disabled': custom_options_disabled
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
-				'type': 'hidden',
-				'value': zynaptik_config
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
-				'type': 'hidden',
-				'value': zyntof_config
-			}
 		else:
-			config['ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTA_PIN'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTA_PIN')
-			}
-			config['ZYNTHIAN_WIRING_MCP23017_INTB_PIN'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_MCP23017_INTB_PIN')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG'] = {
-				'type': 'hidden',
-				'value': zynaptik_config
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS')
-			}
-			config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS'] = {
-				'type': 'hidden',
-				'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS')
-			}
 			config['ZYNTHIAN_WIRING_ZYNTOF_CONFIG'] = {
 				'type': 'hidden',
 				'value': zyntof_config
@@ -629,33 +646,38 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'value': ''
 		}
 
-		div_class = "col-sm-3 col-xs-12"
+		div_class = "col-sm-3 col-xs-12 col-fixheight"
+		div_class1 = "col-sm-3 col-xs-12 col-fixheight col-thin-padding"
+		div_class2 = "col-sm-2 col-xs-9 col-fixheight col-thin-padding-extra"
+		div_class2x = "col-sm-1 col-xs-3 col-fixheight col-extra"
 
 		# Customizable Switches
-		n_custom_switches = n_extra_switches + n_zynaptik_switches
+		self.n_custom_switches = n_extra_switches + n_zynaptik_switches
+
+		cuia_list = [""] + zynthian_gui.get_cuia_list()
 		cvgate_in = []
 		cvgate_out = []
-		if n_custom_switches>0:
+		if self.n_custom_switches > 0:
 			config['_SECTION_CUSTOM_SWITCHES_'] = {
 				'type': 'html',
 				'content': "<h3>Customizable Switches</h3>",
 				'advanced': True
 			}
-			for i in range(n_custom_switches):
+			for i in range(self.n_custom_switches):
 				base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i+1)
 
-				if i<n_extra_switches:
-					title = 'Extra Switch-{} Action'.format(i+1)
+				if i < n_extra_switches:
+					title = 'Switch-{} Action'.format(i+1)
 				else:
 					title = 'Zynaptik Switch-{} Action'.format(i+1-n_extra_switches)
 
-				action_type = os.environ.get(base_name)
+				action_type = os.environ.get(base_name, "NONE")
 				cvchan = int(os.environ.get(base_name + '__CV_CHAN', 1))
-				if action_type=="UI_ACTION":
-					action_type="UI_ACTION_RELEASE"
-				elif action_type=="CVGATE_IN":
+				if action_type == "UI_ACTION":
+					action_type = "UI_ACTION_RELEASE"
+				elif action_type == "CVGATE_IN":
 					cvgate_in.append(cvchan)
-				elif action_type=="CVGATE_OUT":
+				elif action_type == "CVGATE_OUT":
 					cvgate_out.append(cvchan)
 
 				config[base_name] = {
@@ -667,95 +689,165 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'div_class': div_class,
 					'advanced': True
 				}
-				if ui_action_select:
-					v = os.environ.get(base_name + '__UI_PUSH',"")
-					if v:
-						v = v.split()[0]
-					config[base_name + '__UI_PUSH'] = {
-						'enabling_options': 'UI_ACTION_PUSH',
-						'type': 'select',
-						'title': 'Push',
-						'value': v,
-						'options': CustomUiAction,
-						'div_class': div_class,
-						'advanced': True
-					}
-					v = os.environ.get(base_name + '__UI_SHORT',"")
-					if v:
-						v = v.split()[0]
-					config[base_name + '__UI_SHORT'] = {
-						'enabling_options': 'UI_ACTION_RELEASE',
-						'type': 'select',
-						'title': 'Short-push',
-						'value': v,
-						'options': CustomUiAction,
-						'div_class': div_class,
-						'advanced': True
-					}
-					v = os.environ.get(base_name + '__UI_BOLD',"")
-					if v:
-						v = v.split()[0]
-					config[base_name + '__UI_BOLD'] = {
-						'enabling_options': 'UI_ACTION_RELEASE',
-						'type': 'select',
-						'title': 'Bold-push',
-						'value': v,
-						'options': CustomUiAction,
-						'div_class': div_class,
-						'advanced': True
-					}
-					v = os.environ.get(base_name + '__UI_LONG',"")
-					if v:
-						v = v.split()[0]
-					config[base_name + '__UI_LONG'] = {
-						'enabling_options': 'UI_ACTION_RELEASE',
-						'type': 'select',
-						'title': 'Long-push',
-						'value': v,
-						'options': CustomUiAction,
-						'div_class': div_class,
-						'advanced': True
-					}
-				else:
-					config[base_name + '__UI_PUSH'] = {
-						'enabling_options': 'UI_ACTION_PUSH',
-						'type': 'text',
-						'title': 'Push',
-						'value': os.environ.get(base_name + '__UI_PUSH'),
-						'div_class': div_class,
-						'advanced': True
-					}
-					config[base_name + '__UI_SHORT'] = {
-						'enabling_options': 'UI_ACTION_RELEASE',
-						'type': 'text',
-						'title': 'Short-push',
-						'value': os.environ.get(base_name + '__UI_SHORT'),
-						'div_class': div_class,
-						'advanced': True
-					}
-					config[base_name + '__UI_BOLD'] = {
-						'enabling_options': 'UI_ACTION_RELEASE',
-						'type': 'text',
-						'title': 'Bold-push',
-						'value': os.environ.get(base_name + '__UI_BOLD'),
-						'div_class': div_class,
-						'advanced': True
-					}
-					config[base_name + '__UI_LONG'] = {
-						'enabling_options': 'UI_ACTION_RELEASE',
-						'type': 'text',
-						'title': 'Long-push',
-						'value': os.environ.get(base_name + '__UI_LONG'),
-						'div_class': div_class,
-						'advanced': True
-					}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_PUSH')
+				config[base_name + '__UI_PUSH__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_PUSH',
+					'type': 'select',
+					'title': 'Push',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_PUSH__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_PUSH',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_PUSH')
+				config[base_name + '__UI_ALT_PUSH__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_PUSH',
+					'type': 'select',
+					'title': 'ALT Push',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_PUSH__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_PUSH',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_SHORT')
+				config[base_name + '__UI_SHORT__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'Short',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_SHORT__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_BOLD')
+				config[base_name + '__UI_BOLD__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'Bold',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_BOLD__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_LONG')
+				config[base_name + '__UI_LONG__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'Long',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_LONG__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				config[base_name + '__SPACER'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'html',
+					'content': "",
+					'div_class': div_class,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_SHORT')
+				config[base_name + '__UI_ALT_SHORT__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'ALT Short',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_SHORT__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_BOLD')
+				config[base_name + '__UI_ALT_BOLD__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'ALT Bold',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_BOLD__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+				cuia_name, cuia_param = self.get_cuia(base_name + '__UI_ALT_LONG')
+				config[base_name + '__UI_ALT_LONG__CUIA_NAME'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'select',
+					'title': 'ALT Long',
+					'value': cuia_name,
+					'options': cuia_list,
+					'div_class': div_class2,
+					'advanced': True
+				}
+				config[base_name + '__UI_ALT_LONG__CUIA_PARAM'] = {
+					'enabling_options': 'UI_ACTION_RELEASE',
+					'type': 'text',
+					'title': '',
+					'value': cuia_param,
+					'div_class': div_class2x,
+					'advanced': True
+				}
+
 				config[base_name + '__MIDI_CHAN'] = {
 					'enabling_options': 'MIDI_CC MIDI_CC_SWITCH MIDI_NOTE MIDI_PROG_CHANGE CVGATE_IN CVGATE_OUT GATE_OUT',
 					'type': 'select',
 					'title': 'MIDI Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
 					'options': ["Active"] + [str(j) for j in range(1,17)],
-					'div_class': div_class,
+					'div_class': div_class1,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
@@ -764,7 +856,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'MIDI Number/Note',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
 					'options': [str(j) for j in range(0,128)],
-					'div_class': div_class,
+					'div_class': div_class1,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_VAL'] = {
@@ -773,7 +865,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'MIDI Value/Velocity',
 					'value': os.environ.get(base_name + '__MIDI_VAL', 127),
 					'options': [str(j) for j in range(0,128)],
-					'div_class': div_class,
+					'div_class': div_class1,
 					'advanced': True
 				}
 				config[base_name + '__CV_CHAN'] = {
@@ -789,7 +881,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'3': '4'
 					},
 					'refresh_on_change': True,
-					'div_class': div_class,
+					'div_class': div_class1,
 					'advanced': True
 				}
 				# Add Separator
@@ -834,7 +926,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Channel',
 						'value': os.environ.get(base_name + '__MIDI_CHAN'),
 						'options': ["Active"] + [str(j) for j in range(1,17)],
-						'div_class': div_class,
+						'div_class': div_class1,
 						'advanced': True
 					}
 					config[base_name + '__MIDI_NUM'] = {
@@ -843,7 +935,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Number',
 						'value': os.environ.get(base_name + '__MIDI_NUM'),
 						'options': [str(j) for j in range(0,128)],
-						'div_class': div_class,
+						'div_class': div_class1,
 						'advanced': True
 					}
 				# Add Separator
@@ -888,7 +980,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Channel',
 						'value': os.environ.get(base_name + '__MIDI_CHAN'),
 						'options': ["Active"] + [str(j) for j in range(1,17)],
-						'div_class': div_class,
+						'div_class': div_class1,
 						'advanced': True
 					}
 					config[base_name + '__MIDI_NUM'] = {
@@ -897,7 +989,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						'title': 'Number',
 						'value': os.environ.get(base_name + '__MIDI_NUM'),
 						'options': [str(j) for j in range(0,128)],
-						'div_class': div_class,
+						'div_class': div_class1,
 						'advanced': True
 					}
 				# Add Separator
@@ -931,7 +1023,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'Channel',
 					'value': os.environ.get(base_name + '__MIDI_CHAN'),
 					'options': ["Active"] + [str(j) for j in range(1,17)],
-					'div_class': div_class,
+					'div_class': div_class1,
 					'advanced': True
 				}
 				config[base_name + '__MIDI_NUM'] = {
@@ -940,7 +1032,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 					'title': 'Number',
 					'value': os.environ.get(base_name + '__MIDI_NUM'),
 					'options': [str(j) for j in range(0,128)],
-					'div_class': div_class,
+					'div_class': div_class1,
 					'advanced': True
 				}
 				# Add Separator
@@ -963,19 +1055,28 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		command = self.get_argument('_command', '')
 		logging.info("COMMAND = {}".format(command))
-		self.request_data = tornado.escape.recursive_unicode(self.request.arguments)
-		if command=='REFRESH':
+		self.request_data = self.get_request_data()
+		if command == 'REFRESH':
 			errors = None
 			self.current_custom_profile = self.get_argument('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE', '')
 			logging.debug("CURRENT CUSTOM PROFILE => {}".format(self.current_custom_profile))
 			self.config_env(self.request_data)
-		elif command=="SAVEAS":
+			changed = self.get_argument('_changed', '')
+			#logging.debug("CHANGED '{}'".format(changed))
+			# If changed "wiring layout" => force loading custom profile from preset
+			if changed == "ZYNTHIAN_WIRING_LAYOUT":
+				try:
+					for k, v in self.custom_profiles[self.current_custom_profile].items():
+						os.environ[k] = v
+				except:
+					pass
+		elif command == "SAVEAS":
 			fname = self.get_argument('zynthian_wiring_layout_saveas_fname', '')
 			errors = self.save_custom_profile(fname, self.request_data)
 			self.current_custom_profile = fname
 			self.load_custom_profiles()
 			self.config_env(self.request_data)
-		elif command=="DELETE":
+		elif command == "DELETE":
 			fname = self.get_argument('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE', '')
 			errors = self.delete_custom_profile(fname)
 			del(self.custom_profiles[fname])
@@ -983,11 +1084,62 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			self.config_env(self.request_data)
 		else:
 			errors = self.update_config(self.request_data)
-			self.rebuild_zyncoder()
-			if not self.reboot_flag:
-				self.restart_ui_flag = True
 
 		self.get(errors)
+
+
+	def get_request_data(self):
+		data = tornado.escape.recursive_unicode(self.request.arguments)
+		for i in range(64):
+			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i + 1)
+			for k in ("PUSH", "SHORT", "BOLD", "LONG","ALT_PUSH", "ALT_SHORT", "ALT_BOLD", "ALT_LONG"):
+				base_subname = base_name + '__UI_' + k
+				try:
+					cuia_str = data[base_subname + '__CUIA_NAME'][0] + " " + data[base_subname + '__CUIA_PARAM'][0]
+					data[base_subname] = [cuia_str.strip()]
+					del data[base_subname + '__CUIA_NAME']
+					del data[base_subname + '__CUIA_PARAM']
+				except KeyError:
+					pass
+				except Exception as e:
+					logging.error(e)
+		return data
+
+
+	def update_config(self, data):
+		# Check if restarting UI is needed
+		ignore_varnames= [
+			"LAYOUT_CUSTOM_PROFILE",
+			"CUSTOM_SWITCH",
+			"ZYNAPTIK_AD",
+			"ZYNAPTIK_DA",
+			"ZYNTOF",
+		]
+		for k in data:
+			ignore = True
+			if k.startswith("ZYNTHIAN_WIRING_"):
+				ignore = False
+				kk = k[16:]
+			for ivn in ignore_varnames:
+				if kk.startswith(ivn):
+					ignore = True
+					break
+			if not ignore and data[k][0] != os.environ.get(k):
+				logging.debug("Detected change in {} that needs restarting the UI: {} <> {}".format(k, data[k][0], os.environ.get(k)))
+				self.restart_ui_flag = True
+				break
+
+		errors = super().update_config(data)
+
+		if self.restart_ui_flag:
+			self.rebuild_zyncoder()
+		else:
+			self.reload_wiring_layout_flag = True
+
+		if self.reboot_flag:
+			self.restart_ui_flag = False
+
+		return errors
 
 
 	@classmethod
@@ -1001,6 +1153,10 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				"__UI_SHORT": "NONE",
 				"__UI_BOLD": "NONE",
 				"__UI_LONG": "NONE",
+				"__UI_ALT_PUSH": "NONE",
+				"__UI_ALT_SHORT": "NONE",
+				"__UI_ALT_BOLD": "NONE",
+				"__UI_ALT_LONG": "NONE",
 				"__MIDI_CHAN": "0",
 				"__MIDI_NUM": "0",
 				"__MIDI_VAL": "0",
@@ -1070,6 +1226,24 @@ class WiringConfigHandler(ZynthianConfigHandler):
 		return res
 
 
+	@classmethod
+	def tweak_custom_profile(cls, data):
+		for i in range(64):
+			base_name = 'ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}'.format(i + 1)
+			for k in ("PUSH", "SHORT", "BOLD", "LONG","ALT_PUSH", "ALT_SHORT", "ALT_BOLD", "ALT_LONG"):
+				base_subname = base_name + '__UI_' + k
+				try:
+					parts = data[base_subname].split(" ", 2)
+					data[base_subname + '__CUIA_NAME'] = parts[0]
+					try:
+						data[base_subname + '__CUIA_PARAM'] = parts[1]
+					except:
+						data[base_subname + '__CUIA_PARAM'] = ""
+				except:
+					pass
+		return data
+
+
 	# Load custom profiles
 	def load_custom_profiles(self):
 		self.custom_profiles = OrderedDict()
@@ -1083,7 +1257,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				with open(fpath) as f:
 					for line in f:
 						try:
-							if line[0]=='#':
+							if line[0] == '#':
 								continue
 							m = p.match(line)
 							if m:
@@ -1091,7 +1265,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 						except Exception as e:
 							logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
 				try:
-					self.custom_profiles[fname] = WiringConfigHandler.complete_custom_profile(profile_values)
+					profile_values = WiringConfigHandler.complete_custom_profile(profile_values)
+					self.custom_profiles[fname] = WiringConfigHandler.tweak_custom_profile(profile_values)
 					logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
 				except Exception as e:
 					logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))

@@ -7,7 +7,7 @@
 
 <form id="pianoteq-form" action="/sw-pianoteq" enctype="multipart/form-data" method="post">
 
-	<p><a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical modelling engine developed by Moddart and approved by Steinway &amp; Sons among others. It can simulate a wide range of instruments, like Grand Pianos, Electric Pianos, Clavichords, Harps, Celestas, Vibraphones, Bells, etc. with a high degree of precision and realism. It's a pleasure to play with it! Zynthian's official SD images include a trial version that have some keys disabled and stop playing after 20 minutes.</p>
+	<p><a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical modelling engine developed by Modartt and approved by Steinway &amp; Sons among others. It can simulate a wide range of instruments, like grand pianos, electric pianos, clavichords, harps, celestas, vibraphones, bells, etc. with a high degree of precision and realism. It's a pleasure to play with it! Zynthian's official SD images include a trial version that has some keys disabled and stops playing after 20 minutes.</p>
 	
 	<p>If you already have a Pianoteq licence, from this page you can install the licensed binary and activate it with your license key. Also, you can upgrade to newer versions or install PTQ modules.</p>
 
@@ -27,12 +27,14 @@
 	{% if not config['ZYNTHIAN_PIANOTEQ_TRIAL'] and not config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
 	<div id='license-activation'>
 		{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "6.4.1" %}
-		<p>Your version is older than 6.4.1 and must be activated by hand:</p>
+		<p>Your version is older than 6.4.1 and must be manually activated:</p>
 		<ul class="content-section" style="margin-left: 1em;">
-			<li>Open a terminal session from your computer with the X-forwarding option (ssh -Y root@zynthian.local). You need a X-server. If you are using Linux, most probably you already have one. Mac users could install XQuartz, and for Windows users, XMing should work OK.</li>
-			<li>Start Pianoteq on your zynthian, selecting any bank &amp; preset. Pianoteq UI should open in your computer.</li>
+			<li>Enable VNC Server</li>
+			<li>Navigate web browser to VNC-Engines</li>
+			<li>Start Pianoteq on your zynthian, selecting any bank &amp; preset. Pianoteq UI should open in your VNC session.</li>
 			<li>Follow on-screen instructions for License Activation.</li>
 			<li>When activated, <b>close the Pianoteq GUI</b> and reboot your zynthian.</li>
+			<li>You may wish to disable VNC Server</li>
 			<li>In some cases, you may need to click "Update Presets" from the webconf Pianoteq tab.</li>
 		</ul>
 		{% else %}
@@ -75,20 +77,22 @@
 			If you installed PTQ files, you should restart the Pianoteq engine by removing any Pianoteq layer before having access to the new installed instruments and presets.
 		</p>
 		<p>
-			If you installed a new binary, you should <a href="/sys-reboot">reboot your zynthian</a> for complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key. Please, reload this page after rebooting.
+			If you installed a new binary, you should <a href="/sys-reboot">reboot your zynthian</a> to complete the configuration. If you are upgrading from trial to licensed version, you must activate the software with your licence key.
 		</p>
 		<p>
 			<a href="/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
 		</p>
 	</div>
-	
+
+	{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "7.5.0" %}
 	<p id="update-cache">
 		<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
 	<p>
+	{% end %}
 
 
 	<div>
-		{% if errors %}<div class="alert alert-danger">{{ str(errors) }}</div>{% end %}
+		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}
 	</div>
 
 </form>
