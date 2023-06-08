@@ -339,14 +339,15 @@ class DashboardHandler(ZynthianBasicHandler):
 					try:
 						adr = int(adr, 16)
 						if adr>=0x20 and adr<=0x27:
+							out1 = check_output("i2cget -y 1 {} 0x01".format(adr), shell=True).decode().strip()
 							out2 = check_output("i2cget -y 1 {} 0x10".format(adr), shell=True).decode().strip()
-							if out2=='0x00':
+							if out1 == '0x00' and out2 == '0x00':
 								res.append("MCP23008@0x{:02X}".format(adr))
 							else:
 								res.append("MCP23017@0x{:02X}".format(adr))
 						elif adr>=0x48 and adr<=0x4B:
 							res.append("ADS1115@0x{:02X}".format(adr))
-						elif adr>=0x60 and adr<=0x67:
+						elif adr>=0x61 and adr<=0x67:
 							res.append("MCP4728@0x{:02X}".format(adr))
 					except:
 						pass
