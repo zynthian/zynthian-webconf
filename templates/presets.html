@@ -10,7 +10,7 @@
 
 	<div class="row">
 
-		<div class="col-md-6">
+		<div class="col-sm-6">
 			<select id="ENGINE" name="ENGINE" onchange="load_preset_tree()">
 				{% for key in config['engines'] %}
 					<option value="{{key}}" {{ 'selected' if config['engine']==key else '' }}>{{config['engines'][key][1]}}</option>
@@ -39,7 +39,7 @@
 			</div>
 		</div>
 
-		<div id="presets-panel" class="col-md-6">
+		<div id="presets-panel" class="col-sm-6">
 			<input type="hidden" id="SEL_NODE_ID" name="SEL_NODE_ID" value="{{ escape(str(config['sel_node_id'])) }}">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH">
 			<input type="hidden" id="SEL_BANK_FULLPATH" name="SEL_BANK_FULLPATH">
@@ -53,14 +53,14 @@
 			<div id="presets-bank-panel">
 				<label for="SEL_BANK_NAME">Bank:</label>
 				<div class="row no-gutters">
-					<div class="col-xs-10">
+					<div class="col-xs-12 col-sm-8 col-md-10">
 						<input type="text" id="SEL_BANK_NAME" name="SEL_BANK_NAME">
 					</div>
-					<div class="col-xs-1 text-right">
+					<div class="col-xs-6 col-sm-2 col-md-1 text-right">
 						<button id="button-rename_bank" class="btn btn-theme btn-block" onclick="return do_action('rename_bank')" title="Rename Bank"><i class="fa fa-check"></i></button>
 						<div id="loading-action-rename_bank" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 					</div>
-					<div class="col-xs-1 text-right">
+					<div class="col-xs-6 col-sm-2 col-md-1 text-right">
 						<button id="button-remove_bank" onclick="if (confirm('Are you sure to remove this bank and all its presets?')) return do_action('remove_bank'); else return false" class="btn btn-danger btn-block" title="Delete Bank"><i class="fa fa-trash-o"></i></button>
 						<div id="loading-action-remove_bank" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 					</div>
@@ -70,14 +70,14 @@
 			<div id="presets-file-panel">
 				<label for="SEL_PRESET_NAME">Preset:</label>
 				<div class="row no-gutters">
-					<div class="col-xs-10">
+					<div class="col-xs-12 col-sm-8 col-md-10">
 						<input type="text" id="SEL_PRESET_NAME" name="SEL_PRESET_NAME">
 					</div>
-					<div class="col-xs-1 text-right">
+					<div class="col-xs-6 col-sm-2 col-md-1 text-right">
 						<button id="button-rename_preset" class="btn btn-theme btn-block" onclick="return do_action('rename_preset')" title="Rename Preset"><i class="fa fa-check"></i></button>
 						<div id="loading-action-rename_preset" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 					</div>
-					<div class="col-xs-1 text-right">
+					<div class="col-xs-6 col-sm-2 col-md-1 text-right">
 						<button id="button-remove_preset" onclick="if (confirm('Are you sure to remove this preset?')) return do_action('remove_preset'); else return false" class="btn btn-danger btn-block" title="Delete Preset"><i class="fa fa-trash-o"></i></button>
 						<div id="loading-action-remove_preset" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 					</div>
@@ -101,10 +101,10 @@
 			<div id="presets-search-panel">
 				<label for="MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts:</label>
 				<div class="row no-gutters">
-					<div class="col-xs-11">
+					<div class="col-xs-12 col-sm-10 col-md-11">
 						<input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
 					</div>
-					<div class="col-xs-1 text-center">
+					<div class="col-xs-12 col-sm-2 col-md-1 text-center">
 						<button id="button-search" class="btn btn-theme btn-block" onclick="return do_action('search')" title="Search"><i class="fa fa-search"></i></button>
 						<span id="loading-action-search" style="display:none;"><img src="/img/loading.gif"></span>
 					</div>

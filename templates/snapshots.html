@@ -54,7 +54,7 @@ table.values > tbody > tr > td {
 <form id="snapshot-form" enctype="multipart/form-data" method="post">
 <div class="container-fluid lib-treeview">
 	<div class="row">
-		<div class="col-md-6">
+		<div class="col-sm-6">
 			<div id="snapshot-new-bank-panel">
 				<div class="input-group">
 					<span class="input-group-addon">
@@ -74,7 +74,7 @@ table.values > tbody > tr > td {
 		</div>
 
 
-		<div id="snapshot-panel" class="col-md-6">
+		<div id="snapshot-panel" class="col-sm-6">
 			<input type="hidden" id="SEL_FULLPATH" name="SEL_FULLPATH" />
 			<input type="hidden" id="INSTALL_FPATH" name="INSTALL_FPATH">
 
@@ -83,11 +83,11 @@ table.values > tbody > tr > td {
 			</div>
 
 			<div class="row no-gutters">
-				<div class="col-xs-4">
+				<div class="col-xs-6 col-sm-6 col-md-4">
 					<label>Name:</label>
 					<input id="SEL_NAME" name="SEL_NAME" class="form-control" />
 				</div>
-				<div class="col-xs-3">
+				<div class="col-xs-4 col-sm-4 col-md-3">
 					<label>Bank:</label>
 					<input type="hidden" id="SEL_BANK_NUM" name="SEL_BANK_NUM" />
 					<select id="SEL_BANK" name="SEL_BANK"
@@ -97,7 +97,7 @@ table.values > tbody > tr > td {
 						{% end %}
 					</select>
 				</div>
-				<div class="col-xs-2">
+				<div class="col-xs-2 col-sm-2 col-md-2">
 					<label>Program:</label>
 					<select id="SEL_PROG_NUM" name="SEL_PROG_NUM"
 						class="form-control">
@@ -106,20 +106,18 @@ table.values > tbody > tr > td {
 						{% end %}
 					</select>
 				</div>
-				<div class="col-xs-1">
+				<div class="col-xs-4 col-sm-4 col-md-1">
 					<label>&nbsp;</label>
 					<button id="button-save" class="btn btn-theme btn-block"
 						onclick="return do_action('save')"><i class="fa fa-check"></i></button>
 					<div id="loading-action-save" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 				</div>
-
-				<div class="col-xs-1">
+				<div class="col-xs-4 col-sm-4 col-md-1">
 					<label>&nbsp;</label>
 					<button id="button-download" class="btn btn-theme btn-block" onclick="return do_download()" title="Download"><i class="fa fa-download"></i></button>
 					<div id="loading-action-download" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>
 				</div>
-
-				<div class="col-xs-1">
+				<div class="col-xs-4 col-sm-4 col-md-1">
 					<label>&nbsp;</label>
 					<button id="button-remove" class="btn btn-danger btn-block" onclick="return do_remove();"><i class="fa fa-trash-o"></i></button>
 					<div id="loading-action-remove" style="display:none;"><img src="/img/loading.gif" class="center-block"></div>

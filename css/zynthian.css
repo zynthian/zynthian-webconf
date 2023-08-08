@@ -21,6 +21,12 @@ textarea {
   border-radius: 0.3em;
   padding: 0.3em;
 }
+.mar-top20 {
+  margin-top: 20px;
+}
+.mar-top40 {
+  margin-top: 40px;
+}
 .mar-top60 {
   margin-top: 60px;
 }
@@ -29,6 +35,12 @@ textarea {
 }
 .mar-top160 {
   margin-top: 160px;
+}
+.mar-bot20 {
+  margin-bottom: 20px;
+}
+.mar-bot40 {
+  margin-bottom: 40px;
 }
 .mar-bot60 {
   margin-bottom: 60px;
@@ -39,6 +51,12 @@ textarea {
 .mar-bot160 {
   margin-bottom: 160px;
 }
+.pad-top20 {
+  padding-top: 20px;
+}
+.pad-top40 {
+  padding-top: 40px;
+}
 .pad-top60 {
   padding-top: 60px;
 }
@@ -47,6 +65,12 @@ textarea {
 }
 .pad-top160 {
   padding-top: 160px;
+}
+.pad-bot20 {
+  padding-bottom: 20px;
+}
+.pad-bot40 {
+  padding-bottom: 40px;
 }
 .pad-bot60 {
   padding-bottom: 60px;
@@ -297,11 +321,27 @@ div.dashboard-block div.content {
   background: rgba(221, 221, 221, 0.3);
   border-radius: 0em 0em 0.5em 0.5em;
 }
+div.treeview {
+  height: 80vh;
+  overflow-y: scroll;
+}
+@media (max-width: 767px) {
+  div.treeview {
+    height: 50vh;
+  }
+}
 div.lib-treeview .row {
   padding-bottom: 10px;
 }
 div.treeview .node-selected {
   background-color: #fe8fa5 !important;
+}
+div.treeview .list-group-item {
+  padding: 0.3em 0.8em;
+}
+div.treeview span.indent {
+  margin-left: 0.1em;
+  margin-right: 0.1em;
 }
 div.sw-jalv .row {
   padding-bottom: 10px;

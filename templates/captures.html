@@ -18,11 +18,11 @@
 	</div>
 
 	<div class="row">
-		<div class="col-md-6">
+		<div class="col-sm-6">
 			<div id="captures-tree"></div>
 		</div>
 
-		<div id="right-panel" class="col-md-6">
+		<div id="right-panel" class="col-sm-6">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_FULLPATH" name="ZYNTHIAN_CAPTURES_FULLPATH">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_BANK_TYPE" name="ZYNTHIAN_CAPTURES_BANK_TYPE">
 			<input type="hidden" id="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE" name="ZYNTHIAN_CAPTURES_DOWNLOAD_FILE">
@@ -39,21 +39,20 @@
 				<div id="captures-input" class="row no-gutters">
 					<label for="ZYNTHIAN_CAPTURES_NAME">Capture:</label>
 					<div class="row no-gutters">
-						<div class="col-xs-8">
+						<div class="col-md-8 col-sm-12 col-xs-12">
 							<input type="hidden" id="ZYNTHIAN_CAPTURES_NAME" name="ZYNTHIAN_CAPTURES_NAME">
 							<input type="text" id="ZYNTHIAN_CAPTURES_RENAME" name="ZYNTHIAN_CAPTURES_RENAME">
 						</div>
-						<div class="col-xs-1">
+						<div class="col-md-1 col-sm-3 col-xs-3">
 							<button name="ZYNTHIAN_CAPTURES_ACTION" value="RENAME" class="btn btn-theme btn-block" title="Rename"><i class="fa fa-check"></i></button>
 						</div>
-						<div class="col-xs-1">
+						<div class="col-md-1 col-sm-3 col-xs-3">
 							<button id="ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG" name="ZYNTHIAN_CAPTURES_ACTION" value="CONVERT_OGG"  class="btn btn-theme btn-block" title="Convert to Ogg"><i class="fa fa-compress"></i></button>
 						</div>
-						<div class="col-xs-1">
+						<div class="col-md-1 col-sm-3 col-xs-3">
 							<button name="ZYNTHIAN_CAPTURES_ACTION" value="DOWNLOAD" class="btn btn-theme btn-block" title="Download"><i class="fa fa-download"></i></button>
 						</div>
-
-						<div class="col-xs-1">
+						<div class="col-md-1 col-sm-3 col-xs-3">
 							<button name="ZYNTHIAN_CAPTURES_ACTION" value="REMOVE" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block"><i class="fa fa-trash-o"></i></button>
 						</div>
 					</div>
@@ -62,15 +61,16 @@
 				<div id="captures-player" class="row no-gutters">
 					<audio id="ZYNTHIAN_CAPTURES_PLAYER" style="width:100%;" controls src="">Browser does not support audio playback</audio>
 				</div>
+				<div id="captures-log-player" class="row no-gutters">
+					<a id="play-log" class="btn btn-theme btn-block" title="play log" href="javascript:mockup_player()"><i class="fa fa-play"></i> Play in Mockup</a>
+				</div>
 			</div>
 		</div>
-
 	</div>
 
 	<div class="row">
 	{% if errors %}<div class="alert alert-danger">{{ errors }}</div>{% end %}
-  </div>
-
+    </div>
 </div>
 </form>
 
@@ -84,7 +84,7 @@
 
 var capturesForm = $('#captures-form')[0];
 
-$(document).ready(function (){
+$(document).ready(function(){
 	$("#loading-div-background").hide();
 
 	$('#button-upload').click(function(){
@@ -108,7 +108,7 @@ $(document).ready(function (){
 		console.log("Upload succeeded: " + response)
 		$("#INSTALL_FPATH").val(response)
 		document.forms['captures-form'].submit();
-	}
+	};
 });
 
 
@@ -158,5 +158,11 @@ if (jsonTree.length > 0){
 	$('#no-captures-panel').hide();
 	$('#captures-tree').treeview('selectNode', {% raw config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] %});
 }
+
+
+function mockup_player() {
+	location.href = "/mockup/index.html?capture=" + $('#ZYNTHIAN_CAPTURES_RENAME')[0].value;
+}
+
 
 </script>

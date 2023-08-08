@@ -60,6 +60,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			captures.append(self.create_node('ogg'))
 			captures.append(self.create_node('mp3'))
 			captures.append(self.create_node('mid'))
+			captures.append(self.create_node('log'))
 
 			config['ZYNTHIAN_CAPTURES'] = json.dumps(captures)
 			config['ZYNTHIAN_CAPTURES_SELECTION_NODE_ID'] = self.selectedTreeNode | 0
@@ -137,6 +138,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					self.write(jsonpickle.encode({'data': format(exc)}))
 			f.close()
 
+
 	def do_install_file(self):
 		result = {}
 
@@ -173,6 +175,10 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 				return 'audio/mp3'
 			elif m.group(2) == 'wav':
 				return 'application/wav'
+			elif m.group(2) == 'mp4':
+				return 'video/mp4'
+			elif m.group(2) == 'log':
+				return 'text/plain'
 
 
 	def create_node(self, file_extension):
