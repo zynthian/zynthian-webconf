@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html>
+<header>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Audiowide" />
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+<style>
+
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+div.v5_mockup_container {
+  width: 100%;
+  margin: auto;
+  padding: 0px;
+  font-size: max(min(1.0vw, 12px),8px);
+}
+
+div.v5_mockup_container h1#capture_log_title {
+  margin-top: 0;
+  margin-bottom: 1.0em;
+  padding: 0.5em;
+  font-family: Audiowide;
+  font-size: 2.5em;
+  text-align: center;
+  background: #303030;
+  color: #FFFFFF;
+}
+
+div.v5_mockup_container div#capture_log_text {
+  margin-top: 1.5em;
+  margin-bottom: 1.0em;
+  font-family: sans-serif;
+  font-size: 2.0em;
+  text-align: center;
+}
+
+svg.v5_mockup {
+  display: block;
+  width: 100%;
+  margin: auto;
+}
+
+svg.v5_mockup image#v5_render {
+}
+ 
+svg.v5_mockup video.v5_vscreen {
+  opacity: 50%;
+}
+
+svg.v5_mockup svg#leds circle {
+  r: 47px;
+}
+
+svg.v5_mockup svg#push-buttons image {
+  opacity: 0;
+}
+ 
+svg.v5_mockup svg#push-buttons-outline rect {
+  width: 110px;
+  height: 105px;
+  rx: 15px;
+  ry: 15px;
+  stroke: #F0F000;
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0;
+}
+ 
+svg.v5_mockup svg#push-knobs-outline circle {
+  r: 52px;
+  stroke: #F0F000;
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0;
+}
+
+svg.v5_mockup svg#rotate-knobs-arrow image {
+  width: 124px;
+  height: 124px;
+  opacity: 0;
+}
+
+ 
+.fadeInElem
+ {
+  animation: fadeIn 0.3s;
+ }
+
+.fadeOutElem
+ {
+  animation: fadeOut 0.5s;
+ }
+ 
+.fadeInOutElem
+ {
+  animation: fadeInOut 0.5s;
+ }
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+ 
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+
+.controls {
+  padding: 0.3em;
+  display: flex;
+  justify-content: space-around;
+  opacity: 1;
+  background: #303030;
+}
+
+.controls button {
+  background: transparent;
+  color: #FFFFFF;
+  font-size: 3em;
+  font-weight: bold;
+  text-shadow: 2px 1px 2px #000;
+  border: none;
+  width: 1.5em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.controls button:hover {
+  transition: color 0.2s;
+  color: #80FF80;
+}
+
+.controls button#control_pause {
+  display: none;
+}
+
+.controls .playback_rate {
+  background: transparent;
+  color: #FFFFFF;
+  font-family: sans-serif;
+  font-size: 2.5em;
+  font-weight: bold;
+  text-shadow: 2px 1px 2px #000;
+  margin-top: 0.18em;
+}
+
+.controls .timeline {
+  flex: 0.95;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-right: 3px solid #101010;
+  border-left: 3px solid #101010;
+  margin-right: 0.5em;
+  margin-left: 0.5em;
+}
+
+.controls .timeline .bar {
+  background: #101010;
+  height: 0.5em;
+  flex: 1;
+}
+
+.controls .timeline .bar .inner {
+  background: #80FF80;
+  width: 0%;
+  height: 100%;
+}
+
+.controls .timeline .dial {
+  position: relative;
+  left: 0%;
+  width: 1em;
+  color: #FFFFFF;
+  font-size: 3.0em;
+  margin-left: -0.3em;
+  margin-top: -1.1em;
+  transition: color 0.2s;
+}
+
+.controls .timeline .dial:hover {
+  cursor: pointer;
+  color: #80FF80;
+  transition: color 0.2s;
+}
+</style>
+
+</header>
+
+<body>
+  <div id="v5_mockup_container" class="v5_mockup_container">
+
+    <h1 id="capture_log_title">Zynthian V5 Workflow Player</h1>
+
+    <div id="capture_log_text"><br></div>
+
+    <svg id="v5_mockup" class="v5_mockup" viewBox="0 0 1920 1000" >
+
+      <svg id="leds" x="133" y="208">
+        <circle id="led-11" cx="50" cy="50" fill="#505050" />
+        <circle id="led-12" cx="172" cy="50" fill="#505050" />
+        <circle id="led-13" cx="294" cy="50" fill="#505050" />
+        <circle id="led-14" cx="416" cy="50" fill="#505050" />
+			
+        <circle id="led-21" cx="50" cy="165" fill="#505050" />
+        <circle id="led-22" cx="172" cy="165" fill="#505050" />
+        <circle id="led-23" cx="294" cy="165" fill="#505050" />
+        <circle id="led-24" cx="416" cy="165" fill="#505050" />
+
+        <circle id="led-31" cx="50" cy="275" fill="#505050" />
+        <circle id="led-32" cx="172" cy="275" fill="#505050" />
+        <circle id="led-33" cx="294" cy="275" fill="#505050" />
+        <circle id="led-34" cx="416" cy="275" fill="#505050" />
+
+        <circle id="led-41" cx="50" cy="390" fill="#505050" />
+        <circle id="led-42" cx="172" cy="390" fill="#505050" />
+        <circle id="led-43" cx="294" cy="390" fill="#505050" />
+        <circle id="led-44" cx="416" cy="390" fill="#505050" />
+
+        <circle id="led-51" cx="50" cy="505" fill="#505050" />
+        <circle id="led-52" cx="172" cy="505" fill="#505050" />
+        <circle id="led-53" cx="294" cy="505" fill="#505050" />
+        <circle id="led-54" cx="416" cy="505" fill="#505050" />
+      </svg>
+
+      <image id="v5_render" href="v5_render_zenital_mockup_1910.png" x="0" y="0" />
+      <foreignObject x="731" y="254" width="800" height="480">
+        <video id="v5_vscreen" class="v5_vscreen" width="800" height="480">
+          <source id="v5_vscreen_src">
+        </video>
+      </foreignObject>
+
+      <svg id="push-buttons" x="68" y="155">
+        <image id="but-11" href="button_push.png" x="50" y="50" />
+        <image id="but-12" href="button_push.png" x="172" y="50" />
+        <image id="but-13" href="button_push.png" x="294" y="50" />
+        <image id="but-14" href="button_push.png" x="416" y="50" />
+
+        <image id="but-21" href="button_push.png" x="50" y="165" />
+        <image id="but-22" href="button_push.png" x="172" y="165" />
+        <image id="but-23" href="button_push.png" x="294" y="165" />
+        <image id="but-24" href="button_push.png" x="416" y="165" />
+
+        <image id="but-31" href="button_push.png" x="50" y="275" />
+        <image id="but-32" href="button_push.png" x="172" y="275" />
+        <image id="but-33" href="button_push.png" x="294" y="275" />
+        <image id="but-34" href="button_push.png" x="416" y="275" />
+
+        <image id="but-41" href="button_push.png" x="50" y="390" />
+        <image id="but-42" href="button_push.png" x="172" y="390" />
+        <image id="but-43" href="button_push.png" x="294" y="390" />
+        <image id="but-44" href="button_push.png" x="416" y="390" />
+
+        <image id="but-51" href="button_push.png" x="50" y="505" />
+        <image id="but-52" href="button_push.png" x="172" y="505" />
+        <image id="but-53" href="button_push.png" x="294" y="505" />
+        <image id="but-54" href="button_push.png" x="416" y="505" />
+      </svg>
+
+      <svg id="push-buttons-outline" x="79" y="154">
+        <rect id="bout-11" x="50" y="50" />
+        <rect id="bout-12" x="172" y="50" />
+        <rect id="bout-13" x="294" y="50" />
+        <rect id="bout-14" x="416" y="50" />
+
+        <rect id="bout-21" x="50" y="165" />
+        <rect id="bout-22" x="172" y="165" />
+        <rect id="bout-23" x="294" y="165" />
+        <rect id="bout-24" x="416" y="165" />
+
+        <rect id="bout-31" x="50" y="275" />
+        <rect id="bout-32" x="172" y="275" />
+        <rect id="bout-33" x="294" y="275" />
+        <rect id="bout-34" x="416" y="275" />
+
+        <rect id="bout-41" x="50" y="390" />
+        <rect id="bout-42" x="172" y="390" />
+        <rect id="bout-43" x="294" y="390" />
+        <rect id="bout-44" x="416" y="390" />
+
+        <rect id="bout-51" x="50" y="505" />
+        <rect id="bout-52" x="172" y="505" />
+        <rect id="bout-53" x="294" y="505" />
+        <rect id="bout-54" x="416" y="505" />
+      </svg>
+
+      <svg id="push-knobs-outline" x="1658" y="125">
+        <circle id="knout-1" cx="60" cy="60" />
+        <circle id="knout-2" cx="60" cy="260" />
+        <circle id="knout-3" cx="60" cy="455" />
+        <circle id="knout-4" cx="60" cy="670" />
+      </svg>
+      
+      <svg id="rotate-knobs-arrow" x="1594" y="60">
+        <image id="rknob-1" href="arrow-rotation-r.png" x="73" y="50" />
+        <image id="lknob-1" href="arrow-rotation-l.png" x="50" y="50" />
+        <image id="rknob-2" href="arrow-rotation-r.png" x="73" y="250" />
+        <image id="lknob-2" href="arrow-rotation-l.png" x="50" y="250" />
+        <image id="rknob-3" href="arrow-rotation-r.png" x="73" y="445" />
+        <image id="lknob-3" href="arrow-rotation-l.png" x="50" y="445" />
+        <image id="rknob-4" href="arrow-rotation-r.png" x="73" y="660" />
+        <image id="lknob-4" href="arrow-rotation-l.png" x="50" y="660" />
+      </svg>
+
+    </svg>
+
+    <div id="controls" class="controls">
+      <button id="control_rewind" onclick="control_rewind()"><i class="fa fa-fast-backward"></i></button>
+      <button id="control_play" onclick="control_play()"><i class="fa fa-play"></i></button>
+      <button id="control_pause" onclick="control_pause()"><i class="fa fa-pause"></i></button>
+      <button id="control_slower" onclick="control_slower()"><i class="fa fa-backward"></i></button>
+      <div id="playback_rate" class="playback_rate">x1.0</div>
+      <button id="control_faster" onclick="control_faster()"><i class="fa fa-forward"></i></button>
+      <div id="timeline" class="timeline">
+        <div class="bar">
+          <div class="inner"></div>
+          <div id="control_dial" class="dial"><i class="fa fa-caret-down"></i></div>
+        </div>
+      </div>
+      <button id="control_eject" onclick="control_eject()"><i class="fa fa-eject"></i></button>
+    </div>
+
+  </div>
+
+
+<script>
+var wscolor_off = "#505050";
+var wscolor_white = "#F0F0F0";
+var wscolor_red = "#C00000";
+var wscolor_green = "#00F000";
+var wscolor_yellow = "#D0D000";
+var wscolor_orange = "#F08000";
+var wscolor_blue = "#0050FF";
+var wscolor_blue_light = "#00E0E0";
+var wscolor_purple = "#E000E0";
+var ledstate_colors = {
+  "0": wscolor_off,
+  "B": wscolor_blue,
+  "G": wscolor_green,
+  "R": wscolor_red,
+  "O": wscolor_orange,
+  "Y": wscolor_yellow,
+  "P": wscolor_purple
+}
+var v5_led_order = [0, 1, 2, 3, 7, 6, 5, 4, 8, 9, 10 , 11, 15, 14, 13, 12, 16, 17, 18, 19]
+
+
+function setLedColor(led_id, color) {
+  var elem = document.getElementById(led_id)
+  elem.setAttribute("fill", color)
+}
+
+
+function setLedState(led_state, fix_order) {
+  var c = 0;
+  var cc = 0;
+  var lsl = led_state.split(",")
+  for (let i = 1; i <= 5; i++) {
+    for (let j = 1; j <= 4; j++) {
+      if (fix_order) cc = v5_led_order[c]
+      else cc = c
+      color = ledstate_colors[lsl[cc]];
+      setLedColor(`led-${i}${j}`, color);
+      c++;
+    }
+  }
+}
+
+
+function setScreen(img_src) {
+  var elem = document.getElementById("v5_screen")
+  elem.src = img_src;
+}
+
+
+function setVScreen(video_src) {
+  var elem = document.getElementById("v5_vscreen_src")
+  elem.setAttribute("src", video_src);
+  elem.setAttribute("type", "video/mp4");
+}
+
+
+function setCaptureLogText(text) {
+  var elem = document.getElementById("capture_log_text")
+  if (elem) {
+    elem.innerHTML = text + "<br>"
+  }
+}
+
+
+function setCaptureLogTitle(title) {
+  var elem = document.getElementById("capture_log_title")
+  if (elem) {
+    elem.innerHTML = title + "<br>"
+  }
+}
+
+
+function fadeElem(eid, state) {
+  var elem = document.getElementById(eid)
+  if (elem) {
+    if (state) {
+      elem.classList.add("fadeInElem")
+      elem.classList.remove("fadeOutElem")
+    }
+    else {
+      elem.classList.add("fadeOutElem")
+      elem.classList.remove("fadeInElem")
+    }
+  }
+}
+
+var autoFadeTimeOuts = {}
+
+function autoFadeElemOutCB(eid) {
+  fadeElem(eid, false)
+  autoFadeTimeOuts[eid] = null
+}
+
+function autoFadeElem(eid) {
+  if (autoFadeTimeOuts[eid]) clearTimeout(autoFadeTimeOuts[eid])
+  fadeElem(eid, true)
+  autoFadeTimeOuts[eid] = setTimeout(autoFadeElemOutCB, 100, eid)
+}
+
+
+function setButtonPush(bid, state) {
+  console.log(`BUTTON PUSH ${bid}: ${state}`);
+  fadeElem("but-" + bid, state)
+  fadeElem("bout-" + bid, state)
+}
+
+
+function setKnobPush(kid, state) {
+  console.log(`KNOB PUSH ${kid}: ${state}`);
+  fadeElem("knout-" + kid, state)
+}
+
+
+function setKnobRotation(kid, dval) {
+  console.log(`KNOB ROTATION ${kid}: ${dval}`);
+  if (dval>0) autoFadeElem("rknob-" + kid)
+  else if (dval<0) autoFadeElem("lknob-" + kid)
+}
+
+
+function getCaptureLog(fname) {
+  var url = `capture/${fname}.log`
+  return new Promise((resolve, reject) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'text';
+    xhr.onload = function(e) {
+      if (this.status === 200) {
+        resolve(this.response);
+      } else {
+        reject(this.response);
+      }
+    };
+    xhr.send();
+  })
+}
+
+var seek_log_pos = false;
+
+function loadCaptureLog(fname) {
+  getCaptureLog(fname)
+    .then(capture_log => {
+      var log_lines = capture_log.split("\n");
+      for (var i in log_lines) {        
+        var cutpoint = log_lines[i].indexOf(" ")
+        if (cutpoint) {
+          var tsparts = log_lines[i].substr(0, cutpoint).split(":")
+          var ts = parseInt(tsparts[0]) * 3600 + parseInt(tsparts[1]) * 60 + parseFloat(tsparts[2]) - 0.3
+          var logtext = log_lines[i].substr(cutpoint+1)
+          log_lines[i] = [ts, logtext]
+          //console.log(`Capture Log: ${log_lines[i][0]} => ${log_lines[i][1]}`);
+        }
+      }
+      setVScreen(`capture/${fname}.mp4`)
+      video.load();
+      var log_pos = 0;
+      //video.addEventListener("timeupdate", () => {
+      setInterval(function(){
+        //console.log(`Video Time: ${video.currentTime}`);
+        //Seek position if requested
+        if (seek_log_pos) log_pos = 0;
+        //Play events
+        while (log_pos < log_lines.length && log_lines[log_pos][0] <= video.currentTime) {
+          if (!seek_log_pos) playCaptureLine(log_lines[log_pos][1])
+          log_pos++
+        }
+        seek_log_pos = false
+
+        let curr = (video.currentTime / video.duration) * 100
+        if(video.ended){
+          document.getElementById("control_pause").style.display = "none"
+          document.getElementById("control_play").style.display = "inline"
+          control_rewind()
+        }
+        let progress = `${curr}%` 
+        document.querySelector('.inner').style.width = progress
+        document.getElementById("control_dial").style.left = progress
+      },33);
+    })
+    .catch(err => {
+      console.log(`ERROR GETTING CAPTURE LOG: ${err}`)
+    })
+}
+
+
+function playCaptureLine(line) {
+  var cutpoint = line.indexOf(":")
+  var ltype = line.substr(0, cutpoint)
+  var lcontent = line.substr(cutpoint+1)
+
+  if (ltype == "LEDSTATE") {
+    console.log(`LEDSTATE: ${lcontent}`);
+    setLedState(lcontent, true);
+  }
+  else if (ltype == "ZYNPOT") {
+    console.log(`ZYNPOT: ${lcontent}`);
+    var sp = lcontent.split(",")
+    var knob_id = 1 + parseInt(sp[0])
+    var knob_dval = parseInt(sp[1])
+    setKnobRotation(knob_id, knob_dval)
+  }
+  else if (ltype == "ZYNSWITCH") {
+    console.log(`ZYNSWITCH: ${lcontent}`);
+    var sp = lcontent.split(",")
+    var state = false
+    if (sp[0]=="P") state = true
+    var nbut = parseInt(sp[1]) - 4
+    if (nbut<20) {
+      var but_id = `${1+Math.floor(nbut/4)}${1+nbut%4}`
+      setButtonPush(but_id, state)
+    } else {
+      setKnobPush(nbut-19, state)
+    }
+  }
+  else if (ltype == "CUIA") {
+    console.log(`CUIA: ${lcontent}`);
+    //setCaptureLogText(line)
+  }
+  else if (ltype == "TEXT") {
+    console.log(`TEXT: ${lcontent}`);
+    setCaptureLogText(lcontent)
+  }
+  else if (ltype == "TITLE") {
+    console.log(`TITLE: ${lcontent}`);
+    setCaptureLogTitle(lcontent)
+  }
+}
+
+function control_rewind() {
+  video.currentTime = 0.0
+  seek_log_pos = true
+}
+
+function control_play() {
+  video.play()
+  document.getElementById("control_pause").style.display = "inline"
+  document.getElementById("control_play").style.display = "none"
+}
+
+function control_pause() {
+  video.pause()
+  document.getElementById("control_pause").style.display = "none"
+  document.getElementById("control_play").style.display = "inline"
+}
+
+function control_slower() {
+  if (video.playbackRate > 0.11) {
+    set_playback_rate(video.playbackRate - 0.1)
+  }
+}
+
+function control_faster() {
+  set_playback_rate(video.playbackRate + 0.1)
+}
+
+function control_eject() {
+  //alert("This should open the list of contents available for playing...")
+  history.back()
+}
+
+function set_playback_rate(rate) {
+  video.playbackRate = rate
+  var elem = document.getElementById("playback_rate")
+  elem.innerHTML = "x" + rate.toFixed(1);
+}
+
+
+//-----------------------------------------------------------------------------
+// Control Dial Drag
+//-----------------------------------------------------------------------------
+
+var control_dial_x0 = 0;
+var control_dial_x1 = 0;
+
+function control_dial_dragStart(e) {
+  e = e || window.event;
+  e.preventDefault();
+  let tlrect = document.getElementById("timeline").getBoundingClientRect()
+  control_dial_x0 = tlrect.left;
+  control_dial_x1 = tlrect.right;
+  document.onmouseup = control_dial_dragEnd;
+  document.onmousemove = control_dial_dragMove;
+}
+
+function control_dial_dragEnd(e) {
+  document.onmouseup = null;
+  document.onmousemove = null;
+}
+
+function control_dial_dragMove(e) {
+  e = e || window.event;
+  e.preventDefault();
+  let curr = (e.clientX - control_dial_x0) / (control_dial_x1 - control_dial_x0);
+  if (curr < 0) curr = 0;
+  else if (curr > 1) curr = 1;
+  video.currentTime = curr * video.duration
+  seek_log_pos = true
+  //console.log(curr);
+}
+
+function outerWidth(el) {
+  var width = el.offsetWidth;
+  var style = getComputedStyle(el);
+  width += parseInt(style.marginLeft) + parseInt(style.marginRight);
+  return width;
+}
+
+function outerHeight(el) {
+  var height = el.offsetHeight;
+  var style = getComputedStyle(el);
+  height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+  return height;
+}
+
+function resize_mockup_container() {
+  var elm = document.getElementById("v5_mockup")
+  var title = document.getElementById("capture_log_title")
+  var text = document.getElementById("capture_log_text")
+  var ctrls = document.getElementById("controls")
+  var w = window.innerWidth;
+  var h = window.innerHeight - outerHeight(title) - outerHeight(text) - outerHeight(ctrls);
+  //console.log(`ROOT WIDTH ${w}, HEIGHT ${h}`);
+  var r = w/h;
+  var wpc = 100;
+  var rc = 0.999 * 1910/960;
+  if (r > rc) wpc = (100 * rc / r).toFixed(1);
+  elm.style.width = `${wpc}%`
+  //console.log("MOCKUP WIDTH% => " + wpc);
+}
+
+//-----------------------------------------------------------------------------
+
+var dial = document.getElementById("control_dial").onmousedown = control_dial_dragStart;
+var video = document.getElementById("v5_vscreen");
+
+window.addEventListener('resize', resize_mockup_container, true);
+resize_mockup_container();
+
+//-----------------------------------------------------------------------------
+
+//20230719182538, 20230728171522, 20230731153349, 20230801203833, 20230803133409
+//var log_session_fname = 'ui_sesion-20230803133409'
+
+var url = new URL(window.location.href);
+var log_session_fname = url.searchParams.get("capture");
+if (log_session_fname) loadCaptureLog(log_session_fname)
+
+</script>
+
+</body>
+</html>
+
