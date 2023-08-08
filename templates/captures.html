@@ -144,9 +144,11 @@ $('#captures-tree').treeview({data: jsonTree, bootstrap2: true ,
 			isOgg=(data.fext=="ogg");
 			isWav=(data.fext=="wav");
 			isMP3=(data.fext=="mp3");
+			isLog=(data.fext=="log");
 
 			isAudio=(isOgg || isWav || isMP3);
-			$('#ZYNTHIAN_CAPTURES_PLAYER')[0].style.display=isAudio?"block":"none";
+			$('#captures-player')[0].style.display=isAudio?"block":"none";
+			$('#captures-log-player')[0].style.display=isLog?"block":"none";
 			$('#ZYNTHIAN_CAPTURES_ACTION_CONVERT_OGG')[0].disabled=!isWav;
 			$("#ZYNTHIAN_CAPTURES_FULLPATH")[0].value = fullpath;
 			$('#captures-panel').show();
