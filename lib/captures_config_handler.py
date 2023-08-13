@@ -196,8 +196,12 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 				capture_log_title = parts[1][7:]
 				break
 		if capture_log_title:
-			fname = capture_log_title.replace(" ", "_") + ".log"
-			fpath = CapturesConfigHandler.CAPTURES_DIRECTORY + "/" + fname
+			fname = capture_log_title.replace(" ", "_")
+		else:
+			fname = self.get_argument('ZYNTHIAN_CAPTURES_LOG_FNAME')
+
+		if fname:
+			fpath = CapturesConfigHandler.CAPTURES_DIRECTORY + "/" + fname + ".log"
 			logging.info("Saving capture log to '{}'".format(fpath))
 			try:
 				f = open(fpath, "w")
@@ -206,7 +210,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			except:
 				logging.error("Can't write capture log file")
 		else:
-			logging.error("Can't save capture log: Unknown title and file name")
+			logging.error("Can't save capture log: No file name")
 
 
 	def set_log_title(self, fpath, title):

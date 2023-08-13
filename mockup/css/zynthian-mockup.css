@@ -1,0 +1,268 @@
+html {
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+div.v5_mockup_container {
+  width: 100%;
+  margin: auto;
+  padding: 0px;
+  font-size: max(min(1.0vw, 12px),8px);
+}
+
+h1#capture_log_title {
+  margin-top: 0;
+  margin-bottom: 1.0em;
+  padding: 0.5em;
+  font-family: Audiowide;
+  font-size: 2.5em;
+  text-align: center;
+  background: #303030;
+  color: #FFFFFF;
+}
+
+div#capture_log_text_container {
+  text-align: center;
+}
+
+div#capture_log_text_container div#capture_log_text {
+  display: inline-block;
+  margin-top: 1.3em;
+  margin-bottom: 1.2em;
+  font-family: sans-serif;
+  font-size: 2.0em;
+  text-align: center;
+}
+
+div#capture_log_text_edit {
+  margin-top: 3.0em;
+  margin-bottom: 1.3em;
+  font-family: sans-serif;
+  font-size: 1.5em;
+  text-align: center;
+  display: none;
+}
+
+div#capture_log_text_edit div#log_text_ts {
+  display: inline-block;
+  font-size: 1.2em;
+  width: 10%;
+  background-color: #707070;
+  color: #FFFFFF;
+  padding: 0.3em 0.5em;
+}
+
+div#capture_log_text_edit input#log_text_input {
+  font-size: 1.5em;
+  width: 60%;
+}
+
+div#capture_log_text_container button,
+div#capture_log_text_edit button {
+  font-size: 1.3em;
+  color: #FFFFFF;
+  background-color: #808080;
+  border: none;
+  border-radius: 0.2em;
+  padding: 0.2em 0.3em;
+  cursor: pointer;
+}
+
+div#capture_log_text_container button:hover,
+div#capture_log_text_edit button:hover {
+  filter: brightness(135%);
+  transition: filter 0.3s;
+}
+
+div#capture_log_text_container button#log_text_but_edit {
+  background-color: #2080D0;
+  color: #FFFFFF;
+  display: none;
+}
+
+div#capture_log_text_edit button#log_text_but_add {
+  background-color: #2080D0;
+}
+
+div#capture_log_text_edit button#log_text_but_del {
+  background-color: #D00040;
+}
+
+div#capture_log_text_edit button#log_text_but_save {
+  background-color: #00D080;
+}
+
+
+svg.v5_mockup {
+  display: block;
+  width: 100%;
+  margin: auto;
+}
+
+svg.v5_mockup image#v5_render {
+}
+ 
+svg.v5_mockup video.v5_vscreen {
+  opacity: 50%;
+}
+
+svg.v5_mockup svg#leds circle {
+  r: 47px;
+}
+
+svg.v5_mockup svg#push-buttons image {
+  opacity: 0;
+}
+ 
+svg.v5_mockup svg#push-buttons-outline rect {
+  width: 110px;
+  height: 105px;
+  rx: 15px;
+  ry: 15px;
+  stroke: #F0F000;
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0;
+}
+ 
+svg.v5_mockup svg#push-knobs-outline circle {
+  r: 52px;
+  stroke: #F0F000;
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0;
+}
+
+svg.v5_mockup svg#rotate-knobs-arrow image {
+  width: 124px;
+  height: 124px;
+  opacity: 0;
+}
+
+ 
+.fadeInElem
+ {
+  animation: fadeIn 0.3s;
+ }
+
+.fadeOutElem
+ {
+  animation: fadeOut 0.5s;
+ }
+ 
+.fadeInOutElem
+ {
+  animation: fadeInOut 0.5s;
+ }
+
+@keyframes fadeIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+ 
+@keyframes fadeOut {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fadeInOut {
+  0% { opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+
+.controls {
+  padding: 0.3em;
+  display: flex;
+  justify-content: space-around;
+  opacity: 1;
+  background: #303030;
+}
+
+.controls button {
+  background: transparent;
+  color: #FFFFFF;
+  font-size: 3em;
+  font-weight: bold;
+  text-shadow: 2px 1px 2px #000;
+  border: none;
+  width: 1.5em;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.controls button:hover {
+  transition: color 0.2s;
+  color: #80FF80;
+}
+
+.controls button#control_pause {
+  display: none;
+}
+
+.controls .playback_rate {
+  background: transparent;
+  color: #FFFFFF;
+  font-family: sans-serif;
+  font-size: 2.5em;
+  font-weight: bold;
+  text-shadow: 2px 1px 2px #000;
+  margin-top: 0.18em;
+}
+
+.controls .playback_curtime {
+  background: transparent;
+  color: #FFFF00;
+  font-family: sans-serif;
+  font-size: 2.0em;
+  font-weight: bold;
+  text-shadow: 2px 1px 2px #000;
+  margin-top: 0.40em;
+}
+
+.controls .timeline {
+  flex: 0.95;
+  display: flex;
+  align-items: center;
+  border: none;
+  border-right: 3px solid #101010;
+  border-left: 3px solid #101010;
+  margin-right: 0.5em;
+  margin-left: 0.5em;
+}
+
+.controls .timeline .bar {
+  background: #101010;
+  height: 0.5em;
+  flex: 1;
+}
+
+.controls .timeline .bar .inner {
+  background: #80FF80;
+  width: 0%;
+  height: 100%;
+}
+
+.controls .timeline .dial {
+  position: relative;
+  left: 0%;
+  width: 1em;
+  color: #FFFFFF;
+  font-size: 3.0em;
+  margin-left: -0.3em;
+  margin-top: -1.1em;
+  transition: color 0.2s;
+}
+
+.controls .timeline .dial:hover {
+  cursor: pointer;
+  color: #80FF80;
+  transition: color 0.2s;
+}
