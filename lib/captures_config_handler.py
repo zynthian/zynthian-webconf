@@ -73,17 +73,18 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION', None)
 		if not action and self.get_argument('INSTALL_FPATH', None):
 			action = 'UPLOAD'
-		self.selected_full_path =  self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH').replace("%27","'")
+		self.selected_full_path = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH').replace("%27","'")
 		if action:
 			errors = {
 				'REMOVE': lambda: self.do_remove(),
 				'RENAME': lambda: self.do_rename(),
 				'DOWNLOAD': lambda: self.do_download(self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')),
 				'CONVERT_OGG': lambda: self.do_convert_ogg(),
-				'UPLOAD': lambda: self.do_install_file()
+				'UPLOAD': lambda: self.do_install_file(),
+				'SAVE_LOG': lambda: self.do_save_log()
 			}[action]()
 
-		if (action != 'DOWNLOAD'):
+		if (action not in ('DOWNLOAD', 'SAVE_LOG')):
 			self.get(errors)
 
 
@@ -99,22 +100,42 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 
 	def do_rename(self):
-		newName = ''
-		newNameExtension = ''
-
 		if self.get_argument('ZYNTHIAN_CAPTURES_RENAME'):
-			newName = self.get_argument('ZYNTHIAN_CAPTURES_RENAME')
-		if self.get_argument('ZYNTHIAN_CAPTURES_NAME'):
-			newNameExtension = os.path.splitext(self.get_argument('ZYNTHIAN_CAPTURES_NAME'))[1]
+			rename = self.get_argument('ZYNTHIAN_CAPTURES_RENAME')
+		else:
+			logging.error("Can't rename: No destination file name")
+			return
 
-		if newName and newNameExtension:
-			newName = '{}{}'.format(newName, newNameExtension)
-			sourceFolder = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
-			m = re.match('(.*/)(.*)', sourceFolder, re.M | re.I | re.S)
-			if m:
-				destinationFolder = m.group(1) + newName
-				shutil.move(sourceFolder, destinationFolder)
-				self.selected_full_path = destinationFolder
+		if self.get_argument('ZYNTHIAN_CAPTURES_NAME'):
+			fparts = os.path.splitext(self.get_argument('ZYNTHIAN_CAPTURES_NAME'))
+			fname =  fparts[0]
+			fext = fparts[1]
+		else:
+			logging.error("Can't rename: No origin file name")
+			return
+
+		if self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH'):
+			src_fpath = self.get_argument('ZYNTHIAN_CAPTURES_FULLPATH')
+			parts = os.path.split(src_fpath)
+			dirpath = parts[0]
+		else:
+			logging.error("Can't rename: No destination directory")
+			return
+
+		if dirpath:
+			title = rename
+			rename = rename.replace(" ", "_")
+			dest_fpath = dirpath + "/" + rename + fext
+			logging.info("Renaming capture: {} => {}".format(src_fpath, dest_fpath))
+			shutil.move(src_fpath, dest_fpath)
+			self.selected_full_path = dest_fpath
+			# When renaming log files, change title inside log file and rename associated video file (mp4)
+			if fext == ".log":
+				self.set_log_title(dest_fpath, title)
+				src_fpath = dirpath + "/" + fname + ".mp4"
+				dest_fpath = dirpath + "/" + rename + ".mp4"
+				logging.info("Renaming capture log video: {} => {}".format(src_fpath, dest_fpath))
+				shutil.move(src_fpath, dest_fpath)
 
 
 	def do_download(self, fullpath):
@@ -141,7 +162,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 	def do_install_file(self):
 		result = {}
-
 		try:
 			for fpath in self.get_argument('INSTALL_FPATH').split(","):
 				fpath = fpath.strip()
@@ -153,6 +173,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 		return result
 
+
 	def do_convert_ogg(self):
 		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
 		cmd = 'oggenc "{}" -o "{}"'.format(self.selected_full_path, ogg_file_name)
@@ -162,6 +183,57 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			return e.output
 		return
+
+
+	def do_save_log(self):
+		capture_log = self.get_argument('ZYNTHIAN_CAPTURES_LOG_CONTENT')
+		logging.info("Saving capture log => {}".format(capture_log))
+		capture_log_lines = capture_log.split("\n")
+		capture_log_title = None
+		for line in capture_log_lines:
+			parts = line.split(" ", 1)
+			if parts[1].startswith("TITLE: "):
+				capture_log_title = parts[1][7:]
+				break
+		if capture_log_title:
+			fname = capture_log_title.replace(" ", "_") + ".log"
+			fpath = CapturesConfigHandler.CAPTURES_DIRECTORY + "/" + fname
+			logging.info("Saving capture log to '{}'".format(fpath))
+			try:
+				f = open(fpath, "w")
+				f.write(capture_log)
+				f.close()
+			except:
+				logging.error("Can't write capture log file")
+		else:
+			logging.error("Can't save capture log: Unknown title and file name")
+
+
+	def set_log_title(self, fpath, title):
+		logging.info("Setting capture log '{}' title to '{}'".format(fpath, title))
+
+		try:
+			f = open(fpath, "r")
+			capture_log = f.read()
+			f.close()
+		except:
+			logging.error("Can't read capture log file")
+			return
+
+		capture_log_lines = capture_log.split("\n")
+		for i, line in enumerate (capture_log_lines):
+			parts = line.split(" ", 1)
+			if parts[1].startswith("TITLE: "):
+				capture_log_lines[i] = parts[0] + " TITLE: " + title
+				break
+
+		capture_log = "\n".join(capture_log_lines)
+		try:
+			f = open(fpath, "w")
+			f.write(capture_log)
+			f.close()
+		except:
+			logging.error("Can't write capture log file")
 
 
 	def get_content_type(self, filename):

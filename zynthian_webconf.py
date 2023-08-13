@@ -87,6 +87,15 @@ logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.s
 logging.getLogger().setLevel(level=log_level)
 
 #------------------------------------------------------------------------------
+# Non cached static files (capture log)
+#------------------------------------------------------------------------------
+
+class CaptureLogStaticFileHandler(tornado.web.StaticFileHandler):
+    def set_extra_headers(self, path):
+        # Disable cache
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
+#------------------------------------------------------------------------------
 # Build Web App & Start Server
 #------------------------------------------------------------------------------
 
@@ -128,6 +137,7 @@ def make_app():
 
 	return tornado.web.Application([
 		(r"/$", DashboardHandler),
+		(r"/mockup/capture/(.*\.log)$", CaptureLogStaticFileHandler, {'path': 'mockup/capture'}),
 		(r"/mockup/(.*)$", tornado.web.StaticFileHandler, {'path': 'mockup'}),
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
 		(r"/(.*\.html)$", tornado.web.StaticFileHandler, {'path': 'html'}),
