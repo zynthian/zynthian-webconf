@@ -1,3 +1,4 @@
+
 html {
   margin: 0;
   padding: 0;
@@ -8,12 +9,17 @@ body {
   padding: 0;
 }
 
-div.v5_mockup_container {
+div.zynthian_mockup_container {
   width: 100%;
   margin: auto;
   padding: 0px;
   font-size: max(min(1.0vw, 12px),8px);
+  display: none;
 }
+
+/*****************************************************************************
+ Title & Text subtitles
+*****************************************************************************/
 
 h1#capture_log_title {
   margin-top: 0;
@@ -97,16 +103,20 @@ div#capture_log_text_edit button#log_text_but_save {
   background-color: #00D080;
 }
 
+/*****************************************************************************
+ V5 Mockup                                                                 
+*****************************************************************************/
 
 svg.v5_mockup {
-  display: block;
+  display: none;
   width: 100%;
   margin: auto;
 }
 
+
 svg.v5_mockup image#v5_render {
 }
- 
+
 svg.v5_mockup video.v5_vscreen {
   opacity: 50%;
 }
@@ -144,6 +154,52 @@ svg.v5_mockup svg#rotate-knobs-arrow image {
   opacity: 0;
 }
 
+/*****************************************************************************
+ V4 Mockup                                                                 
+*****************************************************************************/
+
+svg.v4_mockup {
+  display: none;
+  width: 100%;
+  margin: auto;
+}
+
+svg.v4_mockup image#v4_render {
+}
+
+svg.v4_mockup video.v4_vscreen {
+  opacity: 50%;
+}
+
+svg.v4_mockup svg#push-buttons-outline rect {
+  width: 160px;
+  height: 98px;
+  rx: 15px;
+  ry: 15px;
+  stroke: #F0F000;
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0;
+}
+ 
+svg.v4_mockup svg#push-knobs-outline circle {
+  r: 62px;
+  stroke: #F0F000;
+  stroke-width: 6px;
+  fill: none;
+  opacity: 0;
+}
+
+svg.v4_mockup svg#rotate-knobs-arrow image {
+  width: 134px;
+  height: 134px;
+  opacity: 0;
+}
+
+
+/*****************************************************************************
+ Common Animation
+*****************************************************************************/
  
 .fadeInElem
  {
@@ -177,6 +233,9 @@ svg.v5_mockup svg#rotate-knobs-arrow image {
   100% { opacity: 0; }
 }
 
+/*****************************************************************************
+ Control Bar
+*****************************************************************************/
 
 .controls {
   padding: 0.3em;
@@ -266,3 +325,4 @@ svg.v5_mockup svg#rotate-knobs-arrow image {
   color: #80FF80;
   transition: color 0.2s;
 }
+
