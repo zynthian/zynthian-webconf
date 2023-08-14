@@ -13,20 +13,6 @@
 
     <h1 id="capture_log_title">Zynthian Workflow Player</h1>
 
-    <div id="capture_log_text_container">
-      <div id="capture_log_text"><br></div>
-      <button id="log_text_but_edit"><i class="fa fa-edit"></i></button>
-    </div>
-    
-    <div id="capture_log_text_edit">
-      <input type="hidden" id="log_text_pos" value=""></input>
-      <div id="log_text_ts">0:00:00.00</div>
-      <input type="text" id="log_text_input" value=""></input>
-      <button id="log_text_but_add"><i class="fa fa-plus"></i></button>
-      <button id="log_text_but_del"><i class="fa fa-xmark"></i></button>
-      <button id="log_text_but_save"><i class="fa fa-check"></i></button>
-    </div>
-
     <svg id="v5_mockup" class="v5_mockup" viewBox="0 0 1920 1000" >
 
       <svg id="leds" x="133" y="208">
@@ -137,7 +123,7 @@
 
     </svg>
 
-    <svg id="v4_mockup" class="v4_mockup" viewBox="0 0 1920 1480" >
+    <svg id="v4_mockup" class="v4_mockup" viewBox="0 0 1920 1200" >
 
       <image id="v4_render" href="v4_render_zenital_mockup_1910.png" x="0" y="0" />
       <foreignObject x="562" y="318" width="785" height="540">
@@ -174,6 +160,20 @@
 
     </svg>
 
+
+    <div id="capture_log_text_container">
+      <div id="capture_log_text"><br></div>
+      <button id="log_text_but_edit"><i class="fa fa-edit"></i></button>
+    </div>
+
+    <div id="capture_log_text_edit">
+      <input type="hidden" id="log_text_pos" value=""></input>
+      <div id="log_text_ts">0:00:00.00</div>
+      <input type="text" id="log_text_input" value=""></input>
+      <button id="log_text_but_add"><i class="fa fa-plus"></i></button>
+      <button id="log_text_but_del"><i class="fa fa-xmark"></i></button>
+      <button id="log_text_but_save"><i class="fa fa-check"></i></button>
+    </div>
 
     <div id="controls" class="controls">
       <button id="control_rewind" onclick="control_rewind()"><i class="fa fa-fast-backward"></i></button>
@@ -769,7 +769,7 @@ function resize_mockup_container() {
   if (mockup_layout == "v5") {
     rc = 0.965 * 1910/960;
   } else {
-    rc = 0.8 * 1910/1182;
+    rc = 0.990 * 1910/1182;
   }
   if (r > rc) wpc = (100 * rc / r).toFixed(1);
   elm.style.width = `${wpc}%`
