@@ -119,8 +119,10 @@ function showProgressAnimation(){
 $('#captures-panel').hide();
 var jsonTree = JSON.parse('{% raw config['ZYNTHIAN_CAPTURES'] %}')
 $('#input-uploadfile-type')[0].value = "midi";
-for(dirIdx in jsonTree){
-	$('#input-uploadfile-type')[0].value = $('#input-uploadfile-type')[0].value + "," + jsonTree[dirIdx].text;
+for(dirIdx in jsonTree) {
+    let t = jsonTree[dirIdx].text;
+    if (t == "log") t = "zip"
+	$('#input-uploadfile-type')[0].value += "," + t;
 }
 
 console.log(jsonTree);
