@@ -32,6 +32,7 @@ import logging
 import jsonpickle
 import subprocess
 import tornado.web
+from zipfile import ZipFile
 from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
@@ -89,12 +90,17 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 
 	def do_remove(self):
-		logging.info('removing {}'.format(self.selected_full_path))
+		logging.info("Removing {}".format(self.selected_full_path))
 		try:
 			if os.path.isdir(self.selected_full_path):
 				shutil.rmtree(self.selected_full_path)
 			else:
 				os.remove(self.selected_full_path)
+				fparts = os.path.splitext(self.selected_full_path)
+				if fparts[1] == ".log":
+					video_fpath = fparts[0] + ".mp4"
+					logging.info("Removing capture log video: {} ".format(video_fpath))
+					os.remove(video_fpath)
 		except:
 			pass
 
@@ -108,7 +114,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 		if self.get_argument('ZYNTHIAN_CAPTURES_NAME'):
 			fparts = os.path.splitext(self.get_argument('ZYNTHIAN_CAPTURES_NAME'))
-			fname =  fparts[0]
+			fname = fparts[0]
 			fext = fparts[1]
 		else:
 			logging.error("Can't rename: No origin file name")
@@ -140,10 +146,20 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 	def do_download(self, fullpath):
 		if fullpath:
-			source_file = fullpath
-			filename = os.path.split(fullpath)[1]
+			fparts = os.path.split(fullpath)
+			dirpath = fparts[0]
+			filename = fparts[1]
 
-			with open(source_file, 'rb') as f:
+			# If file is a capture log, generate download package with log + video
+			fparts = os.path.splitext(filename)
+			if fparts[1] == ".log":
+				filename = fparts[0] + ".zip"
+				fullpath = "/tmp/" + filename
+				with ZipFile(fullpath, 'w') as tmpzip:
+					tmpzip.write(dirpath + "/" + fparts[0] + ".log", fparts[0] + ".log")
+					tmpzip.write(dirpath + "/" + fparts[0] + ".mp4", fparts[0] + ".mp4")
+
+			with open(fullpath, 'rb') as f:
 				try:
 					while True:
 						data = f.read(4096)
@@ -155,9 +171,9 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					self.set_header('Content-Disposition', 'attachment; filename="%s"' % filename)
 					self.finish()
 				except Exception as exc:
+					logging.error(exc)
 					self.set_header('Content-Type', 'application/json')
 					self.write(jsonpickle.encode({'data': format(exc)}))
-			f.close()
 
 
 	def do_install_file(self):
@@ -241,21 +257,21 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 
 	def get_content_type(self, filename):
-		m = re.match('(.*)\.(.*)', filename, re.M | re.I | re.S)
-		if m:
-			if m.group(2) == 'mid':
-				return 'audio/midi'
-			elif m.group(2) == 'ogg':
-				return 'audio/ogg'
-			elif m.group(2) == 'mp3':
-				return 'audio/mp3'
-			elif m.group(2) == 'wav':
-				return 'application/wav'
-			elif m.group(2) == 'mp4':
-				return 'video/mp4'
-			elif m.group(2) == 'log':
-				return 'text/plain'
-
+		fext = os.path.splitext(filename)[1].lower()
+		if fext == '.mid':
+			return 'audio/midi'
+		elif fext == '.ogg':
+			return 'audio/ogg'
+		elif fext == '.mp3':
+			return 'audio/mp3'
+		elif fext == '.wav':
+			return 'application/wav'
+		elif fext == '.mp4':
+			return 'video/mp4'
+		elif fext == '.log':
+			return 'text/plain'
+		elif fext == '.zip':
+			return 'application/zip'
 
 	def create_node(self, file_extension):
 		captures = []
