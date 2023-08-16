@@ -286,21 +286,22 @@ function setVScreen(video_src) {
 // Mockup buttons & rotary graphics
 //-----------------------------------------------------------------------------
 
-
 function fadeElem(eid, state) {
   var elem = document.querySelector("svg#" + mockup_layout + "_mockup #" + eid)
-  //var elem = document.getElementById(eid)
   if (elem) {
     if (state) {
-      elem.classList.add("fadeInElem")
+      elem.style.opacity = "1";
       elem.classList.remove("fadeOutElem")
+      elem.classList.add("fadeInElem")
     }
     else {
-      elem.classList.add("fadeOutElem")
+      elem.style.opacity = "0";
       elem.classList.remove("fadeInElem")
+      elem.classList.add("fadeOutElem")
     }
   }
 }
+
 
 var autoFadeTimeOuts = {}
 
@@ -618,7 +619,10 @@ function playCaptureLine(line) {
     if (sp[0]=="P") state = true  
     if (mockup_layout == "v5") {
       var nbut = parseInt(sp[1]) - 4
-      if (nbut<20) {
+      if (nbut<0) {
+        console.log(`V5 emulating classic ZYNSWITCH-${nbut+5}`)
+      }
+      else if (nbut<20) {
         var but_id = `${1+Math.floor(nbut/4)}${1+nbut%4}`
         setButtonPush(but_id, state)
       } else {
@@ -627,8 +631,7 @@ function playCaptureLine(line) {
     } else {
       var nbut = 1 + parseInt(sp[1])
       if (nbut > 4) {
-      setButtonPush(nbut - 4, state)
-        
+        setButtonPush(nbut - 4, state)      
       } else {
         setKnobPush(nbut, state)
       }
