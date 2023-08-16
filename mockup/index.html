@@ -546,15 +546,13 @@ function loadCaptureLog(fname) {
           if (logtext.substr(0, 8) == "LAYOUT: ") {
             setMockupLayout(logtext.substr(8))
           }
-          else {
-            var tstext = log_rawlines[i].substr(0, cutpoint);
-            var tsparts = tstext.split(":")
-            var ts = parseInt(tsparts[0]) * 3600 + parseInt(tsparts[1]) * 60 + parseFloat(tsparts[2]) - ts_offset
-            var line = [ts, logtext, tsToString(ts)]
-            //tstext.substr(0, tstext.length-4)
-            console.log(`Capture Log: ${line[0]} => ${line[1]}`);
-            log_lines.push(line)
-          }
+          var tstext = log_rawlines[i].substr(0, cutpoint);
+          var tsparts = tstext.split(":")
+          var ts = parseInt(tsparts[0]) * 3600 + parseInt(tsparts[1]) * 60 + parseFloat(tsparts[2]) - ts_offset
+          var line = [ts, logtext, tsToString(ts)]
+          //tstext.substr(0, tstext.length-4)
+          console.log(`Capture Log: ${line[0]} => ${line[1]}`);
+          log_lines.push(line)
         }
       }
       if (!mockup_layout) setMockupLayout("v4")
@@ -598,15 +596,11 @@ function playbackLogCB() {
 function playCaptureLine(line) {
   var cutpoint = line[1].indexOf(":")
   var ltype = line[1].substr(0, cutpoint)
-  var lcontent = line[1].substr(cutpoint+1)
+  var lcontent = line[1].substr(cutpoint+1).trim()
 
   var dt = video.currentTime - line[0]
 
-  if (ltype == "LAYOUT") {
-    console.log(`LAYOUT: ${lcontent}`)
-    setMockupLayout(lcontent)
-  }
-  else if (ltype == "LEDSTATE") {
+  if (ltype == "LEDSTATE") {
     console.log(`LEDSTATE: ${lcontent}`)
     queueLedState(lcontent)
   }
