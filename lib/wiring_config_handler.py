@@ -373,7 +373,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	def prepare(self):
 		super().prepare()
-		self.current_custom_profile = os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE',"")
+		self.current_custom_profile = os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE', "")
 		self.load_custom_profiles()
 
 
