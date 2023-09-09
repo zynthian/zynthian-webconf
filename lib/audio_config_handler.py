@@ -187,6 +187,31 @@ soundcard_presets = OrderedDict([
 		'JACKD_OPTIONS': '-t 2000 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Speaker Left,Mic Left,Speaker Right,Mic Right'
 	}],
+	['Lexicon Alpha', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Alpha -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	}],
+	['Creative-EMU 0202', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:USB -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	}],
+	['M-Audio M-Track Plus 2', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Plus -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Mic Left,Mic Right,M-Audio M-Track Plus Left,M-Audio M-Track Plus Right'
+	}],
+	['GeneralPlus USB', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Device -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Speaker Left,Speaker Right,Mic Left,Mic Right,Auto Gain Control'
+	}],
+	['C-Media Electronics (Unitek Y-247A) USB', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Device -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	}],
 	['RBPi Headphones', {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -o 2 -p 512 -n 3 -X raw',
