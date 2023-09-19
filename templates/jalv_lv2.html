@@ -52,7 +52,7 @@
                           Type
                       </div>
                       <div  class="col-md-5 header">
-                      URL
+                      URI
                     </div>
                   </div>
                   {% for pluginname in config['ZYNTHIAN_JALV_PLUGINS'][pluginType] %}
@@ -72,8 +72,7 @@
                           {% end %}
                       </div>
                       <div class="col-md-5 one-line-truncated plugin-url">
-                          <a href="{{ config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL'] }}" target="_blank">
-                              {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}</a>
+                          {{ escape(config['ZYNTHIAN_JALV_PLUGINS'][pluginType][pluginname]['URL']) }}
                       </div>
                   </div>
                   {% end %}
