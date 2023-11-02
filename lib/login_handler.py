@@ -50,7 +50,7 @@ class LoginHandler(tornado.web.RequestHandler):
 		try:
 			logging.debug("PASSWD: %s <=> %s" % (root_crypt, input_crypt))
 			if input_crypt == root_crypt:
-				self.set_secure_cookie("user", "root", expires_days=5200)
+				self.set_secure_cookie("user", "root", expires_days=3650)
 				if self.get_argument("next", ""):
 					self.redirect(self.get_argument("next"))
 				else:
