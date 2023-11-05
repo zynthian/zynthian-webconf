@@ -23,11 +23,7 @@
 #********************************************************************
 
 import os
-import re
-import logging
 import tornado.web
-from collections import OrderedDict
-from subprocess import check_output, call
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
 from lib.audio_config_handler import soundcard_presets
@@ -56,14 +52,14 @@ class KitConfigHandler(ZynthianConfigHandler):
 	@tornado.web.authenticated
 	def get(self, errors=None):
 
-		config=OrderedDict([
-			['ZYNTHIAN_KIT_VERSION', {
+		config = {
+			'ZYNTHIAN_KIT_VERSION': {
 				'type': 'select',
 				'title': 'Kit',
 				'value': os.environ.get('ZYNTHIAN_KIT_VERSION', 'V4'),
 				'options': self.kit_options
-			}]
-		])
+			}
+		}
 
 		super().get("Kit", config, errors)
 
@@ -105,35 +101,42 @@ class KitConfigHandler(ZynthianConfigHandler):
 				wiring_layout_custom_profile = "z2"
 				ui_font_size = "16"
 				overclocking = "Maximum"
-			elif kit_version in ("V4", "V3-PRO"):
+			elif kit_version == "V4":
 				soundcard_name = "ZynADAC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
 				wiring_layout_custom_profile = "v4_studio"
 				ui_font_size = "14"
 				overclocking = "Medium"
-			elif kit_version=="V3":
+			elif kit_version == "V3-PRO":
+				soundcard_name = "ZynADAC"
+				display_name = "ZynScreen 3.5 (v1)"
+				wiring_layout = "MCP23017_ZynScreen"
+				wiring_layout_custom_profile = ""
+				ui_font_size = "14"
+				overclocking = "Medium"
+			elif kit_version == "V3":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "ZynScreen 3.5 (v1)"
 				wiring_layout = "MCP23017_ZynScreen"
-				wiring_layout_custom_profile = "v4_studio"
+				wiring_layout_custom_profile = ""
 				ui_font_size = "14"
 				overclocking = "None"
-			elif kit_version=="V2+":
+			elif kit_version == "V2+":
 				soundcard_name = "HifiBerry DAC+ ADC"
 				display_name = "PiScreen 3.5 (v2)"
-				wiring_layout = "MCP23017_EXTRA"
-				wiring_layout_custom_profile = "v4_studio"
+				wiring_layout = "MCP23017_ENCODERS"
+				wiring_layout_custom_profile = ""
 				ui_font_size = "14"
 				overclocking = "None"
-			elif kit_version=="V2":
+			elif kit_version == "V2":
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiScreen 3.5 (v2)"
-				wiring_layout = "MCP23017_EXTRA"
-				wiring_layout_custom_profile = "v4_studio"
+				wiring_layout = "MCP23017_ENCODERS"
+				wiring_layout_custom_profile = ""
 				ui_font_size = "14"
 				overclocking = "None"
-			elif kit_version=="V1":
+			elif kit_version == "V1":
 				soundcard_name = "HifiBerry DAC+"
 				display_name = "PiTFT 2.8 Resistive"
 				wiring_layout = "PROTOTYPE-4"
