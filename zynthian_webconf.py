@@ -31,8 +31,11 @@ import logging
 import tornado.web
 import tornado.ioloop
 import tornado_xstatic
-import terminado
 from terminado import TermSocket, SingleTermManager
+
+sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+from zyncoder.zyncore import lib_zyncore_init_minimal
+lib_zyncore_init_minimal()
 
 from lib.login_handler import LoginHandler, LogoutHandler
 from lib.dashboard_handler import DashboardHandler
@@ -77,10 +80,10 @@ MAX_STREAMED_SIZE = 1*TB
 #------------------------------------------------------------------------------
 
 if os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'):
-	log_level=int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
+	log_level = int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
 else:
-	log_level=logging.WARNING
-	#log_level=logging.ERROR
+	log_level = logging.WARNING
+	#log_level = logging.ERROR
 
 # Set root logging level
 logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
@@ -120,7 +123,7 @@ def make_app():
 		"template_whitespace": "single",
 		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
-		"upload_progress_handler": dict(),
+		"upload_progress_handler": dict()
 		#"autoescape": None
 	}
 

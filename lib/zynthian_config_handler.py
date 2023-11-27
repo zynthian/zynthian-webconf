@@ -30,7 +30,6 @@ import logging
 import tornado.web
 from subprocess import check_output
 
-sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
 
 #Avoid unwanted debug messages from zynconf module
