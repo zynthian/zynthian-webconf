@@ -242,12 +242,12 @@ except Exception as err:
 	rbpi_device_name = None
 	logging.error(err)
 
-if rbpi_device_name=="Headphones":
-	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#","Headphones")
-	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#","b1")
-elif rbpi_device_name=="ALSA":
-	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#","ALSA")
-	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#","ALSA")
+if rbpi_device_name == "Headphones":
+	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#", "Headphones")
+	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#", "b1")
+elif rbpi_device_name == "ALSA":
+	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#", "ALSA")
+	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#", "ALSA")
 else:
 	del soundcard_presets['RBPi Headphones']
 	del soundcard_presets['RBPi HDMI']
@@ -268,9 +268,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		])
 		logging.info(zc_config)
 
-		config=OrderedDict()
+		config = OrderedDict()
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		if os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
@@ -280,7 +280,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			custom_options_disabled = False
 
 		scpresets = copy.copy(soundcard_presets)
-		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0')=='1':
+		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0') == '1':
 			try:
 				del scpresets['RBPi Headphones']
 				del scpresets['RBPi HDMI']
