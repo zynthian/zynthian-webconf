@@ -126,16 +126,23 @@ def get_ports_config(current_midi_ports=""):
 
 def get_port_alias(midi_port):
 	try:
-		alias=midi_port.aliases[0]
-		logging.debug("ALIAS for %s => %s" % (midi_port.name, alias))
-		#Each returned alias string is something like that:
-		# in-hw-1-0-0-LPK25-MIDI-1
-		#or
-		# out-hw-2-0-0-MK-249C-USB-MIDI-keyboard-MIDI-
-		alias=' '.join(alias.split('-')[5:])
+		alias_id = '_'.join(midi_port.aliases[0].split('-')[5:])
 	except:
-		alias=midi_port.name.replace('_',' ')
-	return alias
+		alias_id = midi_port.name
+
+	if midi_port.is_input:
+		postfix = "OUT"
+	else:
+		postfix = "IN"
+
+	if alias_id.startswith("ttymidi:"):
+		alias_id = f"DIN-5 MIDI-{postfix}"
+	elif alias_id.startswith("a2j:"):
+		alias_id = f"ALSA MIDI-{postfix}"
+	elif alias_id == "f_midi":
+		alias_id = f"USB MIDI-{postfix}"
+
+	return alias_id
 
 
 #------------------------------------------------------------------------------

@@ -254,14 +254,18 @@ class DashboardHandler(ZynthianBasicHandler):
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE',''),
 				'url': "/hw-wiring"
 			}
-	
-		media_usb0_info = self.get_media_info('/media/usb0')
-		if media_usb0_info:
-			config['SYSTEM']['info']['MEDIA_USB0'] = {
-				'title': "USB Storage",
-				'value': "{} ({}/{})".format(media_usb0_info['usage'],media_usb0_info['used'],media_usb0_info['total']),
-				'url': "/lib-captures"
-			}
+
+		ex_data_basedir = os.environ.get('ZYNTHIAN_EX_DATA_DIR', "/media/root")
+		ex_data_dirs = zynconf.get_external_storage_dirs(ex_data_basedir)
+		for exdir in ex_data_dirs:
+			media_info = self.get_media_info(exdir)
+			if media_info:
+				dname = os.path.basename(exdir)
+				config['SYSTEM']['info']['MEDIA_' + dname] = {
+					'title': "USB/" + dname,
+					'value': "{} ({}/{})".format(media_info['usage'],media_info['used'],media_info['total']),
+					'url': "/lib-captures"
+				}
 
 		if self.is_service_active("touchosc2midi"):
 			config['NETWORK']['info']['TOUCHOSC'] = {
@@ -339,14 +343,15 @@ class DashboardHandler(ZynthianBasicHandler):
 					try:
 						adr = int(adr, 16)
 						if adr>=0x20 and adr<=0x27:
+							out1 = check_output("i2cget -y 1 {} 0x01".format(adr), shell=True).decode().strip()
 							out2 = check_output("i2cget -y 1 {} 0x10".format(adr), shell=True).decode().strip()
-							if out2=='0x00':
+							if out1 == '0x00' and out2 == '0x00':
 								res.append("MCP23008@0x{:02X}".format(adr))
 							else:
 								res.append("MCP23017@0x{:02X}".format(adr))
 						elif adr>=0x48 and adr<=0x4B:
 							res.append("ADS1115@0x{:02X}".format(adr))
-						elif adr>=0x60 and adr<=0x67:
+						elif adr>=0x61 and adr<=0x67:
 							res.append("MCP4728@0x{:02X}".format(adr))
 					except:
 						pass
@@ -363,7 +368,7 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def get_temperature():
 		try:
-			return check_output("/opt/vc/bin/vcgencmd measure_temp", shell=True).decode()[5:-3] + "ºC"
+			return check_output("vcgencmd measure_temp", shell=True).decode()[5:-3] + "ºC"
 		except:
 			return "???"
 

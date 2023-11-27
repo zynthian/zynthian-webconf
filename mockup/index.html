@@ -1,0 +1,818 @@
+<!DOCTYPE html>
+<html>
+<header>
+
+<link rel="stylesheet" href="css/zynthian-mockup.css" />
+<link rel="stylesheet" href="css/audiowide.css" />
+<link rel="stylesheet" href="css/font-awesome-all-min.css" />
+
+</header>
+
+<body>
+  <div id="zynthian_mockup_container" class="zynthian_mockup_container">
+
+    <h1 id="capture_log_title">Zynthian Workflow Player</h1>
+
+    <svg id="v5_mockup" class="v5_mockup" viewBox="0 0 1920 1000" >
+
+      <svg id="leds" x="133" y="208">
+        <circle id="led-11" cx="50" cy="50" fill="#505050" />
+        <circle id="led-12" cx="172" cy="50" fill="#505050" />
+        <circle id="led-13" cx="294" cy="50" fill="#505050" />
+        <circle id="led-14" cx="416" cy="50" fill="#505050" />
+			
+        <circle id="led-21" cx="50" cy="165" fill="#505050" />
+        <circle id="led-22" cx="172" cy="165" fill="#505050" />
+        <circle id="led-23" cx="294" cy="165" fill="#505050" />
+        <circle id="led-24" cx="416" cy="165" fill="#505050" />
+
+        <circle id="led-31" cx="50" cy="275" fill="#505050" />
+        <circle id="led-32" cx="172" cy="275" fill="#505050" />
+        <circle id="led-33" cx="294" cy="275" fill="#505050" />
+        <circle id="led-34" cx="416" cy="275" fill="#505050" />
+
+        <circle id="led-41" cx="50" cy="390" fill="#505050" />
+        <circle id="led-42" cx="172" cy="390" fill="#505050" />
+        <circle id="led-43" cx="294" cy="390" fill="#505050" />
+        <circle id="led-44" cx="416" cy="390" fill="#505050" />
+
+        <circle id="led-51" cx="50" cy="505" fill="#505050" />
+        <circle id="led-52" cx="172" cy="505" fill="#505050" />
+        <circle id="led-53" cx="294" cy="505" fill="#505050" />
+        <circle id="led-54" cx="416" cy="505" fill="#505050" />
+      </svg>
+
+      <image id="v5_render" href="v5_render_zenital_mockup_1910.png" x="0" y="0" />
+      <foreignObject x="731" y="254" width="800" height="480">
+        <video id="v5_vscreen" class="v5_vscreen" width="800" height="480">
+          <source id="v5_vscreen_src">
+        </video>
+      </foreignObject>
+
+      <svg id="push-buttons" x="68" y="155">
+        <image id="but-11" href="button_push.png" x="50" y="50" />
+        <image id="but-12" href="button_push.png" x="172" y="50" />
+        <image id="but-13" href="button_push.png" x="294" y="50" />
+        <image id="but-14" href="button_push.png" x="416" y="50" />
+
+        <image id="but-21" href="button_push.png" x="50" y="165" />
+        <image id="but-22" href="button_push.png" x="172" y="165" />
+        <image id="but-23" href="button_push.png" x="294" y="165" />
+        <image id="but-24" href="button_push.png" x="416" y="165" />
+
+        <image id="but-31" href="button_push.png" x="50" y="275" />
+        <image id="but-32" href="button_push.png" x="172" y="275" />
+        <image id="but-33" href="button_push.png" x="294" y="275" />
+        <image id="but-34" href="button_push.png" x="416" y="275" />
+
+        <image id="but-41" href="button_push.png" x="50" y="390" />
+        <image id="but-42" href="button_push.png" x="172" y="390" />
+        <image id="but-43" href="button_push.png" x="294" y="390" />
+        <image id="but-44" href="button_push.png" x="416" y="390" />
+
+        <image id="but-51" href="button_push.png" x="50" y="505" />
+        <image id="but-52" href="button_push.png" x="172" y="505" />
+        <image id="but-53" href="button_push.png" x="294" y="505" />
+        <image id="but-54" href="button_push.png" x="416" y="505" />
+      </svg>
+
+      <svg id="push-buttons-outline" x="79" y="154">
+        <rect id="bout-11" x="50" y="50" />
+        <rect id="bout-12" x="172" y="50" />
+        <rect id="bout-13" x="294" y="50" />
+        <rect id="bout-14" x="416" y="50" />
+
+        <rect id="bout-21" x="50" y="165" />
+        <rect id="bout-22" x="172" y="165" />
+        <rect id="bout-23" x="294" y="165" />
+        <rect id="bout-24" x="416" y="165" />
+
+        <rect id="bout-31" x="50" y="275" />
+        <rect id="bout-32" x="172" y="275" />
+        <rect id="bout-33" x="294" y="275" />
+        <rect id="bout-34" x="416" y="275" />
+
+        <rect id="bout-41" x="50" y="390" />
+        <rect id="bout-42" x="172" y="390" />
+        <rect id="bout-43" x="294" y="390" />
+        <rect id="bout-44" x="416" y="390" />
+
+        <rect id="bout-51" x="50" y="505" />
+        <rect id="bout-52" x="172" y="505" />
+        <rect id="bout-53" x="294" y="505" />
+        <rect id="bout-54" x="416" y="505" />
+      </svg>
+
+      <svg id="push-knobs-outline" x="1658" y="125">
+        <circle id="knout-1" cx="60" cy="60" />
+        <circle id="knout-2" cx="60" cy="260" />
+        <circle id="knout-3" cx="60" cy="455" />
+        <circle id="knout-4" cx="60" cy="670" />
+      </svg>
+      
+      <svg id="rotate-knobs-arrow" x="1594" y="60">
+        <image id="rknob-1" href="arrow-rotation-r.png" x="73" y="50" />
+        <image id="lknob-1" href="arrow-rotation-l.png" x="50" y="50" />
+        <image id="rknob-2" href="arrow-rotation-r.png" x="73" y="250" />
+        <image id="lknob-2" href="arrow-rotation-l.png" x="50" y="250" />
+        <image id="rknob-3" href="arrow-rotation-r.png" x="73" y="445" />
+        <image id="lknob-3" href="arrow-rotation-l.png" x="50" y="445" />
+        <image id="rknob-4" href="arrow-rotation-r.png" x="73" y="660" />
+        <image id="lknob-4" href="arrow-rotation-l.png" x="50" y="660" />
+      </svg>
+
+    </svg>
+
+    <svg id="v4_mockup" class="v4_mockup" viewBox="0 0 1920 1200" >
+
+      <image id="v4_render" href="v4_render_zenital_mockup_1910.png" x="0" y="0" />
+      <foreignObject x="562" y="318" width="785" height="540">
+        <video id="v4_vscreen" class="v4_vscreen" width="785">
+          <source id="v4_vscreen_src">
+        </video>
+      </foreignObject>
+
+      <svg id="push-buttons-outline" x="555" y="896">
+        <rect id="bout-1" x="0" y="0" />
+        <rect id="bout-2" x="213" y="0" />
+        <rect id="bout-3" x="426" y="0" />
+        <rect id="bout-4" x="638" y="0" />
+
+      </svg>
+
+      <svg id="push-knobs-outline" x="207" y="316">
+        <circle id="knout-1" cx="100" cy="100" />
+        <circle id="knout-2" cx="100" cy="466" />
+        <circle id="knout-3" cx="1394" cy="100" />
+        <circle id="knout-4" cx="1394" cy="466" />
+      </svg>
+      
+      <svg id="rotate-knobs-arrow" x="207" y="316">
+        <image id="rknob-1" href="arrow-rotation-r.png" x="55" y="8" />
+        <image id="lknob-1" href="arrow-rotation-l.png" x="10" y="8" />
+        <image id="rknob-2" href="arrow-rotation-r.png" x="55" y="375" />
+        <image id="lknob-2" href="arrow-rotation-l.png" x="10" y="375" />
+        <image id="rknob-3" href="arrow-rotation-r.png" x="1350" y="8" />
+        <image id="lknob-3" href="arrow-rotation-l.png" x="1305" y="8" />
+        <image id="rknob-4" href="arrow-rotation-r.png" x="1350" y="375" />
+        <image id="lknob-4" href="arrow-rotation-l.png" x="1305" y="375" />
+      </svg>
+
+    </svg>
+
+
+    <div id="capture_log_text_container">
+      <div id="capture_log_text"><br></div>
+      <button id="log_text_but_edit"><i class="fa fa-edit"></i></button>
+    </div>
+
+    <div id="capture_log_text_edit">
+      <input type="hidden" id="log_text_pos" value=""></input>
+      <div id="log_text_ts">0:00:00.00</div>
+      <input type="text" id="log_text_input" value=""></input>
+      <button id="log_text_but_add"><i class="fa fa-plus"></i></button>
+      <button id="log_text_but_del"><i class="fa fa-xmark"></i></button>
+      <button id="log_text_but_save"><i class="fa fa-check"></i></button>
+    </div>
+
+    <div id="controls" class="controls">
+      <button id="control_rewind" onclick="control_rewind()"><i class="fa fa-fast-backward"></i></button>
+      <button id="control_play" onclick="control_play()"><i class="fa fa-play"></i></button>
+      <button id="control_pause" onclick="control_pause()"><i class="fa fa-pause"></i></button>
+      <button id="control_slower" onclick="control_slower()"><i class="fa fa-backward"></i></button>
+      <div id="playback_rate" class="playback_rate">x1.0</div>
+      <button id="control_faster" onclick="control_faster()"><i class="fa fa-forward"></i></button>
+      <div id="playback_curtime" class="playback_curtime">0:00:00.00</div>
+      <div id="timeline" class="timeline">
+        <div class="bar">
+          <div class="inner"></div>
+          <div id="control_dial" class="dial"><i class="fa fa-caret-down"></i></div>
+        </div>
+      </div>
+      <button id="control_eject" onclick="control_eject()"><i class="fa fa-eject"></i></button>
+    </div>
+
+  </div>
+
+
+<script>
+//-----------------------------------------------------------------------------
+// Mockup Layout Setup
+//-----------------------------------------------------------------------------
+
+var mockup_layout = null
+var video = null
+
+function setMockupLayout(layout) {
+  if (layout=="v5" || layout=="V5") {
+    mockup_layout = "v5"
+    document.getElementById("v5_mockup").style.display = "block"
+    document.getElementById("v4_mockup").style.display = "none"
+  } else {
+    mockup_layout = "v4"
+    document.getElementById("v4_mockup").style.display = "block"
+    document.getElementById("v5_mockup").style.display = "none"
+
+  }
+  console.log("SETUP Mockup Layout => " + mockup_layout)
+  video = document.getElementById(mockup_layout + "_vscreen")
+  document.getElementById("zynthian_mockup_container").style.display = "block"
+  resize_mockup_container()
+}
+
+//-----------------------------------------------------------------------------
+// Mockup LEDs & Video graphics
+//-----------------------------------------------------------------------------
+
+var wscolor_off = "#505050";
+var wscolor_white = "#F0F0F0";
+var wscolor_red = "#C00000";
+var wscolor_green = "#00F000";
+var wscolor_yellow = "#D0D000";
+var wscolor_orange = "#F08000";
+var wscolor_blue = "#0050FF";
+var wscolor_blue_light = "#00E0E0";
+var wscolor_purple = "#E000E0";
+var ledstate_colors = {
+  "0": wscolor_off,
+  "B": wscolor_blue,
+  "G": wscolor_green,
+  "R": wscolor_red,
+  "O": wscolor_orange,
+  "Y": wscolor_yellow,
+  "P": wscolor_purple
+}
+
+var v5_led_order = [0, 1, 2, 3, 7, 6, 5, 4, 8, 9, 10 , 11, 15, 14, 13, 12, 16, 17, 18, 19]
+var led_state = null
+
+
+function setLedColor(led_id, color) {
+  var elem = document.getElementById(led_id)
+  elem.setAttribute("fill", color)
+}
+
+
+function queueLedState(ls) {
+  led_state = ls
+}
+
+
+function setLedState(fix_order) {
+  if (!led_state) return;
+  var c = 0;
+  var cc = 0;
+  var lsl = led_state.split(",")
+  for (let i = 1; i <= 5; i++) {
+    for (let j = 1; j <= 4; j++) {
+      if (fix_order) cc = v5_led_order[c]
+      else cc = c
+      color = ledstate_colors[lsl[cc]];
+      setLedColor(`led-${i}${j}`, color);
+      c++;
+    }
+  }
+  led_state = null;
+}
+
+
+function setVScreen(video_src) {
+  var elem = document.getElementById(mockup_layout + "_vscreen_src")
+  elem.setAttribute("src", video_src);
+  elem.setAttribute("type", "video/mp4");
+}
+
+//-----------------------------------------------------------------------------
+// Mockup buttons & rotary graphics
+//-----------------------------------------------------------------------------
+
+function fadeElem(eid, state) {
+  var elem = document.querySelector("svg#" + mockup_layout + "_mockup #" + eid)
+  if (elem) {
+    if (state) {
+      elem.style.opacity = "1";
+      elem.classList.remove("fadeOutElem")
+      elem.classList.add("fadeInElem")
+    }
+    else {
+      elem.style.opacity = "0";
+      elem.classList.remove("fadeInElem")
+      elem.classList.add("fadeOutElem")
+    }
+  }
+}
+
+
+var autoFadeTimeOuts = {}
+
+function autoFadeElemOutCB(eid) {
+  fadeElem(eid, false)
+  autoFadeTimeOuts[eid] = null
+}
+
+function autoFadeElem(eid) {
+  if (autoFadeTimeOuts[eid]) clearTimeout(autoFadeTimeOuts[eid])
+  fadeElem(eid, true)
+  autoFadeTimeOuts[eid] = setTimeout(autoFadeElemOutCB, 100, eid)
+}
+
+
+function setButtonPush(bid, state) {
+  console.log(`BUTTON PUSH ${bid}: ${state}`);
+  fadeElem("but-" + bid, state)
+  fadeElem("bout-" + bid, state)
+}
+
+
+function setKnobPush(kid, state) {
+  console.log(`KNOB PUSH ${kid}: ${state}`);
+  fadeElem("knout-" + kid, state)
+}
+
+
+function setKnobRotation(kid, dval) {
+  console.log(`KNOB ROTATION ${kid}: ${dval}`);
+  if (dval>0) autoFadeElem("rknob-" + kid)
+  else if (dval<0) autoFadeElem("lknob-" + kid)
+}
+
+
+//-----------------------------------------------------------------------------
+// Log Text & Title management
+//-----------------------------------------------------------------------------
+
+
+function resetCaptureLogTitle() {
+  var elem = document.getElementById("capture_log_title")
+  if (elem) {
+    elem.innerHTML = "Zynthian Workflow Player<br>"
+  }
+}
+
+function setCaptureLogTitle(title) {
+  var elem = document.getElementById("capture_log_title")
+  if (elem) {
+    elem.innerHTML = title + "<br>"
+  }
+}
+
+
+function resetCaptureLogText() {
+  var elem = document.getElementById("capture_log_text")
+  if (elem) {
+    elem.innerHTML = "<br>"
+  }
+
+  elem = document.getElementById("log_text_pos")
+  if (elem) {
+    elem.value = 0
+  }
+
+  elem = document.getElementById("log_text_ts")
+  if (elem) {
+    elem.innerHTML = "0:00:00.00"
+  }
+  
+  elem = document.getElementById("log_text_input")
+  if (elem) {
+    elem.value = ""
+  }
+}
+
+
+function setCaptureLogText(text) {
+  var elem = document.getElementById("capture_log_text")
+  if (elem) {
+    elem.innerHTML = text + "<br>"
+  }
+
+  elem = document.getElementById("log_text_pos")
+  if (elem) {
+    elem.value = log_pos
+  }
+
+  elem = document.getElementById("log_text_ts")
+  if (elem) {
+    elem.innerHTML = log_lines[log_pos][2]
+  }
+  
+  elem = document.getElementById("log_text_input")
+  if (elem) {
+    elem.value = text
+  }
+}
+
+
+function saveCaptureLogText() {
+  // Save locally the currently edited text line
+  var save_pos = -1;
+  var elem = document.getElementById("log_text_pos")
+  if (elem) save_pos = parseInt(elem.value)
+  if (save_pos >= 0 && save_pos < log_lines.length) {
+    elem = document.getElementById("log_text_input")
+    if (elem) {
+      log_lines[save_pos][1] = "TEXT: " + elem.value
+      console.log("SAVING CAPTURE LOG TEXT => " + elem.value)
+    }
+  }
+}
+
+
+function tsToString(ts) {
+  // Convert a numeric timestamp (seconds) to a timecode string (hours:mins:secs.cents)
+  var hours = Math.floor(ts / 3600)
+  ts -= hours * 3600
+  var mins = Math.floor(ts / 60)
+  ts -= mins * 60
+  var tstext = `${hours}:${String(mins).padStart(2, '0')}:${String(ts.toFixed(2)).padStart(5, '0')}`
+  return tstext
+}
+
+
+function addCaptureLogText() {
+  // Add a text line to the log at the current play time
+  var ts = video.currentTime
+  var tstext = tsToString(ts)
+  var line = [ts, "TEXT: ", tstext]
+  log_lines.splice(log_pos, 0, line)
+  setCaptureLogText("")
+}
+
+
+function delCaptureLogText() {
+  // Delete a text line from the log
+  var save_pos = -1;
+  var elem = document.getElementById("log_text_pos")
+  if (elem) save_pos = parseInt(elem.value)
+  if (save_pos >= 0 && save_pos < log_lines.length) {
+    log_lines.splice(save_pos, 1)
+    log_pos = 0
+    playbackLogCB()
+    console.log("DELETING CAPTURE LOG TEXT => " + save_pos)
+  }
+}
+
+
+function editOnCaptureLogText() {
+  // Change to "edit" mode
+  var elem = document.getElementById("capture_log_text_container")
+  elem.style.display = "none"
+  elem = document.getElementById("capture_log_text_edit")
+  elem.style.display = "block"
+}
+
+
+function editOffCaptureLogText() {
+  // Back to "view" mode
+  var elem = document.getElementById("capture_log_text_container")
+  elem.style.display = "block"
+  elem = document.getElementById("capture_log_text_edit")
+  elem.style.display = "none"
+  log_pos = 0
+  playbackLogCB()
+
+  // Save capture log in remote server  
+  var capture_log = "";
+  for (var i in log_lines) {
+    var ts = log_lines[i][0] + ts_offset;
+    capture_log += tsToString(ts) + " " + log_lines[i][1] + "\n";
+  }
+  console.log(capture_log)
+  postCaptureLog(capture_log)
+    .then(res => {
+      console.log("SAVED CAPTURE LOG: " + res);
+    })
+    .catch(err => {
+      console.log(`ERROR SAVING CAPTURE LOG: ${err}`)
+    })
+}
+
+
+//-----------------------------------------------------------------------------
+// Capture-log load/save & playback control
+//-----------------------------------------------------------------------------
+
+var ts_offset = 0.7;
+var log_lines = [];
+var log_pos = 0;
+
+
+function getCaptureLog(fname) {
+  var url = `capture/${fname}.log`
+  return new Promise((resolve, reject) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', url, true);
+    xhr.responseType = 'text';
+    xhr.onload = function(e) {
+      if (this.status === 200) {
+        resolve(this.response);
+      } else {
+        reject(this.response);
+      }
+    };
+    xhr.send();
+  })
+}
+
+
+function postCaptureLog(capture_log) {
+  var url = "/lib-captures"
+  return new Promise((resolve, reject) => {
+    var xhr = new XMLHttpRequest();
+    xhr.open('POST', url, true);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    var params = "ZYNTHIAN_CAPTURES_ACTION=SAVE_LOG&ZYNTHIAN_CAPTURES_FULLPATH=&ZYNTHIAN_CAPTURES_LOG_FNAME=" + log_fname + "&ZYNTHIAN_CAPTURES_LOG_CONTENT=" + encodeURIComponent(capture_log)
+    //xhr.responseType = 'text';
+    xhr.onload = function(e) {
+      if (this.status === 200) {
+        resolve(this.response);
+      } else {
+        reject(this.response);
+      }
+    };
+    xhr.send(params);
+  })
+}
+
+
+function loadCaptureLog(fname) {
+  getCaptureLog(fname)
+    .then(capture_log => {
+      var log_rawlines = capture_log.split("\n");
+      log_lines = []
+      for (var i in log_rawlines) {        
+        var cutpoint = log_rawlines[i].indexOf(" ")
+        if (cutpoint > 0) {
+          var logtext = log_rawlines[i].substr(cutpoint+1)
+          if (logtext.substr(0, 8) == "LAYOUT: ") {
+            setMockupLayout(logtext.substr(8))
+          }
+          var tstext = log_rawlines[i].substr(0, cutpoint);
+          var tsparts = tstext.split(":")
+          var ts = parseInt(tsparts[0]) * 3600 + parseInt(tsparts[1]) * 60 + parseFloat(tsparts[2]) - ts_offset
+          var line = [ts, logtext, tsToString(ts)]
+          //tstext.substr(0, tstext.length-4)
+          console.log(`Capture Log: ${line[0]} => ${line[1]}`);
+          log_lines.push(line)
+        }
+      }
+      if (!mockup_layout) setMockupLayout("v4")
+      log_pos = 0;
+      setVScreen(`capture/${fname}.mp4`)
+      video.load();
+      setInterval(playbackLogCB, 33);
+      //video.addEventListener("timeupdate", () => {
+    })
+    .catch(err => {
+      console.log(`ERROR GETTING CAPTURE LOG: ${err}`)
+    })
+}
+
+
+function playbackLogCB() {
+  //console.log(`Video Time: ${video.currentTime}`);
+
+  if (log_pos==0) resetCaptureLogText()
+
+  //Play events
+  while (log_pos < log_lines.length && log_lines[log_pos][0] <= video.currentTime) {
+    playCaptureLine(log_lines[log_pos])
+    log_pos++
+  }
+  setLedState(true)
+
+  let curr = (video.currentTime / video.duration) * 100
+  if (video.ended) {
+    document.getElementById("control_pause").style.display = "none"
+    document.getElementById("control_play").style.display = "inline"
+    control_rewind()
+  }
+  let progress = `${curr}%` 
+  document.querySelector('.inner').style.width = progress
+  document.getElementById("control_dial").style.left = progress
+  document.getElementById("playback_curtime").innerHTML = tsToString(video.currentTime)
+}
+
+
+function playCaptureLine(line) {
+  var cutpoint = line[1].indexOf(":")
+  var ltype = line[1].substr(0, cutpoint)
+  var lcontent = line[1].substr(cutpoint+1).trim()
+
+  var dt = video.currentTime - line[0]
+
+  if (ltype == "LEDSTATE") {
+    console.log(`LEDSTATE: ${lcontent}`)
+    queueLedState(lcontent)
+  }
+  else if (ltype == "ZYNPOT" && dt < 0.5) {
+    console.log(`ZYNPOT: ${lcontent}`);
+    var sp = lcontent.split(",")
+    var knob_id = 1 + parseInt(sp[0])
+    var knob_dval = parseInt(sp[1])
+    setKnobRotation(knob_id, knob_dval)
+  }
+  else if (ltype == "ZYNSWITCH" && dt < 0.5) {
+    console.log(`ZYNSWITCH: ${lcontent}`);
+    var sp = lcontent.split(",")
+    var state = false
+    if (sp[0]=="P") state = true  
+    if (mockup_layout == "v5") {
+      var nbut = parseInt(sp[1]) - 4
+      if (nbut<0) {
+        console.log(`V5 emulating classic ZYNSWITCH-${nbut+5}`)
+      }
+      else if (nbut<20) {
+        var but_id = `${1+Math.floor(nbut/4)}${1+nbut%4}`
+        setButtonPush(but_id, state)
+      } else {
+        setKnobPush(nbut-19, state)
+      }
+    } else {
+      var nbut = 1 + parseInt(sp[1])
+      if (nbut > 4) {
+        setButtonPush(nbut - 4, state)      
+      } else {
+        setKnobPush(nbut, state)
+      }
+    }
+  }
+  else if (ltype == "CUIA" && dt < 0.5) {
+    console.log(`CUIA: ${lcontent}`);
+    //setCaptureLogText(line[1])
+  }
+  else if (ltype == "TEXT") {
+    console.log(`TEXT: ${lcontent}`);
+    setCaptureLogText(lcontent)
+  }
+  else if (ltype == "TITLE") {
+    console.log(`TITLE: ${lcontent}`);
+    setCaptureLogTitle(lcontent)
+  }
+}
+
+function control_rewind() {
+  video.currentTime = 0.0
+  log_pos = 0
+}
+
+function control_play() {
+  video.play()
+  document.getElementById("control_pause").style.display = "inline"
+  document.getElementById("control_play").style.display = "none"
+}
+
+function control_pause() {
+  video.pause()
+  document.getElementById("control_pause").style.display = "none"
+  document.getElementById("control_play").style.display = "inline"
+}
+
+function control_slower() {
+  if (video.playbackRate > 0.11) {
+    set_playback_rate(video.playbackRate - 0.1)
+  }
+}
+
+function control_faster() {
+  set_playback_rate(video.playbackRate + 0.1)
+}
+
+function control_eject() {
+  //alert("This should open the list of contents available for playing...")
+  history.back()
+}
+
+function set_playback_rate(rate) {
+  video.playbackRate = rate
+  var elem = document.getElementById("playback_rate")
+  elem.innerHTML = "x" + rate.toFixed(1);
+}
+
+
+//-----------------------------------------------------------------------------
+// Control Dial Drag
+//-----------------------------------------------------------------------------
+
+var control_dial_x0 = 0;
+var control_dial_x1 = 0;
+
+function control_dial_dragStart(e) {
+  e = e || window.event;
+  e.preventDefault();
+  let tlrect = document.getElementById("timeline").getBoundingClientRect()
+  control_dial_x0 = tlrect.left;
+  control_dial_x1 = tlrect.right;
+  document.onmouseup = control_dial_dragEnd;
+  document.onmousemove = control_dial_dragMove;
+}
+
+function control_dial_dragEnd(e) {
+  document.onmouseup = null;
+  document.onmousemove = null;
+}
+
+function control_dial_dragMove(e) {
+  e = e || window.event;
+  e.preventDefault();
+  let curr = (e.clientX - control_dial_x0) / (control_dial_x1 - control_dial_x0);
+  if (curr < 0) curr = 0;
+  else if (curr > 1) curr = 1;
+  var lastCurrentTime = video.currentTime
+  video.currentTime = curr * video.duration
+  if (lastCurrentTime > video.currentTime) log_pos = 0
+  //console.log(curr);
+}
+
+//-----------------------------------------------------------------------------
+// Mockup resizing
+//-----------------------------------------------------------------------------
+
+
+function outerWidth(el) {
+  var width = el.offsetWidth;
+  var style = getComputedStyle(el);
+  if (style.display != "none") {
+    width += parseInt(style.marginLeft) + parseInt(style.marginRight);
+  } else {
+    width = 0;
+  }
+  return width;
+}
+
+function outerHeight(el) {
+  var height = el.offsetHeight;
+  var style = getComputedStyle(el);
+  if (style.display != "none") {
+    height += parseInt(style.marginTop) + parseInt(style.marginBottom);
+  } else {
+    height = 0;
+  }
+  return height;
+}
+
+function resize_mockup_container() {
+  var elm = document.getElementById(mockup_layout + "_mockup")
+  var title = document.getElementById("capture_log_title")
+  var text_cont = document.getElementById("capture_log_text_container")
+  var text_edit = document.getElementById("capture_log_text_edit")
+  var ctrls = document.getElementById("controls")
+  var w = window.innerWidth;
+  var h = window.innerHeight - outerHeight(title) - outerHeight(text_cont) - outerHeight(text_edit) - outerHeight(ctrls);
+  //console.log(`ROOT WIDTH ${w}, HEIGHT ${h}`);
+  var r = w/h;
+  var wpc = 100;
+  var rc;
+  if (mockup_layout == "v5") {
+    rc = 0.965 * 1910/960;
+  } else {
+    rc = 0.990 * 1910/1182;
+  }
+  if (r > rc) wpc = (100 * rc / r).toFixed(1);
+  elm.style.width = `${wpc}%`
+  //console.log("MOCKUP WIDTH% => " + wpc);
+}
+
+
+function check_edit_allowed() {
+  // Check if running on-line (zynthian.org domain)
+  let parts = window.location.host.split(".")
+  let n = parts.length
+  if (n > 1 && parts[n - 1] == "org" && parts[n - 2] == "zynthian") return false
+  return true
+}
+
+//-----------------------------------------------------------------------------
+// Mockup initializing
+//-----------------------------------------------------------------------------
+
+document.getElementById("control_dial").onmousedown = control_dial_dragStart;
+window.addEventListener('resize', resize_mockup_container, true);
+
+var edit_allowed = check_edit_allowed()
+if (edit_allowed) {
+  //document.getElementById("log_text_input").addEventListener("change", saveCaptureLogText);
+  document.getElementById("log_text_input").addEventListener("keyup", saveCaptureLogText);
+  document.getElementById("log_text_but_add").addEventListener("click", addCaptureLogText);
+  document.getElementById("log_text_but_del").addEventListener("click", delCaptureLogText);
+  document.getElementById("log_text_but_save").addEventListener("click", editOffCaptureLogText);
+  document.getElementById("log_text_but_edit").addEventListener("click", editOnCaptureLogText);
+  document.getElementById("log_text_but_edit").style.display = "inline"
+}
+
+//-----------------------------------------------------------------------------
+
+//20230719182538, 20230728171522, 20230731153349, 20230801203833, 20230803133409
+//var log_fname = 'ui_sesion-20230803133409'
+
+// Load capture log in mockup
+var url = new URL(window.location.href);
+var log_fname = url.searchParams.get("capture");
+if (log_fname) loadCaptureLog(log_fname)
+
+//-----------------------------------------------------------------------------
+</script>
+
+</body>
+</html>
+

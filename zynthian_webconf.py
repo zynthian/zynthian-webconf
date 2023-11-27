@@ -90,6 +90,15 @@ logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.s
 logging.getLogger().setLevel(level=log_level)
 
 #------------------------------------------------------------------------------
+# Non cached static files (capture log)
+#------------------------------------------------------------------------------
+
+class CaptureLogStaticFileHandler(tornado.web.StaticFileHandler):
+	def set_extra_headers(self, path):
+		# Disable cache
+		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
+#------------------------------------------------------------------------------
 # Build Web App & Start Server
 #------------------------------------------------------------------------------
 
@@ -130,16 +139,18 @@ def make_app():
 	term_manager = SingleTermManager(shell_command=['./zynbash.sh'])
 
 	return tornado.web.Application([
-		(r'/$', DashboardHandler),
+		(r"/$", DashboardHandler),
+		(r"/mockup/capture/(.*\.log)$", CaptureLogStaticFileHandler, {'path': 'mockup/capture'}),
+		(r"/mockup/(.*)$", tornado.web.StaticFileHandler, {'path': 'mockup'}),
 		#(r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
-		(r'/(.*\.html)$', tornado.web.StaticFileHandler, {'path': 'html'}),
-		(r'/(favicon\.ico)$', tornado.web.StaticFileHandler, {'path': 'img'}),
-		(r'/fonts/(.*)$', tornado.web.StaticFileHandler, {'path': 'fonts'}),
-		(r'/img/(.*)$', tornado.web.StaticFileHandler, {'path': 'img'}),
-		(r'/css/(.*)$', tornado.web.StaticFileHandler, {'path': 'css'}),
-		(r'/js/(.*)$', tornado.web.StaticFileHandler, {'path': 'js'}),
-		(r'/captures/(.*)$', tornado.web.StaticFileHandler, {'path': 'captures'}),
-		(r'/bower_components/(.*)$', tornado.web.StaticFileHandler, {'path': 'bower_components'}),
+		(r"/(.*\.html)$", tornado.web.StaticFileHandler, {'path': 'html'}),
+		(r"/(favicon\.ico)$", tornado.web.StaticFileHandler, {'path': 'img'}),
+		(r"/fonts/(.*)$", tornado.web.StaticFileHandler, {'path': 'fonts'}),
+		(r"/img/(.*)$", tornado.web.StaticFileHandler, {'path': 'img'}),
+		(r"/css/(.*)$", tornado.web.StaticFileHandler, {'path': 'css'}),
+		(r"/js/(.*)$", tornado.web.StaticFileHandler, {'path': 'js'}),
+		#(r"/captures/(.*)$", tornado.web.StaticFileHandler, {'path': 'captures'}),
+		(r"/bower_components/(.*)$", tornado.web.StaticFileHandler, {'path': 'bower_components'}),
 		(r"/login", LoginHandler),
 		(r"/logout", LogoutHandler),
 		(r"/lib-snapshot$", SnapshotConfigHandler),

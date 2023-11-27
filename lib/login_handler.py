@@ -41,9 +41,8 @@ class LoginHandler(tornado.web.RequestHandler):
 	def post(self):
 		input_passwd = self.get_argument("PASSWORD")
 		try:
-			root_crypt=check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
-			rcparts = root_crypt.split('$')
-			input_crypt = crypt.crypt(input_passwd, "$%s$%s" % (rcparts[1], rcparts[2]))
+			root_crypt = check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
+			input_crypt = crypt.crypt(input_passwd, root_crypt)
 		except:
 			logging.info("OPENING DEVELOPERS BACKDOOR ...")  # only open when running on pc
 			root_crypt = "webconfdeveloper"
@@ -51,7 +50,7 @@ class LoginHandler(tornado.web.RequestHandler):
 		try:
 			logging.debug("PASSWD: %s <=> %s" % (root_crypt, input_crypt))
 			if input_crypt == root_crypt:
-				self.set_secure_cookie("user", "root", expires_days=5200)
+				self.set_secure_cookie("user", "root", expires_days=3650)
 				if self.get_argument("next", ""):
 					self.redirect(self.get_argument("next"))
 				else:

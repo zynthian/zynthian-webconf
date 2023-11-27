@@ -1,7 +1,9 @@
 function connectZynthianWebSocket(onopenDeferred){
 	var url = window.location.href
 	var parts = url.split("/");
-	var zynthianSocket = new WebSocket("ws://"+parts[2]+"/ws");
+	var wsprot = "ws"
+	if (parts[0]=="https:") wsprot = "wss"
+	var zynthianSocket = new WebSocket(wsprot + "://"+parts[2]+"/ws");
 	zynthianSocket.onconnecting = function(evn){
 		console.log("zynthianSocket:onconnecting:",evn);
 

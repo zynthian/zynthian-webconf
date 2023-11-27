@@ -123,8 +123,8 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 		try:
 			mido.set_backend('mido.backends.rtmidi/UNIX_JACK')
 			MidiLogMessageHandler.mido_port = mido.open_input(self.midi_port_name, callback=self.on_midi_in)
-		except:
-			logging.error("Can't open MIDI Port {}".format(self.midi_port_name))
+		except Exception as err:
+			logging.error("Can't open MIDI Port {}: {}".format(self.midi_port_name, err))
 
 
 	def on_midi_in(self, msg):

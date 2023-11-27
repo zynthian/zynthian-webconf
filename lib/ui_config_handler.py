@@ -156,15 +156,25 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Info color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_INFO', "#8080ff"),
 			}],
-			['ZYNTHIAN_UI_COLOR_MIDI', {
-				'type': 'text',
-				'title': 'MIDI color',
-				'value': os.environ.get('ZYNTHIAN_UI_COLOR_MIDI', "#ff00ff"),
-			}],
 			['ZYNTHIAN_UI_COLOR_ERROR', {
 				'type': 'text',
 				'title': 'Error color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ERROR', "#ff0000"),
+			}],
+			['ZYNTHIAN_UI_COLOR_MIDI', {
+				'type': 'text',
+				'title': 'MIDI color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_MIDI', "#9090ff"),
+			}],
+			['ZYNTHIAN_UI_COLOR_ALT', {
+				'type': 'text',
+				'title': 'Alternate color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ALT', "#ff00ff"),
+			}],
+			['ZYNTHIAN_UI_COLOR_ALT2', {
+				'type': 'text',
+				'title': '2nd Alternate color',
+				'value': os.environ.get('ZYNTHIAN_UI_COLOR_ALT2', "#ff9000"),
 			}],
 			['ZYNTHIAN_UI_COLOR_BG', {
 				'type': 'text',
