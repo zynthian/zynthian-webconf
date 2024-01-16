@@ -419,17 +419,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'type': 'hidden',
 				'value': ''
 			}],
-			['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL', {
-				'type': 'select',
-				'title': 'Receive Mode',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0'),
-				'options': ["1", "0"],
-				'option_labels': {
-					"1": "Stage (Omni On)",
-					"0": "Multi-timbral"
-				},
-				'advanced': False
-			}],
 			['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', {
 				'type': 'boolean',
 				'title': 'Program Change ZS3 (Program Change for SubSnapShots)',
@@ -594,7 +583,6 @@ class MidiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_MIDI_SYS_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_SYS_ENABLED','0')
 		self.request.arguments['ZYNTHIAN_MIDI_CC_AUTOMODE'] = self.request.arguments.get('ZYNTHIAN_MIDI_CC_AUTOMODE','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON','0')
-		self.request.arguments['ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_SINGLE_ACTIVE_CHANNEL','0')
 		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','0')
 		self.request.arguments['ZYNTHIAN_MIDI_BANK_CHANGE'] = self.request.arguments.get('ZYNTHIAN_MIDI_BANK_CHANGE','0')
 		self.request.arguments['ZYNTHIAN_MIDI_RTPMIDI_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_RTPMIDI_ENABLED','0')

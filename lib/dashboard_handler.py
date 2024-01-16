@@ -134,14 +134,14 @@ class DashboardHandler(ZynthianBasicHandler):
 						'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING',"440")),
 						'url': "/ui-midi-options"
 					}],
-					['SINGLE_ACTIVE_CHANNEL', {
-						'title': 'Receive Mode',
-						'value': self.get_midi_receive_mode(),
+					['ZS3_SUBSNAPSHOTS', {
+						'title': 'ZS3 (SubSnapShots)',
+						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')),
 						'url': "/ui-midi-options"
 					}],
-					['ZS3_SUBSNAPSHOTS', {
-						'title': 'ZS3 Sub-SnapShots',
-						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3','1')),
+					['PRESET_PRELOAD', {
+						'title': 'Preload Presets',
+						'value': self.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', '1')),
 						'url': "/ui-midi-options"
 					}],
 					['MIDI_FILTER_OUTPUT', {
