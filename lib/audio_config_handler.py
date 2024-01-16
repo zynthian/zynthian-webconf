@@ -52,6 +52,11 @@ soundcard_presets = OrderedDict([
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,PGA Gain Left,Digital Right,PGA Gain Right,ADC Left Input,ADC Left,ADC Right Input,ADC Right'
 	}],
+	['AlloBoss - Innomaker - PCM5142', {
+		'SOUNDCARD_CONFIG': 'dtoverlay=allo-boss-dac-pcm512x-audio',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:BossDAC -S -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Digital Left,PGA Gain Left,Digital Right,PGA Gain Right,ADC Left Input,ADC Left,ADC Right Input,ADC Right'
+	}],
 	['HifiBerry DAC+ ADC PRO', {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:sndrpihifiberry -S -r 44100 -p 256 -n 2 -X raw',
@@ -182,6 +187,31 @@ soundcard_presets = OrderedDict([
 		'JACKD_OPTIONS': '-t 2000 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Speaker Left,Mic Left,Speaker Right,Mic Right'
 	}],
+	['Lexicon Alpha', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Alpha -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	}],
+	['Creative-EMU 0202', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:USB -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	}],
+	['M-Audio M-Track Plus 2', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Plus -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Mic Left,Mic Right,M-Audio M-Track Plus Left,M-Audio M-Track Plus Right'
+	}],
+	['GeneralPlus USB', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Device -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': 'Speaker Left,Speaker Right,Mic Left,Mic Right,Auto Gain Control'
+	}],
+	['C-Media Electronics (Unitek Y-247A) USB', {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:Device -r 44100 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	}],
 	['RBPi Headphones', {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
 		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:#DEVNAME# -r 44100 -o 2 -p 512 -n 3 -X raw',
@@ -212,12 +242,12 @@ except Exception as err:
 	rbpi_device_name = None
 	logging.error(err)
 
-if rbpi_device_name=="Headphones":
-	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#","Headphones")
-	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#","b1")
-elif rbpi_device_name=="ALSA":
-	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#","ALSA")
-	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#","ALSA")
+if rbpi_device_name == "Headphones":
+	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#", "Headphones")
+	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#", "b1")
+elif rbpi_device_name == "ALSA":
+	soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace("#DEVNAME#", "ALSA")
+	soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace("#DEVNAME#", "ALSA")
 else:
 	del soundcard_presets['RBPi Headphones']
 	del soundcard_presets['RBPi HDMI']
@@ -238,9 +268,9 @@ class AudioConfigHandler(ZynthianConfigHandler):
 		])
 		logging.info(zc_config)
 
-		config=OrderedDict()
+		config = OrderedDict()
 
-		if os.environ.get('ZYNTHIAN_KIT_VERSION')!='Custom':
+		if os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom':
 			custom_options_disabled = True
 			config['ZYNTHIAN_MESSAGE'] = {
 				'type': 'html',
@@ -250,7 +280,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			custom_options_disabled = False
 
 		scpresets = copy.copy(soundcard_presets)
-		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO','0')=='1':
+		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0') == '1':
 			try:
 				del scpresets['RBPi Headphones']
 				del scpresets['RBPi HDMI']

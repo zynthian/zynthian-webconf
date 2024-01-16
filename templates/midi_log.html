@@ -108,7 +108,7 @@ $(document).ready(function() {
 			var divlog=$("div#midi-log")
 
 			if (data) {
-				//console.log("MidiLogMessageHandler:onmessage:", data);
+				console.log("MidiLogMessageHandler:onmessage:", data);
 				var dataPayload = "";
 				var fgcolor = "";
 				var type = data.type;
@@ -136,6 +136,13 @@ $(document).ready(function() {
 				} else if (type == "polytouch") {
 					dataPayload = " " + data['note'] + ", P: " + data['value'];
 					fgcolor = "#A0A000";
+				} else if (type == "sysex") {
+					var hexdata = Array()
+					for (const b of data.data['py/seq']) {
+						hexdata.push(b.toString(16).padStart(2, '0'));
+					}
+					dataPayload = " " + hexdata.join(' ');
+					fgcolor = "#C00000";
 				} else {
 					fgcolor = "#404040";
 				}

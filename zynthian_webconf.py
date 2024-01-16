@@ -31,7 +31,6 @@ import logging
 import tornado.web
 import tornado.ioloop
 import tornado_xstatic
-import terminado
 from terminado import TermSocket, SingleTermManager
 
 from lib.login_handler import LoginHandler, LogoutHandler
@@ -77,10 +76,10 @@ MAX_STREAMED_SIZE = 1*TB
 #------------------------------------------------------------------------------
 
 if os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'):
-	log_level=int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
+	log_level = int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
 else:
-	log_level=logging.WARNING
-	#log_level=logging.ERROR
+	log_level = logging.WARNING
+	#log_level = logging.ERROR
 
 # Set root logging level
 logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
@@ -91,9 +90,9 @@ logging.getLogger().setLevel(level=log_level)
 #------------------------------------------------------------------------------
 
 class CaptureLogStaticFileHandler(tornado.web.StaticFileHandler):
-    def set_extra_headers(self, path):
-        # Disable cache
-        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+	def set_extra_headers(self, path):
+		# Disable cache
+		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
 #------------------------------------------------------------------------------
 # Build Web App & Start Server
@@ -129,7 +128,7 @@ def make_app():
 		"template_whitespace": "single",
 		"cookie_secret": get_cookie_secret(),
 		"login_url": "/login",
-		"upload_progress_handler": dict(),
+		"upload_progress_handler": dict()
 		#"autoescape": None
 	}
 

@@ -254,14 +254,18 @@ class DashboardHandler(ZynthianBasicHandler):
 				'value': os.environ.get('ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE',''),
 				'url': "/hw-wiring"
 			}
-	
-		media_usb0_info = self.get_media_info('/media/usb0')
-		if media_usb0_info:
-			config['SYSTEM']['info']['MEDIA_USB0'] = {
-				'title': "USB Storage",
-				'value': "{} ({}/{})".format(media_usb0_info['usage'],media_usb0_info['used'],media_usb0_info['total']),
-				'url': "/lib-captures"
-			}
+
+		ex_data_basedir = os.environ.get('ZYNTHIAN_EX_DATA_DIR', "/media/root")
+		ex_data_dirs = zynconf.get_external_storage_dirs(ex_data_basedir)
+		for exdir in ex_data_dirs:
+			media_info = self.get_media_info(exdir)
+			if media_info:
+				dname = os.path.basename(exdir)
+				config['SYSTEM']['info']['MEDIA_' + dname] = {
+					'title': "USB/" + dname,
+					'value': "{} ({}/{})".format(media_info['usage'],media_info['used'],media_info['total']),
+					'url': "/lib-captures"
+				}
 
 		if self.is_service_active("touchosc2midi"):
 			config['NETWORK']['info']['TOUCHOSC'] = {
@@ -364,7 +368,7 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def get_temperature():
 		try:
-			return check_output("/opt/vc/bin/vcgencmd measure_temp", shell=True).decode()[5:-3] + "ºC"
+			return check_output("vcgencmd measure_temp", shell=True).decode()[5:-3] + "ºC"
 		except:
 			return "???"
 
