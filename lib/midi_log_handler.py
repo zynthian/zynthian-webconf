@@ -96,6 +96,11 @@ class MidiLogHandler(ZynthianBasicHandler):
 			'shortname': "ctrl_out",
 			'alias': "ZynMidiRouter Feedback" 
 		})
+		midi_in_ports.append({
+			'name': "ZynMidiRouter:step_out",
+			'shortname': "step_out",
+			'alias': "ZynMidiRouter StepSeq"
+		})
 		for i in range(0,16):
 			midi_in_ports.append({
 				'name': "ZynMidiRouter:ch{}_out".format(i),
