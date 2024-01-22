@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # UI Configuration Handler
@@ -20,23 +20,20 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
-import os
-import logging
-import tornado.web
-import jsonpickle
 import mido
-import asyncio
-from collections import OrderedDict
-from lib.tail_thread import TailThread
+import logging
+import jsonpickle
+import tornado.web
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
 from lib.midi_config_handler import get_ports_config
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # UI Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class MidiLogHandler(ZynthianBasicHandler):
 
@@ -45,63 +42,58 @@ class MidiLogHandler(ZynthianBasicHandler):
 		try:
 			self.midi_port = self.request.arguments['MIDI_PORT']
 		except:
-			self.midi_port = "ZynMidiRouter:main_out"
+			self.midi_port = "ZynMidiRouter:step_out"
 
-		config=OrderedDict([
-			['MIDI_PORT',  self.midi_port],
-			['MIDI_PORTS', self.get_midi_in_ports()]
-		])
+		config = {
+			'MIDI_PORT': self.midi_port,
+			'MIDI_PORTS': self.get_midi_in_ports()
+		}
 
 		super().get("midi_log.html", "MIDI Log", config, errors)
-
 
 	@tornado.web.authenticated
 	def post(self):
 		self.get()
 
-
 	@staticmethod
 	def get_midi_in_ports():
-		#Get current MIDI ports configuration
-		try:
-			current_midi_ports = os.environ.get('ZYNTHIAN_MIDI_PORTS').replace("\\n","\n")
-		except:
-			current_midi_ports = ""		
-		ports_config=get_ports_config(current_midi_ports)
-		# Input Input Devices:
+		# Get MIDI ports
+		ports_config = get_ports_config()
+		# MIDI Input Devices
 		midi_in_ports = ports_config['IN']
 		# Add Zynthian Router output ports:
 		midi_in_ports.append({
-			'name': "ZynMidiRouter:main_out",
-			'shortname': "main_out",
-			'alias': "ZynMidiRouter Main",
+			'name': "ZynMidiRouter:mod_out",
+			'shortname': "mod_out",
+			'alias': "ZynMidiRouter => MOD-UI",
 		})
 		midi_in_ports.append({
-			'name': "ZynMidiRouter:midi_out",
-			'shortname': "midi_out",
-			'alias': "ZynMidiRouter MIDI-OUT",
-		})
-		midi_in_ports.append({
-			'name': "ZynMaster:midi_out",
-			'shortname': "midi_out",
-			'alias': "ZynMaster MIDI-OUT",
-		})
-		midi_in_ports.append({
-			'name': "ZynMidiRouter:net_out",
-			'shortname': "net_out",
-			'alias': "ZynMidiRouter Network" 
+			'name': "ZynMidiRouter:step_out",
+			'shortname': "step_out",
+			'alias': "ZynMidiRouter => Step Sequencer"
 		})
 		midi_in_ports.append({
 			'name': "ZynMidiRouter:ctrl_out",
 			'shortname': "ctrl_out",
-			'alias': "ZynMidiRouter Feedback" 
+			'alias': "ZynMidiRouter => Control Feedback"
 		})
-		for i in range(0,16):
+		for i in range(0, 16):
 			midi_in_ports.append({
 				'name': "ZynMidiRouter:ch{}_out".format(i),
 				'shortname': "ch{}_out".format(i),
-				'alias': "ZynMidiRouter CH#{}".format(i+1) 
+				'alias': "ZynMidiRouter => CH#{}".format(i+1)
 			})
+		for i in range(0, 24):
+			midi_in_ports.append({
+				'name': "ZynMidiRouter:dev{}_out".format(i),
+				'shortname': "dev{}_out".format(i),
+				'alias': "ZynMidiRouter => DEV#{}".format(i+1)
+			})
+		midi_in_ports.append({
+			'name': "ZynMaster:midi_out",
+			'shortname': "midi_out",
+			'alias': "MIDI => CV/Gate",
+		})
 		return midi_in_ports
 
 
@@ -112,7 +104,6 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 	@classmethod
 	def is_registered_for(cls, handler_name):
 		return handler_name == 'MidiLogMessageHandler'
-
 
 	def do_start_logging(self, midi_port_name):
 		logging.info("start midi logging on {}".format(midi_port_name))
@@ -126,17 +117,14 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 		except Exception as err:
 			logging.error("Can't open MIDI Port {}: {}".format(self.midi_port_name, err))
 
-
 	def on_midi_in(self, msg):
 		message = ZynthianWebSocketMessage('MidiLogMessageHandler', msg)
 		self.websocket.write_message(jsonpickle.encode(message))
-
 
 	def do_stop_logging(self):
 		if MidiLogMessageHandler.mido_port:
 			logging.info("stop midi logging")
 			MidiLogMessageHandler.mido_port.close()
-
 
 	def on_websocket_message(self, message):
 		logging.debug("message: %s " % message)
@@ -147,7 +135,7 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 			try:
 				midi_port_name = parts[1]
 			except:
-				midi_port_name = "ZyntMidiRouter:main_out"
+				midi_port_name = "ZyntMidiRouter:step_out"
 			self.do_start_logging(midi_port_name)
 
 		elif action == 'STOP_LOGGING':
@@ -157,7 +145,6 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 			self.websocket.write_message("MIDI_PORT = {}".format(self.midi_port_name))
 
 		logging.debug("message handled.")  # this needs to show up early to get the socket working again.
-
 
 	def on_close(self):
 		logging.info("stopping tail threads")

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # MIDI Configuration Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import re
@@ -45,15 +45,17 @@ def get_ports_config(current_midi_ports=""):
 	try:
 		# Get MIDI ports list from jack
 		client = jack.Client("ZynthianWebConf")
-		#F or jack, output/input convention are reversed => output=readable, input=writable
+
+		# Hardware ports, output/input convention are reversed => output=readable, input=writable
 		midi_in_ports = client.get_ports(is_midi=True, is_physical=True, is_output=True)
 		midi_out_ports = client.get_ports(is_midi=True, is_physical=True, is_input=True)
-		# Add QMidiNet ports
-		qmidinet_in_ports = client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_output=True)
-		qmidinet_out_ports = client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_input=True)
+
+		# Add NetUMP ports
+		netump_in_ports = client.get_ports("jacknetumpd", is_midi=True, is_physical=False, is_output=True)
+		netump_out_ports = client.get_ports("jacknetumpd", is_midi=True, is_physical=False, is_input=True)
 		try:
-			midi_in_ports.append(qmidinet_in_ports[0])
-			midi_out_ports.append(qmidinet_out_ports[0])
+			midi_in_ports.append(netump_in_ports[0])
+			midi_out_ports.append(netump_out_ports[0])
 		except:
 			pass
 
@@ -66,6 +68,15 @@ def get_ports_config(current_midi_ports=""):
 		except:
 			pass
 
+		# Add QMidiNet ports
+		qmidinet_in_ports = client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_output=True)
+		qmidinet_out_ports = client.get_ports("QmidiNet", is_midi=True, is_physical=False, is_input=True)
+		try:
+			midi_in_ports.append(qmidinet_in_ports[0])
+			midi_out_ports.append(qmidinet_out_ports[0])
+		except:
+			pass
+
 		# Add TouchOSC-Midi ports
 		touchosc_in_ports = client.get_ports("TouchOSC Bridge", is_midi=True, is_physical=False, is_output=True)
 		touchosc_out_ports = client.get_ports("TouchOSC Bridge", is_midi=True, is_physical=False, is_input=True)
@@ -75,41 +86,31 @@ def get_ports_config(current_midi_ports=""):
 		except:
 			pass
 
-		disabled_midi_in_ports = zynconf.get_disabled_midi_in_ports(current_midi_ports)
-		enabled_midi_out_ports = zynconf.get_enabled_midi_out_ports(current_midi_ports)
-		enabled_midi_fb_ports = zynconf.get_enabled_midi_fb_ports(current_midi_ports)
-
 		# Generate MIDI_PORTS{IN,OUT,FB} configuration array
 		for idx, midi_port in enumerate(midi_in_ports):
 			alias = get_port_alias(midi_port)
-			port_id = alias.replace(' ', '_')
-			midi_ports['IN'].append({
-				'name': midi_port.name,
-				'shortname': midi_port.shortname,
-				'alias': alias,
-				'id': port_id,
-				'checked': 'checked="checked"' if port_id not in disabled_midi_in_ports else ''
-			})
+			if alias:
+				midi_ports['IN'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': alias
+				})
 		for idx, midi_port in enumerate(midi_out_ports):
 			alias = get_port_alias(midi_port)
-			port_id = alias.replace(' ', '_')
-			midi_ports['OUT'].append({
-				'name': midi_port.name,
-				'shortname': midi_port.shortname,
-				'alias': alias,
-				'id': port_id,
-				'checked': 'checked="checked"' if port_id in enabled_midi_out_ports else ''
-			})
+			if alias:
+				midi_ports['OUT'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': alias
+				})
 		for idx, midi_port in enumerate(midi_out_ports):
 			alias = get_port_alias(midi_port)
-			port_id = alias.replace(' ', '_')
-			midi_ports['FB'].append({
-				'name': midi_port.name,
-				'shortname': midi_port.shortname,
-				'alias': alias,
-				'id': port_id,
-				'checked': 'checked="checked"' if port_id in enabled_midi_fb_ports else ''
-			})
+			if alias:
+				midi_ports['FB'].append({
+					'name': midi_port.name,
+					'shortname': midi_port.shortname,
+					'alias': alias
+				})
 
 	except Exception as e:
 		logging.error("%s" % e)
@@ -120,28 +121,30 @@ def get_ports_config(current_midi_ports=""):
 
 def get_port_alias(midi_port):
 	try:
-		alias_id = '_'.join(midi_port.aliases[0].split('-')[5:])
+		parts = midi_port.name.split("): ")
 	except:
-		alias_id = midi_port.name
+		parts = midi_port.shortname.split("): ")
+	alias = parts.pop()
 
 	if midi_port.is_input:
 		postfix = "OUT"
 	else:
 		postfix = "IN"
 
-	if alias_id.startswith("ttymidi:"):
-		alias_id = f"DIN-5 MIDI-{postfix}"
-	elif alias_id.startswith("a2j:"):
-		alias_id = f"ALSA MIDI-{postfix}"
-	elif alias_id == "f_midi":
-		alias_id = f"USB MIDI-{postfix}"
+	if alias.startswith("ttymidi:"):
+		alias = f"DIN-5 MIDI-{postfix}"
+	elif alias == "f_midi":
+		alias = f"USB MIDI-{postfix}"
+	elif alias.startswith("Midi Through"):
+		alias = None
 
-	return alias_id
+	return alias
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Midi Config Handler
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class MidiConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
@@ -344,7 +347,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def get(self, errors=None):
 		self.load_midi_profiles()
 
-		#Get current MIDI ports configuration
+		# Get current MIDI ports configuration
 		current_midi_ports = self.get_midi_env('ZYNTHIAN_MIDI_PORTS', self.DEFAULT_MIDI_PORTS)
 		current_midi_ports = current_midi_ports.replace("\\n", "\n")
 		#logging.debug("MIDI_PORTS = %s" % current_midi_ports)
@@ -385,7 +388,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'options': self.midi_profile_scripts,
 				'option_labels': {script_name: os.path.basename(script_name).split('.')[0] for script_name in self.midi_profile_scripts},
 				'presets': self.midi_profile_presets,
-				'div_class': "col-xs-8"
+				'div_class': "col-xs-8",
+				'advanced': True
 			},
 			'zynthian_midi_profile_saveas_script': {
 				'type': 'button',
@@ -395,7 +399,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'icon': 'fa fa-plus',
 				'script_file': 'midi_profile_saveas.js',
 				'div_class': "col-xs-2",
-				'inline': 1
+				'inline': 1,
+				'advanced': True
 			},
 			'zynthian_midi_profile_delete_script': {
 				'type': 'button',
@@ -405,11 +410,13 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'icon': 'fa fa-trash-o',
 				'script_file': 'midi_profile_delete.js',
 				'div_class': "col-xs-2",
-				'inline': 1
+				'inline': 1,
+				'advanced': True
 			},
 			'zynthian_midi_profile_saveas_fname': {
 				'type': 'hidden',
-				'value': ''
+				'value': '',
+				'advanced': True
 			},
 			'ZYNTHIAN_MIDI_PROG_CHANGE_ZS3': {
 				'type': 'boolean',
@@ -429,47 +436,11 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', '1'),
 				'advanced': False
 			},
-			'ZYNTHIAN_MIDI_FILTER_OUTPUT': {
-				'type': 'boolean',
-				'title': 'Route MIDI to Output Ports',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_FILTER_OUTPUT', '1'),
-				'advanced': False
-			},
 			'ZYNTHIAN_MIDI_SYS_ENABLED': {
 				'type': 'boolean',
 				'title': 'Enable System Messages (Transport)',
 				'value': self.get_midi_env('ZYNTHIAN_MIDI_SYS_ENABLED', '1'),
 				'advanced': False
-			},
-			'ZYNTHIAN_MIDI_CC_AUTOMODE': {
-				'type': 'boolean',
-				'title': 'Autodetect CC relative mode',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_CC_AUTOMODE', '1'),
-				'advanced': True
-			},
-			'ZYNTHIAN_MIDI_RTPMIDI_ENABLED': {
-				'type': 'boolean',
-				'title': 'Enable RTP-MIDI (AppleMIDI network)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_RTPMIDI_ENABLED', '0'),
-				'advanced': False
-			},
-			'ZYNTHIAN_MIDI_NETWORK_ENABLED': {
-				'type': 'boolean',
-				'title': 'Enable QmidiNet (IP Multicast)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_NETWORK_ENABLED', '0'),
-				'advanced': False
-			},
-			'ZYNTHIAN_MIDI_TOUCHOSC_ENABLED': {
-				'type': 'boolean',
-				'title': 'Enable TouchOSC MIDI Bridge',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_TOUCHOSC_ENABLED', '0'),
-				'advanced': False
-			},
-			'ZYNTHIAN_MIDI_AUBIONOTES_ENABLED': {
-				'type': 'boolean',
-				'title': 'Enable AubioNotes (Audio2MIDI)',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED', '0'),
-				'advanced': True
 			},
 			'ZYNTHIAN_MIDI_FINE_TUNING': {
 				'type': 'text',
@@ -478,15 +449,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 				#'options': map(lambda x: str(x).zfill(2), list(range(392, 493)))
 				'advanced': False
 			},
-			'ZYNTHIAN_MIDI_PORTS': {
-				'type': 'textarea',
-				'title': 'MIDI Ports',
-				'value': self.get_midi_env('ZYNTHIAN_MIDI_PORTS'),
-				'cols': 50,
-				'rows': 2,
-				'addButton': 'display_midi_ports_panel',
-				'addPanel': 'midi_ports.html',
-				'addPanelConfig': ports_config,
+			'display_midi_ports_panel': {
+				'type': 'button',
+				'title': 'MIDI Devices',
+				'button_type': 'button',
+				'class': 'btn-theme btn-block',
+				'icon': 'fa fa-eye',
+				'html_file': 'midi_ports.html',
+				'html_file_config': ports_config,
 				'advanced': False
 			},
 			'ZYNTHIAN_MIDI_FILTER_RULES': {
@@ -571,21 +541,13 @@ class MidiConfigHandler(ZynthianConfigHandler):
 	def post(self):
 		self.request.arguments['ZYNTHIAN_MIDI_FILTER_OUTPUT'] = self.request.arguments.get('ZYNTHIAN_MIDI_FILTER_OUTPUT', '0')
 		self.request.arguments['ZYNTHIAN_MIDI_SYS_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_SYS_ENABLED', '0')
-		self.request.arguments['ZYNTHIAN_MIDI_CC_AUTOMODE'] = self.request.arguments.get('ZYNTHIAN_MIDI_CC_AUTOMODE', '0')
 		self.request.arguments['ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON'] = self.request.arguments.get('ZYNTHIAN_MIDI_PRESET_PRELOAD_NOTEON', '0')
 		self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', '0')
 		self.request.arguments['ZYNTHIAN_MIDI_BANK_CHANGE'] = self.request.arguments.get('ZYNTHIAN_MIDI_BANK_CHANGE', '0')
-		self.request.arguments['ZYNTHIAN_MIDI_RTPMIDI_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_RTPMIDI_ENABLED', '0')
-		self.request.arguments['ZYNTHIAN_MIDI_NETWORK_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_NETWORK_ENABLED', '0')
-		self.request.arguments['ZYNTHIAN_MIDI_TOUCHOSC_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_TOUCHOSC_ENABLED', '0')
-		self.request.arguments['ZYNTHIAN_MIDI_AUBIONOTES_ENABLED'] = self.request.arguments.get('ZYNTHIAN_MIDI_AUBIONOTES_ENABLED', '0')
 		self.request.arguments['ZYNTHIAN_MIDI_MASTER_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_MASTER_CHANNEL', '0')
-		self.request.arguments['ZYNTHIAN_MIDI_PORTS'] = self.request.arguments.get('ZYNTHIAN_MIDI_PORTS', '0')
 
 		escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-
 		errors = {}
-
 		try:
 			freq = float(self.request.arguments.get('ZYNTHIAN_MIDI_FINE_TUNING', '440.0')[0])
 			if freq < 392.0 or freq > 493.88:

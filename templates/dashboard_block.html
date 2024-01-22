@@ -13,7 +13,7 @@
 <div class="row display-flex">
 {% for group in config %}
 <div class="col-lg-4 col-sm-6 col-xs-12 dashboard-block">
-	<h3><i class="{{ config[group]['icon'] }}"></i> {{ escape(group) }}</h3>
+	<h3><i class="{{ config[group]['icon'] }}"></i> {{ group }}</h3>
 	<div class="content">
 	{% for tag, info in config[group]['info'].items() %}
 	<label>{{ escape(info['title']) }}{% if 'value' in info %}:{% end %}</label>

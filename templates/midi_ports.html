@@ -2,60 +2,41 @@
 	<div class="modal-content">
 		<div class="modal-header">
 			<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
-			<h4 class="modal-title">MIDI ports</h4>
+			<h4 class="modal-title">MIDI Devices</h4>
 		</div>
 		<div class="modal-body">
 			<div class="row">
-				<div class="col-md-4">
-					<figure>
-						<img src="/img/midi_in.png" alt="MIDI IN"/>
-						<figcaption>MIDI INPUT Ports</figcaption>
-					</figure>
+				<div class="col-md-1"></div>
+				<div class="col-md-5">
+					<img src="/img/midi_in.png" alt="MIDI IN"/>
+					<h3>MIDI INPUT Ports</h3>
 					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['IN']) %}
 					<div class="row">
 						<div class="col-md-10 col-md-offset=1">
 							<label class="check inline">
-								<input type="checkbox" name="MIDI_IN_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
 								{{ midi_port['alias'] }}
 							</label>
 						</div>
 					</div>
 					{% end %}
+					<br>
 				</div>
-
-				<div class="col-md-4">
-					<figure>
-						<img src="/img/midi_out.png" alt="MIDI OUT"/>
-						<figcaption>MIDI OUTPUT Ports</figcaption>
-					</figure>
+				<div class="col-md-1"></div>
+				<div class="col-md-5">
+					<img src="/img/midi_out.png" alt="MIDI OUT"/>
+					<h3>MIDI OUTPUT Ports</h3>
 					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['OUT']) %}
 					<div class="row">
 						<div class="col-md-10 col-md-offset=1">
 							<label class="check inline">
-								<input type="checkbox" name="MIDI_OUT_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
 								{{ midi_port['alias'] }}
 							</label>
 						</div>
 					</div>
 					{% end %}
+					<br>
 				</div>
 
-				<div class="col-md-4">
-					<figure>
-						<img src="/img/midi_out.png" alt="MIDI FEEDBACK"/>
-						<figcaption>MIDI FEEDBACK Ports</figcaption>
-					</figure>
-					{% for midi_port_idx, midi_port in enumerate(config['MIDI_PORTS']['FB']) %}
-					<div class="row">
-						<div class="col-md-10 col-md-offset=1">
-							<label class="check inline">
-								<input type="checkbox" name="MIDI_FB_PORT_{{midi_port_idx}}" value="{{ midi_port['id'] }}" {{ midi_port['checked'] }} />
-								{{ midi_port['alias'] }}
-							</label>
-						</div>
-					</div>
-					{% end %}
-				</div>
 			</div>
     </div>
 		<div class="modal-footer">
@@ -81,7 +62,6 @@ $(document).ready(function() {
 		}
 	}
 
-
 	document.getElementById('midi_ports_add').onclick = function(event) {
 		if (refreshMidiPorts()){
 			$('#midi_ports_panel').modal('hide')
@@ -90,32 +70,4 @@ $(document).ready(function() {
 		}
 	}
 });
-
-function refreshMidiPorts(){
-	midiPortsTextarea = document.getElementById('ZYNTHIAN_MIDI_PORTS') ;
-
-	midiPortsTextarea.value = 'DISABLED_IN=';
-	checkedPorts = $("input[name^=MIDI_IN_PORT_]:checkbox:not(:checked)");
-	for (var i = 0; i < checkedPorts.length; i++){
-		midiPortsTextarea.value += checkedPorts[i].value + ',';
-	}
-	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
-
-	midiPortsTextarea.value += '\nENABLED_OUT=';
-	checkedPorts = $("input[name^=MIDI_OUT_PORT_]:checkbox:checked");
-	for (var i = 0; i < checkedPorts.length; i++){
-		midiPortsTextarea.value += checkedPorts[i].value + ',';
-	}
-	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
-
-	midiPortsTextarea.value += '\nENABLED_FB=';
-	checkedPorts = $("input[name^=MIDI_FB_PORT_]:checkbox:checked");
-	for (var i = 0; i < checkedPorts.length; i++){
-		midiPortsTextarea.value += checkedPorts[i].value + ',';
-	}
-	if (midiPortsTextarea.value.slice(-1)==',') midiPortsTextarea.value=midiPortsTextarea.value.slice(0,-1)
-
-	return true;
-}
-
 </script>

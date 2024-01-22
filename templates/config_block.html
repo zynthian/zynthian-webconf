@@ -71,6 +71,9 @@
 			{% if 'script_file' in config[varname] %}
 				<script src="../js/{{ config[varname]['script_file'] }}" ></script>
 			{% end %}
+			{% if 'html_file' in config[varname] %}
+				{% module Template(config[varname]['html_file'], config=config[varname]['html_file_config']) %}
+			{% end %}
 
 		{% elif config[varname]['type']=='textarea' %}
 			{% if 'addButton' in config[varname] %}
