@@ -1,0 +1,170 @@
+<h2>{{ title }}</h2>
+
+<style>
+div.sw-jalv div.col-md-2 {
+  padding-left: 0.1em;
+  padding-right: 0.1em;
+  padding-top: 0.1em;
+}
+div.engines_panel button {
+  margin-top: 0.1em;
+  margin-bottom: 0.1em;
+}
+div.engine_row:hover {
+  background-color: #C0F0C0;
+  cursor: pointer;
+}
+</style>
+
+<form id="engines-form" action="/sw-engines" enctype="multipart/form-data" method="post">
+    <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
+    <div class="container-fluid sw-jalv">
+        <div class="row">
+            <div class="col-md-6 col-sm-12">
+                <input type="text" name="ZYNTHIAN_ENGINES_FILTER" id="ZYNTHIAN_ENGINES_FILTER" value="{{config['ZYNTHIAN_ENGINES_FILTER']}}" onchange="filter_engines();" onkeyup="filter_engines();"/>
+            </div>
+            <!--
+            <div class="col-md-2 col-sm-12">
+                <button name="ZYNTHIAN_ENGINES_FILTER_ACTION" class="btn btn-theme btn-block" onclick="filter_engines(); event.preventDefault();"><i class="fa fa-filter"></i> Filter</button>
+            </div>
+            -->
+            <div class="col-md-2 col-sm-12">
+                <button name="ZYNTHIAN_ENGINES_ALL_ACTION" class="btn btn-theme btn-block" onclick="reset_filter(); event.preventDefault();"><i class="fa fa-globe"></i> All</button>
+            </div>
+            <div class="col-md-2 col-sm-12">
+                <button name="ZYNTHIAN_ENGINE_ACTION" value="REGENERATE_ENGINES" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Search for Engines</button>
+            </div>
+            <div class="col-md-2 col-sm-12">
+                <button name="ZYNTHIAN_ENGINE_ACTION" value="REGENERATE_LV2_PRESETS_CACHE" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Search for Presets</button>
+            </div>
+        </div>
+    </div>
+
+    <ul class="nav nav-tabs" role="tablist">
+    {% for eng_type in config['ZYNTHIAN_ENGINES'] %}
+        {% set _eng_type = eng_type.replace(' ','_') %}
+        <li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == _eng_type %}active{% end %}">
+            <a id="#{{ _eng_type }}" href="#{{ _eng_type }}" class="tab_anchor" onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ eng_type }}')" role="tab" data-toggle="tab">{{ eng_type }}
+               <span id="plugin_type_count_{{ eng_type }}">({{ len(config['ZYNTHIAN_ENGINES'][eng_type])  }})</span>
+            </a>
+        </li>
+    {% end %}
+    </ul>
+
+    <div class="tab-content">
+    {% for eng_type in config['ZYNTHIAN_ENGINES'] %}
+        {% set _eng_type = eng_type.replace(' ','_') %}
+        <div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == _eng_type %}active{% end %}" id="{{ _eng_type }}">
+            <div class="container-fluid jalv-lv2-plugin-panel engines_panel">
+                <div class="row">
+                    <div class="row">
+                        <div class="col-xs-1 header">Enabled</div>
+                        <div class="col-xs-4 header">Name</div>
+                        <div class="col-xs-2 header">Class</div>
+                        <div class="col-xs-2 header">Quality</div>
+                        <div class="col-xs-2 header">Complexity</div>
+                        <div class="col-xs-1 header">&nbsp;</div>
+                    </div>
+                    {% for eng_code in config['ZYNTHIAN_ENGINES'][eng_type] %}
+                    {% set eng_info = config['ZYNTHIAN_ENGINES'][eng_type][eng_code] %}
+                    <div class="row plugin engine_row" >
+                        <div class="col-xs-1 plugin-installed">
+                            <input type="checkbox" name="ZYNTHIAN_ENGINES_ENABLE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} />
+                        </div>
+                        <div class="col-xs-4 one-line-truncated plugin-name">
+                            {{ eng_info['NAME'] }}
+                        </div>
+                        <div class="col-xs-2 plugin-type">
+                            {{ escape(eng_info['CLASS']) }}
+                        </div>
+                        <div class="col-xs-2 plugin-quality">
+                            {{ eng_info['QUALITY'] * "★" }}
+                        </div>
+                        <div class="col-xs-2 plugin-complexity">
+                            {{ eng_info['COMPLEX'] * "⚈" }}
+                        </div>
+                        <div class="col-xs-1 plugin-edit">
+                            <button name="ZYNTHIAN_ENGINES_EDIT" class="btn btn-xs btn-theme btn-block" onclick="edit_engine('{{ eng_code }}'); event.preventDefault();">edit</button>
+                        </div>
+                    </div>
+                    {% end %}
+                </div>
+
+                <div class="row">
+                   {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+                </div>
+            </div>
+        </div>
+    {% end %}
+    </div>
+
+    <div class="container-fluid">
+        <div class="row"><br/></div>
+        <div class="row">
+            <button name="ZYNTHIAN_ENGINES_ACTION" value="ENABLE_ENGINES" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i> Save</button>
+        </div>
+    </div>
+</form>
+
+<script type="text/javascript">
+var engForm = $('#engines-form')[0];
+
+function showProgressAnimation(){
+    $("#loading-div-background").show();
+}
+
+$("#ZYNTHIAN_ENGINES_FILTER").on('keydown', function(e) {
+    if (e.which == 13) {
+        e.preventDefault();
+	    filter_engines();
+    }
+});
+
+
+$(document).ready(function() {
+    filter_engines();
+});
+
+function reset_filter() {
+   $("#ZYNTHIAN_ENGINES_FILTER")[0].value = "";
+   filter_engines();
+}
+
+function filter_engines() {
+    filter_value=$("#ZYNTHIAN_ENGINES_FILTER")[0].value.toUpperCase();
+    $(".engine_row").each(function(index,row_div) {
+	if (row_div.innerText.toUpperCase().includes(filter_value)){
+            row_div.classList.remove("hide");    
+        } else {
+            row_div.classList.add("hide");    
+        }
+    });
+
+    //recalc plugin count
+   $(".engines_panel").each(function(index, panel_div) {
+       var panel_divs = panel_div.getElementsByClassName('plugin-name');
+       var panel_count = 0;
+       Array.from(panel_divs).forEach((plugin_type_div) => {
+          if (!plugin_type_div.parentElement.classList.contains("hide")){
+	     panel_count += 1;
+          }
+       });
+       $(".tab_anchor").each(function(idx,tab_anchor){
+          if(tab_anchor.id.indexOf(panel_div.parentElement.id)>=0){
+             tab_anchor.innerText = panel_div.parentElement.id.replace("_", " ") + " (" + panel_count + ")";
+          }
+       });
+   });
+}
+
+function confirm_long_time_proc(ev) {
+    if (!confirm("This operation could take a long time to finish.\nAre you sure to continue?")) {
+        ev.preventDefault();
+    }
+}
+
+function edit_engine(eng_code) {
+    alert("EDIT " + eng_code);
+}
+
+</script>

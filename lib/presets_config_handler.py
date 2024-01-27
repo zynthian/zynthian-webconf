@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Presets Manager Handler
 #
 # Copyright (C) 2020 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,57 +20,49 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
-import re
-import json
 import copy
-import uuid
-import urllib3
-import logging
 import shutil
-import requests
-import bz2
+import logging
 import zipfile
 import tarfile
+import requests
 import tornado.web
-from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngui.zynthian_gui_engine import *
 from zyngine.zynthian_chain_manager import zynthian_chain_manager
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Soundfont Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class PresetsConfigHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self):
-		config=OrderedDict([])
-
-		config['engines'] = self.get_engine_info()
-		config['engine'] = self.get_argument('ENGINE', 'ZY')
-		config['sel_node_id'] = self.get_argument('SEL_NODE_ID', -1)
-		config['musical_artifact_tags'] = self.get_argument('MUSICAL_ARTIFACT_TAGS', '')
-		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
-
+		config = {
+			'engines': self.get_engine_info(),
+			'engine': self.get_argument('ENGINE', 'ZY'),
+			'sel_node_id': self.get_argument('SEL_NODE_ID', -1),
+			'musical_artifact_tags': self.get_argument('MUSICAL_ARTIFACT_TAGS', ''),
+			'ZYNTHIAN_UPLOAD_MULTIPLE': True
+		}
 		super().get("presets.html", "Presets & Soundfonts", config, None)
-
 
 	@tornado.web.authenticated
 	def post(self, action):
 		try:
-			self.engine = self.get_argument('ENGINE', 'ZY')
-			engine_info = self.get_engine_info()[self.engine]
-			self.engine_cls = engine_info[4]
+			self.eng_code = self.get_argument('ENGINE', 'ZY')
+			self.eng_info = self.get_engine_info()[self.eng_code]
+			self.engine_cls = self.eng_info['ENGINE']
 			if self.engine_cls == zynthian_engine_jalv:
-				self.engine_cls.init_zynapi_instance(engine_info[0], engine_info[2])
-
+				self.engine_cls.init_zynapi_instance(self.eng_code)
 		except Exception as e:
-			logging.error("Can't initialize engine '{}': {}".format(self.engine, e))
+			logging.error("Can't initialize engine '{}': {}\n{}".format(self.eng_code, e, self.eng_info))
 
 		try:
 			result = {
@@ -93,22 +85,20 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		if result:
 			self.write(result)
 
-
 	def do_get_tree(self):
 		result = {}
 		try:
-			result['methods'] =	self.engine_cls.get_zynapi_methods()
-			result['formats'] =	self.get_upload_formats()
+			result['methods'] = self.engine_cls.get_zynapi_methods()
+			result['formats'] = self.get_upload_formats()
 			result['presets'] = self.get_presets_data()
 		except Exception as e:
-			result['methods'] =  None
-			result['formats'] =  None
+			result['methods'] = None
+			result['formats'] = None
 			result['presets'] = None
 			logging.error(e)
 			result['errors'] = "Can't get preset tree data: {}".format(e)
 
 		return result
-
 
 	def do_new_bank(self):
 		result = {}
@@ -121,7 +111,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_rename_bank(self):
 		result = {}
 		try:
@@ -132,7 +121,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def do_remove_bank(self):
 		result = {}
@@ -145,7 +133,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_rename_preset(self):
 		result = {}
 		try:
@@ -157,7 +144,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_remove_preset(self):
 		result = {}
 		try:
@@ -168,7 +154,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def do_download(self):
 		result = None
@@ -210,7 +195,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 		return result
 
-
 	def do_search(self):
 		result = {}
 
@@ -222,7 +206,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			result['errors'] = "Can't search Musical Artifacts: {}".format(e)
 
 		return result
-
 
 	def do_install_file(self):
 		result = {}
@@ -239,7 +222,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		result.update(self.do_get_tree())
 		return result
 
-
 	def do_install_url(self):
 		result = {}
 
@@ -251,7 +233,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 		result.update(self.do_get_tree())
 		return result
-
 
 	def search_artifacts(self, formats, tags):
 		result=[]
@@ -276,7 +257,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 					row['file'] = None
 
 		return result
-
 
 	def install_file(self, fpath):
 		logging.info("Unpacking '{}' ...".format(fpath))
@@ -316,7 +296,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			shutil.rmtree(dpath, ignore_errors=True)
 			pass
 
-
 	def install_url(self, url):
 		logging.info("Downloading '{}' ...".format(url))
 		res = requests.get(url, verify=False)
@@ -327,21 +306,18 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			df.close()
 			self.install_file(fpath)
 
-
 	def get_engine_info(self):
 		engine_info = copy.copy(zynthian_chain_manager.get_engine_info())
 		for e in list(engine_info):
-			if not engine_info[e][5] or not hasattr(engine_info[e][4], "zynapi_get_banks"):
+			if not engine_info[e]['ENABLED'] or not hasattr(engine_info[e]['ENGINE'], "zynapi_get_banks"):
 				del engine_info[e]
 		return engine_info
-
 
 	def get_upload_formats(self):
 		try:
 			return self.engine_cls.zynapi_get_formats()
 		except:
 			return ""
-
 
 	def get_presets_data(self):
 		try:
@@ -387,3 +363,4 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 		return banks_data
 
+# ------------------------------------------------------------------------------

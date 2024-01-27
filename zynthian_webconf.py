@@ -61,7 +61,7 @@ from lib.presets_config_handler import PresetsConfigHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.pianoteq_handler import PianoteqHandler
 from lib.captures_config_handler import CapturesConfigHandler
-from lib.jalv_lv2_handler import JalvLv2Handler
+from lib.engines_handler import EnginesHandler
 from lib.ui_log_handler import UiLogHandler
 from lib.midi_log_handler import MidiLogHandler
 from lib.repository_handler import RepositoryHandler
@@ -172,7 +172,7 @@ def make_app():
 		(r"/hw-options$", HWOptionsConfigHandler),
 		(r"/sw-update$", SoftwareUpdateHandler),
 		(r"/sw-pianoteq$", PianoteqHandler),
-		(r"/sw-jalv-lv2$", JalvLv2Handler),
+		(r"/sw-engines$", EnginesHandler),
 		(r"/sw-repos$", RepositoryHandler),
 		(r"/ui-options$", UiConfigHandler),
 		(r"/ui-keybind$", UiKeybindHandler),

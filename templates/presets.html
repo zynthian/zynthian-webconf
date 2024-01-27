@@ -13,7 +13,7 @@
 		<div class="col-sm-6">
 			<select id="ENGINE" name="ENGINE" onchange="load_preset_tree()">
 				{% for key in config['engines'] %}
-					<option value="{{key}}" {{ 'selected' if config['engine']==key else '' }}>{{config['engines'][key][1]}}</option>
+					<option value="{{key}}" {{ 'selected' if config['engine']==key else '' }}>{{config['engines'][key]['TITLE']}}</option>
 				{% end %}
 			</select>
 			<div id="presets-new-bank-panel">
