@@ -14,6 +14,12 @@ div.engine_row:hover {
   background-color: #C0F0C0;
   cursor: pointer;
 }
+div.engine_row span.ranking_star_on {
+  color: #F06000;
+}
+div.engine_row span.ranking_star_off {
+  color: #A0A0A0;
+}
 </style>
 
 <form id="engines-form" action="/sw-engines" enctype="multipart/form-data" method="post">
@@ -59,29 +65,29 @@ div.engine_row:hover {
                 <div class="row">
                     <div class="row">
                         <div class="col-xs-1 header">Enabled</div>
-                        <div class="col-xs-4 header">Name</div>
-                        <div class="col-xs-2 header">Class</div>
+                        <div class="col-xs-4 header">Title</div>
+                        <div class="col-xs-2 header">Category</div>
                         <div class="col-xs-2 header">Quality</div>
                         <div class="col-xs-2 header">Complexity</div>
                         <div class="col-xs-1 header">&nbsp;</div>
                     </div>
                     {% for eng_code in config['ZYNTHIAN_ENGINES'][eng_type] %}
                     {% set eng_info = config['ZYNTHIAN_ENGINES'][eng_type][eng_code] %}
-                    <div class="row plugin engine_row" >
+                    <div class="row plugin engine_row"  title="{{ eng_info['DESCR'] }}">
                         <div class="col-xs-1 plugin-installed">
                             <input type="checkbox" name="ZYNTHIAN_ENGINES_ENABLE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} />
                         </div>
                         <div class="col-xs-4 one-line-truncated plugin-name">
-                            {{ eng_info['NAME'] }}
+                            {{ eng_info['TITLE'] }}
                         </div>
                         <div class="col-xs-2 plugin-type">
-                            {{ escape(eng_info['CLASS']) }}
+                            {{ escape(eng_info['CAT']) }}
                         </div>
                         <div class="col-xs-2 plugin-quality">
-                            {{ eng_info['QUALITY'] * "★" }}
+                            <span class="ranking_star_on">{{ eng_info['QUALITY'] * "★" }}</span><span class="ranking_star_off">{{ (5 - eng_info['QUALITY']) * "★" }}</span>
                         </div>
                         <div class="col-xs-2 plugin-complexity">
-                            {{ eng_info['COMPLEX'] * "⚈" }}
+                            <span class="ranking_star_on">{{ eng_info['COMPLEX'] * "⚈" }}</span><span class="ranking_star_off">{{ (5 - eng_info['COMPLEX']) * "⚈" }}</span>
                         </div>
                         <div class="col-xs-1 plugin-edit">
                             <button name="ZYNTHIAN_ENGINES_EDIT" class="btn btn-xs btn-theme btn-block" onclick="edit_engine('{{ eng_code }}'); event.preventDefault();">edit</button>
