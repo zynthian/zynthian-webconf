@@ -22,6 +22,8 @@
 #
 # ********************************************************************
 
+import copy
+import json
 import logging
 import tornado.web
 
@@ -40,6 +42,12 @@ class EnginesHandler(ZynthianBasicHandler):
 	def get(self, errors=None):
 		config = {}
 		config['ZYNTHIAN_ENGINES'] = zynthian_lv2.engines_by_type
+
+		# Make a deep copy and remove not serializable objects (ENGINE)
+		sengines = copy.deepcopy(zynthian_lv2.engines)
+		for key, info in sengines.items():
+			del info['ENGINE']
+		config['ZYNTHIAN_ENGINES_JSON'] = json.JSONEncoder().encode(sengines)
 
 		try:
 			config['ZYNTHIAN_ACTIVE_TAB'] = self.get_argument('ZYNTHIAN_ACTIVE_TAB')

@@ -20,6 +20,18 @@ div.engine_row span.ranking_star_on {
 div.engine_row span.ranking_star_off {
   color: #A0A0A0;
 }
+div.engine_edit {
+  display: none;
+  padding-bottom: 0.2em;
+}
+div.engine_edit_sel {
+  background-color: #C0F0C0;
+}
+div.engine_edit select {
+    height: 2.3em;
+    padding: 0.2em;
+    margin: 0;
+}
 </style>
 
 <form id="engines-form" action="/sw-engines" enctype="multipart/form-data" method="post">
@@ -65,22 +77,23 @@ div.engine_row span.ranking_star_off {
                 <div class="row">
                     <div class="row">
                         <div class="col-xs-1 header">Enabled</div>
-                        <div class="col-xs-4 header">Title</div>
-                        <div class="col-xs-2 header">Category</div>
+                        <div class="col-xs-3 header">Title</div>
+                        <div class="col-xs-3 header">Category</div>
                         <div class="col-xs-2 header">Quality</div>
                         <div class="col-xs-2 header">Complexity</div>
                         <div class="col-xs-1 header">&nbsp;</div>
                     </div>
                     {% for eng_code in config['ZYNTHIAN_ENGINES'][eng_type] %}
                     {% set eng_info = config['ZYNTHIAN_ENGINES'][eng_type][eng_code] %}
+                    <div id="engine_row_{{eng_code}}">
                     <div class="row plugin engine_row"  title="{{ eng_info['DESCR'] }}">
                         <div class="col-xs-1 plugin-installed">
                             <input type="checkbox" name="ZYNTHIAN_ENGINES_ENABLE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} />
                         </div>
-                        <div class="col-xs-4 one-line-truncated plugin-name">
+                        <div class="col-xs-3 one-line-truncated plugin-name">
                             {{ eng_info['TITLE'] }}
                         </div>
-                        <div class="col-xs-2 plugin-type">
+                        <div class="col-xs-3 plugin-type">
                             {{ escape(eng_info['CAT']) }}
                         </div>
                         <div class="col-xs-2 plugin-quality">
@@ -93,7 +106,51 @@ div.engine_row span.ranking_star_off {
                             <button name="ZYNTHIAN_ENGINES_EDIT" class="btn btn-xs btn-theme btn-block" onclick="edit_engine('{{ eng_code }}'); event.preventDefault();">edit</button>
                         </div>
                     </div>
+                    </div>
                     {% end %}
+                </div>
+
+                <div id="engine_edit" class="engine_edit">
+                    <div class="row plugin">
+                        <input type="hidden" id="EDIT_CODE" value="">
+                        <div class="col-xs-1">
+                            &nbsp;
+                        </div>
+                        <div class="col-xs-3 plugin_name">
+                            <input type="text" id="EDIT_TITLE" value="">
+                        </div>
+                        <div class="col-xs-3 plugin-type">
+                            <input type="text" id="EDIT_CAT" value="">
+                        </div>
+                        <div class="col-xs-2 plugin-quality">
+                            <select id="EDIT_QUALITY">
+                                {% for r in range(6) %}
+                                <option value="{{ r }}">{{ r * "★" }} ({{ r }})</option>
+                                {% end %}
+                            </select>
+                        </div>
+                        <div class="col-xs-2 plugin-complexity">
+                            <select id="EDIT_COMPLEX">
+                                {% for r in range(6) %}
+                                <option value="{{ r }}">{{ r * "⚈" }} ({{ r }})</option>
+                                {% end %}
+                            </select>
+                        </div>
+                        <div class="col-xs-1">
+                            &nbsp;
+                        </div>
+                    </div>
+                    <div class="row plugin">
+                        <div class="col-xs-1">
+                            &nbsp;
+                        </div>
+                        <div class="col-xs-10 plugin-description">
+                            <textarea id="EDIT_DESCR"></textarea>
+                        </div>
+                        <div class="col-xs-1">
+                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme btn-block" onclick="edit_engine_save(); event.preventDefault();">OK</button>
+                        </div>
+                    </div>
                 </div>
 
                 <div class="row">
@@ -113,7 +170,7 @@ div.engine_row span.ranking_star_off {
 </form>
 
 <script type="text/javascript">
-var engForm = $('#engines-form')[0];
+var eng_info = {% raw config['ZYNTHIAN_ENGINES_JSON'] %}
 
 function showProgressAnimation(){
     $("#loading-div-background").show();
@@ -169,8 +226,38 @@ function confirm_long_time_proc(ev) {
     }
 }
 
-function edit_engine(eng_code) {
-    alert("EDIT " + eng_code);
+var dst_elm;
+var src_elm;
+
+function edit_engine(code) {
+    //alert("EDIT " + code);
+    // Save last edit
+    if (dst_elm) edit_engine_save()
+    // Start new Edit
+    dst_elm = document.getElementById("engine_row_" + code);
+    src_elm = document.getElementById("engine_edit")
+    dst_elm.appendChild(src_elm)
+    document.getElementById("EDIT_CODE").value = code
+    document.getElementById("EDIT_TITLE").value = eng_info[code]["TITLE"]
+    document.getElementById("EDIT_CAT").value = eng_info[code]["CAT"]
+    document.getElementById("EDIT_QUALITY").value = eng_info[code]["QUALITY"]
+    document.getElementById("EDIT_COMPLEX").value = eng_info[code]["COMPLEX"]
+    document.getElementById("EDIT_DESCR").value = eng_info[code]["DESCR"]
+    src_elm.style.display = "block"
+    dst_elm.classList.add("engine_edit_sel")
+}
+
+function edit_engine_save() {
+    var code = document.getElementById("EDIT_CODE").value
+    if (code) {
+        eng_info[code]["TITLE"] = document.getElementById("EDIT_TITLE").value
+        eng_info[code]["CAT"] = document.getElementById("EDIT_CAT").value
+        eng_info[code]["QUALITY"] = document.getElementById("EDIT_QUALITY").value
+        eng_info[code]["COMPLEX"] = document.getElementById("EDIT_COMPLEX").value
+        eng_info[code]["DESCR"] = document.getElementById("EDIT_DESCR").value
+    }
+    src_elm.style.display = "none"
+    dst_elm.classList.remove("engine_edit_sel")
 }
 
 </script>
