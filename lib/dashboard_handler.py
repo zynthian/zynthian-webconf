@@ -38,6 +38,7 @@ import zynconf
 # Dashboard Handler
 # ------------------------------------------------------------------------------
 
+root_partition_device = "/dev/mmcblk0p2"
 
 class DashboardHandler(ZynthianBasicHandler):
 
@@ -364,7 +365,9 @@ class DashboardHandler(ZynthianBasicHandler):
 			return "???"
 
 	@staticmethod
-	def get_volume_info(volume='/dev/root'):
+	def get_volume_info(volume=None):
+		if volume is None:
+			volume = root_partition_device
 		try:
 			out = check_output("df -h | grep '{}'".format(volume), shell=True).decode()
 			parts = re.split('\s+', out)
@@ -374,7 +377,7 @@ class DashboardHandler(ZynthianBasicHandler):
 
 	@staticmethod
 	def get_sd_info():
-		return DashboardHandler.get_volume_info('/dev/root')
+		return DashboardHandler.get_volume_info(root_partition_device)
 
 	@staticmethod
 	def get_media_info(mpath="/media/usb0"):
