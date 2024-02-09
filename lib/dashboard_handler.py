@@ -38,8 +38,6 @@ import zynconf
 # Dashboard Handler
 # ------------------------------------------------------------------------------
 
-root_partition_device = "/dev/mmcblk0p2"
-
 class DashboardHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
@@ -367,7 +365,7 @@ class DashboardHandler(ZynthianBasicHandler):
 	@staticmethod
 	def get_volume_info(volume=None):
 		if volume is None:
-			volume = root_partition_device
+			volume = "/dev/mmcblk0p2\|/dev/root"
 		try:
 			out = check_output("df -h | grep '{}'".format(volume), shell=True).decode()
 			parts = re.split('\s+', out)
@@ -377,7 +375,7 @@ class DashboardHandler(ZynthianBasicHandler):
 
 	@staticmethod
 	def get_sd_info():
-		return DashboardHandler.get_volume_info(root_partition_device)
+		return DashboardHandler.get_volume_info("/dev/mmcblk0p2\|/dev/root")
 
 	@staticmethod
 	def get_media_info(mpath="/media/usb0"):
