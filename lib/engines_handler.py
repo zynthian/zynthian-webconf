@@ -46,7 +46,10 @@ class EnginesHandler(ZynthianBasicHandler):
 		# Make a deep copy and remove not serializable objects (ENGINE)
 		sengines = copy.deepcopy(zynthian_lv2.engines)
 		for key, info in sengines.items():
-			del info['ENGINE']
+			try:
+				del info['ENGINE']
+			except:
+				pass
 		config['ZYNTHIAN_ENGINES_JSON'] = json.JSONEncoder().encode(sengines)
 
 		try:
@@ -72,29 +75,27 @@ class EnginesHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_ENGINES_ACTION')
-		if action:
-			errors = {
-				'ENABLE_ENGINES': lambda: self.do_enable_engines(),
-				'REGENERATE_ENGINES': lambda: self.do_regenerate_engines(),
-				'REGENERATE_LV2_PRESETS_CACHE': lambda: self.do_regenerate_lv2_presets_cache()
-			}[action]()
+		self.posted_args = tornado.escape.recursive_unicode(self.request.arguments)
+		action = self.posted_args['ZYNTHIAN_ENGINES_ACTION'][0]
+		logging.debug(f"Executing {action} ...")
+		if action == 'ENABLE_ENGINES':
+			errors = self.do_enable_engines()
+		elif action == "REGENERATE_ENGINES":
+			errors = self.do_regenerate_engines()
+		elif action == "REGENERATE_LV2_PRESETS_CACHE":
+			errors = self.do_regenerate_lv2_presets_cache()
 		else:
 			errors = {}
 		self.get(errors)
 
 	def do_enable_engines(self):
 		try:
-			postedEngines = tornado.escape.recursive_unicode(self.request.arguments)
-
 			for key, info in zynthian_lv2.engines.items():
-				if "ZYNTHIAN_ENGINES_ENABLE_{}".format(key) in postedEngines:
+				if "ZYNTHIAN_ENGINES_ENABLE_{}".format(key) in self.posted_args:
 					info['ENABLED'] = True
 				else:
 					info['ENABLED'] = False
-
 			zynthian_lv2.save_engines()
-
 		except Exception as e:
 			logging.error("Enabling engines failed: {}".format(e))
 			return format(e)
@@ -105,8 +106,8 @@ class EnginesHandler(ZynthianBasicHandler):
 		zynthian_lv2.generate_engines_config_file()
 		zynthian_lv2.get_engines_by_type()
 		# Detect new LV2 plugins and generate presets cache for them
-		for key, info in zynthian_lv2.engines:
-			if key not in prev_engines:
+		for key, info in zynthian_lv2.engines.items():
+			if key not in prev_engines and 'URL' in info:
 				zynthian_lv2.generate_plugin_presets_cache(info['URL'], False)
 		# TODO => send CUIA to reload engine info
 
