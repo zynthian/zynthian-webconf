@@ -22,15 +22,22 @@ div.engine_row span.ranking_star_off {
 }
 div.engine_edit {
   display: none;
-  padding-bottom: 0.2em;
+  padding-top: 0.3em;
+  padding-bottom: 0.3em;
 }
 div.engine_edit_sel {
   background-color: #C0F0C0;
 }
+
+div.engine_edit_sel div.engine_row {
+  background-color: #C0F0C0;
+  display: none;
+}
+
 div.engine_edit select {
-    height: 2.3em;
-    padding: 0.2em;
-    margin: 0;
+  height: 2.3em;
+  padding: 0.2em;
+  margin: 0;
 }
 </style>
 
@@ -58,6 +65,12 @@ div.engine_edit select {
         </div>
     </div>
 
+    {% if errors %}
+    <div class="row">
+       <div class="alert alert-danger">{{ escape(errors) }}</div>
+    </div>
+    {% end %}
+
     <ul class="nav nav-tabs" role="tablist">
     {% for eng_type in config['ZYNTHIAN_ENGINES'] %}
         {% set _eng_type = eng_type.replace(' ','_') %}
@@ -77,33 +90,29 @@ div.engine_edit select {
                 <div class="row">
                     <div class="row">
                         <div class="col-xs-1 header">Enabled</div>
-                        <div class="col-xs-3 header">Title</div>
+                        <div class="col-xs-4 header">Title</div>
                         <div class="col-xs-3 header">Category</div>
                         <div class="col-xs-2 header">Quality</div>
                         <div class="col-xs-2 header">Complexity</div>
-                        <div class="col-xs-1 header">&nbsp;</div>
                     </div>
                     {% for eng_code in config['ZYNTHIAN_ENGINES'][eng_type] %}
                     {% set eng_info = config['ZYNTHIAN_ENGINES'][eng_type][eng_code] %}
-                    <div id="engine_row_{{eng_code}}">
+                    <div id="engine_row_{{eng_info['ID']}}">
                     <div class="row plugin engine_row"  title="{{ eng_info['DESCR'] }}">
-                        <div class="col-xs-1 plugin-installed">
-                            <input type="checkbox" name="ZYNTHIAN_ENGINES_ENABLE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} />
+                        <div class="col-xs-1 engine-enabled">
+                            <input type="checkbox" id="ENABLE_ENGINE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} onchange="enable_engine('{{ eng_code }}')">
                         </div>
-                        <div class="col-xs-3 one-line-truncated plugin-name">
+                        <div class="col-xs-4 one-line-truncated engine-name" onclick="edit_engine('{{ eng_code }}')">
                             {{ eng_info['TITLE'] }}
                         </div>
-                        <div class="col-xs-3 plugin-type">
+                        <div class="col-xs-3 engine-cat" onclick="edit_engine('{{ eng_code }}')">
                             {{ escape(eng_info['CAT']) }}
                         </div>
-                        <div class="col-xs-2 plugin-quality">
+                        <div class="col-xs-2 engine-quality" onclick="edit_engine('{{ eng_code }}')">
                             <span class="ranking_star_on">{{ eng_info['QUALITY'] * "★" }}</span><span class="ranking_star_off">{{ (5 - eng_info['QUALITY']) * "★" }}</span>
                         </div>
-                        <div class="col-xs-2 plugin-complexity">
+                        <div class="col-xs-2 engine-complexity" onclick="edit_engine('{{ eng_code }}')">
                             <span class="ranking_star_on">{{ eng_info['COMPLEX'] * "⚈" }}</span><span class="ranking_star_off">{{ (5 - eng_info['COMPLEX']) * "⚈" }}</span>
-                        </div>
-                        <div class="col-xs-1 plugin-edit">
-                            <button name="ZYNTHIAN_ENGINES_EDIT" class="btn btn-xs btn-theme btn-block" onclick="edit_engine('{{ eng_code }}'); event.preventDefault();">edit</button>
                         </div>
                     </div>
                     </div>
@@ -113,64 +122,51 @@ div.engine_edit select {
                 <div id="engine_edit" class="engine_edit">
                     <div class="row plugin">
                         <input type="hidden" id="EDIT_CODE" value="">
-                        <div class="col-xs-1">
-                            &nbsp;
+                        <div class="col-xs-1 engine-enabled">
+                            <input type="checkbox" id="EDIT_ENABLED" value="" onchange="edit_engine_save()">
                         </div>
-                        <div class="col-xs-3 plugin_name">
-                            <input type="text" id="EDIT_TITLE" value="">
+                        <div class="col-xs-4 engine_name">
+                            <input type="text" id="EDIT_TITLE" value="" oninput="edit_engine_save()">
                         </div>
-                        <div class="col-xs-3 plugin-type">
-                            <input type="text" id="EDIT_CAT" value="">
+                        <div class="col-xs-3 engine-type">
+                            <select id="EDIT_CAT" value="" change="edit_engine_save()"></select>
                         </div>
-                        <div class="col-xs-2 plugin-quality">
-                            <select id="EDIT_QUALITY">
+                        <div class="col-xs-2 engine-quality">
+                            <select id="EDIT_QUALITY" onchange="edit_engine_save()">
                                 {% for r in range(6) %}
                                 <option value="{{ r }}">{{ r * "★" }} ({{ r }})</option>
                                 {% end %}
                             </select>
                         </div>
-                        <div class="col-xs-2 plugin-complexity">
-                            <select id="EDIT_COMPLEX">
+                        <div class="col-xs-2 engine-complexity">
+                            <select id="EDIT_COMPLEX" onchange="edit_engine_save()">
                                 {% for r in range(6) %}
                                 <option value="{{ r }}">{{ r * "⚈" }} ({{ r }})</option>
                                 {% end %}
                             </select>
-                        </div>
-                        <div class="col-xs-1">
-                            &nbsp;
                         </div>
                     </div>
                     <div class="row plugin">
                         <div class="col-xs-1">
                             &nbsp;
                         </div>
-                        <div class="col-xs-10 plugin-description">
-                            <textarea id="EDIT_DESCR"></textarea>
+                        <div class="col-xs-10 engine-description">
+                            <textarea id="EDIT_DESCR" oninput="edit_engine_save()"></textarea>
                         </div>
                         <div class="col-xs-1">
-                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme btn-block" onclick="edit_engine_save(); event.preventDefault();">OK</button>
+                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme btn-block" onclick="edit_engine_save_close(); event.preventDefault();">OK</button>
                         </div>
                     </div>
-                </div>
-
-                <div class="row">
-                   {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
                 </div>
             </div>
         </div>
     {% end %}
     </div>
-
-    <div class="container-fluid">
-        <div class="row"><br/></div>
-        <div class="row">
-            <button name="ZYNTHIAN_ENGINES_ACTION" value="ENABLE_ENGINES" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i> Save</button>
-        </div>
-    </div>
 </form>
 
 <script type="text/javascript">
 var eng_info = {% raw config['ZYNTHIAN_ENGINES_JSON'] %}
+var eng_cats = {% raw config['ZYNTHIAN_ENGINE_CATS_JSON'] %}
 
 function showProgressAnimation(){
     $("#loading-div-background").show();
@@ -205,7 +201,7 @@ function filter_engines() {
 
     //recalc plugin count
    $(".engines_panel").each(function(index, panel_div) {
-       var panel_divs = panel_div.getElementsByClassName('plugin-name');
+       var panel_divs = panel_div.getElementsByClassName('engine-name');
        var panel_count = 0;
        Array.from(panel_divs).forEach((plugin_type_div) => {
           if (!plugin_type_div.parentElement.classList.contains("hide")){
@@ -229,35 +225,99 @@ function confirm_long_time_proc(ev) {
 var dst_elm;
 var src_elm;
 
-function edit_engine(code) {
-    //alert("EDIT " + code);
-    // Save last edit
-    if (dst_elm) edit_engine_save()
+function edit_engine(ecode) {
+    var eng_div = "engine_row_" + eng_info[ecode]['ID']
+    new_dst_elm = document.getElementById(eng_div)
+    if (dst_elm) {
+        // Check if already editing it
+        if ((dst_elm == new_dst_elm) && dst_elm.classList.contains("engine_edit_sel")) return
+        // Save last edit
+        edit_engine_save_close()
+    }
     // Start new Edit
-    dst_elm = document.getElementById("engine_row_" + code);
+    dst_elm = new_dst_elm;
     src_elm = document.getElementById("engine_edit")
+    document.getElementById("EDIT_CODE").value = ecode
+    document.getElementById("EDIT_ENABLED").checked = eng_info[ecode]["ENABLED"]
+    document.getElementById("EDIT_TITLE").value = eng_info[ecode]["TITLE"]
+    document.getElementById("EDIT_QUALITY").value = eng_info[ecode]["QUALITY"]
+    document.getElementById("EDIT_COMPLEX").value = eng_info[ecode]["COMPLEX"]
+    document.getElementById("EDIT_DESCR").value = eng_info[ecode]["DESCR"]
+    // Category select options by type
+    var cat_select = document.getElementById("EDIT_CAT")
+    var n = cat_select.options.length - 1
+    for (var i = n; i >= 0; i--) {
+        cat_select.remove(i)
+    }
+    var cats = eng_cats[eng_info[ecode]["TYPE"]]
+    for (i = 0; i < cats.length; i++)  {
+        var option = document.createElement('option')
+        option.value = option.text = cats[i]
+        cat_select.add(option)
+    }
+    cat_select.value = eng_info[ecode]["CAT"]
+    // DOM manupulation
     dst_elm.appendChild(src_elm)
-    document.getElementById("EDIT_CODE").value = code
-    document.getElementById("EDIT_TITLE").value = eng_info[code]["TITLE"]
-    document.getElementById("EDIT_CAT").value = eng_info[code]["CAT"]
-    document.getElementById("EDIT_QUALITY").value = eng_info[code]["QUALITY"]
-    document.getElementById("EDIT_COMPLEX").value = eng_info[code]["COMPLEX"]
-    document.getElementById("EDIT_DESCR").value = eng_info[code]["DESCR"]
     src_elm.style.display = "block"
     dst_elm.classList.add("engine_edit_sel")
 }
 
-function edit_engine_save() {
-    var code = document.getElementById("EDIT_CODE").value
-    if (code) {
-        eng_info[code]["TITLE"] = document.getElementById("EDIT_TITLE").value
-        eng_info[code]["CAT"] = document.getElementById("EDIT_CAT").value
-        eng_info[code]["QUALITY"] = document.getElementById("EDIT_QUALITY").value
-        eng_info[code]["COMPLEX"] = document.getElementById("EDIT_COMPLEX").value
-        eng_info[code]["DESCR"] = document.getElementById("EDIT_DESCR").value
+function edit_engine_save(close=false) {
+    var scode = document.getElementById("EDIT_CODE").value
+    if (scode) {
+        // Save values in engine info array
+        eng_info[scode]["ENABLED"] = document.getElementById("EDIT_ENABLED").checked
+        eng_info[scode]["TITLE"] = document.getElementById("EDIT_TITLE").value
+        eng_info[scode]["CAT"] = document.getElementById("EDIT_CAT").value
+        eng_info[scode]["QUALITY"] = document.getElementById("EDIT_QUALITY").value
+        eng_info[scode]["COMPLEX"] = document.getElementById("EDIT_COMPLEX").value
+        eng_info[scode]["DESCR"] = document.getElementById("EDIT_DESCR").value
+        // Refresh engine's row content
+        var eng_div = "div#engine_row_" + eng_info[scode]['ID']
+        document.querySelector(eng_div + " div.engine-enabled input").checked = eng_info[scode]["ENABLED"];
+        document.querySelector(eng_div + " div.engine-name").textContent = eng_info[scode]["TITLE"];
+        document.querySelector(eng_div + " div.engine-cat").textContent = eng_info[scode]["CAT"];
+        document.querySelector(eng_div + " div.engine-quality span.ranking_star_on").textContent = '★'.repeat(eng_info[scode]["QUALITY"]);
+        document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_info[scode]["QUALITY"]);
+        document.querySelector(eng_div + " div.engine-complexity span.ranking_star_on").textContent = '⚈'.repeat(eng_info[scode]["COMPLEX"]);
+        document.querySelector(eng_div + " div.engine-complexity span.ranking_star_off").textContent = '⚈'.repeat(5 - eng_info[scode]["COMPLEX"]);
+        document.querySelector(eng_div + " div.engine_row").title = eng_info[scode]["DESCR"];
+        // Send PUT request
+        if (close) {
+            var xhttp = new XMLHttpRequest()
+            var request_data = "ENGINE_CODE=" + encodeURIComponent(scode)
+            request_data += "&ENGINE_ENABLED=" + Number(eng_info[scode]["ENABLED"])
+            request_data += "&ENGINE_NAME=" + encodeURIComponent(eng_info[scode]["NAME"])
+            request_data += "&ENGINE_CAT=" + eng_info[scode]["CAT"]
+            request_data += "&ENGINE_QUALITY=" + eng_info[scode]["QUALITY"]
+            request_data += "&ENGINE_COMPLEX=" + eng_info[scode]["COMPLEX"]
+            request_data += "&ENGINE_DESCR=" + eng_info[scode]["DESCR"]
+            xhttp.open("PUT", "/sw-engines");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send(request_data);
+        }
     }
-    src_elm.style.display = "none"
-    dst_elm.classList.remove("engine_edit_sel")
+    if (close) {
+        src_elm.style.display = "none"
+        dst_elm.classList.remove("engine_edit_sel")
+    }
+}
+
+function edit_engine_save_close() {
+    edit_engine_save(true)
+}
+
+function enable_engine(ecode) {
+    var engine_enabled = document.getElementById("ENABLE_ENGINE_" + ecode).checked
+    // Save value in engine info array
+    eng_info[ecode]["ENABLED"] = engine_enabled
+    // Send PUT request
+    var xhttp = new XMLHttpRequest()
+    var request_data = "ENGINE_CODE=" + encodeURIComponent(ecode)
+    request_data += "&ENGINE_ENABLED=" + Number(engine_enabled)
+    xhttp.open("PATCH", "/sw-engines");
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send(request_data);
 }
 
 </script>
