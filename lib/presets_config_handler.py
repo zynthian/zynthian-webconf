@@ -98,7 +98,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			result['presets'] = None
 			logging.error(e)
 			result['errors'] = "Can't get preset tree data: {}".format(e)
-
 		return result
 
 	def do_new_bank(self):
@@ -161,7 +160,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		fpath = None
 		delete = False
 		try:
-			fpath=self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
+			fpath = self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
 			dname, fname = os.path.split(fpath)
 			if os.path.isdir(fpath):
 				zfpath = "/tmp/" + fname
@@ -187,8 +186,9 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 	
 		except Exception as e:
 			logging.error(e)
-			result = {}
-			result['errors'] = "Can't download file: {}".format(e)
+			result = {
+				errors: "Can't download file: {}".format(e)
+			}
 
 		finally:
 			if fpath and delete:
@@ -214,7 +214,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		try:
 			for fpath in self.get_argument('INSTALL_FPATH').split(","):
 				fpath = fpath.strip()
-				if len(fpath)>0:
+				if len(fpath) > 0:
 					self.install_file(fpath)
 		except Exception as e:
 			logging.error(e)
@@ -236,7 +236,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		return result
 
 	def search_artifacts(self, formats, tags):
-		result=[]
+		result = []
 		for fmt in formats.split(','):
 			query_url = "https://musical-artifacts.com/artifacts.json"
 			sep = '?'
@@ -246,13 +246,12 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			if tags:
 				query_url += sep + 'tags=' + tags
 				#query_url += sep + 'q=' + tags
-				sep = "&"
 
 			result += requests.get(query_url, verify=False).json()
 
 		for row in result:
-			if not "file" in row:
-				if "mirrors" in row and len(row['mirrors'])>0:
+			if "file" not in row:
+				if "mirrors" in row and len(row['mirrors']) > 0:
 					row['file'] = row['mirrors'][0]
 				else:
 					row['file'] = None
@@ -315,7 +314,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		res = requests.get(url, verify=False)
 		head, tail = os.path.split(url)
 		fpath = "/tmp/" + tail
-		with open(fpath , "wb") as df:
+		with open(fpath, "wb") as df:
 			df.write(res.content)
 			df.close()
 			self.install_file(fpath)
@@ -334,9 +333,9 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			return ""
 
 	def get_presets_data(self):
+		i = 0
+		banks_data = []
 		try:
-			i = 0
-			banks_data = []
 			for b in self.engine_cls.zynapi_get_banks():
 				brow = {
 					'id': i,
@@ -358,7 +357,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 							'name': p['name'],
 							'fullpath': p['fullpath'],
 							'readonly': p['readonly'] or b['readonly'],
-							'bank_fullpath' : b['fullpath'],
+							'bank_fullpath': b['fullpath'],
 							'node_type': 'PRESET',
 							'icon': "glyphicon glyphicon-link" if p['readonly'] else None
 						}
@@ -368,12 +367,12 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 					brow['nodes'] = presets_data
 
 				except Exception as e:
-					logging.error("PRESET NODE {} => {}".format(i,e))
+					logging.error("PRESET NODE {} => {}".format(i, e))
 
 				banks_data.append(brow)
 
 		except Exception as e:
-			logging.error("BANK NODE {} => {}".format(i,e))
+			logging.error("BANK NODE {} => {}".format(i, e))
 
 		return banks_data
 
