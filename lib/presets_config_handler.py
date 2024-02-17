@@ -24,6 +24,7 @@
 
 import os
 import copy
+import glob
 import shutil
 import logging
 import zipfile
@@ -276,11 +277,23 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 				tar.extractall(dpath)
 			elif fpath.endswith('.zip'):
 				dpath = fpath[:-4]
-				with zipfile.ZipFile(fpath,'r') as soundfontZip:
+				with zipfile.ZipFile(fpath, 'r') as soundfontZip:
 					soundfontZip.extractall(dpath)
 
-			# Remove thrash ...
 			if os.path.isdir(dpath):
+				# Unroll nested dir
+				head, tail = os.path.split(dpath)
+				ddpath = f"{dpath}/{tail}"
+				if os.path.isdir(ddpath):
+					# Rename subdir to avoid existing filename issues when moving up
+					tmp_subdir = dpath + "/zyn_tmp_subdir"
+					os.rename(ddpath, tmp_subdir)
+					# Move up nested dir content
+					for f in glob.glob(tmp_subdir + "/*"):
+						shutil.move(f, dpath)
+					# Remove empty nested dir
+					shutil.rmtree(tmp_subdir, ignore_errors=True)
+				# Remove thrash ...
 				shutil.rmtree(dpath + "/__MACOSX", ignore_errors=True)
 
 			bank_fullpath = self.get_argument('SEL_BANK_FULLPATH')
@@ -288,6 +301,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 			self.engine_cls.zynapi_install(dpath, bank_fullpath)
 
+		# Always clean temporal files & dirs
 		finally:
 			try:
 				os.remove(fpath)
