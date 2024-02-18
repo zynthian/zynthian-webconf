@@ -81,7 +81,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 		except:
 			result = {}
-
 		# JSON Ouput
 		if result:
 			self.write(result)
@@ -107,7 +106,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't create new bank: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
@@ -118,7 +116,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't rename bank: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
@@ -129,7 +126,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't remove bank: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
@@ -140,7 +136,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't rename preset: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
@@ -151,7 +146,6 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't remove preset: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
@@ -183,34 +177,28 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 						break
 					self.write(data)
 				self.finish()
-	
 		except Exception as e:
 			logging.error(e)
 			result = {
 				errors: "Can't download file: {}".format(e)
 			}
-
 		finally:
 			if fpath and delete:
 				os.remove(fpath)
-
 		return result
 
 	def do_search(self):
 		result = {}
-
 		try:
 			maformats = self.engine_cls.zynapi_martifact_formats()
 			result['search_results'] = self.search_artifacts(maformats, self.get_argument('MUSICAL_ARTIFACT_TAGS'))
 		except OSError as e:
 			logging.error(e)
 			result['errors'] = "Can't search Musical Artifacts: {}".format(e)
-
 		return result
 
 	def do_install_file(self):
 		result = {}
-
 		try:
 			for fpath in self.get_argument('INSTALL_FPATH').split(","):
 				fpath = fpath.strip()
@@ -219,19 +207,16 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't install file: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
 	def do_install_url(self):
 		result = {}
-
 		try:
 			self.install_url(self.get_argument('INSTALL_URL'))
 		except Exception as e:
 			logging.error(e)
 			result['errors'] = "Can't install URL: {}".format(e)
-
 		result.update(self.do_get_tree())
 		return result
 
