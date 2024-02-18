@@ -23,15 +23,11 @@
 # ********************************************************************
 
 import os
-import re
-import json
 import copy
-import uuid
-import urllib3
+import glob
 import logging
 import shutil
 import requests
-import bz2
 import zipfile
 import tarfile
 import tornado.web
