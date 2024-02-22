@@ -28,6 +28,7 @@ import sys
 import liblo
 import logging
 import tornado.web
+from time import sleep
 from subprocess import check_output
 
 import zynconf
@@ -137,21 +138,21 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		try:
 			if self.is_service_active("zynthian"):
 				liblo.send(zynthian_ui_osc_addr, "/CUIA/POWER_OFF")
-			else:
-				system("killall -SIGQUIT zynthian_gui.py; sleep 4; poweroff")
+				sleep(5)
+			system("killall -SIGQUIT zynthian_gui.py; sleep 5; poweroff")
 		except Exception as e:
 			logging.error("Power Off: {}".format(e))
 
 
 	def reboot(self):
 		try:
-			if self.is_service_active("zynthian"):
-				liblo.send(zynthian_ui_osc_addr, "/CUIA/REBOOT")
-			else:
-				system("killall -SIGINT zynthian_gui.py; sleep 4; reboot")
 			self.reboot_ui_flag = False
 			if os.path.isfile(self.reboot_ui_flag_fpath):
 				os.remove(self.reboot_ui_flag_fpath)
+			if self.is_service_active("zynthian"):
+				liblo.send(zynthian_ui_osc_addr, "/CUIA/REBOOT")
+				sleep(5)
+			system("killall -SIGINT zynthian_gui.py; sleep 5; reboot")
 		except Exception as e:
 			logging.error("Reboot: {}".format(e))
 
