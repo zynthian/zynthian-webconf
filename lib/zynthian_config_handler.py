@@ -4,7 +4,7 @@
 #
 # Zynthian Configuration Handler base class
 #
-# Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
+# Copyright (C) 2017-2024 Fernando Moyano <jofemodo@zynthian.org>
 #
 #********************************************************************
 #
@@ -41,7 +41,7 @@ zynconf_logger.setLevel(logging.INFO)
 # Zynthian-UI OSC Address
 #------------------------------------------------------------------------------
 
-zynthian_ui_osc_addr = liblo.Address('localhost',1370,liblo.UDP)
+zynthian_ui_osc_addr = liblo.Address('localhost', 1370,liblo.UDP)
 
 #------------------------------------------------------------------------------
 # Zynthian Basic Handler
@@ -147,8 +147,10 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 	def reboot(self):
 		try:
 			self.reboot_ui_flag = False
+			""" TODO: reboot_ui_flag_fpath is not defined
 			if os.path.isfile(self.reboot_ui_flag_fpath):
 				os.remove(self.reboot_ui_flag_fpath)
+			"""
 			if self.is_service_active("zynthian"):
 				liblo.send(zynthian_ui_osc_addr, "/CUIA/REBOOT")
 				sleep(5)
