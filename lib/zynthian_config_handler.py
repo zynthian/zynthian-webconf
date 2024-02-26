@@ -23,8 +23,6 @@
 #********************************************************************
 
 import os
-import re
-import sys
 import liblo
 import logging
 import tornado.web
@@ -139,22 +137,20 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 			if self.is_service_active("zynthian"):
 				liblo.send(zynthian_ui_osc_addr, "/CUIA/POWER_OFF")
 				sleep(5)
-			system("killall -SIGQUIT zynthian_gui.py; sleep 5; poweroff")
+			check_output("killall -SIGQUIT zynthian_gui.py; sleep 5; poweroff", shell=True)
 		except Exception as e:
 			logging.error("Power Off: {}".format(e))
 
 
 	def reboot(self):
 		try:
-			self.reboot_ui_flag = False
-			""" TODO: reboot_ui_flag_fpath is not defined
-			if os.path.isfile(self.reboot_ui_flag_fpath):
-				os.remove(self.reboot_ui_flag_fpath)
-			"""
+			self.reboot_flag = False
+			if os.path.isfile(self.reboot_flag_fpath):
+				os.remove(self.reboot_flag_fpath)
 			if self.is_service_active("zynthian"):
 				liblo.send(zynthian_ui_osc_addr, "/CUIA/REBOOT")
 				sleep(5)
-			system("killall -SIGINT zynthian_gui.py; sleep 5; reboot")
+			check_output("killall -SIGINT zynthian_gui.py; sleep 5; reboot", shell=True)
 		except Exception as e:
 			logging.error("Reboot: {}".format(e))
 
@@ -199,11 +195,11 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
 
 	def persist_reboot_flag(self):
-		check_output("touch /tmp/zynthian_reboot", shell=True)
+		check_output(f"touch {self.reboot_flag_fpath}", shell=True)
 
 
 	def read_reboot_flag(self):
-		self.reboot_flag = os.path.exists("/tmp/zynthian_reboot")
+		self.reboot_flag = os.path.exists(self.reboot_flag_fpath)
 
 
 	@classmethod
