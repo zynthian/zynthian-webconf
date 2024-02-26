@@ -433,7 +433,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				zyntof_config_flag = False
 			try:
 				# Calculate Num of Custom Switches
-				n_extra_switches = min(4,max(0, len(wiring_switches.split(",")) - 4))
+				n_extra_switches = min(12, max(0, len(wiring_switches.split(",")) - 4))
 			except:
 				n_extra_switches = 0
 
