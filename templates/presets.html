@@ -262,7 +262,7 @@ function renderPresetsTree(data) {
 	$('#presets-tree').treeview({
 		data: data,
 		bootstrap2: true,
-		levels: 2,
+		levels: 3,
 		emptyIcon: "glyphicon glyphicon-floppy-disk",
 		expandIcon: "glyphicon glyphicon-folder-close",
 		collapseIcon: "glyphicon glyphicon-folder-open",
@@ -316,10 +316,6 @@ function renderPresetsTree(data) {
 			$('#presets-tree').treeview('expandNode', 0);
 		}
 	}
-
-
-
-	
 }
 
 function renderSearchResults(data) {

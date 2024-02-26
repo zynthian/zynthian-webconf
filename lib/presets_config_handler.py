@@ -319,18 +319,36 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 	def get_presets_data(self):
 		i = 0
+		superbanks_data = []
+		superbank_row = None
 		banks_data = []
 		try:
 			for b in self.engine_cls.zynapi_get_banks():
+				if b['fullpath'] is None:
+					if banks_data and superbank_row:
+						superbank_row['nodes'] = banks_data
+						superbanks_data.append(superbank_row)
+						banks_data = []
+					superbank_row = {
+						'id': i,
+						'text': b['text'],
+						'name': b['name'],
+						'fullpath': None,
+						'readonly': False,
+						'node_type': "BANK_HEAD",
+						'nodes': []
+					}
+					continue
+
 				brow = {
 					'id': i,
 					'text': b['text'],
 					'name': b['name'],
 					'fullpath': b['fullpath'],
 					'readonly': b['readonly'],
-					'node_type': 'BANK',
+					'node_type': "BANK",
 					'nodes': [],
-					'icon': "glyphicon glyphicon-link" if b['readonly'] else None,
+					'icon': "glyphicon glyphicon-link" if b['readonly'] else None
 				}
 				i += 1
 				try:
@@ -356,9 +374,17 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 
 				banks_data.append(brow)
 
+			if banks_data:
+				if superbank_row:
+					superbank_row['nodes'] = banks_data
+					superbanks_data.append(superbank_row)
+				else:
+					superbanks_data = banks_data
+
+
 		except Exception as e:
 			logging.error("BANK NODE {} => {}".format(i, e))
 
-		return banks_data
+		return superbanks_data
 
 # ------------------------------------------------------------------------------
