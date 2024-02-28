@@ -145,14 +145,17 @@
 				{% module Template(body, config=config, title=title, errors=errors) %}
 			</div>
 		</div>
+		<div class="row">
+			<div class="col-xs-12">&nbsp;<br><br><br></div>
+		</div>
 	</section>
 
 	{% if info and 'reboot_flag' in info and info['reboot_flag'] %}
 	<div class="main-footer">
-		<div class="col-lg-8 col-lg-offset-1 col-xs-12 col-xs-offset-0">
+		<div class="col-md-8 col-md-offset-1 col-sm-10 col-sm-offset-0 col-xs-12 col-xs-offset-0">
 			<p>Zynthian needs to reboot to apply your changes!</p>
 		</div>
-		<div class="col-lg-2 col-xs-12">
+		<div class="col-md-1 col-sm-2 col-xs-12">
 			<p><a href="/sys-reboot/confirmed"><button class="btn btn-danger">REBOOT NOW!</button></a><p>
 		</div>
 	</div>
