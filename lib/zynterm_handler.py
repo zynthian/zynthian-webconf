@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Zynterm Handler
 #
 # Copyright (C) 2020 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,16 +20,17 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import logging
 import tornado.web
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Zynterm Handler
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class ZyntermHandler(ZynthianBasicHandler):
 

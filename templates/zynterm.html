@@ -37,17 +37,19 @@ window.onload = function() {
 		var rows = Math.max(2, Math.floor(h/termRowHeight)-1);
 		var cols = Math.max(3, Math.floor(w/termColWidth)-1);
 		$(contsel).css({"maxHeight": h + "px"});
-		console.log("resize:", termRowHeight, termColWidth, h, w, rows, cols);
-		return {rows: rows, cols: cols, h: h, w: w};
+		console.log("Resize:", termRowHeight, termColWidth, h, w, rows, cols);
+		//return {rows: rows, cols: cols, h: h, w: w};
+		return {rows: rows};
 	}
 
 	var contsel = "section#section-config";
 	var terminal = make_terminal($(contsel).get(0), calculate_size(contsel), ws_url);
 
-	window.onresize = function() { 
+	window.onresize = function() {
 		var geom = calculate_size(contsel);
-		terminal.term.resize(geom.cols, geom.rows);
-		terminal.socket.send(JSON.stringify(["set_size", geom.rows, geom.cols, geom.h, geom.w]));
+		terminal.term.resize(80, geom.rows);
+		//terminal.term.resize(geom.cols, geom.rows);
+		//terminal.socket.send(JSON.stringify(["set_size", geom.rows, geom.cols, geom.h, geom.w]));
 	};
 };
 </script>

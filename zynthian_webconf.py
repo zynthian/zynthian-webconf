@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Web Service API
 #
 # Copyright (C) 2015-2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -21,13 +21,14 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import sys
 import string
 import random
 import logging
+import asyncio
 import tornado.web
 import tornado.ioloop
 import tornado_xstatic
@@ -68,16 +69,16 @@ from lib.repository_handler import RepositoryHandler
 from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler
 from lib.zynterm_handler import ZyntermHandler
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 MB = 1024 * 1024
 GB = 1024 * MB
 TB = 1024 * GB
 MAX_STREAMED_SIZE = 1*TB
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Configure Logging
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 if os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'):
 	log_level = int(os.environ.get('ZYNTHIAN_WEBCONF_LOG_LEVEL'))
@@ -89,22 +90,24 @@ else:
 logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
 logging.getLogger().setLevel(level=log_level)
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Non cached static files (capture log)
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class CaptureLogStaticFileHandler(tornado.web.StaticFileHandler):
 	def set_extra_headers(self, path):
 		# Disable cache
 		self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Build Web App & Start Server
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 # Try to load from config file. If doesn't exist, generate a new one and save it!
 def get_cookie_secret():
-	cookie_secret_fpath="%s/webconf_cookie_secret.txt" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
+	cookie_secret_fpath = "%s/webconf_cookie_secret.txt" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
 	try:
 		with open(cookie_secret_fpath, "r") as fh:
 			cookie_secret = fh.read().strip()
@@ -124,8 +127,6 @@ def get_cookie_secret():
 
 
 def make_app():
-	global term_manager
-
 	settings = {
 		"xstatic_url": tornado_xstatic.url_maker('/xstatic/'),
 		"template_path": "templates",
@@ -135,8 +136,6 @@ def make_app():
 		"upload_progress_handler": dict()
 		#"autoescape": None
 	}
-
-	term_manager = SingleTermManager(shell_command=['./zynbash.sh'])
 
 	return tornado.web.Application([
 		(r"/$", DashboardHandler),
@@ -194,23 +193,27 @@ def make_app():
 	], **settings)
 
 
-if __name__ == "__main__":
+async def amain():
 	app = make_app()
 	app.listen(os.environ.get('ZYNTHIAN_WEBCONF_PORT', 80), max_body_size=MAX_STREAMED_SIZE)
 	app.listen(443, max_body_size=MAX_STREAMED_SIZE, ssl_options={
 		"certfile": "cert/cert.pem",
 		"keyfile": "cert/key.pem"
 	})
+	await asyncio.Event().wait()
 
-	loop = tornado.ioloop.IOLoop.instance()
+
+async def ashutdown():
+	await term_manager.shutdown()
+
+
+if __name__ == "__main__":
 	try:
-		loop.start()
+		term_manager = SingleTermManager(shell_command=['./zynbash.sh'])
+		asyncio.run(amain())
 	except KeyboardInterrupt:
-		print(" Shutting down on SIGINT")
+		print("Shutting down on SIGINT")
 	finally:
-		term_manager.shutdown()
-		loop.close()
+		asyncio.run(ashutdown())
 
-#------------------------------------------------------------------------------
-
-
+# ------------------------------------------------------------------------------

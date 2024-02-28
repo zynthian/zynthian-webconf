@@ -119,7 +119,7 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 
 	def on_midi_in(self, msg):
 		message = ZynthianWebSocketMessage('MidiLogMessageHandler', msg)
-		self.websocket.write_message(jsonpickle.encode(message))
+		self.ioloop.call_soon_threadsafe(self.websocket.write_message, jsonpickle.encode(message))
 
 	def do_stop_logging(self):
 		if MidiLogMessageHandler.mido_port:
@@ -145,6 +145,9 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 			self.websocket.write_message("MIDI_PORT = {}".format(self.midi_port_name))
 
 		logging.debug("message handled.")  # this needs to show up early to get the socket working again.
+
+	def on_open(self):
+		self.set_nodelay(True)
 
 	def on_close(self):
 		logging.info("stopping tail threads")

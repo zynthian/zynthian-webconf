@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # SoundFont Manager Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,29 +20,26 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
-import os
-import sys
 import logging
-import tornado.web
-import tornado.websocket
 import shutil
-import datetime
 import jsonpickle
-
-from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
-
+import tornado.websocket
 #from lib.post_streamer import PostDataStreamer
 from tornadostreamform.multipart_streamer import MultiPartStreamer, StreamedPart, TemporaryFileStreamedPart
 
-#------------------------------------------------------------------------------
+from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
+
+# ------------------------------------------------------------------------------
 # Upload Handling
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 MB = 1024 * 1024
 GB = 1024 * MB
 TB = 1024 * GB
 MAX_STREAMED_SIZE = 1*TB
+
 
 class UploadStreamPart(TemporaryFileStreamedPart):
 
@@ -65,10 +62,8 @@ class UploadPostDataStreamer(MultiPartStreamer):
 		self.destinationPath = destinationPath
 		super(UploadPostDataStreamer, self).__init__(total)
 
-
 	def create_part(self, headers):
 		return UploadStreamPart(self, headers, tmp_dir=None)
-
 
 	def on_progress(self, received, total):
 		"""Override this function to handle progress of receiving data."""
@@ -80,7 +75,6 @@ class UploadPostDataStreamer(MultiPartStreamer):
 				if self.webSocketHandler:
 					message = ZynthianWebSocketMessage('UploadProgressHandler', str(new_percent))
 					self.webSocketHandler.websocket.write_message(jsonpickle.encode(message))
-
 
 	def examine(self):
 		print("============= structure =============")
@@ -101,7 +95,6 @@ class UploadPostDataStreamer(MultiPartStreamer):
 			else:
 				print("        PAYLOAD:","<too long...>")
 
-
 	def data_complete(self):
 		super(UploadPostDataStreamer, self).data_complete()
 		for part in self.parts:
@@ -110,6 +103,7 @@ class UploadPostDataStreamer(MultiPartStreamer):
 				logging.info(part.get_name())
 				logging.info("destinationPath: " + self.destinationPath)
 				part.move(self.destinationPath + "/" + destinationFilename)
+
 
 class UploadProgressHandler(ZynthianWebSocketMessageHandler):
 	clientId = '1'
@@ -128,6 +122,7 @@ class UploadProgressHandler(ZynthianWebSocketMessageHandler):
 	def on_close(self):
 		if self.clientId in self.websocket.application.settings['upload_progress_handler']:
 			del self.websocket.application.settings['upload_progress_handler'][self.clientId]
+
 
 @tornado.web.stream_request_body
 class UploadHandler(tornado.web.RequestHandler):

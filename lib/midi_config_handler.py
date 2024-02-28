@@ -86,7 +86,7 @@ def get_ports_config(current_midi_ports=""):
 		except:
 			pass
 
-		# Generate MIDI_PORTS{IN,OUT,FB} configuration array
+		# Generate MIDI_PORTS{IN,OUT} configuration array
 		for idx, midi_port in enumerate(midi_in_ports):
 			alias = get_port_alias(midi_port)
 			if alias:
@@ -103,14 +103,6 @@ def get_ports_config(current_midi_ports=""):
 					'shortname': midi_port.shortname,
 					'alias': alias
 				})
-		for idx, midi_port in enumerate(midi_out_ports):
-			alias = get_port_alias(midi_port)
-			if alias:
-				midi_ports['FB'].append({
-					'name': midi_port.name,
-					'shortname': midi_port.shortname,
-					'alias': alias
-				})
 
 	except Exception as e:
 		logging.error("%s" % e)
@@ -120,25 +112,24 @@ def get_ports_config(current_midi_ports=""):
 
 
 def get_port_alias(midi_port):
-	try:
-		parts = midi_port.name.split("): ")
-	except:
-		parts = midi_port.shortname.split("): ")
-	alias = parts.pop()
 
-	if midi_port.is_input:
-		postfix = "OUT"
+	if len(midi_port.aliases) > 1:
+		return midi_port.aliases[1]
+	elif len(midi_port.aliases) > 0:
+		return midi_port.aliases[0]
 	else:
-		postfix = "IN"
-
-	if alias.startswith("ttymidi:"):
-		alias = f"DIN-5 MIDI-{postfix}"
-	elif alias == "f_midi":
-		alias = f"USB MIDI-{postfix}"
-	elif alias.startswith("Midi Through"):
-		alias = None
-
-	return alias
+		alias = midi_port.name
+		if midi_port.is_input:
+			postfix = "OUT"
+		else:
+			postfix = "IN"
+		if alias.startswith("ttymidi:"):
+			alias = f"DIN-5 MIDI-{postfix}"
+		elif alias == "f_midi":
+			alias = f"USB MIDI-{postfix}"
+		elif alias.startswith("Midi Through"):
+			alias = None
+		return alias
 
 
 # ------------------------------------------------------------------------------

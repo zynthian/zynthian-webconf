@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Zynthian Websocket Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,16 +20,16 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
-
+# ********************************************************************
 
 import logging
-import tornado.websocket
+import asyncio
 import jsonpickle
+import tornado.websocket
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Zynthian Websocket Handling
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 def ZynthianWebSocketMessageHandlerFactory(handler_name, websocket):
 	for cls in ZynthianWebSocketMessageHandler.__subclasses__():
@@ -42,6 +42,7 @@ class ZynthianWebSocketMessageHandler(object):
 	def __init__(self, handler_name, websocket):
 		self.handler_name = handler_name
 		self.websocket = websocket
+		self.ioloop = asyncio.get_running_loop()
 
 	def on_open(self):
 		pass
