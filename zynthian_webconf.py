@@ -52,7 +52,6 @@ from lib.kit_config_handler import KitConfigHandler
 from lib.wiring_config_handler import WiringConfigHandler
 from lib.hwoptions_config_handler import HWOptionsConfigHandler
 from lib.wifi_config_handler import WifiConfigHandler
-from lib.wifi_list_handler import WifiListHandler
 from lib.snapshot_config_handler import SnapshotConfigHandler, SnapshotRemoveOptionHandler, SnapshotAddOptionsHandler, SnapshotDownloadHandler, SnapshotRemoveChainHandler
 from lib.midi_config_handler import MidiConfigHandler
 from lib.upload_handler import UploadHandler
