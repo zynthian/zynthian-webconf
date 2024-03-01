@@ -3,67 +3,30 @@
 
 <form method="post">
 
-	<!-- Modal HTML -->
-	<div id="newNetworkModal" class="modal fade">
-		<div class="modal-dialog">
-			<div class="modal-content">
-				<div class="modal-header">
-					<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
-					<h4 class="modal-title">Add Network</h4>
-				</div>
-				<div class="modal-body">
-					<label>SSID:</label><br>
-					<select id="ZYNTHIAN_WIFI_NEW_SSID" name="ZYNTHIAN_WIFI_NEW_SSID" class="form-control"></select>
-					<label>Password:</label><br>
-					<input type="password" id="ZYNTHIAN_WIFI_NEW_PASSWORD" name="ZYNTHIAN_WIFI_NEW_PASSWORD" class="form-control">
-				</div>
-				<div class="modal-footer">
-				 	<button name="ZYNTHIAN_WIFI_ACTION" value="ADD_NETWORK" class="btn btn-lg btn-theme btn-block">ADD</button><br>
-				</div>
-			</div>
-		</div>
+	<div class="row">
+		<br><br>
 	</div>
-
-	<div id="wifi_mode">
-		<label>Mode:</label>
-		<select id="ZYNTHIAN_WIFI_MODE" name="ZYNTHIAN_WIFI_MODE" onchange="this.form.submit()">
-			<option value="off" {% if config['ZYNTHIAN_WIFI_MODE']=="off" %}selected=1{% end %}>Off</option>
-			{% if len(config['ZYNTHIAN_WIFI_NETWORKS'])>0 %}
-			<option value="on" {% if config['ZYNTHIAN_WIFI_MODE']=="on" %}selected=1{% end %}>On</option>
-			{% end %}
-			<option value="hotspot" {% if config['ZYNTHIAN_WIFI_MODE']=="hotspot" %}selected=1{% end %}>Hotspot</option>
-		</select>
-	</div>
-
-	<div id="wifi_network_config">
-		<h3>Networks:</h3>
-
-		{% if len(config['ZYNTHIAN_WIFI_NETWORKS'])>0 %}
-		<ul class="nav nav-tabs" role="tablist">
-			{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
-			<li {% if network['idx']==0 %}class="active"{% end %}><a href="#{{  network['ssid64'] }}" role="tab" data-toggle="tab">{{ network['ssid'] }}</a></li>
-			{% end %}
-		</ul>
-
-		<div class="tab-content">
-			{% for network in config['ZYNTHIAN_WIFI_NETWORKS'] %}
-			<div class="tab-pane {% if network['idx']==0 %}active{% end %}" id="{{ network['ssid64'] }}">
-				<textarea name="ZYNTHIAN_WIFI_OPTIONS_{{ network['ssid'] }}" cols="30" rows="4">
-					{{ network['options'] }}
-				</textarea><br>
-
-				<button name="ZYNTHIAN_WIFI_ACTION" value="UPDATE_{{ network['ssid'] }}" class="btn btn-theme btn-block">Save Options</button>
-				<button name="ZYNTHIAN_WIFI_ACTION" value="REMOVE_{{ network['ssid'] }}" onclick="return confirm('Are you sure?');" class="btn btn-danger btn-block">Remove Network</button><br>
-			</div>
-			{% end %}
-		</div>
+	<div class="row">
+		<div class="col-md-offset-2 col-md-8">
+		{% if config['ZYNTHIAN_WIFI_STATUS'] in (30, 50, 100) %}
+		{% set wifi_status = "ON" %}
+		{% elif config['ZYNTHIAN_WIFI_STATUS'] == 20 %}
+		{% set wifi_status = "OFF" %}
 		{% else %}
-		<p>No networks configured yet. Please, add a network!</p>
+		{% set wifi_status = "ERROR" %}
 		{% end %}
-
-		<button type="button" class="btn btn-lg btn-theme btn-block btn-new-network">Add Network</button>
+			<b>Status:</b> {{ wifi_status }}
+		</div>
 	</div>
-
+	<div class="row">
+		<div class="col-md-offset-2 col-md-8">
+			<select id="ZYNTHIAN_WIFI_SSID" name="ZYNTHIAN_WIFI_SSID" class="form-control">
+				{% for wifi in config['ZYNTHIAN_WIFI_NETWORKS'] %}
+				<option value="{{ wifi['ssid'] }}">{{ wifi['description'] }}</option>
+				{% end %}
+			</select>
+		</div>
+	</div>
 
 	{% if errors %}
 	<br>
@@ -79,36 +42,21 @@
 
 <script type="text/javascript">
 
-function openWifiListModal() {
-	if ($("#ZYNTHIAN_WIFI_NEW_SSID")[0].options) {
-		for (var i=$("#ZYNTHIAN_WIFI_NEW_SSID")[0].options.length-1;i>=0;i--) {
-			$("#ZYNTHIAN_WIFI_NEW_SSID")[0].remove(i);
-		}
-	}
-	$("#newNetworkModal").modal('show');
-	$.getJSON( '/wifi/list' , {}, wifiListLoaded );
-}
-
 function wifiListLoaded(data) {
 	var i=0;
 	$.each(data, function(ssid, info) {
-		$("#ZYNTHIAN_WIFI_NEW_SSID").append('<option value="' + ssid + '">' + decodeURIComponent(ssid.replace(/\\x/g,"%"))  + ' (' + info.quality + '%)' + '</option>');
+		//$("#ZYNTHIAN_WIFI_SSID").append('<option value="' + ssid + '">' + decodeURIComponent(ssid.replace(/\\x/g,"%"))  + ' (' + info.quality + '%)' + '</option>');
 		i++;
 	});
+	setTimeout(refresh_wifi_list, 5000);
 }
 
-function renameTabs(){
-	$("div .nav-tabs li a").each(function(i, ahref) {
-		ahref.innerText=decodeURIComponent(ahref.innerText.replace(/\\x/g,"%"));
-	});
+function refresh_wifi_list() {
+	$.getJSON( '/sys-wifi' , {}, wifiListLoaded );
 }
 
 $(document).ready(function(){
-	$(".btn-new-network").click(function(){
-		openWifiListModal()
-	});
-
-	renameTabs();
+	setTimeout(refresh_wifi_list, 2000);
 });
 
 </script>

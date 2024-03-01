@@ -184,7 +184,6 @@ def make_app():
 		(r"/sys-reboot$", RebootHandler),
 		(r"/sys-reboot/confirmed$", RebootConfirmedHandler),
 		(r"/sys-poweroff$", PoweroffHandler),
-		(r"/wifi/list$", WifiListHandler),
 		(r'/upload$', UploadHandler),
 		(r"/ws$", ZynthianWebSocketHandler),
 		(r"/zynterm", ZyntermHandler),
