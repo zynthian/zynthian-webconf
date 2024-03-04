@@ -338,6 +338,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		},
 		'Pi 7 Touchscreen Display 800x480 (inverted)': {
 			'DISPLAY_CONFIG':
+				'display_lcd_rotate=2\n' +
 				'dtoverlay=rpi-ft5406,touchscreen-inverted-x=1,touchscreen-inverted-y=1\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
@@ -354,6 +355,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 		},
 		'MIPI DSI 800x480 (inverted)': {
 			'DISPLAY_CONFIG':
+				'display_lcd_rotate=2\n' +
 				'dtoverlay=rpi-ft5406,touchscreen-inverted-x=1,touchscreen-inverted-y=1\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
