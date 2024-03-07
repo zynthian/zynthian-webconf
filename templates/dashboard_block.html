@@ -32,5 +32,13 @@
 </div>
 
 <div class="row">
+<br>
+<a class="btn btn-theme btn-lg btn-block" target="_blank" 
+href="https://github.com/zynthian/zynthian-issue-tracker/issues/new?title=Issue:&body=%23%20Describe%20the%20issue%0aA%20clear%20and%20concise%20description%20of%20what%20the%20issue%20is.%0a%23%20To%20Reproduce%0a%23%23%20Steps%20to%20reproduce%20the%20behavior:%0a1.%20Go%20to...%0a2.%20Click%20on...%0a3.%20Scroll%20down%20to...%0a4.%20See%20error%0a%20%23%23%20Expected%20behaviour%0aA%20clear%20and%20concise%20description%20of%20what%20you%20expected%20to%20happen.%0a%23%23%20Actual%20behaviour%0aA%20clear%20and%20concise%20description%20of%20what%20actually%20happens.%0a%23%20Screenshots%0aIf%20applicable,%20add%20screenshots%20to%20help%20explain%20your%20problem.%0a%23%20Additional%20context%0aAdd%20any%20other%20context%20about%20the%20problem%20here.%0a%0a%23%20Configuration%0a%23%23%20Hardware%0a```%0a{%import urllib.parse%}{%for i in config['HARDWARE']['info'].values() %}{{i['title']}}{%if 'value' in i%}:%20{{urllib.parse.quote(i['value'])}}{%end%}%0a{%end%}```%0a%23%23%20System%0a```%0a{% for i in config['SYSTEM']['info'].values() %}{{i['title']}}{%if 'value' in i%}:%20{{urllib.parse.quote(i['value'])}}{%end%}%0a{%end%}```%0a%23%23%20MIDI%20%26%20UI%0a```%0a{% for i in config['MIDI & UI']['info'].values() %}{{i['title']}}{%if 'value' in i%}:%20{{urllib.parse.quote(i['value'])}}{%end%}%0a{%end%}```%0a%23%23%20Software%0a```%0a{% for i in config['SOFTWARE']['info'].values() %}{{i['title']}}{%if 'value' in i%}:%20{{urllib.parse.quote(i['value'])}}{%end%}%0a{%end%}```">
+Report Issue
+</a>
+</div>
+
+<div class="row">
 {% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
 </div>
