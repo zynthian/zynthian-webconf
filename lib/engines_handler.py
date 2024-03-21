@@ -119,7 +119,7 @@ class EnginesHandler(ZynthianBasicHandler):
 		zynthian_lv2.get_engines_by_type()
 		# Detect new LV2 plugins and generate presets cache for them
 		for key, info in zynthian_lv2.engines.items():
-			if key not in prev_engines and 'URL' in info:
+			if key not in prev_engines and 'URL' in info and info['URL']:
 				zynthian_lv2.generate_plugin_presets_cache(info['URL'], False)
 		# TODO => send CUIA to reload engine info
 
