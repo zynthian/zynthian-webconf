@@ -22,7 +22,6 @@
 #
 # ********************************************************************
 
-import re
 import copy
 import json
 import logging
@@ -83,12 +82,14 @@ class EnginesHandler(ZynthianBasicHandler):
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_ENGINES_ACTION')
 		logging.debug(f"Executing {action} ...")
-		if action == "REGENERATE_ENGINES":
-			errors = self.do_regenerate_engines(reset_rankings=0)
-		elif action == "REGENERATE_LV2_PRESETS_CACHE":
-			errors = self.do_regenerate_lv2_presets_cache()
-		else:
-			errors = {}
+		errors = None
+		try:
+			if action == "REGENERATE_ENGINES":
+				self.do_regenerate_engines(reset_rankings=0)
+			elif action == "REGENERATE_LV2_PRESETS_CACHE":
+				self.do_regenerate_lv2_presets_cache()
+		except Exception as e:
+			errors = e
 		self.get(errors)
 
 	@tornado.web.authenticated
@@ -115,7 +116,7 @@ class EnginesHandler(ZynthianBasicHandler):
 	def do_regenerate_engines(self, reset_rankings=None):
 		prev_engines = zynthian_lv2.engines.keys()
 		# Regenerate engine info file, searching for LV2 plugins
-		zynthian_lv2.generate_engines_config_file(reset_rankings)
+		zynthian_lv2.generate_engines_config_file(refresh=True, reset_rankings=reset_rankings)
 		zynthian_lv2.get_engines_by_type()
 		# Detect new LV2 plugins and generate presets cache for them
 		for key, info in zynthian_lv2.engines.items():
@@ -125,7 +126,7 @@ class EnginesHandler(ZynthianBasicHandler):
 
 	def do_regenerate_lv2_presets_cache(self):
 		zynthian_lv2.generate_presets_cache_workaround()
-		zynthian_lv2.generate_all_presets_cache(False)
+		zynthian_lv2.generate_all_presets_cache(refresh=False)
 		# TODO => send CUIA to reload preset info on running JALV processors
 
 # ------------------------------------------------------------------------------
