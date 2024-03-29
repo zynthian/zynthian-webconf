@@ -228,7 +228,7 @@ function refreshMidiMasterNoteCuiaPanel() {
 		var nscale = (i/12)>>0;
 		var nclass = note_classes[i%12];
 		var nid = nclass + nscale;
-		var nname = note_names[i%12] + nscale;
+		var nname = note_names[i%12] + (nscale - 1);
 		var ninfo;
 		if (note_cuia[i]) {
 			ninfo = "<span class='busy'>" + nname + "</span> " + note_cuia[i];
