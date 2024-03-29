@@ -180,7 +180,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error(e)
 			result = {
-				errors: "Can't download file: {}".format(e)
+				"errors": "Can't download file: {}".format(e)
 			}
 		finally:
 			if fpath and delete:

@@ -61,11 +61,6 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Audio levels on snapshots',
 				'value': os.environ.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 			}],
-			['ZYNTHIAN_UI_MULTICHANNEL_RECORDER', {
-				'type': 'boolean',
-				'title': 'Enable multichannel recording',
-				'value': os.environ.get('ZYNTHIAN_UI_MULTICHANNEL_RECORDER', '1'),
-			}],
 			['ZYNTHIAN_VNCSERVER_ENABLED', {
 				'type': 'boolean',
 				'title': 'Enable VNC server',
