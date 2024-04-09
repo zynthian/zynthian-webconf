@@ -106,7 +106,7 @@ div.engine_edit select {
                             {{ eng_info['TITLE'] }}
                         </div>
                         <div class="col-xs-3 engine-cat" onclick="edit_engine('{{ eng_code }}')">
-                            {{ escape(eng_info['CAT']) }}
+                            {{ eng_info['CAT'] }}
                         </div>
                         <div class="col-xs-2 engine-quality" onclick="edit_engine('{{ eng_code }}')">
                             <span class="ranking_star_on">{{ eng_info['QUALITY'] * "★" }}</span><span class="ranking_star_off">{{ (5 - eng_info['QUALITY']) * "★" }}</span>
