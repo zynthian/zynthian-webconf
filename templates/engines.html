@@ -91,9 +91,10 @@ div.engine_edit select {
                     <div class="row">
                         <div class="col-xs-1 header">Enabled</div>
                         <div class="col-xs-4 header">Title</div>
-                        <div class="col-xs-3 header">Category</div>
+                        <div class="col-xs-2 header">Category</div>
                         <div class="col-xs-2 header">Quality</div>
                         <div class="col-xs-2 header">Complexity</div>
+                        <div class="col-xs-1 header">Edit</div>
                     </div>
                     {% for eng_code in config['ZYNTHIAN_ENGINES'][eng_type] %}
                     {% set eng_info = config['ZYNTHIAN_ENGINES'][eng_type][eng_code] %}
@@ -105,7 +106,7 @@ div.engine_edit select {
                         <div class="col-xs-4 one-line-truncated engine-name" onclick="edit_engine('{{ eng_code }}')">
                             {{ eng_info['TITLE'] }}
                         </div>
-                        <div class="col-xs-3 engine-cat" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-2 engine-cat" onclick="edit_engine('{{ eng_code }}')">
                             {{ eng_info['CAT'] }}
                         </div>
                         <div class="col-xs-2 engine-quality" onclick="edit_engine('{{ eng_code }}')">
@@ -113,6 +114,9 @@ div.engine_edit select {
                         </div>
                         <div class="col-xs-2 engine-complexity" onclick="edit_engine('{{ eng_code }}')">
                             <span class="ranking_star_on">{{ eng_info['COMPLEX'] * "⚈" }}</span><span class="ranking_star_off">{{ (5 - eng_info['COMPLEX']) * "⚈" }}</span>
+                        </div>
+                        <div class="col-xs-1 engine-edit" onclick="edit_engine('{{ eng_code }}')">
+                            {% if eng_info['EDIT'] == 2 %}edited{% elif eng_info['EDIT'] == 1 %}toggled{% end %}
                         </div>
                     </div>
                     </div>
@@ -125,10 +129,10 @@ div.engine_edit select {
                         <div class="col-xs-1 engine-enabled">
                             <input type="checkbox" id="EDIT_ENABLED" value="" onchange="edit_engine_save()">
                         </div>
-                        <div class="col-xs-4 engine_name">
+                        <div class="col-xs-4 engine-name">
                             <input type="text" id="EDIT_TITLE" value="" oninput="edit_engine_save()">
                         </div>
-                        <div class="col-xs-3 engine-type">
+                        <div class="col-xs-2 engine-cat">
                             <select id="EDIT_CAT" value="" change="edit_engine_save()"></select>
                         </div>
                         <div class="col-xs-2 engine-quality">
@@ -281,6 +285,7 @@ function edit_engine_save(close=false) {
         document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_info[scode]["QUALITY"]);
         document.querySelector(eng_div + " div.engine-complexity span.ranking_star_on").textContent = '⚈'.repeat(eng_info[scode]["COMPLEX"]);
         document.querySelector(eng_div + " div.engine-complexity span.ranking_star_off").textContent = '⚈'.repeat(5 - eng_info[scode]["COMPLEX"]);
+        document.querySelector(eng_div + " div.engine-edit").textContent = "edited";
         document.querySelector(eng_div + " div.engine_row").title = eng_info[scode]["DESCR"];
         // Send PUT request
         if (close) {
@@ -311,6 +316,9 @@ function enable_engine(ecode) {
     var engine_enabled = document.getElementById("ENABLE_ENGINE_" + ecode).checked
     // Save value in engine info array
     eng_info[ecode]["ENABLED"] = engine_enabled
+    // Flag EDIT field in table
+    var eng_div = "div#engine_row_" + eng_info[ecode]['ID']
+    document.querySelector(eng_div + " div.engine-edit").textContent = "toggled";
     // Send PUT request
     var xhttp = new XMLHttpRequest()
     var request_data = "ENGINE_CODE=" + encodeURIComponent(ecode)
