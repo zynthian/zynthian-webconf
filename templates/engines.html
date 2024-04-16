@@ -103,7 +103,7 @@ div.engine_edit select {
                         <div class="col-xs-1 engine-enabled">
                             <input type="checkbox" id="ENABLE_ENGINE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} onchange="enable_engine('{{ eng_code }}')">
                         </div>
-                        <div class="col-xs-4 one-line-truncated engine-name" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-4 one-line-truncated engine-title" onclick="edit_engine('{{ eng_code }}')">
                             {{ eng_info['TITLE'] }}
                         </div>
                         <div class="col-xs-2 engine-cat" onclick="edit_engine('{{ eng_code }}')">
@@ -129,7 +129,7 @@ div.engine_edit select {
                         <div class="col-xs-1 engine-enabled">
                             <input type="checkbox" id="EDIT_ENABLED" value="" onchange="edit_engine_save()">
                         </div>
-                        <div class="col-xs-4 engine-name">
+                        <div class="col-xs-4 engine-title">
                             <input type="text" id="EDIT_TITLE" value="" oninput="edit_engine_save()">
                         </div>
                         <div class="col-xs-2 engine-cat">
@@ -205,7 +205,7 @@ function filter_engines() {
 
     //recalc plugin count
    $(".engines_panel").each(function(index, panel_div) {
-       var panel_divs = panel_div.getElementsByClassName('engine-name');
+       var panel_divs = panel_div.getElementsByClassName('engine-title');
        var panel_count = 0;
        Array.from(panel_divs).forEach((plugin_type_div) => {
           if (!plugin_type_div.parentElement.classList.contains("hide")){
@@ -279,7 +279,7 @@ function edit_engine_save(close=false) {
         // Refresh engine's row content
         var eng_div = "div#engine_row_" + eng_info[scode]['ID']
         document.querySelector(eng_div + " div.engine-enabled input").checked = eng_info[scode]["ENABLED"];
-        document.querySelector(eng_div + " div.engine-name").textContent = eng_info[scode]["TITLE"];
+        document.querySelector(eng_div + " div.engine-title").textContent = eng_info[scode]["TITLE"];
         document.querySelector(eng_div + " div.engine-cat").textContent = eng_info[scode]["CAT"];
         document.querySelector(eng_div + " div.engine-quality span.ranking_star_on").textContent = '★'.repeat(eng_info[scode]["QUALITY"]);
         document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_info[scode]["QUALITY"]);
@@ -292,7 +292,7 @@ function edit_engine_save(close=false) {
             var xhttp = new XMLHttpRequest()
             var request_data = "ENGINE_CODE=" + encodeURIComponent(scode)
             request_data += "&ENGINE_ENABLED=" + Number(eng_info[scode]["ENABLED"])
-            request_data += "&ENGINE_NAME=" + encodeURIComponent(eng_info[scode]["NAME"])
+            request_data += "&ENGINE_TITLE=" + encodeURIComponent(eng_info[scode]["TITLE"])
             request_data += "&ENGINE_CAT=" + eng_info[scode]["CAT"]
             request_data += "&ENGINE_QUALITY=" + eng_info[scode]["QUALITY"]
             request_data += "&ENGINE_COMPLEX=" + eng_info[scode]["COMPLEX"]

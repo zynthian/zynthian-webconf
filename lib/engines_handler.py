@@ -95,9 +95,10 @@ class EnginesHandler(ZynthianBasicHandler):
 	@tornado.web.authenticated
 	def put(self):
 		ucargs = tornado.escape.recursive_unicode(self.request.arguments)
+		#logging.debug(f"Saving engine info RAW => {ucargs}")
 		eng_code = ucargs['ENGINE_CODE'][0]
 		eng_enabled = bool(int(ucargs['ENGINE_ENABLED'][0]))
-		eng_name = ucargs['ENGINE_NAME'][0]
+		eng_title = ucargs['ENGINE_TITLE'][0]
 		eng_cat = ucargs['ENGINE_CAT'][0]
 		eng_quality = int(ucargs['ENGINE_QUALITY'][0])
 		eng_complex = int(ucargs['ENGINE_COMPLEX'][0])
@@ -106,8 +107,8 @@ class EnginesHandler(ZynthianBasicHandler):
 		if eng_enabled != zynthian_lv2.engines[eng_code]['ENABLED']:
 			zynthian_lv2.engines[eng_code]['ENABLED'] = eng_enabled
 			edit = 1
-		if eng_name != zynthian_lv2.engines[eng_code]['NAME']:
-			zynthian_lv2.engines[eng_code]['NAME'] = eng_name
+		if eng_title != zynthian_lv2.engines[eng_code]['TITLE']:
+			zynthian_lv2.engines[eng_code]['TITLE'] = eng_title
 			edit = 2
 		if eng_cat != zynthian_lv2.engines[eng_code]['CAT']:
 			zynthian_lv2.engines[eng_code]['CAT'] = eng_cat
@@ -124,6 +125,7 @@ class EnginesHandler(ZynthianBasicHandler):
 		if edit > 0:
 			if edit > zynthian_lv2.engines[eng_code]['EDIT']:
 				zynthian_lv2.engines[eng_code]['EDIT'] = edit
+			#logging.debug(f"Saving engine info => {zynthian_lv2.engines[eng_code]}")
 			zynthian_lv2.save_engines()
 
 	@tornado.web.authenticated
