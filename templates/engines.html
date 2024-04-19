@@ -129,23 +129,23 @@ div.engine_edit select {
                     <div class="row plugin">
                         <input type="hidden" id="EDIT_CODE" value="">
                         <div class="col-xs-1 engine-enabled">
-                            <input type="checkbox" id="EDIT_ENABLED" value="" onchange="edit_engine_save()">
+                            <input type="checkbox" id="EDIT_ENABLED" value="">
                         </div>
                         <div class="col-xs-4 engine-title">
-                            <input type="text" id="EDIT_TITLE" value="" oninput="edit_engine_save()">
+                            <input type="text" id="EDIT_TITLE" value="">
                         </div>
                         <div class="col-xs-2 engine-cat">
-                            <select id="EDIT_CAT" value="" change="edit_engine_save()"></select>
+                            <select id="EDIT_CAT" value=""></select>
                         </div>
                         <div class="col-xs-2 engine-quality">
-                            <select id="EDIT_QUALITY" onchange="edit_engine_save()">
+                            <select id="EDIT_QUALITY">
                                 {% for r in range(6) %}
                                 <option value="{{ r }}">{{ r * "★" }} ({{ r }})</option>
                                 {% end %}
                             </select>
                         </div>
                         <div class="col-xs-2 engine-complexity">
-                            <select id="EDIT_COMPLEX" onchange="edit_engine_save()">
+                            <select id="EDIT_COMPLEX">
                                 {% for r in range(6) %}
                                 <option value="{{ r }}">{{ r * "⚈" }} ({{ r }})</option>
                                 {% end %}
@@ -157,7 +157,7 @@ div.engine_edit select {
                             &nbsp;
                         </div>
                         <div class="col-xs-10 engine-description">
-                            <textarea id="EDIT_DESCR" oninput="edit_engine_save()"></textarea>
+                            <textarea id="EDIT_DESCR"></textarea>
                         </div>
                         <div class="col-xs-1">
                             <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme btn-block" onclick="edit_engine_save_close(); event.preventDefault();">OK</button>
@@ -271,37 +271,75 @@ function edit_engine(ecode) {
 function edit_engine_save(close=false) {
     var scode = document.getElementById("EDIT_CODE").value
     if (scode) {
+        var eng_enabled = Boolean(document.getElementById("EDIT_ENABLED").checked)
+        var eng_title = document.getElementById("EDIT_TITLE").value
+        var eng_cat = document.getElementById("EDIT_CAT").value
+        var eng_quality = Number(document.getElementById("EDIT_QUALITY").value)
+        var eng_complex = Number(document.getElementById("EDIT_COMPLEX").value)
+        var eng_descr = document.getElementById("EDIT_DESCR").value
         // Save values in engine info array
-        eng_info[scode]["ENABLED"] = document.getElementById("EDIT_ENABLED").checked
-        eng_info[scode]["TITLE"] = document.getElementById("EDIT_TITLE").value
-        eng_info[scode]["CAT"] = document.getElementById("EDIT_CAT").value
-        eng_info[scode]["QUALITY"] = document.getElementById("EDIT_QUALITY").value
-        eng_info[scode]["COMPLEX"] = document.getElementById("EDIT_COMPLEX").value
-        eng_info[scode]["DESCR"] = document.getElementById("EDIT_DESCR").value
-        // Refresh engine's row content
-        var eng_div = "div#engine_row_" + eng_info[scode]['ID']
-        document.querySelector(eng_div + " div.engine-enabled input").checked = eng_info[scode]["ENABLED"];
-        document.querySelector(eng_div + " div.engine-title").textContent = eng_info[scode]["TITLE"];
-        document.querySelector(eng_div + " div.engine-cat").textContent = eng_info[scode]["CAT"];
-        document.querySelector(eng_div + " div.engine-quality span.ranking_star_on").textContent = '★'.repeat(eng_info[scode]["QUALITY"]);
-        document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_info[scode]["QUALITY"]);
-        document.querySelector(eng_div + " div.engine-complexity span.ranking_star_on").textContent = '⚈'.repeat(eng_info[scode]["COMPLEX"]);
-        document.querySelector(eng_div + " div.engine-complexity span.ranking_star_off").textContent = '⚈'.repeat(5 - eng_info[scode]["COMPLEX"]);
-        document.querySelector(eng_div + " div.engine-edit").textContent = "edited";
-        document.querySelector(eng_div + " div.engine_row").title = eng_info[scode]["DESCR"];
-        // Send PUT request
-        if (close) {
+        var edit = 0
+        if (eng_info[scode]["ENABLED"] != eng_enabled) {
+            eng_info[scode]["ENABLED"] = eng_enabled
+            edit = 1
+        }
+        if (eng_info[scode]["TITLE"] != eng_title) {
+            eng_info[scode]["TITLE"] = eng_title
+            edit = 2
+        }
+        if (eng_info[scode]["CAT"] != eng_cat) {
+            eng_info[scode]["CAT"] = eng_cat
+            edit = 2
+        }
+        if (eng_info[scode]["QUALITY"] != eng_quality) {
+            eng_info[scode]["QUALITY"] = eng_quality
+            edit = 2
+        }
+        if (eng_info[scode]["COMPLEX"] != eng_complex) {
+            eng_info[scode]["COMPLEX"] = eng_complex
+            edit = 2
+        }
+        if (eng_info[scode]["DESCR"] != eng_descr) {
+            eng_info[scode]["DESCR"] = eng_descr
+            edit = 2
+        }
+        if (edit == 1) {
+            // Refresh engine's row content
+            var eng_div = "div#engine_row_" + eng_info[scode]['ID']
+            document.querySelector(eng_div + " div.engine-edit").textContent = "toggled";
+            // Send PUT request
             var xhttp = new XMLHttpRequest()
             var request_data = "ENGINE_CODE=" + encodeURIComponent(scode)
-            request_data += "&ENGINE_ENABLED=" + Number(eng_info[scode]["ENABLED"])
-            request_data += "&ENGINE_TITLE=" + encodeURIComponent(eng_info[scode]["TITLE"])
-            request_data += "&ENGINE_CAT=" + eng_info[scode]["CAT"]
-            request_data += "&ENGINE_QUALITY=" + eng_info[scode]["QUALITY"]
-            request_data += "&ENGINE_COMPLEX=" + eng_info[scode]["COMPLEX"]
-            request_data += "&ENGINE_DESCR=" + eng_info[scode]["DESCR"]
+            request_data += "&ENGINE_ENABLED=" + Number(eng_enabled)
+            xhttp.open("PATCH", "/sw-engines");
+            xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xhttp.send(request_data);
+            //console.log("SEND JSON PATCH: " + request_data)
+        } else if (edit > 1) {
+            // Refresh engine's row content
+            var eng_div = "div#engine_row_" + eng_info[scode]['ID']
+            document.querySelector(eng_div + " div.engine-enabled input").checked = eng_enabled;
+            document.querySelector(eng_div + " div.engine-title").textContent = eng_title;
+            document.querySelector(eng_div + " div.engine-cat").textContent = eng_cat;
+            document.querySelector(eng_div + " div.engine-quality span.ranking_star_on").textContent = '★'.repeat(eng_quality);
+            document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_quality);
+            document.querySelector(eng_div + " div.engine-complexity span.ranking_star_on").textContent = '⚈'.repeat(eng_complex);
+            document.querySelector(eng_div + " div.engine-complexity span.ranking_star_off").textContent = '⚈'.repeat(5 - eng_complex);
+            document.querySelector(eng_div + " div.engine-edit").textContent = "edited";
+            document.querySelector(eng_div + " div.engine_row").title = eng_descr;
+            // Send PUT request
+            var xhttp = new XMLHttpRequest()
+            var request_data = "ENGINE_CODE=" + encodeURIComponent(scode)
+            request_data += "&ENGINE_ENABLED=" + Number(eng_enabled)
+            request_data += "&ENGINE_TITLE=" + encodeURIComponent(eng_title)
+            request_data += "&ENGINE_CAT=" + eng_cat
+            request_data += "&ENGINE_QUALITY=" + eng_quality
+            request_data += "&ENGINE_COMPLEX=" + eng_complex
+            request_data += "&ENGINE_DESCR=" + eng_descr
             xhttp.open("PUT", "/sw-engines");
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhttp.send(request_data);
+            //console.log("SEND JSON PUT: " + request_data)
         }
     }
     if (close) {
@@ -321,13 +359,14 @@ function enable_engine(ecode) {
     // Flag EDIT field in table
     var eng_div = "div#engine_row_" + eng_info[ecode]['ID']
     document.querySelector(eng_div + " div.engine-edit").textContent = "toggled";
-    // Send PUT request
+    // Send PATCH request
     var xhttp = new XMLHttpRequest()
     var request_data = "ENGINE_CODE=" + encodeURIComponent(ecode)
     request_data += "&ENGINE_ENABLED=" + Number(engine_enabled)
     xhttp.open("PATCH", "/sw-engines");
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send(request_data);
+    //console.log("SEND JSON PATCH: " + request_data)
 }
 
 </script>
