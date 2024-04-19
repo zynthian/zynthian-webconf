@@ -46,6 +46,7 @@ class EnginesHandler(ZynthianBasicHandler):
 		#zynthian_lv2.sanitize_engines()
 
 		config['ZYNTHIAN_ENGINES'] = zynthian_lv2.engines_by_type
+		config['ZYNTHIAN_ENGINES_TYPE_TITLE'] = zynthian_lv2.engine_type_title
 
 		# Make a deep copy AND remove not serializable objects (ENGINE)
 		sengines = copy.deepcopy(zynthian_lv2.engines)

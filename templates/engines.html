@@ -74,9 +74,10 @@ div.engine_edit select {
     <ul class="nav nav-tabs" role="tablist">
     {% for eng_type in config['ZYNTHIAN_ENGINES'] %}
         {% set _eng_type = eng_type.replace(' ','_') %}
+        {% set eng_type_title = config['ZYNTHIAN_ENGINES_TYPE_TITLE'][eng_type] %}
         <li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == _eng_type %}active{% end %}">
-            <a id="#{{ _eng_type }}" href="#{{ _eng_type }}" class="tab_anchor" onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ eng_type }}')" role="tab" data-toggle="tab">{{ eng_type }}
-               <span id="plugin_type_count_{{ eng_type }}">({{ len(config['ZYNTHIAN_ENGINES'][eng_type])  }})</span>
+            <a id="#{{ _eng_type }}" href="#{{ _eng_type }}" class="tab_anchor" onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ eng_type }}')" role="tab" data-toggle="tab">{{ eng_type_title }}
+               <span id="plugin_type_count_{{ eng_type }}">({{ len(config['ZYNTHIAN_ENGINES'][eng_type]) }})</span>
             </a>
         </li>
     {% end %}
@@ -98,24 +99,25 @@ div.engine_edit select {
                     </div>
                     {% for eng_code in config['ZYNTHIAN_ENGINES'][eng_type] %}
                     {% set eng_info = config['ZYNTHIAN_ENGINES'][eng_type][eng_code] %}
+                    {% set eng_code_esc = eng_code.replace("'","\\'") %}
                     <div id="engine_row_{{eng_info['ID']}}">
                     <div class="row plugin engine_row"  title="{{ eng_info['DESCR'] }}">
                         <div class="col-xs-1 engine-enabled">
                             <input type="checkbox" id="ENABLE_ENGINE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} onchange="enable_engine('{{ eng_code }}')">
                         </div>
-                        <div class="col-xs-4 one-line-truncated engine-title" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-4 one-line-truncated engine-title" onclick="edit_engine('{{ eng_code_esc }}')">
                             {{ eng_info['TITLE'] }}
                         </div>
-                        <div class="col-xs-2 engine-cat" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-2 engine-cat" onclick="edit_engine('{{ eng_code_esc }}')">
                             {{ eng_info['CAT'] }}
                         </div>
-                        <div class="col-xs-2 engine-quality" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-2 engine-quality" onclick="edit_engine('{{ eng_code_esc }}')">
                             <span class="ranking_star_on">{{ eng_info['QUALITY'] * "★" }}</span><span class="ranking_star_off">{{ (5 - eng_info['QUALITY']) * "★" }}</span>
                         </div>
-                        <div class="col-xs-2 engine-complexity" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-2 engine-complexity" onclick="edit_engine('{{ eng_code_esc }}')">
                             <span class="ranking_star_on">{{ eng_info['COMPLEX'] * "⚈" }}</span><span class="ranking_star_off">{{ (5 - eng_info['COMPLEX']) * "⚈" }}</span>
                         </div>
-                        <div class="col-xs-1 engine-edit" onclick="edit_engine('{{ eng_code }}')">
+                        <div class="col-xs-1 engine-edit" onclick="edit_engine('{{ eng_code_esc }}')">
                             {% if eng_info['EDIT'] == 2 %}edited{% elif eng_info['EDIT'] == 1 %}toggled{% end %}
                         </div>
                     </div>
@@ -204,20 +206,20 @@ function filter_engines() {
     });
 
     //recalc plugin count
-   $(".engines_panel").each(function(index, panel_div) {
-       var panel_divs = panel_div.getElementsByClassName('engine-title');
-       var panel_count = 0;
-       Array.from(panel_divs).forEach((plugin_type_div) => {
-          if (!plugin_type_div.parentElement.classList.contains("hide")){
-	     panel_count += 1;
-          }
-       });
-       $(".tab_anchor").each(function(idx,tab_anchor){
-          if(tab_anchor.id.indexOf(panel_div.parentElement.id)>=0){
-             tab_anchor.innerText = panel_div.parentElement.id.replace("_", " ") + " (" + panel_count + ")";
-          }
-       });
-   });
+    $(".engines_panel").each(function(index, panel_div) {
+        var panel_divs = panel_div.getElementsByClassName('engine-title');
+        var panel_count = 0;
+        Array.from(panel_divs).forEach((plugin_type_div) => {
+            if (!plugin_type_div.parentElement.classList.contains("hide")) {
+                panel_count += 1;
+            }
+        });
+        $(".tab_anchor").each(function(idx,tab_anchor){
+            if (tab_anchor.id.indexOf(panel_div.parentElement.id)>=0){
+                tab_anchor.innerText = tab_anchor.innerText.split("(")[0] + "(" + panel_count + ")";
+            }
+        });
+    });
 }
 
 function confirm_long_time_proc(ev) {
