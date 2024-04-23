@@ -207,10 +207,10 @@ function filter_engines() {
 
     //recalc plugin count
     $(".engines_panel").each(function(index, panel_div) {
-        var panel_divs = panel_div.getElementsByClassName('engine-title');
+        var panel_divs = panel_div.getElementsByClassName('engine_row');
         var panel_count = 0;
-        Array.from(panel_divs).forEach((plugin_type_div) => {
-            if (!plugin_type_div.parentElement.classList.contains("hide")) {
+        Array.from(panel_divs).forEach((plugin_div) => {
+            if (!plugin_div.classList.contains("hide")) {
                 panel_count += 1;
             }
         });
