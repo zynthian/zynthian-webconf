@@ -78,7 +78,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'option_labels': {
 					'': "Auto",
 					'V4': "Knobs at corners (V1-V4)",
-					'Z2': "Knobs at right (Z2 & V5)",
+					'Z2': "Knobs at right (Z2 & V5 & MINI V2)",
 				},
 				'advanced': True
 			}],
