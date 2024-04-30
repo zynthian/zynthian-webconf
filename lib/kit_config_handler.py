@@ -37,6 +37,7 @@ from lib.wiring_config_handler import WiringConfigHandler
 class KitConfigHandler(ZynthianConfigHandler):
 
 	kit_options = [
+		'MINI V2',
 		'V5',
 		'Z2',
 		'Z2 PROTOTYPE',
@@ -46,7 +47,6 @@ class KitConfigHandler(ZynthianConfigHandler):
 		'V2+',
 		'V2',
 		'V1',
-		'MINI V2',
 		'Custom'
 	]
 
@@ -81,17 +81,17 @@ class KitConfigHandler(ZynthianConfigHandler):
 	def configure_kit(self, pconfig):
 		kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
 		if kit_version != "Custom":
-			if kit_version == "V5":
-				soundcard_name = "V5 ADAC"
-				display_name = "MIPI DSI 800x480 (inverted)"
-				wiring_layout = "V5"
-				wiring_layout_custom_profile = "v5"
-				ui_font_size = "16"
-				overclocking = "Maximum"
 			if kit_version == "MINI V2":
 				soundcard_name = "HifiBerry DAC+ light"
 				display_name = "MIPI DSI 800x480 (inverted)"
 				wiring_layout = "MINI_V2"
+				wiring_layout_custom_profile = "v5"
+				ui_font_size = "16"
+				overclocking = "Medium"
+			elif kit_version == "V5":
+				soundcard_name = "V5 ADAC"
+				display_name = "MIPI DSI 800x480 (inverted)"
+				wiring_layout = "V5"
 				wiring_layout_custom_profile = "v5"
 				ui_font_size = "16"
 				overclocking = "Maximum"

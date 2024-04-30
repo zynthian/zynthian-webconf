@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Wiring Configuration Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,25 +20,25 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import re
 import logging
 import tornado.web
-from enum import Enum
 from subprocess import check_output
-from collections import OrderedDict
 
-from zynconf import CustomSwitchActionType, ZynSensorActionType
-from lib.zynthian_config_handler import ZynthianConfigHandler
-from lib.dashboard_handler import DashboardHandler
 from zyngui.zynthian_gui import zynthian_gui
+from zynconf import CustomSwitchActionType, ZynSensorActionType
+
+from lib.dashboard_handler import DashboardHandler
+from lib.zynthian_config_handler import ZynthianConfigHandler
 
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Autodetect I2C chips
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 ADS1115_I2C_ADDRESS = ""
 MCP4728_I2C_ADDRESS = ""
@@ -50,15 +50,28 @@ for i2chip in DashboardHandler.get_i2c_chips():
 	elif parts[0] == 'MCP4728':
 		MCP4728_I2C_ADDRESS = parts[1]
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Wiring Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class WiringConfigHandler(ZynthianConfigHandler):
 	PROFILES_DIRECTORY = "{}/wiring-profiles".format(os.environ.get("ZYNTHIAN_CONFIG_DIR"))
 
-	wiring_presets = OrderedDict([
-		["V5_ZYNFACE", {
+	wiring_presets = {
+		"MINI_V2": {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
+		},
+		"V5_ZYNFACE": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
 			'ZYNTHIAN_WIRING_SWITCHES': "",
@@ -69,8 +82,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5_zynface'
-		}],
-		["V5", {
+		},
+		"V5": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
 			'ZYNTHIAN_WIRING_SWITCHES': "",
@@ -81,20 +94,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
-		}],
-		["MINI_V2", {
-			'ZYNTHIAN_WIRING_ENCODER_A': "",
-			'ZYNTHIAN_WIRING_ENCODER_B': "",
-			'ZYNTHIAN_WIRING_SWITCHES': "",
-			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
-			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
-			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
-			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
-			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
-			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
-			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
-		}],
-		["Z2_V3", {
+		},
+		"Z2_V3": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
 			'ZYNTHIAN_WIRING_SWITCHES': "",
@@ -105,8 +106,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'z2'
-		}],
-		["Z2_V2", {
+		},
+		"Z2_V2": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
 			'ZYNTHIAN_WIRING_SWITCHES': "",
@@ -117,8 +118,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'z2'
-		}],
-		["Z2_V1", {
+		},
+		"Z2_V1": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
 			'ZYNTHIAN_WIRING_SWITCHES': "",
@@ -129,8 +130,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'z2'
-		}],
-		["MCP23017_Zynaptik-3_Zynface", {
+		},
+		"MCP23017_Zynaptik-3_Zynface": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
@@ -142,8 +143,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "2",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
-		}],
-		["MCP23017_Zynaptik-3", {
+		},
+		"MCP23017_Zynaptik-3": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
@@ -155,8 +156,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
-		}],
-		["MCP23017_ZynScreen_Zynface", {
+		},
+		"MCP23017_ZynScreen_Zynface": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
@@ -168,8 +169,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "2",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
-		}],
-		["MCP23017_ZynScreen_Zynaptik", {
+		},
+		"MCP23017_ZynScreen_Zynaptik": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
@@ -181,8 +182,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS,
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
-		}],
-		["MCP23017_ZynScreen", {
+		},
+		"MCP23017_ZynScreen": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
@@ -194,8 +195,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
-		}],
-		["MCP23017_EXTRA", {
+		},
+		"MCP23017_EXTRA": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111,106,107,114,115",
@@ -207,8 +208,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v4_studio'
-		}],
-		["MCP23017_ENCODERS", {
+		},
+		"MCP23017_ENCODERS": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "102,105,110,113",
 			'ZYNTHIAN_WIRING_ENCODER_B': "101,104,109,112",
 			'ZYNTHIAN_WIRING_SWITCHES': "100,103,108,111",
@@ -219,8 +220,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["MCP23017_EPDF", {
+		},
+		"MCP23017_EPDF": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "103,100,111,108",
 			'ZYNTHIAN_WIRING_ENCODER_B': "104,101,112,109",
 			'ZYNTHIAN_WIRING_SWITCHES': "105,102,113,110,106,107,114,115",
@@ -231,8 +232,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["MCP23017_EPDF_REVERSE", {
+		},
+		"MCP23017_EPDF_REVERSE": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "104,101,112,109",
 			'ZYNTHIAN_WIRING_ENCODER_B': "103,100,111,108",
 			'ZYNTHIAN_WIRING_SWITCHES': "105,102,113,110,106,107,114,115",
@@ -243,8 +244,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-5", {
+		},
+		"PROTOTYPE-5": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,0,4",
 			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,3",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,105,106,104",
@@ -254,8 +255,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-4", {
+		},
+		"PROTOTYPE-4": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,0,4",
 			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,3",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2",
@@ -265,8 +266,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-4B", {
+		},
+		"PROTOTYPE-4B": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "25,26,4,0",
 			'ZYNTHIAN_WIRING_ENCODER_B': "27,21,3,7",
 			'ZYNTHIAN_WIRING_SWITCHES': "23,107,2,106",
@@ -276,8 +277,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-4-WS32", {
+		},
+		"PROTOTYPE-4-WS32": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "26,25,5,4",
 			'ZYNTHIAN_WIRING_ENCODER_B': "21,27,7,31",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,6",
@@ -287,8 +288,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-3", {
+		},
+		"PROTOTYPE-3": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,3,7",
 			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,4,0",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2",
@@ -298,8 +299,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-3H", {
+		},
+		"PROTOTYPE-3H": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "21,27,7,3",
 			'ZYNTHIAN_WIRING_ENCODER_B': "26,25,0,4",
 			'ZYNTHIAN_WIRING_SWITCHES': "107,23,106,2",
@@ -309,8 +310,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-2", {
+		},
+		"PROTOTYPE-2": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,4,0",
 			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,3,7",
 			'ZYNTHIAN_WIRING_SWITCHES': "23,107,2,106",
@@ -320,8 +321,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["PROTOTYPE-1", {
+		},
+		"PROTOTYPE-1": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "27,21,3,7",
 			'ZYNTHIAN_WIRING_ENCODER_B': "25,26,4,0",
 			'ZYNTHIAN_WIRING_SWITCHES': "23,None,2,None",
@@ -329,8 +330,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["I2C_HWC", {
+		},
+		"I2C_HWC": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "1,2,3,4",
 			'ZYNTHIAN_WIRING_ENCODER_B': "0,0,0,0",
 			'ZYNTHIAN_WIRING_SWITCHES': "1,2,3,4",
@@ -340,8 +341,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["EMULATOR", {
+		},
+		"EMULATOR": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "4,5,6,7",
 			'ZYNTHIAN_WIRING_ENCODER_B': "8,9,10,11",
 			'ZYNTHIAN_WIRING_SWITCHES': "0,1,2,3",
@@ -351,8 +352,8 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["DUMMIES", {
+		},
+		"DUMMIES": {
 			'ZYNTHIAN_WIRING_ENCODER_A': "0,0,0,0",
 			'ZYNTHIAN_WIRING_ENCODER_B': "0,0,0,0",
 			'ZYNTHIAN_WIRING_SWITCHES': "0,0,0,0",
@@ -362,12 +363,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': ""
-		}],
-		["CUSTOM", {
+		},
+		"CUSTOM": {
 			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': ADS1115_I2C_ADDRESS,
 			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': MCP4728_I2C_ADDRESS
-		}]
-	])
+		}
+	}
 
 	def get_cuia(self, envar):
 		v = os.environ.get(envar, "")
@@ -391,7 +392,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		config = OrderedDict()
+		config = {}
 
 		if os.environ.get('ZYNTHIAN_KIT_VERSION') != 'Custom':
 			custom_options_disabled = True
@@ -1162,7 +1163,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	@classmethod
 	def complete_custom_profile(cls, data):
-		res = OrderedDict()
+		res = {}
 		for i in range(36):
 			base_name = "ZYNTHIAN_WIRING_CUSTOM_SWITCH_{:02d}".format(i+1)
 			subvars = {
@@ -1264,12 +1265,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
 	# Load custom profiles
 	def load_custom_profiles(self):
-		self.custom_profiles = OrderedDict()
+		self.custom_profiles = {}
 		p = re.compile("(\w*)=\"(.*)\"")
 
-		self.custom_profiles[""] = OrderedDict()
+		self.custom_profiles[""] = {}
 		for fname in sorted(os.listdir(self.PROFILES_DIRECTORY)):
-			profile_values = OrderedDict()
+			profile_values = {}
 			fpath = "{}/{}".format(self.PROFILES_DIRECTORY,fname)
 			try:
 				with open(fpath) as f:
@@ -1327,7 +1328,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 	def get_custom_profile(cls, fname):
 		p = re.compile("(\w*)=\"(.*)\"")
 
-		profile_values = OrderedDict()
+		profile_values = {}
 		fpath = "{}/{}".format(cls.PROFILES_DIRECTORY,fname)
 		try:
 			with open(fpath) as f:
