@@ -46,6 +46,7 @@ class KitConfigHandler(ZynthianConfigHandler):
 		'V2+',
 		'V2',
 		'V1',
+		'MINI V2',
 		'Custom'
 	]
 
@@ -84,6 +85,13 @@ class KitConfigHandler(ZynthianConfigHandler):
 				soundcard_name = "V5 ADAC"
 				display_name = "MIPI DSI 800x480 (inverted)"
 				wiring_layout = "V5"
+				wiring_layout_custom_profile = "v5"
+				ui_font_size = "16"
+				overclocking = "Maximum"
+			if kit_version == "MINI V2":
+				soundcard_name = "HifiBerry DAC+ light"
+				display_name = "MIPI DSI 800x480 (inverted)"
+				wiring_layout = "MINI_V2"
 				wiring_layout_custom_profile = "v5"
 				ui_font_size = "16"
 				overclocking = "Maximum"

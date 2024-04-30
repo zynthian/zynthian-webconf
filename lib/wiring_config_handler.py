@@ -82,6 +82,18 @@ class WiringConfigHandler(ZynthianConfigHandler):
 			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
 			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
 		}],
+		["MINI_V2", {
+			'ZYNTHIAN_WIRING_ENCODER_A': "",
+			'ZYNTHIAN_WIRING_ENCODER_B': "",
+			'ZYNTHIAN_WIRING_SWITCHES': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTA_PIN': "",
+			'ZYNTHIAN_WIRING_MCP23017_INTB_PIN': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_CONFIG': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS': "",
+			'ZYNTHIAN_WIRING_ZYNTOF_CONFIG': "",
+			'ZYNTHIAN_WIRING_LAYOUT_CUSTOM_PROFILE': 'v5'
+		}],
 		["Z2_V3", {
 			'ZYNTHIAN_WIRING_ENCODER_A': "",
 			'ZYNTHIAN_WIRING_ENCODER_B': "",
@@ -419,6 +431,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
 				zynaptik_config_flag = True
 			else:
 				zynaptik_config_flag = False
+			zyntof_config_flag = False
+			n_extra_switches = 24
+		elif wiring_layout.startswith("MINI"):
+			encoders_config_flag = False
+			mcp23017_config_flag = False
+			zynaptik_config_flag = False
 			zyntof_config_flag = False
 			n_extra_switches = 24
 		else:
