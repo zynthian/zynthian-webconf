@@ -22,8 +22,16 @@
 			<b>Version:</b><br/>
 			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_VERSION" value="{{ config['ZYNTHIAN_PIANOTEQ_VERSION'] }}" />
 		</p>
+
+		<p>
+			<b>Sample Rate:</b><br/>
+			<select name="ZYNTHIAN_PIANOTEQ_LIMIT_RATE" onchange="this.form.submit()"/>
+				<option value="1" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE']=="1" %}selected{% end %}>Limited Rate</option>
+				<option value="0" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE']=="0" %}selected{% end %}>Full Rate</option>
+			</select>
+		</p>
 	</div>
-		
+
 	{% if not config['ZYNTHIAN_PIANOTEQ_TRIAL'] and not config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
 	<div id='license-activation'>
 		{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "6.4.1" %}

@@ -58,6 +58,7 @@ class PianoteqHandler(ZynthianBasicHandler):
 		config['ZYNTHIAN_PIANOTEQ_VERSION'] = info['version_str']
 		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = info['product']
 		config['ZYNTHIAN_PIANOTEQ_LICENSE'] = self.get_license_key()
+		config["ZYNTHIAN_PIANOTEQ_LIMIT_RATE"] = os.environ.get('ZYNTHIAN_PIANOTEQ_LIMIT_RATE', "1")
 
 		if errors:
 			logging.error("Pianoteq Action Failed: %s" % format(errors))
@@ -66,13 +67,21 @@ class PianoteqHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def post(self):
-		action = self.get_argument('ZYNTHIAN_PIANOTEQ_ACTION')
-		if action:
-			errors = {
-				'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
-				'ACTIVATE_LICENSE': lambda: self.do_activate_license(),
-				'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache()
-			}[action]()
+		try:
+			action = self.get_argument('ZYNTHIAN_PIANOTEQ_ACTION')
+			if action:
+				errors = {
+					'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
+					'ACTIVATE_LICENSE': lambda: self.do_activate_license(),
+					'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache()
+				}[action]()
+		except:
+			config = {
+				"ZYNTHIAN_PIANOTEQ_LIMIT_RATE": self.get_argument('ZYNTHIAN_PIANOTEQ_LIMIT_RATE')
+			}
+			errors = zynconf.save_config(config, updsys=True)
+			self.restart_ui_flag = True
+
 		self.get(errors)
 
 
