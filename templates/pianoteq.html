@@ -14,6 +14,14 @@
 
 	<div id='binary-info'>
 		<p>
+			<b>Sample Rate:</b><br/>
+			<select name="ZYNTHIAN_PIANOTEQ_LIMIT_RATE" onchange="this.form.submit()">
+				<option value="1" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE'] == "1" %}selected{% end %}>Limited Rate</option>
+				<option value="0" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE'] == "0" %}selected{% end %}>Full Rate</option>
+			</select>
+		</p>
+
+		<p>
 			<b>Product:</b><br/>
 			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_PRODUCT" value="{{ config['ZYNTHIAN_PIANOTEQ_PRODUCT'] }}{% if config['ZYNTHIAN_PIANOTEQ_TRIAL'] %} TRIAL{% end %}" />
 		</p>
@@ -21,14 +29,6 @@
 		<p>
 			<b>Version:</b><br/>
 			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_VERSION" value="{{ config['ZYNTHIAN_PIANOTEQ_VERSION'] }}" />
-		</p>
-
-		<p>
-			<b>Sample Rate:</b><br/>
-			<select name="ZYNTHIAN_PIANOTEQ_LIMIT_RATE" onchange="this.form.submit()"/>
-				<option value="1" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE']=="1" %}selected{% end %}>Limited Rate</option>
-				<option value="0" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE']=="0" %}selected{% end %}>Full Rate</option>
-			</select>
 		</p>
 	</div>
 
