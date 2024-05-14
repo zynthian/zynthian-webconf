@@ -8,28 +8,54 @@
 <form id="pianoteq-form" action="/sw-pianoteq" enctype="multipart/form-data" method="post">
 
 	<p><a href="https://www.pianoteq.com/"><b>Pianoteq</b></a> is a realistic physical modelling engine developed by Modartt and approved by Steinway &amp; Sons among others. It can simulate a wide range of instruments, like grand pianos, electric pianos, clavichords, harps, celestas, vibraphones, bells, etc. with a high degree of precision and realism. It's a pleasure to play with it! Zynthian's official SD images include a trial version that has some keys disabled and stops playing after 20 minutes.</p>
-	
-	<p>If you already have a Pianoteq licence, from this page you can install the licensed binary and activate it with your license key. Also, you can upgrade to newer versions or install PTQ modules.</p>
 
+	<p>From this page you can configure some Pianoteq's performance parameters:</p>
 
-	<div id='binary-info'>
-		<p>
+	<div id='performance-config'>
+		<div class="col-lg-3 col-sm-3 col-xs-12">
 			<b>Sample Rate:</b><br/>
-			<select name="ZYNTHIAN_PIANOTEQ_LIMIT_RATE" onchange="this.form.submit()">
+			<select name="ZYNTHIAN_PIANOTEQ_LIMIT_RATE">
 				<option value="1" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE'] == "1" %}selected{% end %}>Limited Rate</option>
 				<option value="0" {% if config['ZYNTHIAN_PIANOTEQ_LIMIT_RATE'] == "0" %}selected{% end %}>Full Rate</option>
 			</select>
-		</p>
+		</div>
+		<div class="col-lg-3 col-sm-3 col-xs-12">
+			<b>Voices:</b><br/>
+			<select name="ZYNTHIAN_PIANOTEQ_VOICE_LIMIT">
+				<option value="32" {% if config['ZYNTHIAN_PIANOTEQ_VOICE_LIMIT'] == "32" %}selected{% end %}>32</option>
+				<option value="48" {% if config['ZYNTHIAN_PIANOTEQ_VOICE_LIMIT'] == "48" %}selected{% end %}>48</option>
+				<option value="64" {% if config['ZYNTHIAN_PIANOTEQ_VOICE_LIMIT'] == "64" %}selected{% end %}>64</option>
+				<option value="96" {% if config['ZYNTHIAN_PIANOTEQ_VOICE_LIMIT'] == "96" %}selected{% end %}>96</option>
+				<option value="128" {% if config['ZYNTHIAN_PIANOTEQ_VOICE_LIMIT'] == "128" %}selected{% end %}>128</option>
+			</select>
+		</div>
+		<div class="col-lg-4 col-sm-4 col-xs-12">
+			<b>CPU Overload Detection:</b><br/>
+			<select name="ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION">
+				<option value="1" {% if config['ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION'] == "1" %}selected{% end %}>Enabled</option>
+				<option value="0" {% if config['ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION'] == "0" %}selected{% end %}>Disabled</option>
+			</select>
+		</div>
 
-		<p>
+		<div class="col-lg-2 col-sm-2 col-xs-12">
+			<br/>
+			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="SAVE_CONFIG" class="btn btn-theme">Save Config</button>
+		</div>
+	</div>
+
+	<p>&nbsp;<br/></p>
+	<p>If you already have a Pianoteq licence, you can install the licensed binary and activate it with your license key. Also, you can upgrade to newer versions or install PTQ modules.</p>
+
+	<div id='binary-info'>
+		<div class="col-lg-12 col-md-12 col-xs-12">
 			<b>Product:</b><br/>
 			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_PRODUCT" value="{{ config['ZYNTHIAN_PIANOTEQ_PRODUCT'] }}{% if config['ZYNTHIAN_PIANOTEQ_TRIAL'] %} TRIAL{% end %}" />
-		</p>
+		</div>
 
-		<p>
+		<div class="col-lg-12 col-md-12 col-xs-12">
 			<b>Version:</b><br/>
 			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_VERSION" value="{{ config['ZYNTHIAN_PIANOTEQ_VERSION'] }}" />
-		</p>
+		</div>
 	</div>
 
 	{% if not config['ZYNTHIAN_PIANOTEQ_TRIAL'] and not config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
@@ -47,29 +73,36 @@
 		</ul>
 		{% else %}
 		<p>For activating the software you have to enter your license key and click "Activate":</p>
-		<p>
+		<div class="col-lg-10 col-md-10 col-xs-10">
 			<b>Licence Key:</b><br/>
-			<input type="text" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="" class="col-md-10" style="padding-left:0; padding-right:0;"/>
-			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="col-md-2 btn btn-theme">Activate</button>
-		</p>
+			<input type="text" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="" />
+		</div>
+		<div class="col-2-10 col-md-2 col-xs-2">
+			<br/>
+			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="btn btn-theme">Activate</button>
+		</div>
 		{% end %}
 	</div>
 	{% end %}
 
 	{% if config['ZYNTHIAN_PIANOTEQ_LICENSE'] %}
 	<div id='license-key'>
-		<p>
+		<div class="col-lg-10 col-md-10 col-xs-10">
 			<b>Licence Key:</b><br/>
-			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENSE" class="col-md-10" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENSE'] }}" />
-			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="col-md-2 btn btn-theme">Reactivate</button>
-		</p>
+			<input type="text" readonly="readonly" name="ZYNTHIAN_PIANOTEQ_LICENSE" value="{{ config['ZYNTHIAN_PIANOTEQ_LICENSE'] }}" />
+		</div>
+		<div class="col-2-10 col-md-2 col-xs-2">
+			<br/>
+			<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="ACTIVATE_LICENSE" class="btn btn-theme">Reactivate</button>
+		</div>
 	</div>
 	{% end %}
 
-	<p>
-		<br>
+	<div id='upload-button'>
+		&nbsp;<br/>
+		&nbsp;<br/>
 		<input id="upload_show" class="btn btn-lg btn-theme" type="button" value="Upload Binary / PTQ" onclick="$('#pianoteq-upload-form').attr('action','/upload?redirectUrl=/sw-pianoteq&destinationPath=/tmp&clientId=' + $('#input-uploadfile-session')[0].value);"></input>
-	</p>
+	</div>
 
 	<div id='upload-finished'>
 		<p>
@@ -93,11 +126,10 @@
 	</div>
 
 	{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "7.5.0" %}
-	<p id="update-cache">
+	<div id="update-cache">
 		<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
-	<p>
+	</div>
 	{% end %}
-
 
 	<div>
 		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}

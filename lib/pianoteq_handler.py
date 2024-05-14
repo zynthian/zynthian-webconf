@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Presets Manager Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import sys
@@ -38,9 +38,10 @@ from zyngine.zynthian_engine_pianoteq6 import zynthian_engine_pianoteq6
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Soundfont Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class PianoteqHandler(ZynthianBasicHandler):
 
@@ -59,31 +60,34 @@ class PianoteqHandler(ZynthianBasicHandler):
 		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = info['product']
 		config['ZYNTHIAN_PIANOTEQ_LICENSE'] = self.get_license_key()
 		config["ZYNTHIAN_PIANOTEQ_LIMIT_RATE"] = os.environ.get('ZYNTHIAN_PIANOTEQ_LIMIT_RATE', "1")
+		config["ZYNTHIAN_PIANOTEQ_VOICE_LIMIT"] = os.environ.get('ZYNTHIAN_PIANOTEQ_VOICE_LIMIT', "32")
+		config["ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION"] = os.environ.get('ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION', "1")
 
 		if errors:
 			logging.error("Pianoteq Action Failed: %s" % format(errors))
 		super().get("pianoteq.html", "Pianoteq", config, errors)
 
-
 	@tornado.web.authenticated
 	def post(self):
+		errors = None
 		try:
 			action = self.get_argument('ZYNTHIAN_PIANOTEQ_ACTION')
-			if action:
+		except:
+			action = None
+			logging.error(f"No action!")
+
+		if action:
+			try:
 				errors = {
 					'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
 					'ACTIVATE_LICENSE': lambda: self.do_activate_license(),
-					'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache()
+					'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache(),
+					'SAVE_CONFIG': lambda: self.do_save_config()
 				}[action]()
-		except:
-			config = {
-				"ZYNTHIAN_PIANOTEQ_LIMIT_RATE": self.get_argument('ZYNTHIAN_PIANOTEQ_LIMIT_RATE')
-			}
-			errors = zynconf.save_config(config, updsys=True)
-			self.restart_ui_flag = True
+			except Exception as err:
+				logging.error(err)
 
 		self.get(errors)
-
 
 	def do_install_pianoteq(self):
 		errors = None
@@ -104,10 +108,9 @@ class PianoteqHandler(ZynthianBasicHandler):
 			self.pianoteq_autoconfig()
 
 		else:
-			errors = 'Please, select a file'
+			errors = 'Please, select a file to install'
 
 		return errors
-
 
 	def do_install_pianoteq_binary(self, filename):
 		# Install new binary package
@@ -115,7 +118,6 @@ class PianoteqHandler(ZynthianBasicHandler):
 		result = check_output(command, shell=True, stderr=STDOUT).decode("utf-8")
 		# TODO! if result is OK, return None!
 		return result
-
 
 	def do_install_pianoteq_ptq(self, filename):
 		try:
@@ -128,7 +130,6 @@ class PianoteqHandler(ZynthianBasicHandler):
 		except Exception as e:
 			logging.error("PTQ install failed: {}".format(e))
 			return "PTQ install failed: {}".format(e)
-
 
 	def do_activate_license(self):
 		license_serial = self.get_argument('ZYNTHIAN_PIANOTEQ_LICENSE')
@@ -148,10 +149,8 @@ class PianoteqHandler(ZynthianBasicHandler):
 		else:
 			self.pianoteq_autoconfig()
 
-
 	def do_update_presets_cache(self):
 		zynthian_engine_pianoteq6(None, True)
-
 
 	def get_license_key(self):
 		#xpath with fromstring doesn't work
@@ -164,6 +163,15 @@ class PianoteqHandler(ZynthianBasicHandler):
 			except Exception as e:
 				logging.error("Error parsing license: %s" % e)
 
+	def do_save_config(self):
+		config = {
+			"ZYNTHIAN_PIANOTEQ_LIMIT_RATE": self.get_argument('ZYNTHIAN_PIANOTEQ_LIMIT_RATE'),
+			"ZYNTHIAN_PIANOTEQ_VOICE_LIMIT": self.get_argument('ZYNTHIAN_PIANOTEQ_VOICE_LIMIT'),
+			"ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION": self.get_argument('ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION')
+		}
+		errors = zynconf.save_config(config, updsys=True)
+		self.restart_ui_flag = True
+		return errors
 
 	def pianoteq_autoconfig(self):
 		# Get and Save pianoteq binary options
@@ -171,20 +179,19 @@ class PianoteqHandler(ZynthianBasicHandler):
 		if info:
 			# Save envars
 			config = {
-				"ZYNTHIAN_PIANOTEQ_PRODUCT": [info["product"]],
-				"ZYNTHIAN_PIANOTEQ_VERSION": [info["version_str"]],
-				"ZYNTHIAN_PIANOTEQ_TRIAL": ["1" if info["trial"] else "0"]
+				"ZYNTHIAN_PIANOTEQ_PRODUCT": info["product"],
+				"ZYNTHIAN_PIANOTEQ_VERSION": info["version_str"],
+				"ZYNTHIAN_PIANOTEQ_TRIAL": "1" if info["trial"] else "0"
 			}
-			self.update_config(config)
+			if "voices" in info:
+				config["ZYNTHIAN_PIANOTEQ_VOICE_LIMIT"] = info["voices"]
+			if "cpu_overload_detection" in info:
+				config["ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION"] = info["cpu_overload_detection"]
+
+			zynconf.save_config(config, updsys=True)
 
 			# Regenerate presets cache
 			if not info['api']:
 				self.do_update_presets_cache()
 
-
-	def update_config(self, config):
-		sconfig={}
-		for vn in config:
-			sconfig[vn]=config[vn][0]
-
-		zynconf.save_config(sconfig, updsys=True)
+# *****************************************************************************
