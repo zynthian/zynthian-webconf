@@ -24,19 +24,19 @@
 
 import os
 import sys
+import psutil
+import shutil
 import logging
 import tornado.web
-import shutil
+from xml.etree import ElementTree
 from subprocess import check_output, STDOUT
-from collections import OrderedDict
-from xml.etree import ElementTree as ET
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngine.zynthian_engine_pianoteq import *
 from zyngine.zynthian_engine_pianoteq6 import zynthian_engine_pianoteq6
-
-sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 import zynconf
+
+#sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 
 # ------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -45,24 +45,24 @@ import zynconf
 
 class PianoteqHandler(ZynthianBasicHandler):
 
-	data_dir = os.environ.get('ZYNTHIAN_DATA_DIR',"/zynthian/zynthian-data")
-	plugins_dir = os.environ.get('ZYNTHIAN_PLUGINS_DIR',"/zynthian/zynthian-plugins")
-	recipes_dir = os.environ.get('ZYNTHIAN_RECIPE_DIR',"/zynthian/zynthian-sys/scripts/recipes")
+	data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
+	plugins_dir = os.environ.get('ZYNTHIAN_PLUGINS_DIR', "/zynthian/zynthian-plugins")
+	recipes_dir = os.environ.get('ZYNTHIAN_RECIPE_DIR', "/zynthian/zynthian-sys/scripts/recipes")
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
 		#self.pianoteq_autoconfig()
-		config=OrderedDict([])
 		info = get_pianoteq_binary_info()
-		config['ZYNTHIAN_UPLOAD_MULTIPLE'] = False
-		config['ZYNTHIAN_PIANOTEQ_TRIAL'] = info['trial']
-		config['ZYNTHIAN_PIANOTEQ_VERSION'] = info['version_str']
-		config['ZYNTHIAN_PIANOTEQ_PRODUCT'] = info['product']
-		config['ZYNTHIAN_PIANOTEQ_LICENSE'] = self.get_license_key()
-		config["ZYNTHIAN_PIANOTEQ_LIMIT_RATE"] = os.environ.get('ZYNTHIAN_PIANOTEQ_LIMIT_RATE', "1")
-		config["ZYNTHIAN_PIANOTEQ_VOICE_LIMIT"] = os.environ.get('ZYNTHIAN_PIANOTEQ_VOICE_LIMIT', "32")
-		config["ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION"] = os.environ.get('ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION', "1")
-
+		config = {
+			'ZYNTHIAN_UPLOAD_MULTIPLE': False,
+			'ZYNTHIAN_PIANOTEQ_TRIAL': info['trial'],
+			'ZYNTHIAN_PIANOTEQ_VERSION': info['version_str'],
+			'ZYNTHIAN_PIANOTEQ_PRODUCT': info['product'],
+			'ZYNTHIAN_PIANOTEQ_LICENSE': self.get_license_key(),
+			"ZYNTHIAN_PIANOTEQ_LIMIT_RATE": os.environ.get('ZYNTHIAN_PIANOTEQ_LIMIT_RATE', "1"),
+			"ZYNTHIAN_PIANOTEQ_VOICE_LIMIT": os.environ.get('ZYNTHIAN_PIANOTEQ_VOICE_LIMIT', "32"),
+			"ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION": os.environ.get('ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION', "1")
+		}
 		if errors:
 			logging.error("Pianoteq Action Failed: %s" % format(errors))
 		super().get("pianoteq.html", "Pianoteq", config, errors)
@@ -155,7 +155,7 @@ class PianoteqHandler(ZynthianBasicHandler):
 	def get_license_key(self):
 		#xpath with fromstring doesn't work
 		if os.path.exists(PIANOTEQ_CONFIG_FILE):
-			root = ET.parse(PIANOTEQ_CONFIG_FILE)
+			root = ElementTree.parse(PIANOTEQ_CONFIG_FILE)
 			try:
 				for xml_value in root.iter("VALUE"):
 					if xml_value.attrib['name'] == 'serial':
@@ -170,7 +170,13 @@ class PianoteqHandler(ZynthianBasicHandler):
 			"ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION": self.get_argument('ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION')
 		}
 		errors = zynconf.save_config(config, updsys=True)
-		self.restart_ui_flag = True
+
+		# Restarts UI if pianoteq engine is running
+		for process in psutil.process_iter():
+			if process.name().startswith("Pianoteq"):
+				self.restart_ui_flag = True
+				break
+
 		return errors
 
 	def pianoteq_autoconfig(self):
