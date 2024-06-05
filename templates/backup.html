@@ -157,7 +157,7 @@ $(document).ready(function (){
 
 	var url = window.location.href
 	var parts = url.split("/");
-	$("#restore-upload-form").attr("action", "http://" + parts[2] + "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value)
+	$("#restore-upload-form").attr("action", "http://" + parts[2] + "/upload?clientId=" + $('#input-uploadfile-session')[0].value)
 
 	$('#upload_panel')[0].onuploadend = function(response){
 		console.log("upload succeeded: " + response);

@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Presets Manager Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import re
@@ -33,16 +33,17 @@ import jsonpickle
 import subprocess
 import tornado.web
 from zipfile import ZipFile
-from collections import OrderedDict
+
+from lib.upload_handler import TMP_DIR
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Soundfont Configuration
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class CapturesConfigHandler(ZynthianBasicHandler):
 	CAPTURES_DIRECTORY = "/zynthian/zynthian-my-data/capture"
-	MOUNTED_CAPTURES_DIRECTORY = "/media/usb0"
 
 	selectedTreeNode = 0
 	selected_full_path = ''
@@ -51,7 +52,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		config=OrderedDict([])
+		config = {}
 		self.maxTreeNodeIndex = 0
 		if self.get_argument('stream', None, True):
 			self.do_download(self.get_argument('stream').replace("%27","'"))
@@ -68,7 +69,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
 			super().get("captures.html", "Captures", config, errors)
-
 
 	def post(self):
 		action = self.get_argument('ZYNTHIAN_CAPTURES_ACTION', None)
@@ -88,7 +88,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		if (action not in ('DOWNLOAD', 'SAVE_LOG')):
 			self.get(errors)
 
-
 	def do_remove(self):
 		logging.info("Removing {}".format(self.selected_full_path))
 		try:
@@ -103,7 +102,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					os.remove(video_fpath)
 		except:
 			pass
-
 
 	def do_rename(self):
 		if self.get_argument('ZYNTHIAN_CAPTURES_RENAME'):
@@ -143,7 +141,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 				logging.info("Renaming capture log video: {} => {}".format(src_fpath, dest_fpath))
 				shutil.move(src_fpath, dest_fpath)
 
-
 	def do_download(self, fullpath):
 		if fullpath:
 			fparts = os.path.split(fullpath)
@@ -154,7 +151,7 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			fparts = os.path.splitext(filename)
 			if fparts[1] == ".log":
 				filename = fparts[0] + ".zip"
-				fullpath = "/tmp/" + filename
+				fullpath = TMP_DIR + "/" + filename
 				with ZipFile(fullpath, 'w') as tmpzip:
 					tmpzip.write(dirpath + "/" + fparts[0] + ".log", fparts[0] + ".log")
 					tmpzip.write(dirpath + "/" + fparts[0] + ".mp4", fparts[0] + ".mp4")
@@ -175,7 +172,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 					self.set_header('Content-Type', 'application/json')
 					self.write(jsonpickle.encode({'data': format(exc)}))
 
-
 	def do_install_file(self):
 		result = {}
 		try:
@@ -189,7 +185,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 
 		return result
 
-
 	def do_convert_ogg(self):
 		ogg_file_name = os.path.splitext(self.selected_full_path)[0]+'.ogg'
 		cmd = 'oggenc "{}" -o "{}"'.format(self.selected_full_path, ogg_file_name)
@@ -199,7 +194,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		except Exception as e:
 			return e.output
 		return
-
 
 	def do_save_log(self):
 		capture_log = self.get_argument('ZYNTHIAN_CAPTURES_LOG_CONTENT')
@@ -228,7 +222,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		else:
 			logging.error("Can't save capture log: No file name")
 
-
 	def set_log_title(self, fpath, title):
 		logging.info("Setting capture log '{}' title to '{}'".format(fpath, title))
 
@@ -254,7 +247,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			f.close()
 		except:
 			logging.error("Can't write capture log file")
-
 
 	def get_content_type(self, filename):
 		fext = os.path.splitext(filename)[1].lower()
@@ -285,15 +277,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 		self.maxTreeNodeIndex += 1
 
 		try:
-			if os.path.ismount(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY):
-				captures.extend(
-					self.walk_directory(CapturesConfigHandler.MOUNTED_CAPTURES_DIRECTORY, 'fa fa-fw fa-usb', file_extension))
-			else:
-				logging.info("/media/usb0 not found")
-		except:
-			pass
-
-		try:
 			captures.extend(self.walk_directory(CapturesConfigHandler.CAPTURES_DIRECTORY, 'fa fa-fw fa-file', file_extension))
 		except:
 			pass
@@ -312,7 +295,6 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			with ZipFile(destination) as fzip:
 				fzip.extractall(CapturesConfigHandler.CAPTURES_DIRECTORY)
 			os.remove(destination)
-
 
 	def walk_directory(self, directory, icon, file_extension):
 		captures = []
@@ -358,7 +340,5 @@ class CapturesConfigHandler(ZynthianBasicHandler):
 			if os.path.isdir(fullPath):
 				capture['nodes'] = self.walk_directory(os.path.join(directory, f), icon)
 			captures.append(capture)
-
-
 
 		return captures

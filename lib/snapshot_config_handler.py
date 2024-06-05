@@ -472,7 +472,7 @@ class SnapshotDownloadHandler(tornado.web.RequestHandler):
 			fpath = str(base64.b64decode(fpath_b64), 'utf-8')
 			dname, fname = os.path.split(fpath)
 			if os.path.isdir(fpath):
-				zfpath = "/tmp/" + fname
+				zfpath = TMP_DIR + "/" + fname
 				shutil.make_archive(zfpath, 'zip', fpath)
 				fpath = zfpath + ".zip"
 				fname += ".zip"

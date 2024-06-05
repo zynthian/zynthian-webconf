@@ -75,6 +75,8 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 		except:
 			pass
 
+		# Send NOP CUIA to wake-up zynthian
+		liblo.send(zynthian_ui_osc_addr, "/CUIA/NOP")
 
 	def on_finish(self):
 		if self.restart_webconf_flag:

@@ -32,9 +32,11 @@ import tarfile
 import requests
 import tornado.web
 
-from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngui.zynthian_gui_engine import *
 from zyngine.zynthian_chain_manager import zynthian_chain_manager
+
+from lib.upload_handler import TMP_DIR
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 # ------------------------------------------------------------------------------
 # Soundfont Configuration
@@ -157,7 +159,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 			fpath = self.engine_cls.zynapi_download(self.get_argument('SEL_FULLPATH'))
 			dname, fname = os.path.split(fpath)
 			if os.path.isdir(fpath):
-				zfpath = "/tmp/" + fname
+				zfpath = TMP_DIR + "/" + fname
 				shutil.make_archive(zfpath, 'zip', fpath)
 				fpath = zfpath + ".zip"
 				fname += ".zip"
@@ -255,6 +257,10 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 				dpath = fpath[:-7]
 				tar = tarfile.open(fpath, "r:gz")
 				tar.extractall(dpath)
+			elif fpath.endswith('.tar.xz'):
+				dpath = fpath[:-7]
+				tar = tarfile.open(fpath, "r:xz")
+				tar.extractall(dpath)
 			elif fpath.endswith('.tgz'):
 				dpath = fpath[:-4]
 				tar = tarfile.open(fpath, "r:gz")
@@ -298,7 +304,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
 		logging.info("Downloading '{}' ...".format(url))
 		res = requests.get(url, verify=False)
 		head, tail = os.path.split(url)
-		fpath = "/tmp/" + tail
+		fpath = TMP_DIR + "/" + tail
 		with open(fpath, "wb") as df:
 			df.write(res.content)
 			df.close()

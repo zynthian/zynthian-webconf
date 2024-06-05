@@ -147,7 +147,7 @@ $(document).ready(function () {
 			"data": $('#input-uploadfile-session')[0].value
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
-		$("#presets-upload-form").attr("action", "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value);
+		$("#presets-upload-form").attr("action", "/upload?clientId=" + $('#input-uploadfile-session')[0].value);
 		//redirectUrl=/lib-presets&
 	});
 	connectZynthianWebSocket(deferred);

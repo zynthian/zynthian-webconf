@@ -100,7 +100,7 @@ $(document).ready(function(){
 			"data": $('#input-uploadfile-session')[0].value
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
-		$("#captures-upload-form").attr("action", "/upload?destinationPath=/tmp&clientId=" + $('#input-uploadfile-session')[0].value);
+		$("#captures-upload-form").attr("action", "/upload?clientId=" + $('#input-uploadfile-session')[0].value);
 	});
 	connectZynthianWebSocket(deferred);
 
