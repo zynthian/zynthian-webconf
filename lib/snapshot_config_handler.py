@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Snapshot Manager Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,7 +20,7 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import re
@@ -35,9 +35,9 @@ from collections import OrderedDict
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngine.zynthian_legacy_snapshot import zynthian_legacy_snapshot
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Snapshot Config Handler
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 
 
 class SnapshotConfigHandler(ZynthianBasicHandler):
@@ -66,7 +66,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 
 		super().get("snapshots.html", "Snapshots", config, errors)
 
-
 	@tornado.web.authenticated
 	def post(self, action):
 		if action:
@@ -90,7 +89,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 
 		self.write(result)
 
-
 	def do_new_bank(self):
 		result = {}
 		existing_banks = self.get_existing_banks(self.get_snapshots_data(), False)
@@ -104,7 +102,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 				os.makedirs(bank_dpath)
 		return result
 
-
 	def do_remove(self):
 		result = {}
 		fullPath = self.get_argument('SEL_FULLPATH')
@@ -114,7 +111,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 			else:
 				os.remove(fullPath)
 		return result
-
 
 	def do_save(self):
 		result = {}
@@ -163,7 +159,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 			result['errors'] = 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
 		return result
 
-
 	def do_upload(self):
 		logging.info("do_upload")
 		result = {}
@@ -180,7 +175,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 
 		return result
 
-
 	def do_save_as_default(self):
 		result = {}
 		dest = self.SNAPSHOTS_DIRECTORY + "/default.zss"
@@ -189,7 +183,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 		shutil.copyfile(src, dest)
 		return result
 
-
 	def do_save_as_last_state(self):
 		result = {}
 		dest = self.SNAPSHOTS_DIRECTORY + "/last_state.zss"
@@ -197,7 +190,6 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 		logging.info("Copy %s to %s" % (src, dest))
 		shutil.copyfile(src, dest)
 		return result
-
 
 	def get_existing_banks(self, snapshot_data, incl_name):
 		existing_banks = []
@@ -212,12 +204,11 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 		#logging.info("existingbanks: " + str(existing_banks))
 		return sorted(existing_banks)
 
-
 	def get_snapshot_warning(self, snapshot_data):
 		duplicate_prog_nums = ''
 		for item in snapshot_data:
 			if 'nodes' in item:
-				bank_num = item['bank_num'];
+				bank_num = item['bank_num']
 				prev_prog_num = ''
 				for node_item in item['nodes']:
 					if prev_prog_num == node_item['prog_num']:
@@ -228,28 +219,28 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 		else:
 			return ''
 
-
 	def calculate_next_bank(self, existing_banks):
 		for i in range(0, 128):
 			if str(i).zfill(3) not in existing_banks:
 				return i
 		return ''
 
-
 	def get_snapshots_data(self):
 		return self.walk_directory(SnapshotConfigHandler.SNAPSHOTS_DIRECTORY)
 
-
 	def walk_directory(self, directory, idx=0, _bank_num=None, _bank_name=None):
 		snapshots = []
-		file_list =  sorted(os.listdir(directory))
+		file_list = sorted(os.listdir(directory))
 		for f in file_list:
 			fullpath = os.path.join(directory, f)
+			state = {}
 			if os.path.isdir(fullpath):
 				node_type = "BANK"
 				parts = f.split("-", 1)
+				if f[0] == ".":
+					state["expanded"] = False
 				bank_num = parts[0]
-				if len(parts)==2:
+				if len(parts) == 2:
 					bank_name = parts[1]
 				else:
 					bank_name = ""
@@ -260,14 +251,14 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 			else:
 				fname = f[:-4]
 				fext = f[-4:]
-				if fext==".zss":
+				if fext == ".zss":
 					node_type = "SNAPSHOT"
 					if _bank_num is not None:
 						bank_num = _bank_num.zfill(3)
 						bank_name = _bank_name
 						parts = fname.split("-", 1)
 						prog_num = parts[0]
-						if len(parts)==2:
+						if len(parts) == 2:
 							prog_name = fname[len(prog_num)+1:]
 						else:
 							prog_name = ""
@@ -291,6 +282,7 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 				'id': idx,
 				'text': f,
 				'name': name,
+				'state': state,
 				'fullpath': fullpath,
 				'node_type': node_type,
 				'bank_num': bank_num,
@@ -309,20 +301,19 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 
 		return snapshots
 
-
 	def get_selected_node_id(self, ssdata):
 		selected_node = 0
 		try:
 			for ssbank in ssdata:
 				try:
-					if int(ssbank['bank_num'])==int(self.get_argument('SEL_BANK_NUM')):
+					if int(ssbank['bank_num']) == int(self.get_argument('SEL_BANK_NUM')):
 						if not selected_node:
 							selected_node = ssbank['id']
 
 					if ssbank['nodes']:
 						for ssprog in ssbank['nodes']:
 							try:
-								if int(ssprog['prog_num'])==int(self.get_argument('SEL_PROG_NUM')):
+								if int(ssprog['prog_num']) == int(self.get_argument('SEL_PROG_NUM')):
 									selected_node = ssprog['id']
 							except:
 								pass
@@ -334,10 +325,9 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
 						selected_node = ssbank['id']
 
 		except Exception as e:
-			logging.debug("ERROR:" + str(e))
+			logging.error("ERROR:" + str(e))
 		logging.debug("Selected Node: {}".format(selected_node))
 		return selected_node
-
 
 	def install_file(self, fpath):
 		logging.info(fpath)
@@ -368,7 +358,6 @@ class SnapshotRemoveChainHandler(tornado.web.RequestHandler):
 
 			result = data
 
-
 		except Exception as err:
 			result['errors'] = str(err)
 			logging.error(err)
@@ -398,7 +387,6 @@ class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
 				json.dump(data, fp)
 
 			result = data
-
 
 		except Exception as err:
 			result['errors'] = str(err)
@@ -462,7 +450,6 @@ class SnapshotDownloadHandler(tornado.web.RequestHandler):
 	def get_current_user(self):
 		return self.get_secure_cookie("user")
 
-
 	@tornado.web.authenticated
 	def get(self, fpath_b64):
 		result = None
@@ -496,7 +483,6 @@ class SnapshotDownloadHandler(tornado.web.RequestHandler):
 		except Exception as e:
 			logging.error(e)
 			result = {'errors': "Can't download file: {}".format(e)}
-
 
 		finally:
 			if fpath and delete:

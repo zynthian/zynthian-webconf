@@ -218,61 +218,6 @@ table.values > tbody > tr > td {
 </div>
 
 <script type="text/javascript">
-function printPatches(itemsString) {
-	items = JSON.parse(atob(itemsString));
-
-	printableHtml = `<h1>ZS3 program list: ` + $("#SEL_BANK")[0].value + `/` + $("#SEL_NAME")[0].value + `</h1>`;
-	printableHtml += `<table>`;
-	printableHtml += `<thead><tr><th>Channel#Engine</th><th>PC</th><th>Bank</th><th>Preset</th></>tr><thead><tbody>`;
-
-	lastChannel = 0
-	for (k in items){
-		if (items[k]['engine_nick'] == 'AI' || items[k]['engine_nick'] == 'MX') continue;
-
-		printableHtml += `<tr>`;
-		printableHtml += `<td><b>`;
-
-		if (lastChannel>0 && lastChannel==items[k]['channel']){
-			printableHtml += "&nbsp;&nbsp;&nbsp;->&nbsp;";
-		} else if (items[k]['channel'] > 0){
-			printableHtml += items[k]['channel'] + '#';
-		}
-		printableHtml += items[k]['engine_nick'];
-		printableHtml += `</b></td>`;
-		printableHtml += '<td><b>-</b></td>>';
-		printableHtml += '<td><b>';
-		if (items[k]['bank_name']){
-			printableHtml += items[k]['bank_name'];
-		}
-		printableHtml += `</b></td>`;
-		printableHtml += `<td><b>`;
-		if ('preset_name' in items[k] && items[k]['preset_name']!=null){
-			printableHtml += items[k]['preset_name'];
-		}
-		printableHtml += `</b></td>`;
-		printableHtml += `</tr>`;
-
-		// Add legacy ZS3 info (per-layer)
-		if ('zs3_list' in items[k]){
-			zs3_list = items[k]['zs3_list'];
-			for (j in zs3_list){
-				if (zs3_list[j]){
-					printableHtml += '<tr>';
-					printableHtml += '<td></td>';
-					printableHtml += '<td>' + j + '</td>';
-					printableHtml += '<td>' + zs3_list[j]['bank_name'] + '</td>';
-					printableHtml += '<td>' + zs3_list[j]['preset_name'] + '</td>';
-					printableHtml += `</tr>`;
-				}
-			}
-		}
-		lastChannel = items[k]['channel'];
-	}
-	printableHtml += `</tbody></table>`;
-
-	$('#print_area')[0].innerHTML = printableHtml;
-	window.print();
-}
 $(document).ready(function () {
 	$('#button-upload').click(function(){
 		$('#upload_panel').show(500)
@@ -409,26 +354,26 @@ function createTree(data, selectedNodeId){
 }
 
 function addMidiOptions() {
-	$.post("lib-snapshot/add/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + btoa($("#SELECTED_MIDI_PROFILE_SCRIPT").val())  ,
-			null,
-			function(data, status) {
-				if (status=="success") {
-					if (data){
-						if ("errors" in data) {
-							console.log("AddSnapshotOptions Error: " + data["errors"])
-						} else {
-							optionsData = getMidiProfileStateData(data);
-							$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
-						}
+	$.post("lib-snapshot/add/" + btoa($("#SEL_FULLPATH")[0].value) + "/" + btoa($("#SELECTED_MIDI_PROFILE_SCRIPT").val()),
+		null,
+		function(data, status) {
+			if (status=="success") {
+				if (data){
+					if ("errors" in data) {
+						console.log("AddSnapshotOptions Error: " + data["errors"])
+					} else {
+						optionsData = getMidiProfileStateData(data);
+						$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
 					}
-				} else {
-					console.log("AddSnapshotOptions Response: " + status)
 				}
+			} else {
+				console.log("AddSnapshotOptions Response: " + status)
 			}
-		);
+		}
+	);
 }
 
-function getMidiProfileStateData(snapshotDetails){
+function getMidiProfileStateData(snapshotDetails) {
 	result = [];
 	for (midiKey in snapshotDetails.midi_profile_state){
 		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey].replace(/\\n/g,"\n")});
@@ -452,7 +397,7 @@ function renderControllers(ctrl) {
 /**	Get an array of data with each entry representing a processor within a chain
  * First row of each chain includes the chain id and
 */
-function getLayoutData(snapshotDetails){
+function getLayoutData(snapshotDetails) {
 	result = [];
 	zs3_list = snapshotDetails.zs3
 	zs30 = zs3_list["zs3-0"]
@@ -681,4 +626,59 @@ function do_remove(){
 	}
 }
 
+function printPatches(itemsString) {
+	items = JSON.parse(atob(itemsString));
+
+	printableHtml = `<h1>ZS3 program list: ` + $("#SEL_BANK")[0].value + `/` + $("#SEL_NAME")[0].value + `</h1>`;
+	printableHtml += `<table>`;
+	printableHtml += `<thead><tr><th>Channel#Engine</th><th>PC</th><th>Bank</th><th>Preset</th></>tr><thead><tbody>`;
+
+	lastChannel = 0
+	for (k in items){
+		if (items[k]['engine_nick'] == 'AI' || items[k]['engine_nick'] == 'MX') continue;
+
+		printableHtml += `<tr>`;
+		printableHtml += `<td><b>`;
+
+		if (lastChannel>0 && lastChannel==items[k]['channel']){
+			printableHtml += "&nbsp;&nbsp;&nbsp;->&nbsp;";
+		} else if (items[k]['channel'] > 0){
+			printableHtml += items[k]['channel'] + '#';
+		}
+		printableHtml += items[k]['engine_nick'];
+		printableHtml += `</b></td>`;
+		printableHtml += '<td><b>-</b></td>>';
+		printableHtml += '<td><b>';
+		if (items[k]['bank_name']){
+			printableHtml += items[k]['bank_name'];
+		}
+		printableHtml += `</b></td>`;
+		printableHtml += `<td><b>`;
+		if ('preset_name' in items[k] && items[k]['preset_name']!=null){
+			printableHtml += items[k]['preset_name'];
+		}
+		printableHtml += `</b></td>`;
+		printableHtml += `</tr>`;
+
+		// Add legacy ZS3 info (per-layer)
+		if ('zs3_list' in items[k]){
+			zs3_list = items[k]['zs3_list'];
+			for (j in zs3_list){
+				if (zs3_list[j]){
+					printableHtml += '<tr>';
+					printableHtml += '<td></td>';
+					printableHtml += '<td>' + j + '</td>';
+					printableHtml += '<td>' + zs3_list[j]['bank_name'] + '</td>';
+					printableHtml += '<td>' + zs3_list[j]['preset_name'] + '</td>';
+					printableHtml += `</tr>`;
+				}
+			}
+		}
+		lastChannel = items[k]['channel'];
+	}
+	printableHtml += `</tbody></table>`;
+
+	$('#print_area')[0].innerHTML = printableHtml;
+	window.print();
+}
 </script>
