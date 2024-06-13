@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Security Configuration Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,21 +20,21 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
 import re
+import PAM
 import logging
 import tornado.web
-from crypt import crypt
-from collections import OrderedDict
 from subprocess import check_output
 
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # System Menu
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class SecurityConfigHandler(ZynthianConfigHandler):
 
@@ -43,104 +43,135 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 		with open("/etc/hostname") as f:
 			return f.readline()
 
-
 	@tornado.web.authenticated
 	def get(self, errors=None):
-		#Get Hostname
-		config=OrderedDict([
-			['CURRENT_PASSWORD', {
+		# Get Hostname
+		config = {
+			'CURRENT_PASSWORD': {
 				'type': 'password',
 				'title': 'Current password',
 				'value': '*'
-			}],
-			['PASSWORD', {
+			},
+			'PASSWORD': {
 				'type': 'password',
 				'title': 'Password',
 				'value': '*'
-			}],
-			['REPEAT_PASSWORD', {
+			},
+			'REPEAT_PASSWORD': {
 				'type': 'password',
 				'title': 'Repeat password',
 				'value': '*'
-			}],
-			['HOSTNAME', {
+			},
+			'HOSTNAME': {
 				'type': 'text',
 				'title': 'Hostname',
 				'value': SecurityConfigHandler.get_host_name(),
 				'advanced': True
-			}],
-			['REGENERATE_KEYS', {
+			},
+			'REGENERATE_KEYS': {
 				'type': 'button',
 				'title': 'Regenerate Keys',
 				'script_file': 'regenerate_keys.js',
 				'button_type': 'button',
 				'class': 'btn-warning btn-block',
 				'advanced': True
-			}],
-			['_command', {
+			},
+			'_command': {
 				'type': 'hidden',
 				'value': ''
-			}]
-		])
-
+			}
+		}
 		super().get("Security/Access", config, errors)
-
 
 	@tornado.web.authenticated
 	def post(self):
-		params=tornado.escape.recursive_unicode(self.request.arguments)
-		logging.debug("COMMAND: %s" % params['_command'][0])
-		if params['_command'][0]=="REGENERATE_KEYS":
-			cmd=os.environ.get('ZYNTHIAN_SYS_DIR') + "/sbin/regenerate_keys.sh"
+		params = tornado.escape.recursive_unicode(self.request.arguments)
+		logging.debug(f"COMMAND: {params['_command'][0]}")
+		if params['_command'][0] == "REGENERATE_KEYS":
+			cmd = os.environ.get('ZYNTHIAN_SYS_DIR') + "/sbin/regenerate_keys.sh"
 			check_output(cmd, shell=True)
 			self.redirect('/sys-reboot')
 		else:
-			errors=self.update_system_config(params)
+			errors = self.update_system_config(params)
 			self.get(errors)
 
-
 	def update_system_config(self, config):
-		#Update Password
-		current_passwd = self.get_argument("CURRENT_PASSWORD")
-		try:
-			root_crypt = check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
-			current_crypt = crypt(current_passwd, root_crypt)
-			logging.debug("PASSWD: %s <=> %s" % (root_crypt, current_crypt))
-			if current_crypt != root_crypt:
-				return {'CURRENT_PASSWORD': "Current password is not correct"}
-		except:
-			return {'CURRENT_PASSWORD': "Current password is not correct"}
+		# PAM service callback
+		def pam_conv(auth, query_list, userData):
+			resp = []
+			for i in range(len(query_list)):
+				query, type = query_list[i]
+				if type in (PAM.PAM_PROMPT_ECHO_ON, PAM.PAM_PROMPT_ECHO_OFF):
+					val = passwd
+					resp.append((val, 0))
+				elif type == PAM.PAM_PROMPT_ERROR_MSG or type == PAM.PAM_PROMPT_TEXT_INFO:
+					logging.error(query)
+					resp.append(('', 0))
+				else:
+					return None
+			return resp
 
-		if len(config['PASSWORD'][0])>0:
-			if len(config['PASSWORD'][0])<6:
-				return { 'PASSWORD': "Password must have at least 6 characters" }
-			if config['PASSWORD'][0]!=config['REPEAT_PASSWORD'][0]:
-				return { 'REPEAT_PASSWORD': "Passwords does not match!" }
+		# Check current password
+		auth = PAM.pam()
+		auth.start("passwd")
+		auth.set_item(PAM.PAM_USER, "root")
+		auth.set_item(PAM.PAM_CONV, pam_conv)
+		try:
+			passwd = self.get_argument("CURRENT_PASSWORD")
+			auth.authenticate()
+			auth.acct_mgmt()
+		except PAM.error as resp:
+			logging.info(f"Incorrect password => {resp}")
+			return {"CURRENT_PASSWORD": "Incorrect Password"}
+		except Exception as e:
+			logging.error(e)
+			return {"CURRENT_PASSWORD": "Authentication Failure"}
+
+		# Change password
+		if len(config['PASSWORD'][0]) > 0:
+			if len(config['PASSWORD'][0]) < 6:
+				return {'PASSWORD': "Password must have at least 6 characters"}
+			if config['PASSWORD'][0] != config['REPEAT_PASSWORD'][0]:
+				return {'REPEAT_PASSWORD': "Passwords does not match!"}
+
+			# Change system password (PAM)
 			try:
-				check_output(['usermod', '-p', crypt(config['PASSWORD'][0]), 'root'])
+				passwd = config['PASSWORD'][0]
+				auth.chauthtok()
+				#auth.acct_mgmt()
+			except PAM.error as resp:
+				logging.error(f"Can't set new password! => {resp}")
+				return {'REPEAT_PASSWORD': "Can't set new password for system!"}
 			except Exception as e:
-				logging.error("Can't set new password! => {}".format(e))
-				return { 'REPEAT_PASSWORD': "Can't set new password!" }
+				logging.error(f"Can't set new password! => {e}")
+				return {'REPEAT_PASSWORD': "Can't set new password for system!"}
+
+			# Change VNC password
 			try:
 				check_output("echo \"{}\" | vncpasswd -f > /root/.vnc/passwd; chmod go-r /root/.vnc/passwd".format(config['PASSWORD'][0]), shell=True)
 			except Exception as e:
 				logging.error("Can't set new password for VNC Server! => {}".format(e))
-				return { 'REPEAT_PASSWORD': "Can't set new password for VNC Server!" }
+				return {'REPEAT_PASSWORD': "Can't set new password for VNC Server!"}
+
+			# Change WIFI password
 			try:
 				self.update_hostapd_conf("wpa_passphrase", config['PASSWORD'][0])
 			except Exception as e:
 				logging.error("Can't set new password for WIFI HotSpot! => {}".format(e))
-				return { 'REPEAT_PASSWORD': "Can't set new password for WIFI HotSpot!" }
+				return {'REPEAT_PASSWORD': "Can't set new password for WIFI HotSpot!"}
 
-		#Update Hostname
+		# Update Hostname
 		newHostname = config['HOSTNAME'][0]
-		previousHostname = ''
-		with open("/etc/hostname",'r') as f:
-			previousHostname=f.readline()
-			f.close()
 
-		if previousHostname!=newHostname:
-			with open("/etc/hostname",'w') as f:
+		try:
+			with open("/etc/hostname", 'r') as f:
+				previousHostname = f.readline()
+				f.close()
+		except:
+			previousHostname = ''
+
+		if previousHostname != newHostname:
+			with open("/etc/hostname", 'w') as f:
 				f.write(newHostname)
 				f.close()
 
@@ -159,22 +190,21 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 				self.update_hostapd_conf("ssid", newHostname)
 			except Exception as e:
 				logging.error("Can't set WIFI HotSpot name! => {}".format(e))
-				return { 'HOSTNAME': "Can't set WIFI HotSpot name!" }
+				return {'HOSTNAME': "Can't set WIFI HotSpot name!"}
 
 			#self.reboot_flag=True
 
-
 	def update_hostapd_conf(self, vname, val):
 		fpath = '/etc/hostapd/hostapd.conf'
-		conf = OrderedDict()
-		with open(fpath,'r+') as f:
+		conf = {}
+		with open(fpath, 'r+') as f:
 			lines = f.readlines()
-			for l in lines:
-				parts = l.split("=",1)
+			for line in lines:
+				parts = line.split("=", 1)
 				conf[parts[0]] = parts[1]
 			conf[vname] = val + "\n"
 			f.seek(0)
 			f.truncate()
-			for k,v in conf.items():
-				f.write("{}={}".format(k,v))
+			for k, v in conf.items():
+				f.write("{}={}".format(k, v))
 			f.close()

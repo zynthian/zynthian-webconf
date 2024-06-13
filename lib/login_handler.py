@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
-#********************************************************************
+# ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
 # Login Handler
 #
 # Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
 #
-#********************************************************************
+# ********************************************************************
 #
 # This program is free software; you can redistribute it and/or
 # modify it under the terms of the GNU General Public License as
@@ -20,18 +20,17 @@
 #
 # For a full copy of the GNU General Public License see the LICENSE.txt file.
 #
-#********************************************************************
+# ********************************************************************
 
 import os
-import crypt
+import PAM
 import logging
 import tornado.web
-from collections import OrderedDict
-from subprocess import check_output
 
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
 # Login Handler
-#------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------
+
 
 class LoginHandler(tornado.web.RequestHandler):
 
@@ -39,30 +38,43 @@ class LoginHandler(tornado.web.RequestHandler):
 		self.render("config.html", info={}, body="login_block.html", title="Login", config=None, errors=errors)
 
 	def post(self):
-		input_passwd = self.get_argument("PASSWORD")
-		try:
-			root_crypt = check_output("getent shadow root", shell=True).decode("utf-8").split(':')[1]
-			input_crypt = crypt.crypt(input_passwd, root_crypt)
-		except:
-			logging.info("OPENING DEVELOPERS BACKDOOR ...")  # only open when running on pc
-			root_crypt = "webconfdeveloper"
-			input_crypt = input_passwd
-		try:
-			logging.debug("PASSWD: %s <=> %s" % (root_crypt, input_crypt))
-			if input_crypt == root_crypt:
-				self.set_secure_cookie("user", "root", expires_days=3650)
-				if self.get_argument("next", ""):
-					self.redirect(self.get_argument("next"))
+		def pam_conv(auth, query_list, userData):
+			resp = []
+			for i in range(len(query_list)):
+				query, type = query_list[i]
+				if type in (PAM.PAM_PROMPT_ECHO_ON, PAM.PAM_PROMPT_ECHO_OFF):
+					val = self.get_argument("PASSWORD")
+					resp.append((val, 0))
+				elif type == PAM.PAM_PROMPT_ERROR_MSG or type == PAM.PAM_PROMPT_TEXT_INFO:
+					logging.error(query)
+					resp.append(('', 0))
 				else:
-					self.redirect("/")
-			else:
-				self.get({"PASSWORD": "Incorrect Password"})
+					return None
+			return resp
+
+		auth = PAM.pam()
+		auth.start("passwd")
+		auth.set_item(PAM.PAM_USER, "root")
+		auth.set_item(PAM.PAM_CONV, pam_conv)
+		try:
+			auth.authenticate()
+			auth.acct_mgmt()
+		except PAM.error as resp:
+			logging.info(f"Incorrect password => {resp}")
+			self.get({"PASSWORD": "Incorrect Password"})
 		except Exception as e:
 			logging.error(e)
 			self.get({"PASSWORD": "Authentication Failure"})
+		else:
+			self.set_secure_cookie("user", "root", expires_days=3650)
+			if self.get_argument("next", ""):
+				self.redirect(self.get_argument("next"))
+			else:
+				self.redirect("/")
 
 
 class LogoutHandler(tornado.web.RequestHandler):
 	def get(self):
 		self.clear_cookie('user')
 		self.redirect(self.get_argument('next', '/'))
+
