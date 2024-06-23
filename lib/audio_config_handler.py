@@ -321,19 +321,20 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS', "-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 			'advanced': True
 		}
-		config['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = {
-			'type': 'boolean',
-			'title': "Disable RBPi Audio",
-			'value': os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0'),
-			'advanced': True,
-			'refresh_on_change': True
-		}
-		if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0') == '0' and os.environ.get('SOUNDCARD_NAME') != "RBPi Headphones":
-			config['ZYNTHIAN_RBPI_HEADPHONES'] = {
+		if not os.environ.get('RBPI_VERSION', '').startswith("Raspberry Pi 5"):
+			config['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = {
 				'type': 'boolean',
-				'title': "RBPi Headphones",
-				'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES', '0')
+				'title': "Disable RBPi Audio",
+				'value': os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0'),
+				'advanced': True,
+				'refresh_on_change': True
 			}
+			if os.environ.get('ZYNTHIAN_DISABLE_RBPI_AUDIO', '0') == '0' and os.environ.get('SOUNDCARD_NAME') != "RBPi Headphones":
+				config['ZYNTHIAN_RBPI_HEADPHONES'] = {
+					'type': 'boolean',
+					'title': "RBPi Headphones",
+					'value': os.environ.get('ZYNTHIAN_RBPI_HEADPHONES', '0')
+				}
 		config['SOUNDCARD_MIXER'] = {
 			'type': 'textarea',
 			'title': "Mixer Controls",
