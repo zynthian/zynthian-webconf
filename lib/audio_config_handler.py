@@ -37,6 +37,7 @@ soundcard_presets = {
 	'V5 ADAC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
 		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS_PI5': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 128 -n 2 -i 2 -o 2 -X raw',
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right,ADC Left,ADC Right,ADC Left Input,ADC Right Input,PGA Gain Left,PGA Gain Right'
 	},
 	'Z2 ADAC': {
@@ -254,6 +255,15 @@ else:
 	del soundcard_presets['RBPi Headphones']
 	del soundcard_presets['RBPi HDMI']
 
+
+try:
+	rpi_version = int(os.environ.get('RBPI_VERSION', '').split(" ")[2])
+except:
+	rpi_version = 4
+if rpi_version >= 5:
+	soundcard_presets['V5 ADAC']['JACKD_OPTIONS'] = soundcard_presets['V5 ADAC']['JACKD_OPTIONS_PI5']
+	del soundcard_presets['V5 ADAC']['JACKD_OPTIONS_PI5']
+
 # ------------------------------------------------------------------------------
 # Audio Configuration Class
 # ------------------------------------------------------------------------------
@@ -321,7 +331,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS', "-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 			'advanced': True
 		}
-		if not os.environ.get('RBPI_VERSION', '').startswith("Raspberry Pi 5"):
+		if rpi_version <= 4:
 			config['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = {
 				'type': 'boolean',
 				'title': "Disable RBPi Audio",
