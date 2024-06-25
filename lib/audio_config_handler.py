@@ -256,11 +256,11 @@ else:
 
 
 try:
-	rpi_version = int(os.environ.get('RBPI_VERSION', '').split(" ")[2])
+	rpi_version_number = int(os.environ.get('RBPI_VERSION_NUMBER', '4'))
 except:
-	rpi_version = 4
+	rpi_version_number = 4
 
-if rpi_version >= 5:
+if rpi_version_number >= 5:
 	for sname, sconfig in soundcard_presets.items():
 		if sconfig["SOUNDCARD_CONFIG"]:
 			sconfig['JACKD_OPTIONS'] = sconfig['JACKD_OPTIONS'].replace("-p 256 -n 2", "-p 128 -n 2 -i 2 -o 2")
@@ -332,7 +332,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 			'value': os.environ.get('ZYNTHIAN_AUBIONOTES_OPTIONS', "-O complex -t 0.5 -s -88  -p yinfft -l 0.5"),
 			'advanced': True
 		}
-		if rpi_version <= 4:
+		if rpi_version_number <= 4:
 			config['ZYNTHIAN_DISABLE_RBPI_AUDIO'] = {
 				'type': 'boolean',
 				'title': "Disable RBPi Audio",
