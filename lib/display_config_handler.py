@@ -388,8 +388,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,rotate=180',
 			'FRAMEBUFFER': '/dev/fb0'
 		},
-		'Generic HDMI Display': {
-			'DISPLAY_CONFIG':  'disable_overscan=1',
+		'Generic HDMI/DSI Display': {
+			'DISPLAY_CONFIG': 'disable_overscan=1',
 			'DISPLAY_WIDTH': '',
 			'DISPLAY_HEIGHT': '',
 			'DISPLAY_ROTATION': "None",
