@@ -263,17 +263,24 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_KERNEL_OPTIONS': '',
 			'FRAMEBUFFER': '/dev/fb0'
 		},
-		'WaveShare 5 DSI': {
+		'WaveShare 5 or 7 DSI': {
 			'DISPLAY_CONFIG':
 				'dtoverlay=vc4-kms-v3d,noaudio\n' +
-				'#DSI1 Use\n' +
-				'dtoverlay=vc4-kms-dsi-7inch\n' +
-				'#DSI0 Use (Only Pi5/CM4)\n' +
-				'#dtoverlay=vc4-kms-dsi-7inch,dsi0\n',
+				'dtoverlay=vc4-kms-dsi-7inch\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'DISPLAY_ROTATION': "None",
 			'DISPLAY_KERNEL_OPTIONS': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		},
+		'WaveShare 5 or 7 DSI (inverted)': {
+			'DISPLAY_CONFIG':
+				'dtoverlay=vc4-kms-v3d,noaudio\n' +
+				'dtoverlay=vc4-kms-dsi-7inch\n',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'DISPLAY_ROTATION': "Inverted",
+			'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480M@60,rotate=180',
 			'FRAMEBUFFER': '/dev/fb0'
 		},
 		'WaveShare 7 HDMI+GPIO 1024x600': {
@@ -332,19 +339,6 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_mode=87\n' +
 				'hdmi_cvt 800 480 60 6 0 0 0' +
 				'dtoverlay=vc4-kms-v3d\n',
-			'DISPLAY_WIDTH': '800',
-			'DISPLAY_HEIGHT': '480',
-			'DISPLAY_ROTATION': "None",
-			'DISPLAY_KERNEL_OPTIONS': '',
-			'FRAMEBUFFER': '/dev/fb0'
-		},
-		'WaveShare 7 DSI': {
-			'DISPLAY_CONFIG':
-				'dtoverlay=vc4-kms-v3d,noaudio\n' +
-				'#DSI1 Use\n' +
-				'dtoverlay=vc4-kms-dsi-7inch\n' +
-				'#DSI0 Use (Only Pi5/CM4)\n' +
-				'#dtoverlay=vc4-kms-dsi-7inch,dsi0\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
 			'DISPLAY_ROTATION': "None",
