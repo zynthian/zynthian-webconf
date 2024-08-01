@@ -287,6 +287,7 @@ function setVScreen(video_src) {
 //-----------------------------------------------------------------------------
 
 function fadeElem(eid, state) {
+  if (noctrls) return;
   var elem = document.querySelector("svg#" + mockup_layout + "_mockup #" + eid)
   if (elem) {
     if (state) {
@@ -301,7 +302,6 @@ function fadeElem(eid, state) {
     }
   }
 }
-
 
 var autoFadeTimeOuts = {}
 
@@ -808,7 +808,9 @@ if (edit_allowed) {
 // Load capture log in mockup
 var url = new URL(window.location.href);
 var log_fname = url.searchParams.get("capture");
-if (log_fname) loadCaptureLog(log_fname)
+if (log_fname) loadCaptureLog(log_fname);
+
+var noctrls = url.searchParams.get("noctrls");
 
 //-----------------------------------------------------------------------------
 </script>
