@@ -82,10 +82,10 @@ class UiConfigHandler(ZynthianConfigHandler):
 				},
 				'advanced': True
 			}],
-			['ZYNTHIAN_UI_ONSCREEN_BUTTONS', {
+			['ZYNTHIAN_UI_TOUCH_NAVIGATION', {
 				'type': 'boolean',
-				'title': 'Enable onscreen buttons',
-				'value': os.environ.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0'),
+				'title': 'Enable touch navigation',
+				'value': os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION', '0'),
 				'advanced': True
 			}],
 			['ZYNTHIAN_UI_ENABLE_CURSOR', {
@@ -240,7 +240,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS'] = self.request.arguments.get('ZYNTHIAN_UI_SNAPSHOT_MIXER_SETTINGS', '0')
 		self.request.arguments['ZYNTHIAN_UI_RESTORE_LAST_STATE'] = self.request.arguments.get('ZYNTHIAN_UI_RESTORE_LAST_STATE', '0')
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
-		self.request.arguments['ZYNTHIAN_UI_ONSCREEN_BUTTONS'] = self.request.arguments.get('ZYNTHIAN_UI_ONSCREEN_BUTTONS', '0')
+		self.request.arguments['ZYNTHIAN_UI_TOUCH_NAVIGATION'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_NAVIGATION', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
 		self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get('ZYNTHIAN_VNCSERVER_ENABLED', '0')
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
