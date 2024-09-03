@@ -43,7 +43,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				#'#hdmi_drive:1=1\n' +
 				#'#hdmi_group:1=2\n' +
 				#'#hdmi_mode:1=87\n' +
-				#'#hdmi_cvt:1 1024 600 70 6 0 0 0\n' +
+				#'#hdmi_cvt:1=1024 600 70 6 0 0 0\n' +
 				#'#config_hdmi_boost:1=4\n' +
 				#'#display_hdmi_rotate=2\n' +
 				#'dtoverlay=vc4-kms-v3d\n' +
@@ -237,9 +237,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=1\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
-				'hdmi_cvt 800 480 60 6 0 0 0\n' +
+				'hdmi_cvt=800 480 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n' +
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
@@ -253,9 +252,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=1\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
-				'hdmi_cvt 800 480 60 6 0 0 0' +
+				'hdmi_cvt=800 480 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
@@ -268,9 +266,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=2\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
-				'hdmi_cvt 1024 600 60 6 0 0 0\n' +
+				'hdmi_cvt=1024 600 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n' +
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '1024',
@@ -284,9 +281,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=2\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
-				'hdmi_cvt 800 480 60 6 0 0 0\n' +
+				'hdmi_cvt=800 480 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n' +
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
@@ -300,9 +296,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=1\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
-				'hdmi_cvt 1024 600 60 6 0 0 0' +
+				'hdmi_cvt=1024 600 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '1024',
 			'DISPLAY_HEIGHT': '600',
@@ -315,12 +310,30 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=1\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
-				'hdmi_cvt 800 480 60 6 0 0 0' +
+				'hdmi_cvt=800 480 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n',
 			'DISPLAY_WIDTH': '800',
 			'DISPLAY_HEIGHT': '480',
+			'DISPLAY_ROTATION': "None",
+			'DISPLAY_KERNEL_OPTIONS': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		},
+		'WaveShare 10.1 HDMI+USB 1920x1080': {
+			'DISPLAY_CONFIG':
+				'hdmi_force_hotplug=1\n' +
+				'hdmi_drive=1\n' +
+				'hdmi_group=2\n' +
+				'hdmi_mode=87\n' +
+				'hdmi_cvt=1920 1080 60 3 0 0 0\n' +
+				'dtoverlay=vc4-kms-v3d\n' +
+				'enable_overscan=1\n' +
+				'overscan_left=8\n' +
+				'overscan_right=8\n' +
+				'overscan_top=0\n' +
+				'overscan_bottom=0\n',
+			'DISPLAY_WIDTH': '1920',
+			'DISPLAY_HEIGHT': '1080',
 			'DISPLAY_ROTATION': "None",
 			'DISPLAY_KERNEL_OPTIONS': '',
 			'FRAMEBUFFER': '/dev/fb0'
@@ -344,10 +357,9 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 				'hdmi_force_hotplug=1\n' +
 				'config_hdmi_boost=7\n' +
 				'hdmi_group=2\n' +
-				'hdmi_mode=1\n' +
 				'hdmi_mode=87\n' +
 				'hdmi_drive=1\n' +
-				'hdmi_cvt 800 480 60 6 0 0 0\n' +
+				'hdmi_cvt=800 480 60 6 0 0 0\n' +
 				'dtoverlay=vc4-kms-v3d\n' +
 				'dtoverlay=ads7846,cs=1,penirq=25,penirq_pull=2,speed=50000,keep_vref_on=0,swapxy=0,pmax=255,xohms=150,xmin=200,xmax=3900,ymin=200,ymax=3900',
 			'DISPLAY_WIDTH': '800',
