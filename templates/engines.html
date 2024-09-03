@@ -332,10 +332,10 @@ function edit_engine_save(close=false) {
             var request_data = "ENGINE_CODE=" + encodeURIComponent(scode)
             request_data += "&ENGINE_ENABLED=" + Number(eng_enabled)
             request_data += "&ENGINE_TITLE=" + encodeURIComponent(eng_title)
-            request_data += "&ENGINE_CAT=" + eng_cat
+            request_data += "&ENGINE_CAT=" + encodeURIComponent(eng_cat)
             request_data += "&ENGINE_QUALITY=" + eng_quality
             request_data += "&ENGINE_COMPLEX=" + eng_complex
-            request_data += "&ENGINE_DESCR=" + eng_descr
+            request_data += "&ENGINE_DESCR=" + encodeURIComponent(eng_descr)
             xhttp.open("PUT", "/sw-engines");
             xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
             xhttp.send(request_data);
