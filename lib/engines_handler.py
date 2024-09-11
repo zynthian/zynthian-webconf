@@ -100,6 +100,7 @@ class EnginesHandler(ZynthianBasicHandler):
 		eng_code = ucargs['ENGINE_CODE'][0]
 		eng_enabled = bool(int(ucargs['ENGINE_ENABLED'][0]))
 		eng_title = ucargs['ENGINE_TITLE'][0]
+		eng_type = ucargs['ENGINE_TYPE'][0]
 		eng_cat = ucargs['ENGINE_CAT'][0]
 		eng_quality = int(ucargs['ENGINE_QUALITY'][0])
 		eng_complex = int(ucargs['ENGINE_COMPLEX'][0])
@@ -110,6 +111,9 @@ class EnginesHandler(ZynthianBasicHandler):
 			edit = 1
 		if eng_title != zynthian_lv2.engines[eng_code]['TITLE']:
 			zynthian_lv2.engines[eng_code]['TITLE'] = eng_title
+			edit = 2
+		if eng_type != zynthian_lv2.engines[eng_code]['TYPE']:
+			zynthian_lv2.engines[eng_code]['TYPE'] = eng_type
 			edit = 2
 		if eng_cat != zynthian_lv2.engines[eng_code]['CAT']:
 			zynthian_lv2.engines[eng_code]['CAT'] = eng_cat

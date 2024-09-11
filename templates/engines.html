@@ -34,6 +34,11 @@ div.engine_edit_sel div.engine_row {
   display: none;
 }
 
+div.engine_edit div.engine_row_edit div {
+  /*padding-left: 0.5em;*/
+  padding-right: 0;
+}
+
 div.engine_edit select {
   height: 2.3em;
   padding: 0.2em;
@@ -126,14 +131,26 @@ div.engine_edit select {
                 </div>
 
                 <div id="engine_edit" class="engine_edit">
-                    <div class="row plugin">
+                    <div class="row plugin engine_row_edit">
                         <input type="hidden" id="EDIT_CODE" value="">
+                        <input type="hidden" id="EDIT_TYPE" value="">
                         <div class="col-xs-1 engine-enabled">
                             <input type="checkbox" id="EDIT_ENABLED" value="">
                         </div>
                         <div class="col-xs-4 engine-title">
                             <input type="text" id="EDIT_TITLE" value="">
                         </div>
+                        <!--
+                        <div class="col-xs-1 engine-type">
+                            <select id="EDIT_TYPE" value="">
+                                <option value="MIDI Synth">MIDI-Synth</option>
+                                <option value="MIDI Tool">MIDI-Tool</option>
+                                <option value="Audio Effect">Audio-FX</option>
+                                <option value="Audio Generator">Audio-Gen</option>
+                                <option value="Special">Special</option>
+                            </select>
+                        </div>
+                        -->
                         <div class="col-xs-2 engine-cat">
                             <select id="EDIT_CAT" value=""></select>
                         </div>
@@ -152,7 +169,7 @@ div.engine_edit select {
                             </select>
                         </div>
                     </div>
-                    <div class="row plugin">
+                    <div class="row plugin engine_row_edit">
                         <div class="col-xs-1">
                             &nbsp;
                         </div>
@@ -160,7 +177,7 @@ div.engine_edit select {
                             <textarea id="EDIT_DESCR"></textarea>
                         </div>
                         <div class="col-xs-1">
-                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme btn-block" onclick="edit_engine_save_close(); event.preventDefault();">OK</button>
+                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme" onclick="edit_engine_save_close(); event.preventDefault();">OK</button>
                         </div>
                     </div>
                 </div>
@@ -249,7 +266,9 @@ function edit_engine(ecode) {
     document.getElementById("EDIT_QUALITY").value = eng_info[ecode]["QUALITY"]
     document.getElementById("EDIT_COMPLEX").value = eng_info[ecode]["COMPLEX"]
     document.getElementById("EDIT_DESCR").value = eng_info[ecode]["DESCR"]
-    // Category select options by type
+    document.getElementById("EDIT_TYPE").value = eng_info[ecode]["TYPE"]
+
+    // Category => select options by type
     var cat_select = document.getElementById("EDIT_CAT")
     var n = cat_select.options.length - 1
     for (var i = n; i >= 0; i--) {
@@ -262,6 +281,7 @@ function edit_engine(ecode) {
         cat_select.add(option)
     }
     cat_select.value = eng_info[ecode]["CAT"]
+
     // DOM manupulation
     dst_elm.appendChild(src_elm)
     src_elm.style.display = "block"
@@ -273,6 +293,7 @@ function edit_engine_save(close=false) {
     if (scode) {
         var eng_enabled = Boolean(document.getElementById("EDIT_ENABLED").checked)
         var eng_title = document.getElementById("EDIT_TITLE").value
+        var eng_type = document.getElementById("EDIT_TYPE").value
         var eng_cat = document.getElementById("EDIT_CAT").value
         var eng_quality = Number(document.getElementById("EDIT_QUALITY").value)
         var eng_complex = Number(document.getElementById("EDIT_COMPLEX").value)
@@ -285,6 +306,10 @@ function edit_engine_save(close=false) {
         }
         if (eng_info[scode]["TITLE"] != eng_title) {
             eng_info[scode]["TITLE"] = eng_title
+            edit = 2
+        }
+        if (eng_info[scode]["TYPE"] != eng_type) {
+            eng_info[scode]["TYPE"] = eng_type
             edit = 2
         }
         if (eng_info[scode]["CAT"] != eng_cat) {
@@ -320,6 +345,7 @@ function edit_engine_save(close=false) {
             var eng_div = "div#engine_row_" + eng_info[scode]['ID']
             document.querySelector(eng_div + " div.engine-enabled input").checked = eng_enabled;
             document.querySelector(eng_div + " div.engine-title").textContent = eng_title;
+            document.querySelector(eng_div + " div.engine-cat").textContent = eng_type;
             document.querySelector(eng_div + " div.engine-cat").textContent = eng_cat;
             document.querySelector(eng_div + " div.engine-quality span.ranking_star_on").textContent = '★'.repeat(eng_quality);
             document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_quality);
@@ -332,6 +358,7 @@ function edit_engine_save(close=false) {
             var request_data = "ENGINE_CODE=" + encodeURIComponent(scode)
             request_data += "&ENGINE_ENABLED=" + Number(eng_enabled)
             request_data += "&ENGINE_TITLE=" + encodeURIComponent(eng_title)
+            request_data += "&ENGINE_TYPE=" + eng_type
             request_data += "&ENGINE_CAT=" + encodeURIComponent(eng_cat)
             request_data += "&ENGINE_QUALITY=" + eng_quality
             request_data += "&ENGINE_COMPLEX=" + eng_complex
