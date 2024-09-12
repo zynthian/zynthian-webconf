@@ -45,6 +45,7 @@
 
 	<p>&nbsp;<br/></p>
 	<p>If you already have a Pianoteq licence, you can install the licensed binary and activate it with your license key. Also, you can upgrade to newer versions or install PTQ modules.</p>
+	<p>Please, note that <b>Pianoteq 6 is no longer supported by zynthian</b>. Only Pianoteq 7 & 8 are supported in ARM64.</p>
 
 	<div id='binary-info'>
 		<div class="col-lg-12 col-md-12 col-xs-12">
@@ -124,12 +125,6 @@
 			<a href="/sys-reboot" class="btn btn-lg btn-theme btn-block">Reboot your Zynthian!</a>
 		</p>
 	</div>
-
-	{% if config['ZYNTHIAN_PIANOTEQ_VERSION'] < "7.5.0" %}
-	<div id="update-cache">
-		<button name="ZYNTHIAN_PIANOTEQ_ACTION" value="UPDATE_PRESETS_CACHE" class="btn btn-lg btn-theme btn-block">Update Presets</button>
-	</div>
-	{% end %}
 
 	<div>
 		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}

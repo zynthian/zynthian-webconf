@@ -31,10 +31,9 @@ import tornado.web
 from xml.etree import ElementTree
 from subprocess import check_output, STDOUT
 
-from lib.zynthian_config_handler import ZynthianBasicHandler
-from zyngine.zynthian_engine_pianoteq import *
-from zyngine.zynthian_engine_pianoteq6 import zynthian_engine_pianoteq6
 import zynconf
+from zyngine.zynthian_engine_pianoteq import *
+from lib.zynthian_config_handler import ZynthianBasicHandler
 
 #sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 
@@ -81,7 +80,6 @@ class PianoteqHandler(ZynthianBasicHandler):
 				errors = {
 					'INSTALL_PIANOTEQ': lambda: self.do_install_pianoteq(),
 					'ACTIVATE_LICENSE': lambda: self.do_activate_license(),
-					'UPDATE_PRESETS_CACHE': lambda: self.do_update_presets_cache(),
 					'SAVE_CONFIG': lambda: self.do_save_config()
 				}[action]()
 			except Exception as err:
@@ -149,9 +147,6 @@ class PianoteqHandler(ZynthianBasicHandler):
 		else:
 			self.pianoteq_autoconfig()
 
-	def do_update_presets_cache(self):
-		zynthian_engine_pianoteq6(None, True)
-
 	def get_license_key(self):
 		#xpath with fromstring doesn't work
 		if os.path.exists(PIANOTEQ_CONFIG_FILE):
@@ -195,9 +190,5 @@ class PianoteqHandler(ZynthianBasicHandler):
 				config["ZYNTHIAN_PIANOTEQ_CPU_OVERLOAD_DETECTION"] = info["cpu_overload_detection"]
 
 			zynconf.save_config(config, updsys=True)
-
-			# Regenerate presets cache
-			if not info['api']:
-				self.do_update_presets_cache()
 
 # *****************************************************************************
