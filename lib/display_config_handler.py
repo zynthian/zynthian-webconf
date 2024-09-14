@@ -37,7 +37,7 @@ from lib.zynthian_config_handler import ZynthianConfigHandler
 class DisplayConfigHandler(ZynthianConfigHandler):
 	display_presets = {
 		'Z2 Display': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'hdmi_force_hotplug:0=0\n' +
 				'hdmi_force_hotplug:1=1\n' +
 				#'#hdmi_drive:1=1\n' +
@@ -148,7 +148,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		},
 		'WaveShare 3.5B': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'dtoverlay=waveshare35b\n' +
 				'#dtoverlay=waveshare35b:rotate=90,swapxy=1,invertx=1\n' +
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
@@ -159,7 +159,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		},
 		'WaveShare 3.5B V2': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'dtoverlay=waveshare35b-v2\n' +
 				'#dtoverlay=waveshare35b-v2:rotate=90,swapxy=1,invertx=1\n' +
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
@@ -181,7 +181,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		},
 		'WaveShare 4A GPIO-only': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'dtoverlay=waveshare35a:rotate=90\n' +
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
@@ -191,7 +191,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		},
 		'WaveShare 4c GPIO-only': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'dtoverlay=waveshare4c-overlay:rotate=90\n' +
 				'#dtoverlay=ads7846,cs=1,penirq=17,penirq_pull=2,speed=1000000,keep_vref_on=1,swapxy=1,pmax=255,xohms=60,xmin=200,xmax=3900,ymin=200,ymax=3900\n',
 			'DISPLAY_WIDTH': '480',
@@ -217,7 +217,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb0'
 		},
 		'WaveShare 4.3 HDMI+GPIO (inverted)': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'display_rotate=2\n' +
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_group=2\n' +
@@ -248,7 +248,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb0'
 		},
 		'WaveShare 5 HDMI+USB': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'hdmi_force_hotplug=1\n' +
 				'hdmi_drive=1\n' +
 				'hdmi_group=2\n' +
@@ -259,6 +259,26 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'DISPLAY_HEIGHT': '480',
 			'DISPLAY_ROTATION': "None",
 			'DISPLAY_KERNEL_OPTIONS': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		},
+		'WaveShare 5 or 7 DSI': {
+			'DISPLAY_CONFIG':
+				'dtoverlay=vc4-kms-v3d,noaudio\n' +
+				'dtoverlay=vc4-kms-dsi-7inch\n',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'DISPLAY_ROTATION': "None",
+			'DISPLAY_KERNEL_OPTIONS': '',
+			'FRAMEBUFFER': '/dev/fb0'
+		},
+		'WaveShare 5 or 7 DSI (inverted)': {
+			'DISPLAY_CONFIG':
+				'dtoverlay=vc4-kms-v3d,noaudio\n' +
+				'dtoverlay=vc4-kms-dsi-7inch\n',
+			'DISPLAY_WIDTH': '800',
+			'DISPLAY_HEIGHT': '480',
+			'DISPLAY_ROTATION': "Inverted",
+			'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480M@60,rotate=180',
 			'FRAMEBUFFER': '/dev/fb0'
 		},
 		'WaveShare 7 HDMI+GPIO 1024x600': {
@@ -353,7 +373,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
 			'FRAMEBUFFER': '/dev/fb1'
 		},
 		'MPI5008 800x480': {
-			'DISPLAY_CONFIG': 
+			'DISPLAY_CONFIG':
 				'hdmi_force_hotplug=1\n' +
 				'config_hdmi_boost=7\n' +
 				'hdmi_group=2\n' +
