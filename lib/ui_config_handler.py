@@ -94,6 +94,23 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
 				'advanced': True
 			}],
+			['ZYNTHIAN_TOUCH_KEYPAD', {
+				'type': 'select',
+				'title': 'Touch keypad',
+				'value':  os.environ.get('ZYNTHIAN_TOUCH_KEYPAD', ''),
+				'options': ['', 'V5'],
+				'option_labels': {
+					'': 'None',
+					'V5': 'V5 buttons',
+				},
+				'advanced': True
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', {
+				'type': 'boolean',
+				'title': 'Touch keypad on left side',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', '1'),
+				'advanced': True
+			}],
 			['ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS', {
 				'type': 'select',
 				'title': 'Visible mixer strips',
@@ -242,6 +259,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_NAVIGATION'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_NAVIGATION', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
+		self.request.arguments['ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT'] = self.request.arguments.get('ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', '0')
 		self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get('ZYNTHIAN_VNCSERVER_ENABLED', '0')
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 		errors = self.update_config(escaped_arguments)
