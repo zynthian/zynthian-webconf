@@ -103,7 +103,6 @@ class UiConfigHandler(ZynthianConfigHandler):
 					'': 'None',
 					'V5': 'V5 buttons',
 				},
-				'advanced': True
 			}],
 			['ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', {
 				'type': 'boolean',
