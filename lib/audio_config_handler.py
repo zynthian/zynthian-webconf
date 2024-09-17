@@ -33,115 +33,125 @@ from zyngine.zynthian_engine_alsa_mixer import *
 # Soundcard Presets
 # ------------------------------------------------------------------------------
 
+if int(os.environ.get('RBPI_VERSION_NUMBER', '4')) > 4:
+	default_i2s_bufreq_config = "-r 48000 -p 128 -n 2"
+else:
+	default_i2s_bufreq_config = "-r 48000 -p 256 -n 2"
+
 soundcard_presets = {
 	'V5 ADAC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right,ADC Left,ADC Right,ADC Left Input,ADC Right Input,PGA Gain Left,PGA Gain Right'
 	},
 	'Z2 ADAC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right,PGA Gain Left,PGA Gain Right,ADC Left Input,ADC Right Input,ADC Left,ADC Right'
 	},
 	'ZynADAC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,PGA Gain Left,Digital Right,PGA Gain Right,ADC Left Input,ADC Left,ADC Right Input,ADC Right'
+	},
+	'HifiBerry DAC8X': {
+		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dac8x\nforce_eeprom_read=0',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -o 8 -X raw",
+		'SOUNDCARD_MIXER': ''
 	},
 	'HifiBerry DAC+ ADC PRO': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadcpro\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,PGA Gain Left,Digital Right,PGA Gain Right,ADC Left Input,ADC Left,ADC Right Input,ADC Right'
 	},
 	'HifiBerry DAC+ ADC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplusadc\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	},
 	'HifiBerry DAC+': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dacplus\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	},
 	'HifiBerry DAC+ light': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dac\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	},
 	'HifiBerry DAC+ RTC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-dac\ndtoverlay=i2c-rtc,ds130\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,Digital Right'
 	},
 	'HifiBerry Digi': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-digi\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'HifiBerry Amp': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=hifiberry-amp\nforce_eeprom_read=0',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:sndrpihifiberry -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:sndrpihifiberry {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'AlloBoss - Innomaker - PCM5142': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=allo-boss-dac-pcm512x-audio',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:BossDAC -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:BossDAC {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': 'Digital Left,PGA Gain Left,Digital Right,PGA Gain Right,ADC Left Input,ADC Left,ADC Right Input,ADC Right'
 	},
 	'AudioInjector': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-wm8731-audio',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:audioinjectorpi -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:audioinjectorpi {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Master Left,Capture Left,Master Right,Capture Right'
 	},
 	'AudioInjector Isolated': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-isolated-soundcard',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:audioinjectoris -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:audioinjectoris {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'Master Left,Master Right'
 	},
 	'AudioInjector Ultra': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=audioinjector-ultra',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:audioinjectorul -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:audioinjectorul {default_i2s_bufreq_config} -o 2 -i 2 -X raw",
 		'SOUNDCARD_MIXER': 'DAC Left,DAC Right,PGA'
 	},
 	'Fe-Pi Audio': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=fe-pi-audio',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:0 {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'IQAudio DAC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-dac',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:IQaudIODAC -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:IQaudIODAC {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'IQAudio DAC+': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-dacplus',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:IQaudIODAC -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:IQaudIODAC {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'IQAudio Digi': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=iqaudio-digi-wm8804-audio',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:0 {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'JustBoom DAC': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=justboom-dac',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:0 {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'JustBoom Digi': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=justboom-digi',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:0 {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'PiSound': {
 		'SOUNDCARD_CONFIG': 'dtoverlay=pisound',
-		'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:pisound -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -S -d alsa -d hw:pisound {default_i2s_bufreq_config} -o 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'Generic USB device': {
 		'SOUNDCARD_CONFIG': '',
-		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
+		'JACKD_OPTIONS': f"-P 70 -s -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw",
 		'SOUNDCARD_MIXER': ''
 	},
 	'Behringer UCA222': {
@@ -216,12 +226,12 @@ soundcard_presets = {
 	},
 	'RBPi Headphones': {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
-		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -o 2 -p 512 -n 3 -X raw',
+		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -p 512 -n 3 -o 2 -X raw',
 		'SOUNDCARD_MIXER': 'Headphone'
 	},
 	'RBPi HDMI': {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on',
-		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -o 2 -p 512 -n 2 -X raw',
+		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -p 512 -n 2 -o 2 -X raw',
 		'SOUNDCARD_MIXER': 'HDMI Left,HDMI Right'
 	},
 	'Dummy device': {
