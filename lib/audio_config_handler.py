@@ -270,11 +270,6 @@ try:
 except:
 	rpi_version_number = 4
 
-if rpi_version_number >= 5:
-	for sname, sconfig in soundcard_presets.items():
-		if sconfig["SOUNDCARD_CONFIG"]:
-			sconfig['JACKD_OPTIONS'] = sconfig['JACKD_OPTIONS'].replace("-p 256 -n 2", "-p 128 -n 2 -i 2 -o 2")
-
 # ------------------------------------------------------------------------------
 # Audio Configuration Class
 # ------------------------------------------------------------------------------
