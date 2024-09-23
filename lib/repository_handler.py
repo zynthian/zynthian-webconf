@@ -67,19 +67,21 @@ class RepositoryHandler(ZynthianConfigHandler):
 			version = self.stable_branch
 		errors = {}
 		changed_repos = 0
-		for posted_config_key in postedConfig:
-			if posted_config_key.startswith("ZYNTHIAN_REPO_"):
-				repo_name = posted_config_key[len("ZYNTHIAN_REPO_"):]
+		for repitem in self.repository_list:
+			posted_key = f"ZYNTHIAN_REPO_{repitem[0]}"
+			if version == "custom":
 				try:
-					if version == "custom":
-						branch = postedConfig[posted_config_key][0]
-					else:
-						branch = version
-					if self.set_repo_branch(repo_name, branch):
-						changed_repos += 1
-				except Exception as err:
-					logging.error(err)
-					errors[f"ZYNTHIAN_REPO_{repo_name}"] = err
+					branch = postedConfig[posted_key][0]
+				except:
+					branch = None
+			else:
+				branch = version
+			try:
+				if branch and self.set_repo_branch(repitem[0], branch):
+					changed_repos += 1
+			except Exception as err:
+				logging.error(err)
+				errors[posted_key] = err
 
 		config = self.get_config_info(version)
 		if changed_repos > 0:
