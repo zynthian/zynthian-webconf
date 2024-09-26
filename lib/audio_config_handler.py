@@ -32,8 +32,11 @@ from zyngine.zynthian_engine_alsa_mixer import *
 # ------------------------------------------------------------------------------
 # Soundcard Presets
 # ------------------------------------------------------------------------------
-
-if int(os.environ.get('RBPI_VERSION_NUMBER', '4')) > 4:
+try:
+	rpi_version_number = int(os.environ.get('RBPI_VERSION_NUMBER', '4'))
+except:
+	rpi_version_number = 4
+if rpi_version_number == 5:
 	default_i2s_bufreq_config = "-r 48000 -p 128 -n 2"
 else:
 	default_i2s_bufreq_config = "-r 48000 -p 256 -n 2"
@@ -263,12 +266,6 @@ elif rbpi_device_name == "ALSA":
 else:
 	del soundcard_presets['RBPi Headphones']
 	del soundcard_presets['RBPi HDMI']
-
-
-try:
-	rpi_version_number = int(os.environ.get('RBPI_VERSION_NUMBER', '4'))
-except:
-	rpi_version_number = 4
 
 # ------------------------------------------------------------------------------
 # Audio Configuration Class
