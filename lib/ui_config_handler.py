@@ -94,6 +94,22 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'value': os.environ.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0'),
 				'advanced': True
 			}],
+			['ZYNTHIAN_TOUCH_KEYPAD', {
+				'type': 'select',
+				'title': 'Touch keypad',
+				'value':  os.environ.get('ZYNTHIAN_TOUCH_KEYPAD', ''),
+				'options': ['', 'V5'],
+				'option_labels': {
+					'': 'None',
+					'V5': 'V5 buttons',
+				},
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', {
+				'type': 'boolean',
+				'title': 'Touch keypad on left side',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', '1'),
+				'advanced': True
+			}],
 			['ZYNTHIAN_UI_VISIBLE_MIXER_STRIPS', {
 				'type': 'select',
 				'title': 'Visible mixer strips',
@@ -230,8 +246,89 @@ class UiConfigHandler(ZynthianConfigHandler):
 				'title': 'Panel highlight color',
 				'value': os.environ.get('ZYNTHIAN_UI_COLOR_PANEL_HL', "#2a323d"),
 				'advanced': True
-			}]
+			}],
+			['_SECTION_TOUCH_KEYPAD_COLORS_', {
+				'type': 'html',
+				'content': "<h3>Touch keypad colors</h3>",
+				'advanced': True
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_COLOR_DEFAULT', {
+				'type': 'text',
+				'title': 'Default color',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_COLOR_DEFAULT', "#1070FE"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_COLOR_ALT', {
+				'type': 'text',
+				'title': 'Alt color',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_COLOR_ALT', "#D662FE"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_COLOR_ACTIVE', {
+				'type': 'text',
+				'title': 'Active color',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_COLOR_ACTIVE', "#00FA00"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_COLOR_ACTIVE2', {
+				'type': 'text',
+				'title': 'Active2 color',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_COLOR_ACTIVE2', "#FF6A00"),
+				'advanced': True
+			}],
+			['ZYNTHIAN_TOUCH_KEYPAD_COLOR_ADMIN', {
+				'type': 'text',
+				'title': 'Admin color',
+				'value': os.environ.get('ZYNTHIAN_TOUCH_KEYPAD_COLOR_ADMIN', "#FE2C2F"),
+				'advanced': True
+			}],
+			['_SECTION_TOUCH_KEYPAD_LABELS_', {
+				'type': 'html',
+				'content': "<h3>Touch keypad labels</h3>",
+				'advanced': True
+			}],
 		])
+
+		div_class = "col-sm-3 col-xs-12 col-fixheight"
+		div_class2 = "col-sm-2 col-xs-9 col-fixheight col-thin-padding-extra"
+		for n in range(20):
+			basename = 'ZYNTHIAN_TOUCH_KEYPAD_LABEL_{:02d}'.format(n+1)
+			title = 'Button-{} label'.format(n+1)
+			config[basename + '_DEFAULT'] = {
+				'type': 'text',
+				'title': title,
+				'value': os.environ.get(basename + '_DEFAULT'),
+				'advanced': True,
+				'div_class': div_class,
+			}
+			config[basename + '_ALT'] = {
+				'type': 'text',
+				'title': 'Alt',
+				'value': os.environ.get(basename + '_ALT'),
+				'advanced': True,
+				'div_class': div_class2,
+			}
+			config[basename + '_ACTIVE'] = {
+				'type': 'text',
+				'title': 'Active',
+				'value': os.environ.get(basename + '_ACTIVE'),
+				'advanced': True,
+				'div_class': div_class2,
+			}
+			config[basename + '_ACTIVE2'] = {
+				'type': 'text',
+				'title': 'Active2',
+				'value': os.environ.get(basename + '_ACTIVE2'),
+				'advanced': True,
+				'div_class': div_class2,
+			}
+			# Add Separator
+			config['_SEP_BTN_{}_'.format(n+1)] = {
+				'type': 'html',
+				'content': "<hr>",
+				'advanced': True
+			}
+
 		super().get("User Interface", config, errors)
 
 
@@ -242,6 +339,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 		self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get('ZYNTHIAN_UI_ENABLE_CURSOR', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_NAVIGATION'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_NAVIGATION', '0')
 		self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get('ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
+		self.request.arguments['ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT'] = self.request.arguments.get('ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', '0')
 		self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get('ZYNTHIAN_VNCSERVER_ENABLED', '0')
 		escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
 		errors = self.update_config(escaped_arguments)
