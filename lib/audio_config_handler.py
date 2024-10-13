@@ -227,6 +227,11 @@ soundcard_presets = {
 		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
 		'SOUNDCARD_MIXER': 'Speaker Left,Mic Left,Speaker Right,Mic Right'
 	},
+	'Tascam US-2x2HR': {
+		'SOUNDCARD_CONFIG': '',
+		'JACKD_OPTIONS': '-P 70 -t 2000 -s -d alsa -d hw:US2x2HR -r 48000 -p 256 -n 2 -X raw',
+		'SOUNDCARD_MIXER': ''
+	},
 	'RBPi Headphones': {
 		'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
 		'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -p 512 -n 3 -o 2 -X raw',
