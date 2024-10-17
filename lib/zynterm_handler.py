@@ -34,10 +34,10 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 
 class ZyntermHandler(ZynthianBasicHandler):
 
-	@tornado.web.authenticated
-	def get(self):
-		config = {
-			"xstatic": self.application.settings['xstatic_url'],
-			"ws_url_path": "/zynterm_ws"
-		}
-		super().get("zynterm.html", "Terminal", config, None)
+    @tornado.web.authenticated
+    def get(self):
+        config = {
+            "xstatic": self.application.settings['xstatic_url'],
+            "ws_url_path": "/zynterm_ws"
+        }
+        super().get("zynterm.html", "Terminal", config, None)

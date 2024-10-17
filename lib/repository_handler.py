@@ -40,163 +40,171 @@ from lib.wiring_config_handler import WiringConfigHandler
 # ------------------------------------------------------------------------------
 
 class RepositoryHandler(ZynthianConfigHandler):
-	zynthian_base_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian")
-	stable_branch = os.environ.get('ZYNTHIAN_STABLE_BRANCH', "oram")
-	stable_tag = os.environ.get('ZYNTHIAN_STABLE_TAG', "2409")
-	testing_branch = os.environ.get('ZYNTHIAN_TESTING_BRANCH', "oram")
+    zynthian_base_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian")
+    stable_branch = os.environ.get('ZYNTHIAN_STABLE_BRANCH', "oram")
+    stable_tag = os.environ.get('ZYNTHIAN_STABLE_TAG', "2409")
+    testing_branch = os.environ.get('ZYNTHIAN_TESTING_BRANCH', "oram")
 
-	repository_list = [
-		['zynthian-ui', False],
-		['zynthian-webconf', False],
-		['zyncoder', True],
-		['zynthian-sys', True],
-		['zynthian-data', True]
-	]
+    repository_list = [
+        ['zynthian-ui', False],
+        ['zynthian-webconf', False],
+        ['zyncoder', True],
+        ['zynthian-sys', True],
+        ['zynthian-data', True]
+    ]
 
-	@tornado.web.authenticated
-	def get(self, errors=None):
-		super().get("Repositories", self.get_config_info(), errors)
+    @tornado.web.authenticated
+    def get(self, errors=None):
+        super().get("Repositories", self.get_config_info(), errors)
 
-	@tornado.web.authenticated
-	def post(self):
-		postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
-		logging.info(postedConfig)
-		try:
-			version = postedConfig['ZYNTHIAN_VERSION'][0]
-		except:
-			version = self.stable_branch
-		errors = {}
-		changed_repos = 0
-		for repitem in self.repository_list:
-			posted_key = f"ZYNTHIAN_REPO_{repitem[0]}"
-			if version == "custom":
-				try:
-					branch = postedConfig[posted_key][0]
-				except:
-					branch = None
-			else:
-				branch = version
-			try:
-				if branch and self.set_repo_branch(repitem[0], branch):
-					changed_repos += 1
-			except Exception as err:
-				logging.error(err)
-				errors[posted_key] = err
+    @tornado.web.authenticated
+    def post(self):
+        postedConfig = tornado.escape.recursive_unicode(self.request.arguments)
+        logging.info(postedConfig)
+        try:
+            version = postedConfig['ZYNTHIAN_VERSION'][0]
+        except:
+            version = self.stable_branch
+        errors = {}
+        changed_repos = 0
+        for repitem in self.repository_list:
+            posted_key = f"ZYNTHIAN_REPO_{repitem[0]}"
+            if version == "custom":
+                try:
+                    branch = postedConfig[posted_key][0]
+                except:
+                    branch = None
+            else:
+                branch = version
+            try:
+                if branch and self.set_repo_branch(repitem[0], branch):
+                    changed_repos += 1
+            except Exception as err:
+                logging.error(err)
+                errors[posted_key] = err
 
-		config = self.get_config_info(version)
-		if changed_repos > 0:
-			config['ZYNTHIAN_MESSAGE'] = {
-				'type': 'html',
-				'content': "<div class='alert alert-success'>Some repo changed its branch. You may want to <a href='/sw-update'>update the software</a> for getting the latest changes.</div>"
-			}
-			#self.reboot_flag = True
+        config = self.get_config_info(version)
+        if changed_repos > 0:
+            config['ZYNTHIAN_MESSAGE'] = {
+                'type': 'html',
+                'content': "<div class='alert alert-success'>Some repo changed its branch. You may want to <a href='/sw-update'>update the software</a> for getting the latest changes.</div>"
+            }
+            # self.reboot_flag = True
 
-		super().get("Repositories", config, errors)
+        super().get("Repositories", config, errors)
 
-	def get_config_info(self, version=None):
-		stable_overall = True
-		testing_overall = True
-		repo_branches = []
-		for repitem in self.repository_list:
-			branch = self.get_repo_current_branch(repitem[0])
-			stable_overall &= (branch == self.stable_branch)
-			testing_overall &= (branch == self.testing_branch)
-			repo_branches.append(branch)
-		if version is None:
-			if stable_overall:
-				version = self.stable_branch
-			elif testing_overall:
-				version = self.testing_branch
-			else:
-				version = "custom"
+    def get_config_info(self, version=None):
+        stable_overall = True
+        testing_overall = True
+        repo_branches = []
+        for repitem in self.repository_list:
+            branch = self.get_repo_current_branch(repitem[0])
+            stable_overall &= (branch == self.stable_branch)
+            testing_overall &= (branch == self.testing_branch)
+            repo_branches.append(branch)
+        if version is None:
+            if stable_overall:
+                version = self.stable_branch
+            elif testing_overall:
+                version = self.testing_branch
+            else:
+                version = "custom"
 
-		config = {
-			"ZYNTHIAN_VERSION": {
-				'type': 'select',
-				'title': 'Version',
-				'value': version,
-				'options': [self.stable_branch, self.testing_branch, "custom"],
-				'option_labels': {self.stable_branch: f"stable ({self.stable_branch})", self.testing_branch: f"testing ({self.testing_branch})", "custom": "custom"},
-				'refresh_on_change': True,
-				'advanced': False
-			}
-		}
-		if version == "custom":
-			for i, repitem in enumerate(self.repository_list):
-				options = self.get_repo_branch_list(repitem[0])
-				config[f"ZYNTHIAN_REPO_{repitem[0]}"] = {
-					'type': 'select',
-					'title': repitem[0],
-					'value': repo_branches[i],
-					'options': options,
-					'option_labels': OrderedDict([(opt, opt) for opt in options]),
-					'advanced': repitem[1]
-				}
-		config['_SPACER_'] = {
-			'type': 'html',
-			'content': "<br>"
-		}
-		return config
+        config = {
+            "ZYNTHIAN_VERSION": {
+                'type': 'select',
+                'title': 'Version',
+                        'value': version,
+                        'options': [self.stable_branch, self.testing_branch, "custom"],
+                        'option_labels': {self.stable_branch: f"stable ({self.stable_branch})", self.testing_branch: f"testing ({self.testing_branch})", "custom": "custom"},
+                        'refresh_on_change': True,
+                        'advanced': False
+            }
+        }
+        if version == "custom":
+            for i, repitem in enumerate(self.repository_list):
+                options = self.get_repo_branch_list(repitem[0])
+                config[f"ZYNTHIAN_REPO_{repitem[0]}"] = {
+                    'type': 'select',
+                    'title': repitem[0],
+                    'value': repo_branches[i],
+                    'options': options,
+                    'option_labels': OrderedDict([(opt, opt) for opt in options]),
+                    'advanced': repitem[1]
+                }
+        config['_SPACER_'] = {
+            'type': 'html',
+            'content': "<br>"
+        }
+        return config
 
-	def get_repo_tag_list(self, repo_name):
-		result = ["master"]
-		repo_dir = self.zynthian_base_dir + "/" + repo_name
+    def get_repo_tag_list(self, repo_name):
+        result = ["master"]
+        repo_dir = self.zynthian_base_dir + "/" + repo_name
 
-		check_output("cd {}; git remote update origin --prune".format(repo_dir), shell=True)
-		for byteLine in check_output("cd {}; git tag".format(repo_dir), shell=True).splitlines():
-			result.append(byteLine.decode("utf-8").strip())
+        check_output(
+            "cd {}; git remote update origin --prune".format(repo_dir), shell=True)
+        for byteLine in check_output("cd {}; git tag".format(repo_dir), shell=True).splitlines():
+            result.append(byteLine.decode("utf-8").strip())
 
-		return result
+        return result
 
-	def get_repo_branch_list(self, repo_name):
-		result = ["master"]
-		repo_dir = self.zynthian_base_dir + "/" + repo_name
+    def get_repo_branch_list(self, repo_name):
+        result = ["master"]
+        repo_dir = self.zynthian_base_dir + "/" + repo_name
 
-		check_output("cd {}; git remote update origin --prune".format(repo_dir), shell=True)
-		for byteLine in check_output("cd {}; git branch -a".format(repo_dir), shell=True).splitlines():
-			bname = byteLine.decode("utf-8").strip()
-			if bname.startswith("*"):
-				bname = bname[2:]
-			if bname.startswith("remotes/origin/"):
-				bname = bname[15:]
-			if "->" in bname:
-				continue
-			if bname not in result:
-				result.append(bname)
+        check_output(
+            "cd {}; git remote update origin --prune".format(repo_dir), shell=True)
+        for byteLine in check_output("cd {}; git branch -a".format(repo_dir), shell=True).splitlines():
+            bname = byteLine.decode("utf-8").strip()
+            if bname.startswith("*"):
+                bname = bname[2:]
+            if bname.startswith("remotes/origin/"):
+                bname = bname[15:]
+            if "->" in bname:
+                continue
+            if bname not in result:
+                result.append(bname)
 
-		return result
+        return result
 
-	def get_repo_current_branch(self, repo_name):
-		repo_dir = self.zynthian_base_dir + "/" + repo_name
+    def get_repo_current_branch(self, repo_name):
+        repo_dir = self.zynthian_base_dir + "/" + repo_name
 
-		for byteLine in check_output("cd {}; git branch | grep \* | cut -d ' ' -f2".format(repo_dir),
-									 shell=True).splitlines():
-			return byteLine.decode("utf-8")
+        for byteLine in check_output("cd {}; git branch | grep \* | cut -d ' ' -f2".format(repo_dir),
+                                     shell=True).splitlines():
+            return byteLine.decode("utf-8")
 
-	def set_repo_tag(self, repo_name, tag_name):
-		logging.info("Changing repository '{}' to tag '{}'".format(repo_name, tag_name))
+    def set_repo_tag(self, repo_name, tag_name):
+        logging.info("Changing repository '{}' to tag '{}'".format(
+            repo_name, tag_name))
 
-		repo_dir = self.zynthian_base_dir + "/" + repo_name
-		current_branch = self.get_repo_current_branch(repo_name)
+        repo_dir = self.zynthian_base_dir + "/" + repo_name
+        current_branch = self.get_repo_current_branch(repo_name)
 
-		if tag_name != current_branch:
-			logging.info("... needs change: '{}' != '{}'".format(current_branch, tag_name))
-			if tag_name == 'master':
-				check_output("cd {}; git checkout .; git checkout {}".format(repo_dir, tag_name), shell=True)
-			else:
-				check_output(
-					"cd {}; git checkout .; git branch -d {}; git checkout tags/{} -b {}".format(repo_dir, tag_name,
-																								 tag_name, tag_name),
-					shell=True)
-			return True
+        if tag_name != current_branch:
+            logging.info("... needs change: '{}' != '{}'".format(
+                current_branch, tag_name))
+            if tag_name == 'master':
+                check_output("cd {}; git checkout .; git checkout {}".format(
+                    repo_dir, tag_name), shell=True)
+            else:
+                check_output(
+                    "cd {}; git checkout .; git branch -d {}; git checkout tags/{} -b {}".format(repo_dir, tag_name,
+                                                                                                 tag_name, tag_name),
+                    shell=True)
+            return True
 
-	def set_repo_branch(self, repo_name, branch_name):
-		logging.info("Changing repository '{}' to branch '{}'".format(repo_name, branch_name))
+    def set_repo_branch(self, repo_name, branch_name):
+        logging.info("Changing repository '{}' to branch '{}'".format(
+            repo_name, branch_name))
 
-		repo_dir = self.zynthian_base_dir + "/" + repo_name
-		current_branch = self.get_repo_current_branch(repo_name)
+        repo_dir = self.zynthian_base_dir + "/" + repo_name
+        current_branch = self.get_repo_current_branch(repo_name)
 
-		if branch_name != current_branch:
-			logging.info("... needs change: '{}' != '{}'".format(current_branch, branch_name))
-			check_output("cd {}; git checkout .; git checkout {}".format(repo_dir, branch_name), shell=True)
-			return True
+        if branch_name != current_branch:
+            logging.info("... needs change: '{}' != '{}'".format(
+                current_branch, branch_name))
+            check_output("cd {}; git checkout .; git checkout {}".format(
+                repo_dir, branch_name), shell=True)
+            return True

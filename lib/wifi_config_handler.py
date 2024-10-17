@@ -23,6 +23,7 @@
 #
 # ********************************************************************
 
+import zynconf
 import os
 import sys
 import logging
@@ -31,7 +32,6 @@ import tornado.web
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
-import zynconf
 
 # ------------------------------------------------------------------------------
 # Wifi Config Handler
@@ -40,48 +40,47 @@ import zynconf
 
 class WifiConfigHandler(ZynthianBasicHandler):
 
-	@tornado.web.authenticated
-	def get(self, errors=None):
-		networks = []
-		for wifi in zynconf.get_wifi_list():
-			networks.append({
-				'ssid': wifi[0],
-				'description': wifi[2],
-				'configured': wifi[3],
-				'enabled': wifi[4]
-			})
-		config = {
-			'ZYNTHIAN_WIFI_STATUS': zynconf.get_nwdev_status_code("wlan0"),
-			'ZYNTHIAN_WIFI_NETWORKS': networks
-		}
-		if 'X-Requested-With' in self.request.headers and self.request.headers['X-Requested-With'] == 'XMLHttpRequest':
-			self.write(config)
-		else:
-			super().get("wifi.html", "Wifi", config, errors)
+    @tornado.web.authenticated
+    def get(self, errors=None):
+        networks = []
+        for wifi in zynconf.get_wifi_list():
+            networks.append({
+                'ssid': wifi[0],
+                'description': wifi[2],
+                'configured': wifi[3],
+                'enabled': wifi[4]
+            })
+        config = {
+            'ZYNTHIAN_WIFI_STATUS': zynconf.get_nwdev_status_code("wlan0"),
+            'ZYNTHIAN_WIFI_NETWORKS': networks
+        }
+        if 'X-Requested-With' in self.request.headers and self.request.headers['X-Requested-With'] == 'XMLHttpRequest':
+            self.write(config)
+        else:
+            super().get("wifi.html", "Wifi", config, errors)
 
+    @tornado.web.authenticated
+    def post(self):
+        errors = []
 
-	@tornado.web.authenticated
-	def post(self):
-		errors = []
+        try:
+            action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
+            logging.debug("ACTION: {}".format(action))
+        except:
+            action = ""
 
-		try:
-			action = self.get_argument('ZYNTHIAN_WIFI_ACTION')
-			logging.debug("ACTION: {}".format(action))
-		except:
-			action = ""
+        try:
+            if action == "ENABLE_WIFI":
+                pass
+            elif action == "DISABLE_WIFI":
+                pass
+            elif action == "ENABLE_NETWORK":
+                ssid = self.get_argument('ZYNTHIAN_WIFI_ACTION_SSID')
+                pass
+            elif action == "DISABLE_NETWORK":
+                ssid = self.get_argument('ZYNTHIAN_WIFI_ACTION_SSID')
+                pass
+        except Exception as e:
+            errors.append(e)
 
-		try:
-			if action == "ENABLE_WIFI":
-				pass
-			elif action == "DISABLE_WIFI":
-				pass
-			elif action == "ENABLE_NETWORK":
-				ssid = self.get_argument('ZYNTHIAN_WIFI_ACTION_SSID')
-				pass
-			elif action == "DISABLE_NETWORK":
-				ssid = self.get_argument('ZYNTHIAN_WIFI_ACTION_SSID')
-				pass
-		except Exception as e:
-			errors.append(e)
-
-		self.get(errors)
+        self.get(errors)
