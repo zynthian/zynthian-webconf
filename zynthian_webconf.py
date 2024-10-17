@@ -23,6 +23,22 @@
 #
 # ********************************************************************
 
+import os
+import sys
+import string
+import random
+import logging
+import asyncio
+import tornado.web
+import tornado.ioloop
+import tornado_xstatic
+from terminado import TermSocket, SingleTermManager
+
+# TODO: This initialisatoin needs to be here before other imports due to odd dependancies but it shouldn't. Need to fix inappropriate inter-dependancies.
+sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
+from zyncoder.zyncore import lib_zyncore_init_minimal
+lib_zyncore_init_minimal()
+
 from lib.zynterm_handler import ZyntermHandler
 from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler
 from lib.repository_handler import RepositoryHandler
@@ -52,21 +68,6 @@ from lib.display_config_handler import DisplayConfigHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.login_handler import LoginHandler, LogoutHandler
-from zyncoder.zyncore import lib_zyncore_init_minimal
-import os
-import sys
-import string
-import random
-import logging
-import asyncio
-import tornado.web
-import tornado.ioloop
-import tornado_xstatic
-from terminado import TermSocket, SingleTermManager
-
-sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
-lib_zyncore_init_minimal()
-
 
 # ------------------------------------------------------------------------------
 
