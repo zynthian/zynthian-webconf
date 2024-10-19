@@ -34,6 +34,7 @@ import tornado.ioloop
 import tornado_xstatic
 from terminado import TermSocket, SingleTermManager
 
+# autopep8: off
 # TODO: This initialisatoin needs to be here before other imports due to odd dependancies but it shouldn't. Need to fix inappropriate inter-dependancies.
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 from zyncoder.zyncore import lib_zyncore_init_minimal
@@ -68,6 +69,7 @@ from lib.display_config_handler import DisplayConfigHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.login_handler import LoginHandler, LogoutHandler
+# autopep8: on
 
 # ------------------------------------------------------------------------------
 
