@@ -121,8 +121,9 @@ class MidiLogMessageHandler(ZynthianWebSocketMessageHandler):
 
     def on_midi_in(self, msg):
         message = ZynthianWebSocketMessage('MidiLogMessageHandler', msg)
-        self.ioloop.call_soon_threadsafe(
-            self.websocket.write_message, jsonpickle.encode(message))
+        # Hack to avoid JSON parse error in javascript handler
+        json = jsonpickle.encode(message).replace("Infinity", "0")
+        self.ioloop.call_soon_threadsafe(self.websocket.write_message, json)
 
     def do_stop_logging(self):
         if MidiLogMessageHandler.mido_port:
