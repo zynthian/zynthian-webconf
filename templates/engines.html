@@ -109,7 +109,7 @@ div.engine_edit select {
                     <div id="engine_row_{{eng_info['ID']}}">
                     <div class="row plugin engine_row"  title="{{ eng_info['DESCR'] }}">
                         <div class="col-xs-1 engine-enabled">
-                            <input type="checkbox" id="ENABLE_ENGINE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} onchange="enable_engine('{{ eng_code }}')">
+                            <input type="checkbox" id="ENABLE_ENGINE_{{eng_code}}" {% if eng_info['ENABLED'] %} checked="checked" {% end %} onchange="enable_engine('{{ eng_code_esc }}')">
                         </div>
                         <div class="col-xs-4 one-line-truncated engine-title" onclick="edit_engine('{{ eng_code_esc }}')">
                             {{ eng_info['TITLE'] }}
