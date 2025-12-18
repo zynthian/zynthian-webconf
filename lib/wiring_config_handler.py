@@ -28,12 +28,11 @@ import logging
 import tornado.web
 from subprocess import check_output
 
-from zyngui.zynthian_gui import zynthian_gui
-from zynconf import CustomSwitchActionType, ZynSensorActionType
-
 from lib.dashboard_handler import DashboardHandler
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
+from zynconf import CustomSwitchActionType, ZynSensorActionType
+from zyngui.zynthian_gui import zynthian_gui
 
 # ------------------------------------------------------------------------------
 # Autodetect I2C chips

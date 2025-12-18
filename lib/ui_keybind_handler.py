@@ -24,11 +24,12 @@
 
 import logging
 import tornado.web
-from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
+
+from zyngui.zynthian_gui import zynthian_gui
 from zyngui import zynthian_gui_keybinding
-from zyngui import zynthian_gui
+
 # ------------------------------------------------------------------------------
 # UI Configuration
 # ------------------------------------------------------------------------------
@@ -38,9 +39,9 @@ class UiKeybindHandler(ZynthianBasicHandler):
 
     @tornado.web.authenticated
     def get(self, errors=None):
-        config = OrderedDict()
+        config = {}
         config["bindings"] = zynthian_gui_keybinding.get_html_map()
-        config["cuias"] = zynthian_gui.zynthian_gui.get_cuia_list()
+        config["cuias"] = zynthian_gui.get_cuia_list()
         config["keys"] = zynthian_gui_keybinding.html2tk
 
         super().get("ui_keybind.html", "Keyboard Binding", config, errors)

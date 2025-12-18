@@ -30,11 +30,11 @@ from time import sleep
 from subprocess import check_output
 
 import zynconf
-import zyngine.zynthian_lv2 as zynthian_lv2
-
 # Avoid unwanted debug messages from zynconf module
 zynconf_logger = logging.getLogger('zynconf')
 zynconf_logger.setLevel(logging.INFO)
+
+import zyngine.zynthian_lv2 as zynthian_lv2
 
 # ------------------------------------------------------------------------------
 # Zynthian-UI OSC Address

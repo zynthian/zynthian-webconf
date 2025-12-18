@@ -32,8 +32,8 @@ from shutil import copyfile
 from lib.zynthian_config_handler import ZynthianConfigHandler
 
 import zynconf
-from zyngine.zynthian_midi_filter import MidiFilterScript
 from zyngui.zynthian_gui import zynthian_gui
+from zyngine.zynthian_midi_filter import MidiFilterScript
 
 # ------------------------------------------------------------------------------
 # Module Methods

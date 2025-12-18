@@ -30,7 +30,6 @@ import shutil
 import base64
 import logging
 import tornado.web
-from collections import OrderedDict
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from zyngine.zynthian_legacy_snapshot import zynthian_legacy_snapshot
@@ -42,28 +41,23 @@ from zyngine.zynthian_legacy_snapshot import zynthian_legacy_snapshot
 
 class SnapshotConfigHandler(ZynthianBasicHandler):
 
-    my_data_dir = os.environ.get(
-        'ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
+    my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 
     SNAPSHOTS_DIRECTORY = my_data_dir + "/snapshots"
-    PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get(
-        "ZYNTHIAN_CONFIG_DIR")
+    PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 
     @tornado.web.authenticated
     def get(self, errors=None):
-        config = OrderedDict([])
+        config = {}
 
         ssdata = self.get_snapshots_data()
         # logging.debug(snapshot)
 
         config['SNAPSHOTS'] = json.dumps(ssdata)
         config['BANKS'] = self.get_existing_banks(ssdata, True)
-        config['NEXT_BANK_NUM'] = self.calculate_next_bank(
-            self.get_existing_banks(ssdata, False))
-        config['PROGS_NUM'] = map(lambda x: str(
-            x).zfill(3), list(range(0, 128)))
-        config['MIDI_PROFILE_SCRIPTS'] = {os.path.splitext(
-            x)[0]:  "%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)}
+        config['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
+        config['PROGS_NUM'] = map(lambda x: str(x).zfill(3), list(range(0, 128)))
+        config['MIDI_PROFILE_SCRIPTS'] = {os.path.splitext(x)[0]:  "%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)}
         config['ZYNTHIAN_UPLOAD_MULTIPLE'] = True
 
         # Try to maintain selection after a POST action...
@@ -87,8 +81,7 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
         result['SNAPSHOTS'] = ssdata
         result['SEL_NODE_ID'] = self.get_selected_node_id(ssdata)
         result['BANKS'] = self.get_existing_banks(ssdata, True)
-        result['NEXT_BANK_NUM'] = self.calculate_next_bank(
-            self.get_existing_banks(ssdata, False))
+        result['NEXT_BANK_NUM'] = self.calculate_next_bank(self.get_existing_banks(ssdata, False))
         snapshot_warning = self.get_snapshot_warning(ssdata)
         if snapshot_warning:
             result['errors'] = snapshot_warning
@@ -164,8 +157,7 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
         try:
             os.rename(fullPath, newFullPath)
         except OSError:
-            result['errors'] = 'Move ' + fullPath + \
-                ' to ' + newFullPath + ' failed!'
+            result['errors'] = 'Move ' + fullPath + ' to ' + newFullPath + ' failed!'
         return result
 
     def do_upload(self):
@@ -223,8 +215,7 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
                     if node_item['prog_num'] == '':
                         continue
                     if prev_prog_num == node_item['prog_num']:
-                        duplicate_prog_nums += "{}/{} ".format(
-                            bank_num, prev_prog_num)
+                        duplicate_prog_nums += "{}/{} ".format(bank_num, prev_prog_num)
                     prev_prog_num = node_item['prog_num']
         if duplicate_prog_nums:
             return "Duplicate program numbers exist. Please rearrange your snapshots: {}".format(duplicate_prog_nums)
@@ -345,8 +336,7 @@ class SnapshotConfigHandler(ZynthianBasicHandler):
     def install_file(self, fpath):
         logging.info(fpath)
         logging.info(self.get_argument('SEL_FULLPATH'))
-        destination = "{}/{}".format(self.get_argument('SEL_FULLPATH'),
-                                     os.path.basename(fpath))
+        destination = "{}/{}".format(self.get_argument('SEL_FULLPATH'), os.path.basename(fpath))
         logging.info(destination)
         shutil.move(fpath, destination)
 
@@ -361,8 +351,7 @@ class SnapshotRemoveChainHandler(tornado.web.RequestHandler):
         result = {}
         snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
         try:
-            logging.info("Removing chain {} in {}".format(
-                chain, snapshot_file))
+            logging.info("Removing chain {} in {}".format(chain, snapshot_file))
             data = []
             with open(snapshot_file, "r") as fp:
                 data = json.load(fp)
@@ -392,8 +381,7 @@ class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
         result = {}
         snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
         try:
-            logging.info("Removing option {} in {}".format(
-                remove_option_key, snapshot_file))
+            logging.info("Removing option {} in {}".format(remove_option_key, snapshot_file))
             data = []
             with open(snapshot_file, "r") as fp:
                 data = json.load(fp)
@@ -414,8 +402,7 @@ class SnapshotRemoveOptionHandler(tornado.web.RequestHandler):
 
 
 class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
-    PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get(
-        "ZYNTHIAN_CONFIG_DIR")
+    PROFILES_DIRECTORY = "%s/midi-profiles" % os.environ.get("ZYNTHIAN_CONFIG_DIR")
 
     def get_current_user(self):
         return self.get_secure_cookie("user")
@@ -426,10 +413,8 @@ class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
 
         try:
             snapshot_file = str(base64.b64decode(snapshot_file_b64), 'utf-8')
-            midi_profile_script = str(base64.b64decode(
-                midi_profile_script_b64), 'utf-8')
-            logging.info("Add option values of {} into {}".format(
-                midi_profile_script, snapshot_file))
+            midi_profile_script = str(base64.b64decode(midi_profile_script_b64), 'utf-8')
+            logging.info("Add option values of {} into {}".format(midi_profile_script, snapshot_file))
             data = []
             with open(snapshot_file, "r") as fp:
                 data = json.load(fp)
@@ -490,8 +475,7 @@ class SnapshotDownloadHandler(tornado.web.RequestHandler):
 
             self.set_header('Content-Type', mime_type)
             self.set_header("Content-Description", "File Transfer")
-            self.set_header('Content-Disposition',
-                            'attachment; filename="{}"'.format(fname))
+            self.set_header('Content-Disposition', 'attachment; filename="{}"'.format(fname))
             with open(fpath, 'rb') as f:
                 while True:
                     data = f.read(4096)
