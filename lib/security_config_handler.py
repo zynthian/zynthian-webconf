@@ -44,6 +44,11 @@ class SecurityConfigHandler(ZynthianConfigHandler):
         with open("/etc/hostname") as f:
             return f.readline()
 
+    @staticmethod
+    def get_public_key():
+        with open("/root/.ssh/id_rsa.pub") as f:
+            return f.readline()
+
     @tornado.web.authenticated
     def get(self, errors=None):
         # Get Hostname
@@ -75,6 +80,12 @@ class SecurityConfigHandler(ZynthianConfigHandler):
                 'script_file': 'regenerate_keys.js',
                 'button_type': 'button',
                 'class': 'btn-warning btn-block',
+                'advanced': True
+            },
+            'PUBLIC_KEY': {
+                'type': 'text',
+                'title': 'Public Key',
+                'value': SecurityConfigHandler.get_public_key(),
                 'advanced': True
             },
             '_command': {
