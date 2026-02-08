@@ -206,7 +206,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
             # Update known_hosts file (ensures current config is correct)
             known_hosts_path = os.path.expanduser("~/.ssh/known_hosts")
             os.system(f"ssh-keygen -R {server} >> /dev/null 2>&1")
-            os.system(f"ssh-keyscan -H {server} >> {known_hosts_path}")
+            os.system(f"ssh-keyscan -H {server} >> {known_hosts_path} 2>/dev/null")
 
             # Ensure RSA key is generated
             key_path = os.path.expanduser("~/.ssh/id_rsa")
@@ -216,11 +216,10 @@ class SystemBackupHandler(ZynthianBasicHandler):
 
             # Add zynthian ssh public key (download, manipulate and upload autorized_keys on remote host)
             ssh_password = self.get_argument('CLOUD_SSH_PASSWORD')
-            os.system(f"sshpass -p {ssh_password} ssh -t {username}@{server} 'cat .ssh/authorized_keys' | sort -u > /tmp/authkeys")
-            os.system(f"sshpass -p {ssh_password} scp {username}@{server}:.ssh/authorized_keys /tmp/authkeys")
-            os.system(f"cat $HOME/.ssh/id_rsa.pub /tmp/authkeys | sort -u > /tmp/authkeys")
+            os.system(f"sshpass -p {ssh_password} scp {username}@{server}:.ssh/authorized_keys /tmp/authkeys.0")
+            os.system(f"cat {pub_key_path} /tmp/authkeys.0 | sort -u > /tmp/authkeys")
             os.system(f"sshpass -p {ssh_password} scp /tmp/authkeys {username}@{server}:.ssh/authorized_keys")
-            os.system(f"rm /tmp/authkeys")
+            os.system(f"rm /tmp/authkeys*")
 
         if self.cloud_rsync_ssh_configured(username):
             # Get list of existing repositories...
