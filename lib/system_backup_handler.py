@@ -85,8 +85,8 @@ class SystemBackupHandler(ZynthianBasicHandler):
                          -o KbdInteractiveAuthentication=no \
                          -o ChallengeResponseAuthentication=no \
                          -o PreferredAuthentications=publickey \
-                         -o ConnectTimeout=1 \
-                         -t -t {username}@{server} ls > /dev/null") == 0
+                         -o ConnectTimeout=3 \
+                         -t {username}@{server} ls > /dev/null") == 0
 
     def cloud_rsync_get_repos(self, username, server=None, path=None):
         # Returns list of kopia repositories
@@ -110,7 +110,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
     def cloud_get_uri(self):
         # Returns the uri that may be used to reconnect to the currently connected repo
         try:
-            result = subprocess.run(["kopia", "repository", "status", "-t", "-t", "-s"], capture_output=True, text=True)
+            result = subprocess.run(["kopia", "repository", "status", "-t", "-s"], capture_output=True, text=True)
             return result.stdout.strip().split("$ kopia repository connect from-config --token ")[1].split('\n')[0]
         except:
             return None
@@ -228,10 +228,10 @@ class SystemBackupHandler(ZynthianBasicHandler):
             hostname = socket.gethostname()
             if hostname in repos:
                 # Connect to existing repo
-                connected = os.system(f"kopia repository connect sftp --username {username} --host {username}.rsync.net --path zynthian/backup/$HOSTNAME --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}") == 0
+                connected = os.system(f"kopia repository connect sftp --username {username} --host {server} --path zynthian/backup/{hostname} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}") == 0
             else:
                 # Create new repo
-                connected = os.system(f"kopia repository create sftp --username {username} --host {username}.rsync.net --path zynthian/backup/$HOSTNAME --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}")
+                connected = os.system(f"kopia repository create sftp --username {username} --host {server} --path zynthian/backup/{hostname} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}")
             if connected:
                 # Save cloud config
                 with open(self.CLOUD_BACKUP_CONFIG_FILE, 'w') as f:
