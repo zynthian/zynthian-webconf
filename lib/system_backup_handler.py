@@ -311,6 +311,9 @@ class SystemBackupHandler(ZynthianBasicHandler):
             case _:
                 backup_items = None
         if backup_items:
+            with open(self.CLOUD_BACKUP_CONFIG_FILE, "r") as f:
+                config = json.load(f)
+            os.system(f"kopia repository connect from-config --token {config['uri']}")
             os.system(f"kopia snapshot create {' '.join(backup_items)}")
         # Reload active tab
         active_tab = self.get_argument("ACTIVE_TAB", "BACKUP/RESTORE")
