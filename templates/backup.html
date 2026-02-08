@@ -16,6 +16,7 @@
 		<li class="{% if config['ACTIVE_TAB'] == 'BACKUP/RESTORE' %}active{% end %}"><a href="#backup_restore" role="tab" data-toggle="tab">Backup/Restore</a></li>
 		<li class="{% if config['ACTIVE_TAB'] == 'CONFIG_ITEMS' %}active{% end %}"><a href="#config_items" role="tab" data-toggle="tab">Config Items</a></li>
 		<li class="{% if config['ACTIVE_TAB'] == 'DATA_ITEMS' %}active{% end %}"><a href="#data_items" role="tab" data-toggle="tab">Data Items</a></li>
+		<li class="{% if config['ACTIVE_TAB'] == 'CLOUD_SERVICES' %}active{% end %}"><a href="#cloud_services" role="tab" data-toggle="tab">Cloud Services</a></li>
 	</ul>
 
 	<div class="tab-content">
@@ -34,9 +35,17 @@
 				<div class="row normal-view">
 					<button id="upload_show" title="Restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i> Restore</button>
 				</div>
+				{% if config['CLOUD_CONFIG']['enabled'] %}
+				<div class="row normal-view">
+					<button id="cloud_backup_button" title="Backup to cloud" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i> Backup to cloud</button>
+				</div>
+				<div class="row normal-view">
+					<button id="cloud_restore_button" title="Restore from cloud" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i> Restore from cloud</button>
+				</div>
 				<div class="row">
 					<div id="restore-log" class="log-panel"></div>
 				</div>
+				{% end %}
 			</div>
 		</div>
 	
@@ -111,6 +120,32 @@
 				</div>
 			</div>
 		</div>
+
+		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'CLOUD_SERVICES' %}active{% end %}" id="cloud_services">
+			<div class="container-fluid">
+				<div class="row normal-vew">
+					<label>Username (provided by cloud service)</label>
+					<input id="cloud_username" name="CLOUD_USERNAME" value="{{config['CLOUD_CONFIG']['username']}}"/>
+				</div>
+				<div class="row normal-view">
+					<label>Password (used to encrypt data in cloud - do not forget this else you will not be able to access your backups!)</label>
+					<input type="password" id="cloud_password" name="CLOUD_PASSWORD"  value="{{config['CLOUD_CONFIG']['password']}}"/>
+				</div>
+				{% if not config['CLOUD_CONFIG']['enabled'] %}
+				<div class="row normal-view">
+					<label>ssh password (used once (and not stored) to initialise cloud storage)</label>
+					<input type="password" id="cloud_ssh_password" name="CLOUD_SSH_PASSWORD"/>
+				</div>
+				{% end %}
+				<div class="row advanced-view">
+					<label>Server hostname (optional advanced config)</label>
+					<input id="cloud_server" name="CLOUD_SERVER"/>
+				</div>
+				<div>
+					<button id="save_cloud_config_button" title="Save Cloud Configuration" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i>Save</button>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<div class="row">
@@ -139,9 +174,29 @@ $(document).ready(function (){
 		$("input#ACTIVE_TAB").val("CONFIG_ITEMS");
 		$("input#_command").val("SAVE_BACKUP_CONFIG");
 	});
+	$("button#cloud_backup_button").click(function() {
+		show_busy();
+		var cmd = $("select#backup_select").val()+"_CLOUD"
+		$("input#ACTIVE_TAB").val("BACKUP/RESTORE");
+		$("input#_command").val(cmd);
+	});
+	$("button#cloud_restore_button").click(function() {
+		var cmd = "CLOUD_RESTORE_NONE";
+		if (confirm("Are you sure you want to restore " + $("select#backup_select").val() + "?")) {
+			var cmd = "CLOUD_RESTORE_" + $("select#backup_select").val();
+			show_busy();
+		}
+		$("input#ACTIVE_TAB").val("BACKUP/RESTORE");
+		$("input#_command").val(cmd);
+	});
 	$("button#save_data_items_button").click(function() {
 		$("input#ACTIVE_TAB").val("DATA_ITEMS");
 		$("input#_command").val("SAVE_BACKUP_CONFIG");
+	});
+	$("button#save_cloud_config_button").click(function() {
+		show_busy();
+		$("input#ACTIVE_TAB").val("CLOUD_SERVICES");
+		$("input#_command").val("SAVE_CLOUD_CONFIG");
 	});
 
 	var deferred = $.Deferred();
