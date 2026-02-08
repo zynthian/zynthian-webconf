@@ -42,10 +42,18 @@
 				<div class="row normal-view">
 					<button id="cloud_restore_button" title="Restore from cloud" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i> Restore from cloud</button>
 				</div>
+				<div class="row normal-view">
+					<label>Remote backup repository</label>
+					<select id="repo_select">
+						{% for d in config['CLOUD_CONFIG']['repos'] %}
+						<option value="{{ d }}">{{ d }}</option>
+						{% end %}
+					</select>
+				</div>
+				{% end %}
 				<div class="row">
 					<div id="restore-log" class="log-panel"></div>
 				</div>
-				{% end %}
 			</div>
 		</div>
 	

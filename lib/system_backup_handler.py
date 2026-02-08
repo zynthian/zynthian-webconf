@@ -86,7 +86,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
                          -o ChallengeResponseAuthentication=no \
                          -o PreferredAuthentications=publickey \
                          -o ConnectTimeout=1 \
-                         -t {username}@{server} ls > /dev/null") == 0
+                         -t -t {username}@{server} ls > /dev/null") == 0
 
     def cloud_rsync_get_repos(self, username, server=None, path=None):
         # Returns list of kopia repositories
@@ -110,7 +110,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
     def cloud_get_uri(self):
         # Returns the uri that may be used to reconnect to the currently connected repo
         try:
-            result = subprocess.run(["kopia", "repository", "status", "-t", "-s"], capture_output=True, text=True)
+            result = subprocess.run(["kopia", "repository", "status", "-t", "-t", "-s"], capture_output=True, text=True)
             return result.stdout.strip().split("$ kopia repository connect from-config --token ")[1].split('\n')[0]
         except:
             return None
@@ -155,6 +155,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
             }
         username = config['CLOUD_CONFIG']["username"]
         config['CLOUD_CONFIG']['enabled'] = self.cloud_rsync_ssh_configured(username)
+        config['CLOUD_CONFIG']['repos'] = self.cloud_rsync_get_repos(username)
 
         def add_config_backup_item(dirname, subdirs, files):
             if dirname not in config['CONFIG_BACKUP_ITEMS']:
