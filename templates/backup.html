@@ -1,163 +1,94 @@
+<style>
+  body {
+    font-family: Arial, sans-serif;
+  }
+
+  .tree ul {
+    list-style: none;
+    margin-left: 20px;
+    padding-left: 16px;
+    border-left: 1px dashed #ccc;
+  }
+
+  .folder.collapsed > ul {
+    display: none;
+  }
+
+  .folder_icon {
+    width: 16px;
+    display: inline-block;
+    cursor: pointer;
+  }
+  .file_icon {
+    width: 16px;
+    display: inline-block;
+  }
+</style>
+
 <div class="pull-right">
 	<input id="check_advanced_view" type="checkbox" onChange="onchange_check_advanced_view()"/><span><label for="check_advanced_view">Advanced view</label></span>
 </div>
 
-<h2>{{ title }}</h2>
+<h2>{{title}}</h2>
 
 <form id="restore-upload-form" action="#" enctype="multipart/form-data" method="post">
 {% module Template('upload.html', config=config) %}
 </form>
 
 <form id="backup-form" enctype="multipart/form-data" method="post">
-	<input type="hidden" id="_command" name="_command" value='BACKUP'>
-	<input type="hidden" id="ACTIVE_TAB" name="ACTIVE_TAB" value="{{ config['ACTIVE_TAB'] }}">
+	<label>Backup profile</label>
+	<select name="BACKUP_PROFILE" onchange="this.form.submit()">
+		<option value="BACKUP_ALL" {% if config['profile'] == "BACKUP_ALL" %} selected{% end %}>All</option>
+		{% for d in config['profiles'] %}
+		<option value="{{d}}" {% if config['profile'] == d %} selected{% end %}>{{d}}</option>
+		{% end %}
+	</select>
 
-	<ul class="nav nav-tabs" role="tablist">
-		<li class="{% if config['ACTIVE_TAB'] == 'BACKUP/RESTORE' %}active{% end %}"><a href="#backup_restore" role="tab" data-toggle="tab">Backup/Restore</a></li>
-		<li class="{% if config['ACTIVE_TAB'] == 'CONFIG_ITEMS' %}active{% end %}"><a href="#config_items" role="tab" data-toggle="tab">Config Items</a></li>
-		<li class="{% if config['ACTIVE_TAB'] == 'DATA_ITEMS' %}active{% end %}"><a href="#data_items" role="tab" data-toggle="tab">Data Items</a></li>
-		<li class="{% if config['ACTIVE_TAB'] == 'CLOUD_SERVICES' %}active{% end %}"><a href="#cloud_services" role="tab" data-toggle="tab">Cloud Services</a></li>
-	</ul>
+	<div class="container-fluid">
+		<div class="row normal-view">
+			<button title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup</button>
+			<button type="submit" name="action" value="CLOUD_BACKUP" title="Do cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i>Cloud Backup</button>
+		</div>
+		<div class="row normal-view">
+			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore</button>
+			<button type="submit" name="action" value="CLOUD_RESTORE" title="Do cloud restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Cloud Restore</button>
+		</div>
+		<div class="row">
+			<div id="restore-log" class="log-panel"></div>
+		</div>
 
-	<div class="tab-content">
-		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'BACKUP/RESTORE' %}active{% end %}" id="backup_restore">
-			<div class="container-fluid">
-				<div class="row normal-view">
-					<select id="backup_select">
-						<option value="BACKUP_ALL">All</option>
-						<option value="BACKUP_CONFIG">Config</option>
-						<option value="BACKUP_DATA">Data</option>
-					</select>
-				</div>
-				<div class="row normal-view">
-					<button id="backup_button" title="Backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i> Backup</button>
-				</div>
-				<div class="row normal-view">
-					<button id="upload_show" title="Restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i> Restore</button>
-				</div>
-				{% if config['CLOUD_CONFIG']['enabled'] %}
-				<div class="row normal-view">
-					<button id="cloud_backup_button" title="Backup to cloud" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i> Backup to cloud</button>
-				</div>
-				<div class="row normal-view">
-					<button id="cloud_restore_button" title="Restore from cloud" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i> Restore from cloud</button>
-				</div>
-				<div class="row normal-view">
-					<label>Remote backup repository</label>
-					<select id="repo_select">
-						{% for d in config['CLOUD_CONFIG']['repos'] %}
-						<option value="{{ d }}">{{ d }}</option>
-						{% end %}
-					</select>
-				</div>
+		{% if config['profile'] != "BACKUP_ALL" %}
+		<div class="row advanced-view">
+			<label>Directories to backup (full path):</label>
+			<textarea id="BACKUP_PATHS" name="BACKUP_PATHS" rows="5">
+				{% for d in config['profiles'][config['profile']]['paths'] %}{{d}}
+        {% end %}
+			</textarea>
+		</div>
+		<div class="row advanced-view">
+			<label>Exclude rules (absolute (/...) or relative to each searched directory):</label>
+			<textarea name="EXCLUDE_RULES" rows="3">
+				{% for d in config['profiles'][config['profile']]['exclude_rules'] %}{{d}}
 				{% end %}
-				<div class="row">
-					<div id="restore-log" class="log-panel"></div>
-				</div>
-			</div>
+			</textarea>
 		</div>
-	
-		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'CONFIG_ITEMS' %}active{% end %}" id="config_items">
-			<div class="container-fluid">
-				<div class="row normal-view">
-					<label>Directories containing config files (full path):</label>
-					<textarea id="CONFIG_BACKUP_DIRS" name="CONFIG_BACKUP_DIRS" rows="5">
-						{% for d in config['CONFIG_BACKUP_DIRS'] %}{{ d }}
-						{% end %}
-					</textarea>
-				</div>
-				<div class="row advanced-view">
-					<label>Excluded directories or files (full path):</label>
-					<textarea id="CONFIG_BACKUP_DIRS_EXCLUDED" name="CONFIG_BACKUP_DIRS_EXCLUDED" rows="5">
-						{% for d in config['CONFIG_BACKUP_DIRS_EXCLUDED'] %}{{ d }}
-						{% end %}
-					</textarea>
-				</div>
-				<div class="row normal-view">
-					<button id="save_config_items_button" title="Save Config Backup Items" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i> Save</button>
-				</div>
-				<div class="row advanced-view">
-					<label>Resolved config items to backup:</label>
-					<table class="table table-striped table-bordered table-condensed">
-					{% for item in config['CONFIG_BACKUP_ITEMS'] %}
-						{% if config['CONFIG_BACKUP_ITEMS'][item] %}
-						<tr>
-							<td title="{{ item }}"><b>{{ item }}</b><br>
-							{% for f in config['CONFIG_BACKUP_ITEMS'][item] %}{{ escape(f) }}<br>{% end %}
-							</td>
-						</tr>
-						{% end %}
-					{% end %}
-					</table>
-				</div>
-			</div>
+		<div style="display: none;">
+			<textarea id="EXCLUDE_PATHS" name="EXCLUDE_PATHS">
+			</textarea>
 		</div>
-
-		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'DATA_ITEMS' %}active{% end %}" id="data_items">
-			<div class="container-fluid">
-				<div class="row normal-view">
-					<label>Directories containing data files (full path):</label>
-					<textarea id="DATA_BACKUP_DIRS" name="DATA_BACKUP_DIRS" rows="5">
-						{% for d in config['DATA_BACKUP_DIRS'] %}{{ d }}
-						{% end %}
-					</textarea>
-				</div>
-				<div class="row advanced-view">
-					<label>Excluded directories or files (full path):</label>
-					<textarea id="DATA_BACKUP_DIRS_EXCLUDED" name="DATA_BACKUP_DIRS_EXCLUDED" rows="5">
-						{% for d in config['DATA_BACKUP_DIRS_EXCLUDED'] %}{{ d }}
-						{% end %}
-					</textarea>
-				</div>
-				<div class="row normal-view">
-					<button id="save_data_items_button" title="Save Data Backup Items" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i> Save</button>
-				</div>
-				<div class="row advanced-view">
-					<label>Resolved data items to backup:</label>
-					<table class="table table-striped table-bordered table-condensed">
-					{% for item in config['DATA_BACKUP_ITEMS'] %}
-						{% if config['DATA_BACKUP_ITEMS'][item] %}
-						<tr>
-							<td title="{{ item }}"><b>{{ item }}</b><br>
-							{% for f in config['DATA_BACKUP_ITEMS'][item] %}{{ escape(f) }}<br>{% end %}
-							</td>
-						</tr>
-						{% end %}
-					{% end %}
-					</table>
-				</div>
-			</div>
+		<div class="row advanced-view">
+			<button type="submit" name="action" value="SAVE_PROFILE" title="Save Backup Profile" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i>Save Profile</button>
 		</div>
-
-		<div class="tab-pane {% if config['ACTIVE_TAB'] == 'CLOUD_SERVICES' %}active{% end %}" id="cloud_services">
-			<div class="container-fluid">
-				<div class="row normal-vew">
-					<label>Username (provided by cloud service)</label>
-					<input id="cloud_username" name="CLOUD_USERNAME" value="{{config['CLOUD_CONFIG']['username']}}"/>
-				</div>
-				<div class="row normal-view">
-					<label>Password (used to encrypt data in cloud - do not forget this else you will not be able to access your backups!)</label>
-					<input type="password" id="cloud_password" name="CLOUD_PASSWORD"  value="{{config['CLOUD_CONFIG']['password']}}"/>
-				</div>
-				{% if not config['CLOUD_CONFIG']['enabled'] %}
-				<div class="row normal-view">
-					<label>ssh password (used once (and not stored) to initialise cloud storage)</label>
-					<input type="password" id="cloud_ssh_password" name="CLOUD_SSH_PASSWORD"/>
-				</div>
-				{% end %}
-				<div class="row advanced-view">
-					<label>Server hostname (optional advanced config)</label>
-					<input id="cloud_server" name="CLOUD_SERVER"/>
-				</div>
-				<div>
-					<button id="save_cloud_config_button" title="Save Cloud Configuration" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i>Save</button>
-				</div>
+		{% end %}
+		<div class="row advanced-view">
+			<label>Resolved files to backup (unselect any files or folders to exclude):</label>
+			<div class="tree" id="tree", name="TREE">
+				{% raw config['BACKUP_TREE'] %}
 			</div>
 		</div>
 	</div>
-
 	<div class="row">
-	{% if errors %}<div class="alert alert-danger">{{ escape(errors) }}</div>{% end %}
+	{% if errors %}<div class="alert alert-danger">{{escape(errors)}}</div>{% end %}
 	</div>
 </form>
 
@@ -170,42 +101,8 @@
 <script type="text/javascript">
 
 $(document).ready(function (){
-    $("#loading-div-background").hide();
-	$('#input-uploadfile-type')[0].value = 'zip';
-
-	$("button#backup_button").click(function() {
-		var cmd = $("select#backup_select").val()
-		$("input#ACTIVE_TAB").val("BACKUP/RESTORE");
-		$("input#_command").val(cmd);
-	});
-	$("button#save_config_items_button").click(function() {
-		$("input#ACTIVE_TAB").val("CONFIG_ITEMS");
-		$("input#_command").val("SAVE_BACKUP_CONFIG");
-	});
-	$("button#cloud_backup_button").click(function() {
-		show_busy();
-		var cmd = $("select#backup_select").val()+"_CLOUD"
-		$("input#ACTIVE_TAB").val("BACKUP/RESTORE");
-		$("input#_command").val(cmd);
-	});
-	$("button#cloud_restore_button").click(function() {
-		var cmd = "CLOUD_RESTORE_NONE";
-		if (confirm("Are you sure you want to restore " + $("select#backup_select").val() + "?")) {
-			var cmd = "CLOUD_RESTORE_" + $("select#backup_select").val();
-			show_busy();
-		}
-		$("input#ACTIVE_TAB").val("BACKUP/RESTORE");
-		$("input#_command").val(cmd);
-	});
-	$("button#save_data_items_button").click(function() {
-		$("input#ACTIVE_TAB").val("DATA_ITEMS");
-		$("input#_command").val("SAVE_BACKUP_CONFIG");
-	});
-	$("button#save_cloud_config_button").click(function() {
-		show_busy();
-		$("input#ACTIVE_TAB").val("CLOUD_SERVICES");
-		$("input#_command").val("SAVE_CLOUD_CONFIG");
-	});
+  $("#loading-div-background").hide();
+	$('#input-uploadfile-type')[0].value = 'zip,tar.gz,tgz';
 
 	var deferred = $.Deferred();
 	deferred.done(function(value) {
@@ -246,16 +143,9 @@ $(document).ready(function (){
 		});
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
 	}
+	restore_advanced_view()
+	updateFolderCheckboxes('tree');
 });
-
-function do_command(cmd) {
-	$("input#_command").val(cmd);
-	document.getElementById("backup-form").submit();
-}
-
-function showProgressAnimation(){
-	$("#loading-div-background").show();
-}
 
 function restore_advanced_view() {
 	if (Cookies.get('advanced_view')) {
@@ -277,8 +167,146 @@ function onchange_check_advanced_view() {
 	}
 }
 
-$(document).ready(function() {
-	restore_advanced_view()
+const toggleFolder = function(e) {
+	if (e.target.classList.contains("folder_icon")) {
+		const li = e.target.closest(".folder");
+		if (li) li.classList.toggle("collapsed");
+    }
+};
+
+const toggleNode = function(e) {
+    if (e.target.type !== "checkbox") return;
+    const checkbox = e.target;
+    const li = checkbox.closest("li");
+    const childCheckboxes = li.querySelectorAll("input[type=checkbox]");
+    childCheckboxes.forEach(cb => {
+      cb.checked = checkbox.checked;
+      cb.indeterminate = false;
+    });
+	updateParents(li.parentElement.closest("li"));
+};
+
+const tree = document.getElementById("tree");
+tree.addEventListener("click", toggleFolder);
+tree.addEventListener("change", toggleNode);
+
+function updateParents(li) {
+    if (!li) return;
+    const checkboxes = li.querySelectorAll(":scope > ul input[type=checkbox]");
+    const parentCheckbox = li.querySelector(":scope > input[type=checkbox]");
+    let checkedCount = 0;
+    checkboxes.forEach(cb => {
+      if (cb.checked) checkedCount++;
+    });
+
+    if (checkedCount === 0) {
+      parentCheckbox.checked = false;
+      parentCheckbox.indeterminate = false;
+    } else if (checkedCount === checkboxes.length) {
+      parentCheckbox.checked = true;
+      parentCheckbox.indeterminate = false;
+    } else {
+      parentCheckbox.checked = false;
+      parentCheckbox.indeterminate = true;
+    }
+    updateParents(li.parentElement.closest("li"));
+}
+
+function getUncheckedPaths(treeId) {
+  const tree = document.getElementById(treeId);
+  const uncheckedPaths = [];
+  // Find all checkboxes that are NOT checked and NOT indeterminate
+  const checkboxes = tree.querySelectorAll('input[type="checkbox"]');
+  checkboxes.forEach(checkbox => {
+    // Skip if indeterminate
+    if (checkbox.indeterminate) {
+      return;
+    }
+    // Skip if checked
+    if (checkbox.checked) {
+      return;
+    }
+    // Check if any parent is unchecked (which means this child should be ignored)
+    const li = checkbox.closest('li');
+    if (li && li.dataset.path) {
+      let parentLi = li.parentElement.closest('li');
+      let hasUncheckedParent = false;
+      
+      while (parentLi) {
+        const parentCheckbox = parentLi.querySelector(':scope > input[type="checkbox"]');
+        if (parentCheckbox && !parentCheckbox.checked && !parentCheckbox.indeterminate) {
+          hasUncheckedParent = true;
+          break;
+        }
+        parentLi = parentLi.parentElement.closest('li');
+      }
+      
+      // Only add if no parent is unchecked
+      if (!hasUncheckedParent) {
+        uncheckedPaths.push(li.dataset.path);
+      }
+    }
+  });
+  return uncheckedPaths;
+}
+
+function updateFolderCheckboxes(treeId) {
+  const tree = document.getElementById(treeId);
+  const folders = Array.from(tree.querySelectorAll('.folder'));
+  folders.sort((a, b) => {
+    const depthA = a.querySelectorAll('ul').length;
+    const depthB = b.querySelectorAll('ul').length;
+    return depthB - depthA;
+  });
+  folders.forEach(folder => {
+    updateFolderCheckbox(folder);
+  });
+}
+
+function updateFolderCheckbox(folderElement) {
+  const folderCheckbox = folderElement.querySelector(':scope > input[type="checkbox"]');
+  if (!folderCheckbox) return;
+  const childCheckboxes = Array.from(
+    folderElement.querySelectorAll(':scope > ul > li > input[type="checkbox"]')
+  );
+  if (childCheckboxes.length === 0) {
+    return;
+  }
+  const checkedCount = childCheckboxes.filter(cb => cb.checked && !cb.indeterminate).length;
+  const indeterminateCount = childCheckboxes.filter(cb => cb.indeterminate).length;
+  if (indeterminateCount > 0) {
+    folderCheckbox.checked = false;
+    folderCheckbox.indeterminate = true;
+  } else if (checkedCount === 0) {
+    folderCheckbox.checked = false;
+    folderCheckbox.indeterminate = false;
+  } else if (checkedCount === childCheckboxes.length) {
+    folderCheckbox.checked = true;
+    folderCheckbox.indeterminate = false;
+  } else {
+    folderCheckbox.checked = false;
+    folderCheckbox.indeterminate = true;
+  }
+}
+
+// Update hidden exclude lists (used to pass data back to python class)
+document.getElementById('backup-form').addEventListener('submit', function(event) {
+  show_busy();
+	document.getElementById("EXCLUDE_PATHS").value = getUncheckedPaths('tree').sort().join("\n");
 });
+
+// Handle backup (download) button
+function download_backup() {
+  const iframe = document.createElement('iframe');
+  iframe.style.display = 'none';
+  iframe.src = '/sys-backup/download';
+  document.body.appendChild(iframe);
+  // Cleanup iframe after download starts
+  setTimeout(() => {
+    if (iframe.parentNode) {
+      document.body.removeChild(iframe);
+    }
+  }, 5000);
+}
 
 </script>

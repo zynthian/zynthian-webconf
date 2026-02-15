@@ -5,6 +5,7 @@
 # System Backup Handler
 #
 # Copyright (C) 2017 Markus Heidt <markus@heidt-tech.com>
+#               2026 Brian Walton <riban@zynthian.org>
 #
 # ********************************************************************
 #
@@ -26,14 +27,17 @@ import os
 import time
 import logging
 import zipfile
+import tarfile
 import jsonpickle
 import json
 import socket
 import tornado.web
-from io import BytesIO
+import tempfile
+import asyncio
+from glob import glob
 from pathlib import Path
 import subprocess
-from subprocess import DEVNULL
+from pathlib import PurePosixPath
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
@@ -42,34 +46,263 @@ from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, Zynt
 # ------------------------------------------------------------------------------
 # Snapshot Config Handler
 # ------------------------------------------------------------------------------
+
+BACKUP_CONFIG_FILE = "/zynthian/config/backup.json"
+
 class SystemBackupHandler(ZynthianBasicHandler):
 
-    CONFIG_BACKUP_ITEMS_FILE = "/zynthian/config/config_backup_items.txt"
-    DATA_BACKUP_ITEMS_FILE = "/zynthian/config/data_backup_items.txt"
-    CLOUD_BACKUP_CONFIG_FILE = "/zynthian/config/cloud_backup.json"
-    EXCLUDE_SUFFIX = ".exclude"
+    @staticmethod
+    def save_config(config):
+        try:
+            with open(BACKUP_CONFIG_FILE, 'w') as f:
+                json.dump(config, f, indent=4)
+        except Exception as e:
+            logging.warning(e)
 
     @staticmethod
-    def get_backup_items(filename):
+    def get_config():
         try:
-            with open(filename) as f:
-                return f.read().splitlines()
+            with open(BACKUP_CONFIG_FILE, "r") as f:
+                return json.load(f)
         except:
-            return []
+            return SystemBackupHandler.get_legacy_config()
+
+    @staticmethod
+    def get_legacy_config():
+        config = {
+                "profile": None,
+                "ZYNTHIAN_UPLOAD_MULTIPLE": True,
+                "profiles":{
+                    "Config": {
+                        "paths": [
+                            "${ZYNTHIAN_CONFIG_DIR}",
+                            "/root/.config/Modartt",
+                        ],
+                        "exclude_paths": [],
+                        "exclude_rules": []
+                    },
+                    "Data": {
+                        "paths": [
+                            "${ZYNTHIAN_MY_DATA_DIR}",
+                            "/root/.local/share/Modartt"
+                        ],
+                        "exclude_paths": [],
+                        "exclude_rules": []
+                    }
+                },
+                "cloud": {}
+            }
+        for profile in ("Config", "Data"):
+            try:
+                with open(f"/zynthian/config/{profile.lower()}_backup_items.txt", "r") as f:
+                    paths = f.readlines()
+                root_paths = []
+                exclude_paths = []
+                for path in paths:
+                    if path.startswith("^"):
+                        exclude_paths.append(path[1:].strip())
+                    else:
+                        root_paths.append(path.strip())
+                config["profiles"][profile]["paths"] = root_paths
+                config["profiles"][profile]["exclude_paths"] = exclude_paths
+            except:
+                pass
+        return config
+
+    @tornado.web.authenticated
+    def get(self, errors=None):
+        self.do_get(errors=errors)
+
+    def add_backup_item(dirname, subdirs, files):
+        config = {dirname: []}
+        for fname in files:
+            config[dirname].append(fname)
+        return config
+
+    def do_get(self, errors=None):
+        config = SystemBackupHandler.get_config()
+
+        def expand_paths(paths):
+            root_paths = set()
+            root_paths.add("/")
+            for path in paths:
+                path = os.path.expandvars(path)
+                parts = path.split("/")
+                path = ""
+                for part in parts:
+                    if part:
+                        path += f"/{part}"
+                        root_paths.add(path)
+            return root_paths
+
+        def render_tree(node, exclude_paths, root_paths, disable, parent_checked=True):
+            """ Create the html that represents the resolved files tree """
+            html = "<ul>"
+            if node["path"] in root_paths:
+                checkbox = ""
+            elif parent_checked and node["path"] not in exclude_paths:
+                checkbox = f'<input type="checkbox" checked {disable}>'
+            else:
+                checkbox = f'<input type="checkbox" {disable}>'
+                parent_checked = False
+            html += f"""
+            <li class="folder" data-path={node["path"]}>
+                <span class="folder_icon">📂</span>
+                {checkbox}
+                {node['name']}
+            """
+            for f in node.get("files", []):
+                path = f"{node['path']}/{f}"
+                if path in root_paths:
+                    checkbox = ""
+                elif parent_checked and path not in exclude_paths:
+                    checkbox = f'<input type="checkbox" checked {disable}>'
+                else:
+                    checkbox = f'<input type="checkbox" {disable}>'
+                html += f"""
+                <ul>
+                    <li class="file" data-path={path}>
+                        <span class="fileicon">📄</span>
+                        {checkbox}
+                        <span>{f}</span>
+                    </li>
+                </ul>
+                """
+            for child in node.get("dirs", {}).values():
+                html += render_tree(child, exclude_paths, root_paths, disable, parent_checked)
+            html += "</li></ul>"
+            return html
+
+        try:
+            profile_name = config["profile"]
+            if profile_name == "BACKUP_ALL":
+                backup_items = {}
+                for profile in config["profiles"].values():
+                    backup_items.update(SystemBackupHandler.walk_backup_paths(profile["paths"]))
+            else:
+                profile = config["profiles"][profile_name]
+                backup_items = SystemBackupHandler.walk_backup_paths(profile["paths"])
+
+            # Build a tree of files and directories
+            tree = {"name": "/", "dirs": {}, "files": [], "path": "/"}
+            for dir_path, files in backup_items.items():
+                parts = PurePosixPath(dir_path).parts
+                if parts and parts[0] == "/":
+                    parts = parts[1:]
+                node = tree
+                for part in parts:
+                    node = node["dirs"].setdefault(part, {"name": part, "dirs": {}, "files": [], "path": dir_path})
+                node["files"].extend(files)
+
+            root_paths = expand_paths(profile["paths"])
+            exclude_paths = expand_paths(profile["exclude_paths"])
+            if profile_name == "BACKUP_ALL":
+                disable = "disabled"
+            else:
+                disable = ""
+            config['BACKUP_TREE'] = render_tree(tree, exclude_paths, root_paths, disable)
+        except Exception as e:
+            logging.warning(e)
+
+        super().get("backup.html", "Backup / Restore", config, errors)
+
+    @tornado.web.authenticated
+    def post(self):
+        command = self.get_argument('action', default=None)
+        logging.info(f"COMMAND = {command}")
+        if command:
+            errors = {
+                'SAVE_PROFILE': lambda: self.do_save_profile(),
+                'CLOUD_BACKUP': lambda: self.do_cloud_backup(),
+                'CLOUD_RESTORE': lambda: self.do_cloud_restore()
+            }[command]()
+        else:
+            self.do_set_profile()
+
+    def do_set_profile(self):
+        """ Update the selected profile using the html select """
+
+        profile_name = self.get_argument("BACKUP_PROFILE", "BACKUP_ALL")
+        config = SystemBackupHandler.get_config()
+        config["profile"] = profile_name
+        SystemBackupHandler.save_config(config)
+        self.do_get()
+
+    def do_save_profile(self):
+        """ Save a profile to the configuration file """
+
+        config = SystemBackupHandler.get_config()
+        profile = self.get_argument("BACKUP_PROFILE")
+        config["profiles"][profile]["paths"] = self.get_argument('BACKUP_PATHS').replace("\r", "").split("\n")
+        config["profiles"][profile]["exclude_paths"] = self.get_argument('EXCLUDE_PATHS').replace("\r", "").split("\n")
+        config["profiles"][profile]["exclude_rules"] = self.get_argument('EXCLUDE_RULES').replace("\r", "").split("\n")
+        SystemBackupHandler.save_config(config)
+        if config["cloud"]:
+            for path in config["profiles"][profile]["paths"]:
+                path = os.path.expandvars(path)
+                rules = "\n".join(config["profiles"][profile]["exclude_rules"])
+                for xpath in config["profiles"][profile]["exclude_paths"]:
+                    if xpath.startswith(f"{path}/"):
+                        xpath = xpath[len(path):]
+                    rules += f"\n{xpath}"
+                rules += "\n.kopiaignore"
+                with open (f"{path}/.kopiaignore", "w") as f:
+                    f.write(rules)
+
+        self.do_get()
+
 
     @classmethod
-    def get_config_backup_items(cls):
-        return cls.get_backup_items(cls.CONFIG_BACKUP_ITEMS_FILE)
+    def walk_backup_paths(cls, backup_paths, exclude_paths=[], exclude_rules=[]):
+        """ Get a dictionary of directory paths indexing a list of files within the directory
+        Args:
+            backup_paths: List of root paths to search (may include environmental variables)
+            exclude_paths: List of paths (files and/or directories) to exclude
+            exclude_rules: List of relative or absolute rules to exclude files or directories
+        Returns: Dictionary: Lists of filenames, indexed by full directory paths
+        """
+
+        config = {}
+        rules = []
+        for rule in exclude_rules:
+            rule = rule.strip()
+            if rule.startswith("/"):
+                # Absolute rule so add to exclude paths
+                exclude_paths += glob(rule, root_dir="/")
+            else:
+                # Relative rule to be applied to each searched directory
+                rules.append(rule)
+        for item in backup_paths:
+            item = os.path.expandvars(item)
+            for dirname, subdirs, files in os.walk(item):
+                local_exclude_paths = exclude_paths.copy()
+                for rule in rules:
+                    local_exclude_paths += glob(f"{dirname}/{rule}")
+                files = [x for x in files if f"{dirname}/{x}" not in local_exclude_paths]
+                if not any(Path(dirname).match(xpat) for xpat in local_exclude_paths):
+                    config[dirname] = []
+                    for fname in files:
+                        config[dirname].append(fname)
+        return config
 
     @classmethod
-    def get_data_backup_items(cls):
-        return cls.get_backup_items(cls.DATA_BACKUP_ITEMS_FILE)
+    def get_valitem_info(cls, backup_paths=None):
+        xpats = []
+        bdirs = []
+        if not backup_paths:
+            backup_paths = cls.get_backup_paths()
+        for bitem in backup_paths:
+            bitem = os.path.expandvars(bitem)
+            if bitem.startswith("^"):
+                xpats.append(bitem[1:])
+            else:
+                bdirs.append(bitem)
+        return {
+            "xpats": xpats,
+            "bdirs": bdirs
+        }
 
-    @classmethod
-    def get_all_backup_items(cls):
-        res = cls.get_backup_items(cls.CONFIG_BACKUP_ITEMS_FILE)
-        res += cls.get_backup_items(cls.DATA_BACKUP_ITEMS_FILE)
-        return res
+    ### Cloud storage functions ###
 
     def cloud_rsync_ssh_configured(self, username, server=None):
         # Return True if key installed on remote server and this zynthian can connect via ssh
@@ -115,85 +348,29 @@ class SystemBackupHandler(ZynthianBasicHandler):
         except:
             return None
 
-    @tornado.web.authenticated
-    def get(self, errors=None):
-        self.do_get("BACKUP/RESTORE", errors)
-
-    def do_get(self, active_tab="BACKUP/RESTORE", errors=None):
-        config = {
-            'ACTIVE_TAB': active_tab,
-            'ZYNTHIAN_UPLOAD_MULTIPLE': True,
-            'CONFIG_BACKUP_ITEMS': {},
-            'CONFIG_BACKUP_DIRS': [],
-            'CONFIG_BACKUP_DIRS_EXCLUDED': [],
-            'DATA_BACKUP_ITEMS': {},
-            'DATA_BACKUP_DIRS': [],
-            'DATA_BACKUP_DIRS_EXCLUDED': []
-        }
-
-        config_backup_items = self.get_config_backup_items()
-        for item in config_backup_items:
-            if item.startswith("^"):
-                config['CONFIG_BACKUP_DIRS_EXCLUDED'].append(item[1:])
-            else:
-                config['CONFIG_BACKUP_DIRS'].append(item)
-
-        data_backup_items = self.get_data_backup_items()
-        for item in data_backup_items:
-            if item.startswith("^"):
-                config['DATA_BACKUP_DIRS_EXCLUDED'].append(item[1:])
-            else:
-                config['DATA_BACKUP_DIRS'].append(item)
-
+    def do_cloud_backup(self):
+        config = SystemBackupHandler.get_config()
+        profile_name = config['profile']
+        backup_paths = config["profiles"][profile_name]["paths"]
+        #TODO: Handle excludes, env vars, etc
         try:
-            with open(self.CLOUD_BACKUP_CONFIG_FILE, "r") as f:
-                config['CLOUD_CONFIG'] = json.load(f)
-        except:
-            config['CLOUD_CONFIG'] = {
-                "username": "",
-                "password": ""
-            }
-        username = config['CLOUD_CONFIG']["username"]
-        config['CLOUD_CONFIG']['enabled'] = self.cloud_rsync_ssh_configured(username)
-        config['CLOUD_CONFIG']['repos'] = self.cloud_rsync_get_repos(username)
+            config["cloud"]["uri"]
+            os.system(f"kopia repository connect from-config --token {config['cloud']['uri']}")
+            os.system(f"kopia snapshot create {' '.join(backup_paths)}")
+            #TODO: Show progress, e.g. using websockets
+        except Exception as e:
+            logging.error(e)
+        # Reload active tab
+        self.do_get()
 
-        def add_config_backup_item(dirname, subdirs, files):
-            if dirname not in config['CONFIG_BACKUP_ITEMS']:
-                config['CONFIG_BACKUP_ITEMS'][dirname] = []
-            for fname in files:
-                config['CONFIG_BACKUP_ITEMS'][dirname].append(fname)
-
-        def add_data_backup_item(dirname, subdirs, files):
-            if dirname not in config['DATA_BACKUP_ITEMS']:
-                config['DATA_BACKUP_ITEMS'][dirname] = []
-            for fname in files:
-                config['DATA_BACKUP_ITEMS'][dirname].append(fname)
-
-        self.walk_backup_items(add_config_backup_item, config_backup_items)
-        self.walk_backup_items(add_data_backup_item, data_backup_items)
-
-        super().get("backup.html", "Backup / Restore", config, errors)
-
-    @tornado.web.authenticated
-    def post(self):
-        command = self.get_argument('_command', '')
-        logging.info("COMMAND = {}".format(command))
-        if command:
-            errors = {
-                # 'RESTORE': pass,
-                'BACKUP_ALL': lambda: self.do_backup_all(),
-                'BACKUP_CONFIG': lambda: self.do_backup_config(),
-                'BACKUP_DATA': lambda: self.do_backup_data(),
-                'BACKUP_ALL_CLOUD': lambda: self.do_cloud_backup("ALL"),
-                'BACKUP_CONFIG_CLOUD': lambda: self.do_cloud_backup("CONFIG"),
-                'BACKUP_DATA_CLOUD': lambda: self.do_cloud_backup("DATA"),
-                'CLOUD_RESTORE_BACKUP_ALL': lambda: self.do_cloud_restore("ALL"),
-                'CLOUD_RESTORE_BACKUP_CONFIG': lambda: self.do_cloud_restore("CONFIG"),
-                'CLOUD_RESTORE_BACKUP_DATA': lambda: self.do_cloud_restore("DATA"),
-                'CLOUD_RESTORE_NONE': lambda: self.do_cloud_restore(None),
-                'SAVE_BACKUP_CONFIG': lambda: self.do_save_backup_config(),
-                'SAVE_CLOUD_CONFIG': lambda: self.do_save_cloud_config()
-            }[command]()
+    def do_cloud_restore(self):
+        config = SystemBackupHandler.get_config()
+        profile_name = config['profile']
+        backup_paths = config["profiles"][profile_name]["paths"]
+        if backup_paths:
+            os.system(f"kopia snapshot restore {' '.join(backup_paths)}")
+        # Reload active tab
+        self.do_get()
 
     def do_save_cloud_config(self):
         username = self.get_argument('CLOUD_USERNAME')
@@ -238,128 +415,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
                     json.dump({"username": username, "password": password, "uri": self.cloud_get_uri()}, f)
 
         # Reload active tab
-        active_tab = self.get_argument("ACTIVE_TAB", "BACKUP/RESTORE")
-        self.do_get(active_tab)
-
-    def do_save_backup_config(self):
-        # Save "Config" items
-        backup_dirs = ''
-        for dpath in self.get_argument('CONFIG_BACKUP_DIRS_EXCLUDED').split("\n"):
-            if dpath:
-                backup_dirs += "^{}\n".format(dpath)
-        backup_dirs += self.get_argument('CONFIG_BACKUP_DIRS')
-        with open(self.CONFIG_BACKUP_ITEMS_FILE, 'w') as backup_file:
-            backup_file.write(backup_dirs)
-
-        # Save "Data" items
-        backup_dirs = ''
-        for dpath in self.get_argument('DATA_BACKUP_DIRS_EXCLUDED').split("\n"):
-            if dpath:
-                backup_dirs += "^{}\n".format(dpath)
-        backup_dirs += self.get_argument('DATA_BACKUP_DIRS')
-        with open(self.DATA_BACKUP_ITEMS_FILE, 'w') as backup_file:
-            backup_file.write(backup_dirs)
-
-        # Reload active tab
-        active_tab = self.get_argument("ACTIVE_TAB", "BACKUP/RESTORE")
-        self.do_get(active_tab)
-
-    def do_backup_all(self):
-        backup_items = self.get_all_backup_items()
-        self.do_backup('zynthian_backup', backup_items)
-
-    def do_backup_config(self):
-        backup_items = self.get_config_backup_items()
-        self.do_backup('zynthian_config_backup', backup_items)
-
-    def do_backup_data(self):
-        backup_items = self.get_data_backup_items()
-        self.do_backup('zynthian_data_backup', backup_items)
-
-    def do_backup(self, fname_prefix, backup_items):
-        zipname = '{0}{1}.zip'.format(
-            fname_prefix, time.strftime("%Y%m%d-%H%M%S"))
-        f = BytesIO()
-        zf = zipfile.ZipFile(f, "w")
-
-        def zip_backup_items(dirname, subdirs, files):
-            logging.info(dirname)
-            if dirname != '/':
-                zf.write(dirname)
-            for filename in files:
-                logging.info(filename)
-                zf.write(os.path.join(dirname, filename))
-
-        self.walk_backup_items(zip_backup_items, backup_items)
-
-        zf.close()
-        self.set_header('Content-Type', 'application/zip')
-        self.set_header('Content-Disposition',
-                        'attachment; filename=%s' % zipname)
-
-        self.write(f.getvalue())
-        f.close()
-        self.finish()
-
-    def do_cloud_backup(self, type):
-        match(type):
-            case "ALL":
-                backup_items = self.get_all_backup_items()
-            case "CONFIG":
-                backup_items = self.get_config_backup_items()
-            case "DATA":
-                backup_items = self.get_data_backup_items()
-            case _:
-                backup_items = None
-        if backup_items:
-            with open(self.CLOUD_BACKUP_CONFIG_FILE, "r") as f:
-                config = json.load(f)
-            os.system(f"kopia repository connect from-config --token {config['uri']}")
-            os.system(f"kopia snapshot create {' '.join(backup_items)}")
-        # Reload active tab
-        active_tab = self.get_argument("ACTIVE_TAB", "BACKUP/RESTORE")
-        self.do_get(active_tab)
-
-    def do_cloud_restore(self, type):
-        match(type):
-            case "ALL":
-                backup_items = self.get_all_backup_items()
-            case "CONFIG":
-                backup_items = self.get_config_backup_items()
-            case "DATA":
-                backup_items = self.get_data_backup_items()
-            case _:
-                backup_items = None
-        if backup_items:
-            os.system(f"kopia snapshot restore {' '.join(backup_items)}")
-        # Reload active tab
-        active_tab = self.get_argument("ACTIVE_TAB", "BACKUP/RESTORE")
-        self.do_get(active_tab)
-
-    def walk_backup_items(self, worker, backup_items):
-        valitem_info = self.get_valitem_info(backup_items)
-        for bdir in valitem_info["bdirs"]:
-            for dirname, subdirs, files in os.walk(bdir):
-                if not any(Path(dirname).match(xpat) for xpat in valitem_info["xpats"]):
-                    worker(dirname, subdirs, files)
-
-    @classmethod
-    def get_valitem_info(cls, backup_items=None):
-        xpats = []
-        bdirs = []
-        if not backup_items:
-            backup_items = cls.get_all_backup_items()
-        for bitem in backup_items:
-            bitem = os.path.expandvars(bitem)
-            if bitem.startswith("^"):
-                xpats.append(bitem[1:])
-            else:
-                bdirs.append(bitem)
-        return {
-            "xpats": xpats,
-            "bdirs": bdirs
-        }
-
+        self.do_get()
 
 class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
 
@@ -380,25 +436,412 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
     def on_websocket_message(self, restore_file):
         # fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]
         # restore_file = fileinfo['filename']
-        with open(restore_file, "rb") as f:
-            self.valitem_info = SystemBackupHandler.get_valitem_info()
-            with zipfile.ZipFile(f, 'r') as restoreZip:
-                for member in restoreZip.namelist():
-                    if self.is_valid_restore_item(member):
-                        log_message = "Restored: " + member
-                        restoreZip.extract(member, "/")
-                        logging.debug(log_message)
-                        message = ZynthianWebSocketMessage(
-                            'RestoreMessageHandler', log_message)
-                        self.websocket.write_message(
-                            jsonpickle.encode(message))
-                    else:
-                        logging.warning(
-                            "Restore of " + member + " not allowed")
-                restoreZip.close()
-            f.close()
+        if restore_file.endswith("zip"):
+            with open(restore_file, "rb") as f:
+                # Legacy restore zip
+                with zipfile.ZipFile(f, 'r') as restoreZip:
+                    for member in restoreZip.namelist():
+                        if self.is_valid_restore_item(member):
+                            log_message = "Restored: " + member
+                            restoreZip.extract(member, "/")
+                            logging.debug(log_message)
+                            message = ZynthianWebSocketMessage(
+                                'RestoreMessageHandler', log_message)
+                            self.websocket.write_message(
+                                jsonpickle.encode(message))
+                        else:
+                            logging.warning(
+                                "Restore of " + member + " not allowed")
+                    restoreZip.close()
+                f.close()
+        else:
+            # Restore tar.gz
+            result = self.restore_gzip()
+
         os.remove(restore_file)
         SystemBackupHandler.update_sys()
         message = ZynthianWebSocketMessage(
             'RestoreMessageHandler', 'EOCOMMAND')
         self.websocket.write_message(jsonpickle.encode(message))
+
+        
+    async def restore_gzip(self):
+        """Stream upload data and restore tar contents in real-time"""
+
+        # Create a queue for streaming data from upload to tar extractor
+        data_queue = asyncio.Queue(maxsize=10)
+        loop = asyncio.get_event_loop()
+        
+        # Result storage
+        results = {
+            'success': True,
+            'restored_files': [],
+            'skipped_files': [],
+            'errors': [],
+            'total_size': 0
+        }
+        
+        async def extract_tar():
+            """Extract tar from queue data in background thread"""
+            try:
+                await loop.run_in_executor(
+                    None,
+                    self._extract_from_queue,
+                    data_queue,
+                    results
+                )
+            except Exception as e:
+                print(f"Error in extractor: {e}")
+                results['success'] = False
+                results['errors'].append({'file': 'EXTRACTOR', 'error': str(e)})
+        
+        # Start extraction task
+        extractor_task = asyncio.create_task(extract_tar())
+        
+        try:
+            # Stream the request body to the queue
+            bytes_received = 0
+            async for chunk in self.request.connection.stream.read_until_close(streaming_callback=None):
+                await data_queue.put(chunk)
+                bytes_received += len(chunk)
+                
+                if bytes_received % (10 * 1024 * 1024) == 0:  # Log every 10MB
+                    print(f"Received: {bytes_received / (1024*1024):.1f} MB")
+            
+            print(f"Upload complete: {bytes_received / (1024*1024):.1f} MB")
+            
+        except Exception as e:
+            print(f"Error streaming upload: {e}")
+            results['success'] = False
+            results['errors'].append({'file': 'UPLOAD', 'error': str(e)})
+        finally:
+            # Signal end of stream
+            await data_queue.put(None)
+        
+        # Wait for extraction to complete
+        await extractor_task
+        
+        return results
+    
+    def _extract_from_queue(self, data_queue, restore_path, results):
+        """Extract tar from streaming queue data (runs in thread pool)"""
+        import io
+        
+        class QueueReader:
+            """File-like object that reads from async queue"""
+            def __init__(self, queue):
+                self.queue = queue
+                self.buffer = b''
+                self.finished = False
+                self.loop = asyncio.get_event_loop()
+            
+            def read(self, size=-1):
+                """Read bytes from queue"""
+                while not self.finished:
+                    # If we have enough data, return it
+                    if size > 0 and len(self.buffer) >= size:
+                        data = self.buffer[:size]
+                        self.buffer = self.buffer[size:]
+                        return data
+                    
+                    # Get more data from queue
+                    try:
+                        future = asyncio.run_coroutine_threadsafe(
+                            self.queue.get(),
+                            self.loop
+                        )
+                        chunk = future.result(timeout=30)
+                        
+                        if chunk is None:
+                            self.finished = True
+                            break
+                        
+                        self.buffer += chunk
+                        
+                    except Exception as e:
+                        print(f"Error reading from queue: {e}")
+                        self.finished = True
+                        break
+                
+                # Return whatever we have left
+                if size > 0:
+                    data = self.buffer[:size]
+                    self.buffer = self.buffer[size:]
+                    return data
+                else:
+                    data = self.buffer
+                    self.buffer = b''
+                    return data
+            
+            def readable(self):
+                return True
+            
+            def seekable(self):
+                return False
+        
+        try:
+            # Create restore directory
+            restore_dir = Path(restore_path)
+            restore_dir.mkdir(parents=True, exist_ok=True)
+            
+            print("Opening tar stream...")
+            
+            # Create queue reader
+            reader = QueueReader(data_queue)
+            
+            # Open tar from streaming data
+            # Try different modes to auto-detect compression
+            try:
+                # First peek at data to detect compression
+                peek_data = reader.read(3)
+                reader.buffer = peek_data + reader.buffer
+                
+                if peek_data[:2] == b'\x1f\x8b':
+                    mode = 'r|gz'  # Stream mode for gzip
+                    print("Detected gzip compression")
+                elif peek_data[:3] == b'BZh':
+                    mode = 'r|bz2'
+                    print("Detected bzip2 compression")
+                else:
+                    mode = 'r|'  # Stream mode for uncompressed
+                    print("Detected uncompressed tar")
+                
+            except Exception:
+                mode = 'r|gz'  # Default to gzip
+            
+            with tarfile.open(fileobj=reader, mode=mode) as tar:
+                print("Extracting files...")
+                
+                for member in tar:
+                    try:
+                        # Build destination path
+                        dest_path = restore_dir / member.name
+                        
+                        # Security check: prevent path traversal
+                        if not str(dest_path.resolve()).startswith(str(restore_dir.resolve())):
+                            results['errors'].append({
+                                'file': member.name,
+                                'error': 'Path traversal attempt detected'
+                            })
+                            continue
+
+                        # Extract the member
+                        tar.extract(member, path=restore_dir)
+                        
+                        # Record success
+                        results['restored_files'].append({
+                            'file': member.name,
+                            'size': member.size,
+                            'type': 'directory' if member.isdir() else 'file',
+                            'path': str(dest_path)
+                        })
+                        results['total_size'] += member.size
+                        
+                        print(f"Restored: {member.name} ({member.size} bytes)")
+                        
+                    except Exception as e:
+                        results['errors'].append({
+                            'file': member.name,
+                            'error': str(e)
+                        })
+                        print(f"Error restoring {member.name}: {e}")
+            
+            # Summary
+            print(f"\nRestore complete:")
+            print(f"  Restored: {len(results['restored_files'])} files")
+            print(f"  Skipped: {len(results['skipped_files'])} files")
+            print(f"  Errors: {len(results['errors'])} files")
+            print(f"  Total size: {results['total_size'] / (1024*1024):.2f} MB")
+            
+            if results['errors']:
+                results['success'] = False
+            
+        except Exception as e:
+            results['success'] = False
+            results['errors'].append({
+                'file': 'GENERAL',
+                'error': str(e)
+            })
+            print(f"General error during restore: {e}")
+            import traceback
+            traceback.print_exc()
+
+
+class BackupDownloadHandler(tornado.web.RequestHandler):
+    """ Handle background download of backup - stream file to avoid creating large file on zynthian """
+    async def get(self):
+        config = SystemBackupHandler.get_config()
+        profile_name = config["profile"]
+        filename = f"zynthian_{profile_name.lower()}_backup{time.strftime('%Y%m%d-%H%M%S')}.tar.gz"
+        profile = config["profiles"][profile_name]
+        backup_tree = SystemBackupHandler.walk_backup_paths(profile["paths"], profile["exclude_paths"], profile["exclude_rules"])
+        paths = []
+        for path, files in backup_tree.items():
+            for file in files:
+                paths.append(f"{path}/{file}")
+        
+        self.set_header('Content-Type', 'application/x-gz')
+        self.set_header('Content-Disposition', f'attachment; filename="{filename}"')
+        self.set_header('Content-Encoding', 'identity')
+        self.set_header('Cache-Control', 'no-cache')
+        
+        chunk_queue = asyncio.Queue(maxsize=5)
+        loop = asyncio.get_event_loop()
+        stop_flag = {'stopped': False}
+        
+        async def produce_tar():
+            try:
+                await loop.run_in_executor(
+                    None, 
+                    self._create_tar_in_thread, 
+                    chunk_queue, 
+                    paths,
+                    loop,
+                    stop_flag
+                )
+            except Exception as e:
+                if not stop_flag['stopped']:
+                    logging.error(f"Error creating tar: {e}")
+                    import traceback
+                    traceback.print_exc()
+                await chunk_queue.put(('error', e))
+            finally:
+                await chunk_queue.put(('done', None))
+        
+        producer_task = asyncio.create_task(produce_tar())
+        
+        try:
+            while True:
+                if self.request.connection.stream.closed():
+                    logging.warning("Client closed by client")
+                    stop_flag['stopped'] = True
+                    producer_task.cancel()
+                    break
+
+                msg_type, data = await chunk_queue.get()
+                
+                if msg_type == 'done':
+                    break
+                elif msg_type == 'error':
+                    if not stop_flag['stopped']:
+                        logging.error(f"Error from producer: {data}")
+                        raise data
+                    break
+
+                elif msg_type == 'chunk':
+                    try:
+                        self.write(data)
+                        await self.flush()
+                        await asyncio.sleep(0)
+                    except tornado.iostream.StreamClosedError:
+                        logging.warning("Stream closed while writing")
+                        stop_flag['stopped'] = True
+                        producer_task.cancel()
+                        break
+                        
+        except asyncio.CancelledError:
+            pass
+        except tornado.iostream.StreamClosedError:
+            pass
+        except Exception as e:
+            if not stop_flag['stopped']:
+                logging.error(f"Error streaming: {e}")
+                import traceback
+                traceback.print_exc()
+            stop_flag['stopped'] = True
+        finally:
+            stop_flag['stopped'] = True
+            if not producer_task.done():
+                producer_task.cancel()
+                try:
+                    await producer_task
+                except asyncio.CancelledError:
+                    pass
+            
+            if not self.request.connection.stream.closed():
+                try:
+                    self.finish()
+                    logging.info("Response finished successfully")
+                except Exception as e:
+                    logging.error(f"Error finishing response: {e}")
+
+    def _create_tar_in_thread(self, chunk_queue, paths, loop, stop_flag):
+        """Create tar file in background thread"""
+        
+        class ChunkWriter:
+            def __init__(self, queue, event_loop, stop_flag):
+                self.queue = queue
+                self.loop = event_loop
+                self.stop_flag = stop_flag
+                self.chunk_size = 512* 1024
+                self.buffer = bytearray()
+                self.total_written = 0
+            
+            def write(self, data):
+                if self.stop_flag['stopped']:
+                    raise Exception("Client disconnected")
+                
+                self.buffer.extend(data)
+                
+                # Send chunks
+                while len(self.buffer) >= self.chunk_size:
+                    if self.stop_flag['stopped']:
+                        raise Exception("Client disconnected")
+                    
+                    chunk = bytes(self.buffer[:self.chunk_size])
+                    self.buffer = self.buffer[self.chunk_size:]
+                    try:
+                        future = asyncio.run_coroutine_threadsafe(
+                            self.queue.put(('chunk', chunk)),
+                            self.loop
+                        )
+                        future.result(timeout=10)
+                    except Exception as e:
+                        logging.error(f"Error sending chunk: {e}")
+                        self.stop_flag['stopped'] = True
+                        raise
+                return len(data)
+            
+            def flush_remaining(self):
+                if self.stop_flag['stopped']:
+                    return
+                if self.buffer:
+                    chunk = bytes(self.buffer)
+                    try:
+                        future = asyncio.run_coroutine_threadsafe(
+                            self.queue.put(('chunk', chunk)),
+                            self.loop
+                        )
+                        future.result(timeout=10)
+                        self.total_written += len(chunk)
+                    except Exception:
+                        pass
+                    self.buffer = bytearray()
+                logging.info(f"Total written: {self.total_written / (1024*1024):.2f} MB")
+        
+        writer = ChunkWriter(chunk_queue, loop, stop_flag)
+        
+        try:
+            logging.info("Starting tar creation...")
+            with tarfile.open(fileobj=writer, mode='w:gz', compresslevel=1) as tar:
+                for path in paths:
+                    if stop_flag['stopped']:
+                        break
+                    if os.path.exists(path):
+                        logging.info(f"Adding to tar: {path}")
+                        try:
+                            tar.add(path)
+                        except Exception as e:
+                            if stop_flag['stopped']:
+                                break
+                            logging.error(f"Error adding {path}: {e}")
+            if not stop_flag['stopped']:
+                writer.flush_remaining()
+            
+        except Exception as e:
+            if not stop_flag['stopped']:
+                logging.error(f"Error in tar creation: {e}")
+                import traceback
+                traceback.print_exc()
+                raise
+    

@@ -53,7 +53,7 @@ from lib.extrapacks_handler import ExtraPacksHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.presets_config_handler import PresetsConfigHandler
 from lib.software_update_handler import SoftwareUpdateHandler
-from lib.system_backup_handler import SystemBackupHandler
+from lib.system_backup_handler import SystemBackupHandler, BackupDownloadHandler
 from lib.upload_handler import UploadHandler
 from lib.midi_config_handler import MidiConfigHandler
 from lib.mackiecontrol_handler import MackiecontrolHandler
@@ -198,6 +198,7 @@ def make_app():
         (r"/ui-midi-mackiecontrol$", MackiecontrolHandler),
         (r"/sys-wifi$", WifiConfigHandler),
         (r"/sys-backup$", SystemBackupHandler),
+        (r"/sys-backup/download", BackupDownloadHandler),
         (r"/sys-security$", SecurityConfigHandler),
         (r"/sys-reboot$", RebootHandler),
         (r"/sys-reboot/confirmed$", RebootConfirmedHandler),
