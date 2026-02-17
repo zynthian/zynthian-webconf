@@ -213,8 +213,6 @@ class SystemBackupHandler(ZynthianBasicHandler):
         if command:
             errors = {
                 'SAVE_PROFILE': lambda: self.do_save_profile(),
-                'CLOUD_BACKUP': lambda: self.do_cloud_backup(),
-                'CLOUD_RESTORE': lambda: self.do_cloud_restore()
             }[command]()
         else:
             self.do_set_profile()
@@ -285,22 +283,6 @@ class SystemBackupHandler(ZynthianBasicHandler):
                         config[dirname].append(fname)
         return config
 
-    @classmethod
-    def get_valitem_info(cls, backup_paths=None):
-        xpats = []
-        bdirs = []
-        if not backup_paths:
-            backup_paths = cls.get_backup_paths()
-        for bitem in backup_paths:
-            bitem = os.path.expandvars(bitem)
-            if bitem.startswith("^"):
-                xpats.append(bitem[1:])
-            else:
-                bdirs.append(bitem)
-        return {
-            "xpats": xpats,
-            "bdirs": bdirs
-        }
 
     ### Cloud storage functions ###
 
@@ -347,30 +329,6 @@ class SystemBackupHandler(ZynthianBasicHandler):
             return result.stdout.strip().split("$ kopia repository connect from-config --token ")[1].split('\n')[0]
         except:
             return None
-
-    def do_cloud_backup(self):
-        config = SystemBackupHandler.get_config()
-        profile_name = config['profile']
-        backup_paths = config["profiles"][profile_name]["paths"]
-        #TODO: Handle excludes, env vars, etc
-        try:
-            config["cloud"]["uri"]
-            os.system(f"kopia repository connect from-config --token {config['cloud']['uri']}")
-            os.system(f"kopia snapshot create {' '.join(backup_paths)}")
-            #TODO: Show progress, e.g. using websockets
-        except Exception as e:
-            logging.error(e)
-        # Reload active tab
-        self.do_get()
-
-    def do_cloud_restore(self):
-        config = SystemBackupHandler.get_config()
-        profile_name = config['profile']
-        backup_paths = config["profiles"][profile_name]["paths"]
-        if backup_paths:
-            os.system(f"kopia snapshot restore {' '.join(backup_paths)}")
-        # Reload active tab
-        self.do_get()
 
     def do_save_cloud_config(self):
         username = self.get_argument('CLOUD_USERNAME')
@@ -423,47 +381,70 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
     def is_registered_for(cls, handler_name):
         return handler_name == 'RestoreMessageHandler'
 
-    def is_valid_restore_item(self, restore_item):
-        restore_item = "/" + restore_item
-        for xpat in self.valitem_info["xpats"]:
-            if Path(restore_item).match(xpat):
-                return False
-        for bdir in self.valitem_info["bdirs"]:
-            if str(restore_item).startswith(bdir):
-                return True
-        return False
-
     def on_websocket_message(self, restore_file):
-        # fileinfo = self.request.files['ZYNTHIAN_RESTORE_FILE'][0]
-        # restore_file = fileinfo['filename']
-        if restore_file.endswith("zip"):
+        if restore_file == "kopia_backup":
+            #os.system(f"kopia repository connect from-config --token {config['cloud']['uri']}")
+            config = SystemBackupHandler.get_config()
+            profile_name = config['profile']
+            for path in config["profiles"][profile_name]["paths"]:
+                path = os.path.expandvars(path)
+                if not path:
+                    continue
+                cmd = ["kopia", "snapshot", "create", path, "--log-level=debug"]
+                with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
+                    for line in proc.stdout:
+                        line = line.strip()
+                        if line.startswith("snapshotted "):
+                            result = json.loads(line.split('\t')[1])
+                            message = ZynthianWebSocketMessage('RestoreMessageHandler', f"Backing up: {path}/{result['path']} ({result['files']} files)")
+                            self.websocket.write_message(jsonpickle.encode(message))
+            message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
+            self.websocket.write_message(jsonpickle.encode(message))
+            return
+        elif restore_file == "kopia_restore":
+            config = SystemBackupHandler.get_config()
+            profile_name = config['profile']
+            for path in config["profiles"][profile_name]["paths"]:
+                path = os.path.expandvars(path)
+                if not path:
+                    continue
+                cmd = ["kopia", "snapshot", "restore", path, "--log-level=debug"]
+                with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
+                    for line in proc.stdout:
+                        line = line.strip()
+                        if line.startswith("file"):
+                            message = ZynthianWebSocketMessage('RestoreMessageHandler', f"Restored: {line[5:]}")
+                            self.websocket.write_message(jsonpickle.encode(message))
+            message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
+            self.websocket.write_message(jsonpickle.encode(message))
+            return
+        elif restore_file.endswith("zip"):
             with open(restore_file, "rb") as f:
-                # Legacy restore zip
                 with zipfile.ZipFile(f, 'r') as restoreZip:
                     for member in restoreZip.namelist():
-                        if self.is_valid_restore_item(member):
-                            log_message = "Restored: " + member
-                            restoreZip.extract(member, "/")
-                            logging.debug(log_message)
-                            message = ZynthianWebSocketMessage(
-                                'RestoreMessageHandler', log_message)
-                            self.websocket.write_message(
-                                jsonpickle.encode(message))
-                        else:
-                            logging.warning(
-                                "Restore of " + member + " not allowed")
+                        log_message = "Restored: " + member
+                        restoreZip.extract(member, "/")
+                        logging.debug(log_message)
+                        message = ZynthianWebSocketMessage('RestoreMessageHandler', log_message)
+                        self.websocket.write_message(jsonpickle.encode(message))
                     restoreZip.close()
                 f.close()
         else:
-            # Restore tar.gz
-            result = self.restore_gzip()
-
+            # Open and extract the tar.gz file
+            with tarfile.open(restore_file, "r:gz") as tar:
+                for member in tar.getmembers():
+                    tar.extract(member)
+                    log_message = "Restored: " + member.name
+                    logging.debug(log_message)
+                    message = ZynthianWebSocketMessage(
+                        'RestoreMessageHandler', log_message)
+                    self.websocket.write_message(
+                        jsonpickle.encode(message))
         os.remove(restore_file)
         SystemBackupHandler.update_sys()
         message = ZynthianWebSocketMessage(
             'RestoreMessageHandler', 'EOCOMMAND')
         self.websocket.write_message(jsonpickle.encode(message))
-
         
     async def restore_gzip(self):
         """Stream upload data and restore tar contents in real-time"""

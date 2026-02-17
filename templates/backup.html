@@ -47,16 +47,15 @@
 	<div class="container-fluid">
 		<div class="row normal-view">
 			<button title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup</button>
-			<button type="submit" name="action" value="CLOUD_BACKUP" title="Do cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i>Cloud Backup</button>
+			<button type="button" onclick="startCloudBackup()"" title="Do cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i>Cloud Backup</button>
 		</div>
 		<div class="row normal-view">
 			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore</button>
-			<button type="submit" name="action" value="CLOUD_RESTORE" title="Do cloud restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Cloud Restore</button>
+			<button type="button" onclick="startCloudRestore()" title="Do cloud restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Cloud Restore</button>
 		</div>
 		<div class="row">
 			<div id="restore-log" class="log-panel"></div>
 		</div>
-
 		{% if config['profile'] != "BACKUP_ALL" %}
 		<div class="row advanced-view">
 			<label>Directories to backup (full path):</label>
@@ -309,4 +308,57 @@ function download_backup() {
   }, 5000);
 }
 
+// --Cloud restore functions--
+
+function enableButtons(enable) {
+  $(':button').prop('disabled', enable);
+}
+
+function startRestoreSession() {
+  var logDiv = $("#restore-log");
+  logDiv.addClass("updating");
+  logDiv.html('');
+
+  window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
+    if (data) {
+      console.log("RestoreMessageHandler:onmessage:", data);
+      if (data == "EOCOMMAND") {
+        logDiv.removeClass("updating");
+        // Re-enable the Kopia restore button once the operation ends
+        $("#kopia_restore_button").prop("disabled", false).html(
+          '<i class="fa fa-cloud-download"></i> Kopia Restore'
+        );
+      } else {
+        logDiv.append(data + "<br />");
+        logDiv[0].scrollTop = logDiv[0].scrollHeight;
+      }
+    }
+  });
+}
+
+function startCloudBackup() {
+		if (!window.zynthianSocket || window.zynthianSocket.readyState !== WebSocket.OPEN) {
+			alert("WebSocket is not connected yet. Please wait a moment and try again.");
+			return;
+		}
+		startRestoreSession();
+		var socketMessage = {
+			"handler_name": "RestoreMessageHandler",
+			"data": "kopia_backup"
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
+
+function startCloudRestore() {
+		if (!window.zynthianSocket || window.zynthianSocket.readyState !== WebSocket.OPEN) {
+			alert("WebSocket is not connected yet. Please wait a moment and try again.");
+			return;
+		}
+		startRestoreSession();
+		var socketMessage = {
+			"handler_name": "RestoreMessageHandler",
+			"data": "kopia_restore"
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+}
 </script>
