@@ -647,182 +647,85 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
             import traceback
             traceback.print_exc()
 
-
 class BackupDownloadHandler(tornado.web.RequestHandler):
-    """ Handle background download of backup - stream file to avoid creating large file on zynthian """
+    """Stream a tar.gz backup directly to the client without temp files."""
+
     async def get(self):
         config = SystemBackupHandler.get_config()
         profile_name = config["profile"]
         filename = f"zynthian_{profile_name.lower()}_backup{time.strftime('%Y%m%d-%H%M%S')}.tar.gz"
         profile = config["profiles"][profile_name]
-        backup_tree = SystemBackupHandler.walk_backup_paths(profile["paths"], profile["exclude_paths"], profile["exclude_rules"])
-        paths = []
-        for path, files in backup_tree.items():
-            for file in files:
-                paths.append(f"{path}/{file}")
-        
-        self.set_header('Content-Type', 'application/x-gz')
-        self.set_header('Content-Disposition', f'attachment; filename="{filename}"')
-        self.set_header('Content-Encoding', 'identity')
-        self.set_header('Cache-Control', 'no-cache')
-        
-        chunk_queue = asyncio.Queue(maxsize=5)
+
+        backup_tree = SystemBackupHandler.walk_backup_paths(
+            profile["paths"], profile["exclude_paths"], profile["exclude_rules"]
+        )
+        paths = [f"{path}/{file}" for path, files in backup_tree.items() for file in files]
+
+        self.set_header("Content-Type", "application/x-gz")
+        self.set_header("Content-Disposition", f'attachment; filename="{filename}"')
+        self.set_header("Content-Encoding", "identity")
+        self.set_header("Cache-Control", "no-cache")
+
+        CHUNK = 512 * 1024
         loop = asyncio.get_event_loop()
-        stop_flag = {'stopped': False}
-        
-        async def produce_tar():
+        cancelled = False
+
+        class QueueWriter:
+            def __init__(self):
+                self.queue = asyncio.Queue(maxsize=8)
+
+            def write(self, data):
+                if data:
+                    future = asyncio.run_coroutine_threadsafe(
+                        self.queue.put(data), loop
+                    )
+                    future.result(timeout=30)
+                return len(data)
+
+            def flush(self):
+                pass  # tarfile calls this; nothing to do
+
+            async def sentinel(self):
+                """Signal end-of-stream."""
+                await self.queue.put(None)
+
+        writer = QueueWriter()
+
+        def build_tar():
             try:
-                await loop.run_in_executor(
-                    None, 
-                    self._create_tar_in_thread, 
-                    chunk_queue, 
-                    paths,
-                    loop,
-                    stop_flag
-                )
+                with tarfile.open(fileobj=writer, mode="w:gz", compresslevel=1) as tar:
+                    for path in paths:
+                        if cancelled:
+                            break
+                        if os.path.exists(path):
+                            try:
+                                tar.add(path)
+                            except Exception as e:
+                                logging.warning(f"Skipping {path}: {e}")
             except Exception as e:
-                if not stop_flag['stopped']:
-                    logging.error(f"Error creating tar: {e}")
-                    import traceback
-                    traceback.print_exc()
-                await chunk_queue.put(('error', e))
+                logging.error(f"tar creation failed: {e}")
             finally:
-                await chunk_queue.put(('done', None))
-        
-        producer_task = asyncio.create_task(produce_tar())
-        
+                # Always post sentinel so the consumer can exit
+                asyncio.run_coroutine_threadsafe(writer.sentinel(), loop).result(timeout=5)
+
+        producer = loop.run_in_executor(None, build_tar)
+
         try:
             while True:
-                if self.request.connection.stream.closed():
-                    logging.warning("Client closed by client")
-                    stop_flag['stopped'] = True
-                    producer_task.cancel()
+                chunk = await writer.queue.get()
+                if chunk is None:          # sentinel → done
                     break
-
-                msg_type, data = await chunk_queue.get()
-                
-                if msg_type == 'done':
-                    break
-                elif msg_type == 'error':
-                    if not stop_flag['stopped']:
-                        logging.error(f"Error from producer: {data}")
-                        raise data
-                    break
-
-                elif msg_type == 'chunk':
-                    try:
-                        self.write(data)
-                        await self.flush()
-                        await asyncio.sleep(0)
-                    except tornado.iostream.StreamClosedError:
-                        logging.warning("Stream closed while writing")
-                        stop_flag['stopped'] = True
-                        producer_task.cancel()
-                        break
-                        
-        except asyncio.CancelledError:
-            pass
+                self.write(chunk)
+                await self.flush()
         except tornado.iostream.StreamClosedError:
-            pass
+            logging.warning("Client disconnected during backup download")
+            cancelled = True
         except Exception as e:
-            if not stop_flag['stopped']:
-                logging.error(f"Error streaming: {e}")
-                import traceback
-                traceback.print_exc()
-            stop_flag['stopped'] = True
+            logging.error(f"Streaming error: {e}")
+            cancelled = True
         finally:
-            stop_flag['stopped'] = True
-            if not producer_task.done():
-                producer_task.cancel()
-                try:
-                    await producer_task
-                except asyncio.CancelledError:
-                    pass
-            
-            if not self.request.connection.stream.closed():
-                try:
-                    self.finish()
-                    logging.info("Response finished successfully")
-                except Exception as e:
-                    logging.error(f"Error finishing response: {e}")
-
-    def _create_tar_in_thread(self, chunk_queue, paths, loop, stop_flag):
-        """Create tar file in background thread"""
-        
-        class ChunkWriter:
-            def __init__(self, queue, event_loop, stop_flag):
-                self.queue = queue
-                self.loop = event_loop
-                self.stop_flag = stop_flag
-                self.chunk_size = 512* 1024
-                self.buffer = bytearray()
-                self.total_written = 0
-            
-            def write(self, data):
-                if self.stop_flag['stopped']:
-                    raise Exception("Client disconnected")
-                
-                self.buffer.extend(data)
-                
-                # Send chunks
-                while len(self.buffer) >= self.chunk_size:
-                    if self.stop_flag['stopped']:
-                        raise Exception("Client disconnected")
-                    
-                    chunk = bytes(self.buffer[:self.chunk_size])
-                    self.buffer = self.buffer[self.chunk_size:]
-                    try:
-                        future = asyncio.run_coroutine_threadsafe(
-                            self.queue.put(('chunk', chunk)),
-                            self.loop
-                        )
-                        future.result(timeout=10)
-                    except Exception as e:
-                        logging.error(f"Error sending chunk: {e}")
-                        self.stop_flag['stopped'] = True
-                        raise
-                return len(data)
-            
-            def flush_remaining(self):
-                if self.stop_flag['stopped']:
-                    return
-                if self.buffer:
-                    chunk = bytes(self.buffer)
-                    try:
-                        future = asyncio.run_coroutine_threadsafe(
-                            self.queue.put(('chunk', chunk)),
-                            self.loop
-                        )
-                        future.result(timeout=10)
-                        self.total_written += len(chunk)
-                    except Exception:
-                        pass
-                    self.buffer = bytearray()
-                logging.info(f"Total written: {self.total_written / (1024*1024):.2f} MB")
-        
-        writer = ChunkWriter(chunk_queue, loop, stop_flag)
-        
-        try:
-            logging.info("Starting tar creation...")
-            with tarfile.open(fileobj=writer, mode='w:gz', compresslevel=1) as tar:
-                for path in paths:
-                    if stop_flag['stopped']:
-                        break
-                    if os.path.exists(path):
-                        logging.info(f"Adding to tar: {path}")
-                        try:
-                            tar.add(path)
-                        except Exception as e:
-                            if stop_flag['stopped']:
-                                break
-                            logging.error(f"Error adding {path}: {e}")
-            if not stop_flag['stopped']:
-                writer.flush_remaining()
-            
-        except Exception as e:
-            if not stop_flag['stopped']:
-                logging.error(f"Error in tar creation: {e}")
-                import traceback
-                traceback.print_exc()
-                raise
-    
+            await producer   # wait for the thread to finish cleanly
+            try:
+                self.finish()
+            except Exception:
+                pass    
