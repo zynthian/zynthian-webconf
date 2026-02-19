@@ -23,6 +23,7 @@
     width: 16px;
     display: inline-block;
   }
+
 </style>
 
 <div class="pull-right">
@@ -35,6 +36,22 @@
 {% module Template('upload.html', config=config) %}
 </form>
 
+<dialog id="CLOUD_CONFIG_DIALOG">
+  <form id="CLOUD_CONFIG_FORM" onsubmit="submitCloudConfig(event)" method="post">
+    <label>Username (provided by cloud service)</label>
+    <input id="CLOUD_USERNAME", name="CLOUD_USERNAME"/>
+    <label>Password (to encrypt data in cloud (leave empty for no encryption) - do not forget this else you will not be able to access your backups!)</label>
+    <input type="password" id="CLOUD_PASSWORD" name="CLOUD_PASSWORD"/>
+    <label>ssh password (only required once to initialise cloud storage)</label>
+    <input type="password" id="CLOUD_SSH_PASSWORD" name="CLOUD_SSH_PASSWORD"/>
+    <label>Storage hostname (default: username.rsync.net)</label>
+    <input id="cloud_server" id="CLOUD_SERVER" name="CLOUD_SERVER"/>
+    <button value="CANCEL_CLOUD_CONFIG">Cancel</button>
+    <button name="action" value="REMOVE_CLOUD_CONFIG">Remove Config</button>
+    <button name="action" value="SAVE_CLOUD_CONFIG">Save</button>
+  </form>
+</dialog>
+
 <form id="backup-form" enctype="multipart/form-data" method="post">
 	<label>Backup profile</label>
 	<select name="BACKUP_PROFILE" onchange="this.form.submit()">
@@ -45,13 +62,62 @@
 	</select>
 
 	<div class="container-fluid">
+    {% if config['cloud']['storage'] %}
+		<div class="row advanced-view">
+			<button title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup (tar.gz)</button>
+		</div>
+		<div class="row advanced-view">
+			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore (tar.gz, zip)</button>
+		</div>
+		<div class="row normal-view">
+			<button type="button" onclick="startCloudBackup()" title="Do cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i>Cloud Backup</button>
+		</div>
+		<div class="row normal-view">
+			<button type="button" onclick="startCloudRestore()" title="Do cloud restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Cloud Restore</button>
+		</div>
+		<div class="row advanced-view">
+			<button type="button" onclick="deleteCloudBackup()" title="Delete cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-trash"></i>Delete Cloud Backup</button>
+		</div>
+    <div class="row advanced-view">
+			<label>Backups:</label>
+			<div class="tree" id="CLOUD_RESTORE_TREE", name="CLOUD_RESTORE_TREE">
+          {% for host in config["snapshots"] %}
+          <ul>
+          <li class="folder">
+            <span class="folder_icon">🖥️</span>
+            {{host}}
+          {% for timestamp in config["snapshots"][host] %}
+          <ul>
+          <li class="folder snapshot collapsed">
+          <input type="checkbox" class="snapshot" name="snapshot" value="{{timestamp}}">
+          {{timestamp}}
+          {% for path in config["snapshots"][host][timestamp] %}
+          <ul>
+          <li class="folder" data-path="{{path}}">
+          <span class="folder_icon">📂</span>
+          <input type="checkbox" value={{path}}>
+          {{path}}
+          </li>
+          </ul>
+          {% end %}
+          </li>
+          </ul>
+          {% end %}
+          </li>
+          </ul>
+          {% end %}
+			</div>
+		</div>
+    {% else %}
 		<div class="row normal-view">
 			<button title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup (tar.gz)</button>
-			<button type="button" onclick="startCloudBackup()"" title="Do cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i>Cloud Backup</button>
 		</div>
 		<div class="row normal-view">
 			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore (tar.gz, zip)</button>
-			<button type="button" onclick="startCloudRestore()" title="Do cloud restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Cloud Restore</button>
+		</div>
+    {% end %}
+		<div class="row advanced-view">
+			<button type="button" onclick="editCloudConfig()" title="Edit Cloud Backup Profile" class="btn btn-lg btn-theme btn-block">Edit Cloud Backup Profile</button>
 		</div>
 		<div class="row">
 			<div id="restore-log" class="log-panel"></div>
@@ -79,9 +145,10 @@
 			<button type="submit" name="action" value="SAVE_PROFILE" title="Save Backup Profile" class="btn btn-lg btn-theme btn-block"><i class="fa fa-check"></i>Save Profile</button>
 		</div>
 		{% end %}
-		<div class="row advanced-view">
+
+    <div class="row advanced-view">
 			<label>Resolved files to backup (unselect any files or folders to exclude):</label>
-			<div class="tree" id="tree", name="TREE">
+			<div class="tree" id="TREE", name="TREE">
 				{% raw config['BACKUP_TREE'] %}
 			</div>
 		</div>
@@ -143,7 +210,7 @@ $(document).ready(function (){
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
 	}
 	restore_advanced_view()
-	updateFolderCheckboxes('tree');
+	updateFolderCheckboxes();
 });
 
 function restore_advanced_view() {
@@ -166,6 +233,26 @@ function onchange_check_advanced_view() {
 	}
 }
 
+const toggleSnapshot = function(e) {
+	if (e.target.classList.contains("snapshot")) {
+    const ch = e.target.closest(".snapshot");
+    if (!ch)
+      return;
+    objs = restoreTree.querySelectorAll(".snapshot");
+    objs.forEach(obj => {
+        obj.classList.add("collapsed");
+    });
+    objs = restoreTree.querySelectorAll('input[type="checkbox"]');
+    objs.forEach(obj => {
+      obj.checked = false;
+    });
+		const li = e.target.closest(".folder");
+		if (li)
+      li.classList.toggle("collapsed");
+    ch.checked = true;
+  }
+};
+
 const toggleFolder = function(e) {
 	if (e.target.classList.contains("folder_icon")) {
 		const li = e.target.closest(".folder");
@@ -185,9 +272,13 @@ const toggleNode = function(e) {
 	updateParents(li.parentElement.closest("li"));
 };
 
-const tree = document.getElementById("tree");
+const tree = document.getElementById("TREE");
 tree.addEventListener("click", toggleFolder);
 tree.addEventListener("change", toggleNode);
+
+const restoreTree = document.getElementById("CLOUD_RESTORE_TREE");
+restoreTree.addEventListener("click", toggleSnapshot);
+restoreTree.addEventListener("change", toggleNode);
 
 function updateParents(li) {
     if (!li) return;
@@ -211,8 +302,7 @@ function updateParents(li) {
     updateParents(li.parentElement.closest("li"));
 }
 
-function getUncheckedPaths(treeId) {
-  const tree = document.getElementById(treeId);
+function getUncheckedPaths() {
   const uncheckedPaths = [];
   // Find all checkboxes that are NOT checked and NOT indeterminate
   const checkboxes = tree.querySelectorAll('input[type="checkbox"]');
@@ -249,8 +339,7 @@ function getUncheckedPaths(treeId) {
   return uncheckedPaths;
 }
 
-function updateFolderCheckboxes(treeId) {
-  const tree = document.getElementById(treeId);
+function updateFolderCheckboxes() {
   const folders = Array.from(tree.querySelectorAll('.folder'));
   folders.sort((a, b) => {
     const depthA = a.querySelectorAll('ul').length;
@@ -291,7 +380,7 @@ function updateFolderCheckbox(folderElement) {
 // Update hidden exclude lists (used to pass data back to python class)
 document.getElementById('backup-form').addEventListener('submit', function(event) {
   show_busy();
-	document.getElementById("EXCLUDE_PATHS").value = getUncheckedPaths('tree').sort().join("\n");
+	document.getElementById("EXCLUDE_PATHS").value = getUncheckedPaths().sort().join("\n");
 });
 
 // Handle backup (download) button
@@ -355,10 +444,50 @@ function startCloudRestore() {
 			return;
 		}
 		startRestoreSession();
+    data = "kopia_restore"
+    objs = restoreTree.querySelectorAll('input[type="checkbox"]');
+    objs.forEach(obj => {
+      if (obj.checked || obj.indeterminate)
+        data += " " + obj.value;
+      obj.checked = false;
+    });
 		var socketMessage = {
-			"handler_name": "RestoreMessageHandler",
-			"data": "kopia_restore"
+			"handler_name": "RestoreMessageHandler",      
+			"data": data
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
 }
+
+function deleteCloudBackup() {
+  objs = restoreTree.querySelectorAll(".snapshot");
+  objs.forEach(obj => {
+    if (obj.tyoe == "checkbox" && (obj.checked || obj.indeterminate))
+      data = obj.value;
+  });
+}
+
+function editCloudConfig() {
+  document.getElementById('CLOUD_USERNAME').value = "{{config['cloud']['username']}}";
+  document.getElementById('CLOUD_PASSWORD').value="{{config['cloud']['password']}}";
+  document.getElementById('CLOUD_CONFIG_DIALOG').showModal();
+}
+
+function submitCloudConfig(event) {
+  const button = event.submitter;
+  if (button.value == "CANCEL_CLOUD_CONFIG") {
+    event.preventDefault();
+    cancelCloudConfig();
+  } else if (button.value == "REMOVE_CLOUD_CONFIG") {
+    if (!confirm("Confirm you wish to remove the cloud storage configuration"))
+      event.preventDefault(); 
+  } else if (button.value == "SAVE_CLOUD_CONFIG") {
+    cancelCloudConfig();
+    show_busy();
+  }
+}
+
+function cancelCloudConfig() {
+  document.getElementById('CLOUD_CONFIG_DIALOG').close();
+}
+
 </script>

@@ -32,12 +32,12 @@ import jsonpickle
 import json
 import socket
 import tornado.web
-import tempfile
 import asyncio
 from glob import glob
 from pathlib import Path
 import subprocess
 from pathlib import PurePosixPath
+from datetime import datetime
 
 from lib.zynthian_config_handler import ZynthianBasicHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketMessageHandler, ZynthianWebSocketMessage
@@ -90,7 +90,11 @@ class SystemBackupHandler(ZynthianBasicHandler):
                         "exclude_rules": []
                     }
                 },
-                "cloud": {}
+                "cloud": {
+                    "storage": "",
+                    "username":"",
+                    "password": ""
+                }
             }
         for profile in ("Config", "Data"):
             try:
@@ -135,8 +139,9 @@ class SystemBackupHandler(ZynthianBasicHandler):
                         root_paths.add(path)
             return root_paths
 
-        def render_tree(node, exclude_paths, root_paths, disable, parent_checked=True):
+        def render_tree(node, exclude_paths, root_paths, disable, parent_checked=True, collapsed=""):
             """ Create the html that represents the resolved files tree """
+
             html = "<ul>"
             if node["path"] in root_paths:
                 checkbox = ""
@@ -146,7 +151,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
                 checkbox = f'<input type="checkbox" {disable}>'
                 parent_checked = False
             html += f"""
-            <li class="folder" data-path={node["path"]}>
+            <li class="folder {collapsed}" data-path={node["path"]}>
                 <span class="folder_icon">📂</span>
                 {checkbox}
                 {node['name']}
@@ -169,7 +174,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
                 </ul>
                 """
             for child in node.get("dirs", {}).values():
-                html += render_tree(child, exclude_paths, root_paths, disable, parent_checked)
+                html += render_tree(child, exclude_paths, root_paths, disable, parent_checked, "collapsed")
             html += "</li></ul>"
             return html
 
@@ -203,6 +208,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
             config['BACKUP_TREE'] = render_tree(tree, exclude_paths, root_paths, disable)
         except Exception as e:
             logging.warning(e)
+        config["snapshots"] = self.get_snapshots()
 
         super().get("backup.html", "Backup / Restore", config, errors)
 
@@ -213,6 +219,9 @@ class SystemBackupHandler(ZynthianBasicHandler):
         if command:
             errors = {
                 'SAVE_PROFILE': lambda: self.do_save_profile(),
+                'SAVE_CLOUD_CONFIG': lambda: self.do_save_cloud_config(),
+                'REMOVE_CLOUD_CONFIG': lambda: self.remove_cloud_config(),
+                'DELETE_CLOUD_SNAPSHOT': lambda: self.delete_cloud_config()
             }[command]()
         else:
             self.do_set_profile()
@@ -249,6 +258,33 @@ class SystemBackupHandler(ZynthianBasicHandler):
 
         self.do_get()
 
+    def remove_cloud_config(self):
+        """ Remove the cloud configuration from the configuration file """
+
+        config = SystemBackupHandler.get_config()
+        config["cloud"] = {
+            "storage": "",
+            "username":"",
+            "password": ""
+        }
+        SystemBackupHandler.save_config(config)
+        os.system("kopia repository disconnect")
+        self.do_get()
+
+    def delete_cloud_config(self):
+        pass
+
+    def is_cloud_connected(self, full):
+        """ Check if kopia cloud storage is connected
+        Args:
+            full: Do full (slower) check [Default: False]
+        Returns: True if connected
+        """
+
+        if full:
+            return os.system("kopia repository status > /dev/null 2>&1") == 0
+        else:
+            return os.system("ls /root/.config/kopia/repository.config > /dev/null 2>&1" == 0)
 
     @classmethod
     def walk_backup_paths(cls, backup_paths, exclude_paths=[], exclude_rules=[]):
@@ -369,46 +405,91 @@ class SystemBackupHandler(ZynthianBasicHandler):
                 connected = os.system(f"kopia repository create sftp --username {username} --host {server} --path zynthian/backup/{hostname} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}")
             if connected:
                 # Save cloud config
-                with open(self.CLOUD_BACKUP_CONFIG_FILE, 'w') as f:
-                    json.dump({"username": username, "password": password, "uri": self.cloud_get_uri()}, f)
+                config = self.get_config()
+                config["cloud"] = {
+                    "storage": "sftp",
+                    "username": username,
+                    "password": password,
+                    "uri": self.cloud_get_uri()
+                }
+                self.save_config(config)
 
         # Reload active tab
         self.do_get()
 
+    def get_snapshots(self):
+        config = {}
+        cmd = ["kopia", "snapshot", "list", "--json"]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        snapshots = json.loads(result.stdout)
+
+        for snapshot in snapshots:
+            try:
+                id = snapshot["id"]
+                host = snapshot["source"]["host"]
+                path = snapshot["source"]["path"]
+                tags = snapshot["tags"]
+                timestamp = tags["tag:zynthian"]
+                if host not in config:
+                    config[host] = {}
+                if timestamp not in config[host]:
+                    config[host][timestamp] = {}
+                config[host][timestamp][path] = id
+            except:
+                pass
+        for host, timestamps in config.items():
+            sorted_timestamps = dict(sorted(timestamps.items()))
+            config[host] = sorted_timestamps
+        return config
+
 class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
+    """ Websocket handler"""
 
     @classmethod
     def is_registered_for(cls, handler_name):
         return handler_name == 'RestoreMessageHandler'
 
-    def on_websocket_message(self, restore_file):
-        if restore_file == "kopia_backup":
+    def on_websocket_message(self, data):
+        if data == "kopia_backup":
             #os.system(f"kopia repository connect from-config --token {config['cloud']['uri']}")
             config = SystemBackupHandler.get_config()
-            profile_name = config['profile']
-            for path in config["profiles"][profile_name]["paths"]:
-                path = os.path.expandvars(path)
-                if not path:
-                    continue
-                cmd = ["kopia", "snapshot", "create", path, "--log-level=debug"]
-                with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
-                    for line in proc.stdout:
-                        line = line.strip()
-                        if line.startswith("snapshotted "):
-                            result = json.loads(line.split('\t')[1])
-                            message = ZynthianWebSocketMessage('RestoreMessageHandler', f"Backing up: {path}/{result['path']} ({result['files']} files)")
-                            self.websocket.write_message(jsonpickle.encode(message))
+            profile_name = config["profile"]
+            timestamp = datetime.now().strftime("%Y-%m-%d.%H:%M:%S")
+            paths = []
+            if profile_name == "BACKUP_ALL":
+                for profile in config["profiles"].values():
+                    for path in profile["paths"]:
+                        if path not in paths:
+                            paths.append(os.path.expandvars(path))
+            else:
+                for path in config["profiles"][profile_name]["paths"]:
+                  paths.append(os.path.expandvars(path))
+            cmd = ["kopia", "snapshot", "create", f"--tags=zynthian:{timestamp}", "--log-level=debug"] + paths
+            with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
+                for line in proc.stdout:
+                    line = line.strip()
+                    if line.startswith("snapshotted "):
+                        result = json.loads(line.split('\t')[1])
+                        message = ZynthianWebSocketMessage('RestoreMessageHandler', f"Backing up: {path}/{result['path']} ({result['files']} files)")
+                        self.websocket.write_message(jsonpickle.encode(message))
             message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
             self.websocket.write_message(jsonpickle.encode(message))
             return
-        elif restore_file == "kopia_restore":
+        elif data.startswith("kopia_restore"):
             config = SystemBackupHandler.get_config()
-            profile_name = config['profile']
-            for path in config["profiles"][profile_name]["paths"]:
-                path = os.path.expandvars(path)
-                if not path:
-                    continue
-                cmd = ["kopia", "snapshot", "restore", path, "--log-level=debug"]
+            parts = data.split(" ")
+            tag = parts[1]
+            paths = parts[2:]
+            cmd = ["kopia", "snapshot", "list", f"--tags=zynthian:{tag}", "--json"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            snapshots = json.loads(result.stdout)
+            ids = {}
+            for snapshot in snapshots:
+                if snapshot["source"]["path"] in paths:
+                    ids[snapshot["id"]] = snapshot["source"]["path"]
+
+            for id, path  in ids.items():
+                cmd = ["kopia", "restore", id, path, "--overwrite-directories", "--overwrite-files", "--log-level=debug"]
                 with subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.STDOUT, text=True) as proc:
                     for line in proc.stdout:
                         line = line.strip()
@@ -418,8 +499,8 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
             message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
             self.websocket.write_message(jsonpickle.encode(message))
             return
-        elif restore_file.endswith("zip"):
-            with open(restore_file, "rb") as f:
+        elif data.endswith("zip"):
+            with open(data, "rb") as f:
                 with zipfile.ZipFile(f, 'r') as restoreZip:
                     for member in restoreZip.namelist():
                         log_message = "Restored: " + member
@@ -431,7 +512,7 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
                 f.close()
         else:
             # Open and extract the tar.gz file
-            with tarfile.open(restore_file, "r:gz") as tar:
+            with tarfile.open(data, "r:gz") as tar:
                 for member in tar.getmembers():
                     tar.extract(member)
                     log_message = "Restored: " + member.name
@@ -440,7 +521,7 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
                         'RestoreMessageHandler', log_message)
                     self.websocket.write_message(
                         jsonpickle.encode(message))
-        os.remove(restore_file)
+        os.remove(data)
         SystemBackupHandler.update_sys()
         message = ZynthianWebSocketMessage(
             'RestoreMessageHandler', 'EOCOMMAND')
@@ -653,7 +734,7 @@ class BackupDownloadHandler(tornado.web.RequestHandler):
     async def get(self):
         config = SystemBackupHandler.get_config()
         profile_name = config["profile"]
-        filename = f"zynthian_{profile_name.lower()}_backup{time.strftime('%Y%m%d-%H%M%S')}.tar.gz"
+        filename = f"{socket.gethostname()}_{profile_name.lower()}_backup_{time.strftime('%Y%m%d-%H%M%S')}.tar.gz"
         profile = config["profiles"][profile_name]
 
         backup_tree = SystemBackupHandler.walk_backup_paths(
