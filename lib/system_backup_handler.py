@@ -220,8 +220,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
             errors = {
                 'SAVE_PROFILE': lambda: self.do_save_profile(),
                 'SAVE_CLOUD_CONFIG': lambda: self.do_save_cloud_config(),
-                'REMOVE_CLOUD_CONFIG': lambda: self.remove_cloud_config(),
-                'DELETE_CLOUD_SNAPSHOT': lambda: self.delete_cloud_config()
+                'REMOVE_CLOUD_CONFIG': lambda: self.remove_cloud_config()
             }[command]()
         else:
             self.do_set_profile()
@@ -243,6 +242,10 @@ class SystemBackupHandler(ZynthianBasicHandler):
         config["profiles"][profile]["paths"] = self.get_argument('BACKUP_PATHS').replace("\r", "").split("\n")
         config["profiles"][profile]["exclude_paths"] = self.get_argument('EXCLUDE_PATHS').replace("\r", "").split("\n")
         config["profiles"][profile]["exclude_rules"] = self.get_argument('EXCLUDE_RULES').replace("\r", "").split("\n")
+        # Remove blank lines from paths and rules
+        for obj in ("paths", "exclude_paths", "exclude_rules"):
+            mylist = config["profiles"][profile][obj]
+            mylist[:] = [x for x in mylist if x]
         SystemBackupHandler.save_config(config)
         if config["cloud"]:
             for path in config["profiles"][profile]["paths"]:
@@ -270,9 +273,6 @@ class SystemBackupHandler(ZynthianBasicHandler):
         SystemBackupHandler.save_config(config)
         os.system("kopia repository disconnect")
         self.do_get()
-
-    def delete_cloud_config(self):
-        pass
 
     def is_cloud_connected(self, full):
         """ Check if kopia cloud storage is connected
@@ -419,27 +419,30 @@ class SystemBackupHandler(ZynthianBasicHandler):
 
     def get_snapshots(self):
         config = {}
-        cmd = ["kopia", "snapshot", "list", "--json"]
-        result = subprocess.run(cmd, capture_output=True, text=True)
-        snapshots = json.loads(result.stdout)
+        try:
+            cmd = ["kopia", "snapshot", "list", "--json"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            snapshots = json.loads(result.stdout)
 
-        for snapshot in snapshots:
-            try:
-                id = snapshot["id"]
-                host = snapshot["source"]["host"]
-                path = snapshot["source"]["path"]
-                tags = snapshot["tags"]
-                timestamp = tags["tag:zynthian"]
-                if host not in config:
-                    config[host] = {}
-                if timestamp not in config[host]:
-                    config[host][timestamp] = {}
-                config[host][timestamp][path] = id
-            except:
-                pass
-        for host, timestamps in config.items():
-            sorted_timestamps = dict(sorted(timestamps.items()))
-            config[host] = sorted_timestamps
+            for snapshot in snapshots:
+                try:
+                    id = snapshot["id"]
+                    host = snapshot["source"]["host"]
+                    path = snapshot["source"]["path"]
+                    tags = snapshot["tags"]
+                    timestamp = tags["tag:zynthian"]
+                    if host not in config:
+                        config[host] = {}
+                    if timestamp not in config[host]:
+                        config[host][timestamp] = {}
+                    config[host][timestamp][path] = id
+                except:
+                    pass
+            for host, timestamps in config.items():
+                sorted_timestamps = dict(sorted(timestamps.items()))
+                config[host] = sorted_timestamps
+        except:
+            pass
         return config
 
 class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
@@ -476,8 +479,9 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
             self.websocket.write_message(jsonpickle.encode(message))
             return
         elif data.startswith("kopia_restore"):
-            config = SystemBackupHandler.get_config()
             parts = data.split(" ")
+            if len(parts) < 3:
+                return
             tag = parts[1]
             paths = parts[2:]
             cmd = ["kopia", "snapshot", "list", f"--tags=zynthian:{tag}", "--json"]
@@ -498,6 +502,17 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
                             self.websocket.write_message(jsonpickle.encode(message))
             message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
             self.websocket.write_message(jsonpickle.encode(message))
+            return
+        elif data.startswith("kopia_delete"):
+            parts = data.split(" ")
+            if len(parts) < 2:
+                return
+            config = {}
+            cmd = ["kopia", "snapshot", "list", "--json", "--tags", f"zynthian:{parts[1]}"]
+            result = subprocess.run(cmd, capture_output=True, text=True)
+            snapshots = json.loads(result.stdout)
+            for snapshot in snapshots:
+                os.system(f"kopia snapshot delete {snapshot['id']} --delete")
             return
         elif data.endswith("zip"):
             with open(data, "rb") as f:

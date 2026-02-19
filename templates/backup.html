@@ -54,7 +54,7 @@
 
 <form id="backup-form" enctype="multipart/form-data" method="post">
 	<label>Backup profile</label>
-	<select name="BACKUP_PROFILE" onchange="this.form.submit()">
+	<select name="BACKUP_PROFILE" onchange="show_busy(); this.form.submit();">
 		<option value="BACKUP_ALL" {% if config['profile'] == "BACKUP_ALL" %} selected{% end %}>All</option>
 		{% for d in config['profiles'] %}
 		<option value="{{d}}" {% if config['profile'] == d %} selected{% end %}>{{d}}</option>
@@ -64,7 +64,7 @@
 	<div class="container-fluid">
     {% if config['cloud']['storage'] %}
 		<div class="row advanced-view">
-			<button title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup (tar.gz)</button>
+			<button type="button" title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup (tar.gz)</button>
 		</div>
 		<div class="row advanced-view">
 			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore (tar.gz, zip)</button>
@@ -80,7 +80,7 @@
 		</div>
     <div class="row advanced-view">
 			<label>Backups:</label>
-			<div class="tree" id="CLOUD_RESTORE_TREE", name="CLOUD_RESTORE_TREE">
+			<div class="tree" id="CLOUD_RESTORE_TREE">
           {% for host in config["snapshots"] %}
           <ul>
           <li class="folder">
@@ -110,7 +110,7 @@
 		</div>
     {% else %}
 		<div class="row normal-view">
-			<button title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup (tar.gz)</button>
+			<button type="button" title="Do Backup" class="btn btn-lg btn-theme btn-block" onclick="download_backup()"><i class="fa fa-save"></i>Download Backup (tar.gz)</button>
 		</div>
 		<div class="row normal-view">
 			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore (tar.gz, zip)</button>
@@ -189,7 +189,7 @@ $(document).ready(function (){
 		console.log("upload succeeded: " + response);
 		var logDiv = $("#restore-log");
 		logDiv.addClass("updating");
-		logDiv.html('');
+    logDiv.html('<button type="button" onclick="clearRestoreLog()">Clear restore log</button><br/>');
 
 		var socketMessage = {
 			"handler_name": "RestoreMessageHandler",
@@ -284,6 +284,7 @@ function updateParents(li) {
     if (!li) return;
     const checkboxes = li.querySelectorAll(":scope > ul input[type=checkbox]");
     const parentCheckbox = li.querySelector(":scope > input[type=checkbox]");
+    if (!parentCheckbox) return;
     let checkedCount = 0;
     checkboxes.forEach(cb => {
       if (cb.checked) checkedCount++;
@@ -403,10 +404,15 @@ function enableButtons(enable) {
   $(':button').prop('disabled', enable);
 }
 
+function clearRestoreLog() {
+  var logDiv = $("#restore-log");
+  logDiv.html('');
+}
+
 function startRestoreSession() {
   var logDiv = $("#restore-log");
   logDiv.addClass("updating");
-  logDiv.html('');
+  logDiv.html('<button type="button" onclick="clearRestoreLog()">Clear restore log</button><br/>');
 
   window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
     if (data) {
@@ -436,7 +442,8 @@ function startCloudBackup() {
 			"data": "kopia_backup"
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
-}
+    //location.reload(); // This refreshes the list of backups but also clears the log of backedup files
+  }
 
 function startCloudRestore() {
 		if (!window.zynthianSocket || window.zynthianSocket.readyState !== WebSocket.OPEN) {
@@ -461,8 +468,19 @@ function startCloudRestore() {
 function deleteCloudBackup() {
   objs = restoreTree.querySelectorAll(".snapshot");
   objs.forEach(obj => {
-    if (obj.tyoe == "checkbox" && (obj.checked || obj.indeterminate))
+    if (obj.type == "checkbox" && (obj.checked || obj.indeterminate)) {
       data = obj.value;
+      var socketMessage = {
+        "handler_name": "RestoreMessageHandler",
+        "data": "kopia_delete " + data
+      };
+      if (confirm("Confirm you want to delete snapshot " + data)) {
+        show_busy();
+        window.zynthianSocket.send(JSON.stringify(socketMessage));
+        location.reload();
+      }
+      return;
+    }
   });
 }
 
