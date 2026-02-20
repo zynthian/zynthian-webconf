@@ -65,12 +65,15 @@ class SystemBackupHandler(ZynthianBasicHandler):
             with open(BACKUP_CONFIG_FILE, "r") as f:
                 return json.load(f)
         except:
-            return SystemBackupHandler.get_legacy_config()
+            config = SystemBackupHandler.get_legacy_config()
+            SystemBackupHandler.save_config(config)
+            #TODO: Delete legacy config?
+            return config
 
     @staticmethod
     def get_legacy_config():
         config = {
-                "profile": None,
+                "profile": "BACKUP_ALL",
                 "ZYNTHIAN_UPLOAD_MULTIPLE": True,
                 "profiles":{
                     "Config": {
