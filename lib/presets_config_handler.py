@@ -28,6 +28,8 @@ import glob
 import shutil
 import logging
 import zipfile
+import py7zr
+
 import tarfile
 import requests
 import tornado.web
@@ -277,6 +279,10 @@ class PresetsConfigHandler(ZynthianBasicHandler):
                 dpath = fpath[:-4]
                 with zipfile.ZipFile(fpath, 'r') as soundfontZip:
                     soundfontZip.extractall(dpath)
+            elif fpath.endswith('.7z'):
+                dpath = fpath[:-3]
+                with py7zr.SevenZipFile(fpath, 'r') as sz:
+                    sz.extractall(dpath)
 
             if os.path.isdir(dpath):
                 # Unroll nested dir
