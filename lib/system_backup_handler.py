@@ -95,6 +95,7 @@ class SystemBackupHandler(ZynthianBasicHandler):
                 },
                 "cloud": {
                     "storage": "",
+                    "server": "",
                     "username":"",
                     "password": ""
                 }
@@ -211,22 +212,33 @@ class SystemBackupHandler(ZynthianBasicHandler):
             config['BACKUP_TREE'] = render_tree(tree, exclude_paths, root_paths, disable)
         except Exception as e:
             logging.warning(e)
+        if config["cloud"]["storage"] == "sftp":
+            config["cloud"]["repos"] = self.cloud_get_ssh_repos(config["cloud"]["username"])
+        else:
+            config["cloud"]["repos"] = []
+        config["repo"] = self.get_cloud_connected_repo()
         config["snapshots"] = self.get_snapshots()
+        if config["repo"] != socket.gethostname():
+            config["cloud"]["readonly"] = True
 
         super().get("backup.html", "Backup / Restore", config, errors)
 
     @tornado.web.authenticated
     def post(self):
-        command = self.get_argument('action', default=None)
+        command = self.get_argument("action", default=None)
+        value = self.get_argument("value", None)
         logging.info(f"COMMAND = {command}")
         if command:
             errors = {
-                'SAVE_PROFILE': lambda: self.do_save_profile(),
-                'SAVE_CLOUD_CONFIG': lambda: self.do_save_cloud_config(),
-                'REMOVE_CLOUD_CONFIG': lambda: self.remove_cloud_config()
+                "SAVE_PROFILE": lambda: self.do_save_profile(),
+                "SAVE_CLOUD_CONFIG": lambda: self.do_save_cloud_config(),
+                "REMOVE_CLOUD_CONFIG": lambda: self.remove_cloud_config(),
+                "SELECT_REPO": lambda: self.select_repo(value),
+                "DELETE_SNAPSHOT": lambda: self.delete_snapshot(value)
             }[command]()
         else:
             self.do_set_profile()
+        self.do_get()
 
     def do_set_profile(self):
         """ Update the selected profile using the html select """
@@ -235,7 +247,6 @@ class SystemBackupHandler(ZynthianBasicHandler):
         config = SystemBackupHandler.get_config()
         config["profile"] = profile_name
         SystemBackupHandler.save_config(config)
-        self.do_get()
 
     def do_save_profile(self):
         """ Save a profile to the configuration file """
@@ -262,20 +273,43 @@ class SystemBackupHandler(ZynthianBasicHandler):
                 with open (f"{path}/.kopiaignore", "w") as f:
                     f.write(rules)
 
-        self.do_get()
-
     def remove_cloud_config(self):
         """ Remove the cloud configuration from the configuration file """
 
         config = SystemBackupHandler.get_config()
         config["cloud"] = {
             "storage": "",
+            "server": "",
             "username":"",
             "password": ""
         }
         SystemBackupHandler.save_config(config)
         os.system("kopia repository disconnect")
-        self.do_get()
+
+    def select_repo(self, repo):
+        """ Select the repo defined by config """
+
+        config = SystemBackupHandler.get_config()["cloud"]
+        connected = SystemBackupHandler.connect_to_ssh_repo(config["username"], config["server"], repo, config["password"])
+
+    def delete_snapshot(self, snapshot):
+        cmd = ["kopia", "snapshot", "list", "--json", "--tags", f"zynthian:{snapshot}"]
+        result = subprocess.run(cmd, capture_output=True, text=True)
+        snapshots = json.loads(result.stdout)
+        for snapshot in snapshots:
+            os.system(f"kopia snapshot delete {snapshot['id']} --delete")
+
+    def get_cloud_connected_repo(self):
+        """ Get the name of the connected repository
+        Returns: Name of repo or None if not connected
+        """
+
+        try:
+            result = subprocess.run(["kopia", "repository", "status", "--json"], capture_output=True, text=True)
+            config = json.loads(result.stdout)
+            return config["storage"]["config"]["path"].split("/")[-1]
+        except:
+            return None
 
     def is_cloud_connected(self, full):
         """ Check if kopia cloud storage is connected
@@ -342,7 +376,18 @@ class SystemBackupHandler(ZynthianBasicHandler):
                          -o ConnectTimeout=3 \
                          -t {username}@{server} ls > /dev/null") == 0
 
-    def cloud_rsync_get_repos(self, username, server=None, path=None):
+    def is_cloud_ssh_repo(self, username, server, path):
+        """ Check if the zynthian kopia repository exists
+        Args:
+            username: ssh username
+            server: hostname of ssh server
+            path: path to repository
+        Returns: True if repository exists
+        """
+
+        return os.system(f"ssh -t ls {username}@{server} ls {path}/kopia.repository.f") == 0
+
+    def cloud_get_ssh_repos(self, username, server=None, path=None):
         # Returns list of kopia repositories
         if server is None:
             server = f"{username}.rsync.net"
@@ -369,15 +414,34 @@ class SystemBackupHandler(ZynthianBasicHandler):
         except:
             return None
 
+    @classmethod
+    def connect_to_ssh_repo(cls, username, server, repo, password):
+        """ Connect to or create sftp repository
+        Args:
+            username: ssh username
+            server: ssh server hostname
+            repo: Name of repository
+            password: Repository encryption password
+        Returns: True on success
+        """
+
+        # Connect to existing repo
+        connected = os.system(f"kopia repository connect sftp --username {username} --host {server} --path zynthian/backup/{repo} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}") == 0
+        if not connected:
+            # Create new repo
+            connected = os.system(f"kopia repository create sftp --username {username} --host {server} --path zynthian/backup/{repo} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}")
+        return connected
+
     def do_save_cloud_config(self):
-        username = self.get_argument('CLOUD_USERNAME')
-        password = self.get_argument('CLOUD_PASSWORD')
-        server = self.get_argument('CLOUD_SERVER')
+        username = self.get_argument("CLOUD_USERNAME")
+        password = self.get_argument("CLOUD_PASSWORD")
+        server = self.get_argument("CLOUD_SERVER")
+        path = self.get_argument("CLOUD_PATH", "zynthian/backup")
         if not server:
             server = f"{username}.rsync.net"
 
         # Check if ssh key installed on cloud server
-        if not self.cloud_rsync_ssh_configured(username):
+        if not self.cloud_rsync_ssh_configured(username, server):
             # Update known_hosts file (ensures current config is correct)
             known_hosts_path = os.path.expanduser("~/.ssh/known_hosts")
             os.system(f"ssh-keygen -R {server} >> /dev/null 2>&1")
@@ -398,27 +462,21 @@ class SystemBackupHandler(ZynthianBasicHandler):
 
         if self.cloud_rsync_ssh_configured(username):
             # Get list of existing repositories...
-            repos = self.cloud_rsync_get_repos(username)
+            repos = self.cloud_get_ssh_repos(username)
             hostname = socket.gethostname()
             if hostname in repos:
-                # Connect to existing repo
-                connected = os.system(f"kopia repository connect sftp --username {username} --host {server} --path zynthian/backup/{hostname} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}") == 0
-            else:
-                # Create new repo
-                connected = os.system(f"kopia repository create sftp --username {username} --host {server} --path zynthian/backup/{hostname} --keyfile $HOME/.ssh/id_rsa --known-hosts=$HOME/.ssh/known_hosts --password={password}")
+                connected = self.connect_to_ssh_repo(username, server, hostname, password)
             if connected:
                 # Save cloud config
                 config = self.get_config()
                 config["cloud"] = {
                     "storage": "sftp",
+                    "server": server,
                     "username": username,
                     "password": password,
                     "uri": self.cloud_get_uri()
                 }
                 self.save_config(config)
-
-        # Reload active tab
-        self.do_get()
 
     def get_snapshots(self):
         config = {}
@@ -430,23 +488,18 @@ class SystemBackupHandler(ZynthianBasicHandler):
             for snapshot in snapshots:
                 try:
                     id = snapshot["id"]
-                    host = snapshot["source"]["host"]
                     path = snapshot["source"]["path"]
                     tags = snapshot["tags"]
                     timestamp = tags["tag:zynthian"]
-                    if host not in config:
-                        config[host] = {}
-                    if timestamp not in config[host]:
-                        config[host][timestamp] = {}
-                    config[host][timestamp][path] = id
+                    if timestamp not in config:
+                        config[timestamp] = []
+                    if path not in config[timestamp]:
+                        config[timestamp].append(path)
                 except:
                     pass
-            for host, timestamps in config.items():
-                sorted_timestamps = dict(sorted(timestamps.items()))
-                config[host] = sorted_timestamps
         except:
             pass
-        return config
+        return dict(sorted(config.items()))
 
 class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
     """ Websocket handler"""
@@ -478,7 +531,7 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
                         result = json.loads(line.split('\t')[1])
                         message = ZynthianWebSocketMessage('RestoreMessageHandler', f"Backing up: {path}/{result['path']} ({result['files']} files)")
                         self.websocket.write_message(jsonpickle.encode(message))
-            message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
+            message = ZynthianWebSocketMessage('RestoreMessageHandler', 'RELOAD_PAGE')
             self.websocket.write_message(jsonpickle.encode(message))
             return
         elif data.startswith("kopia_restore"):
@@ -506,17 +559,20 @@ class RestoreMessageHandler(ZynthianWebSocketMessageHandler):
             message = ZynthianWebSocketMessage('RestoreMessageHandler', 'EOCOMMAND')
             self.websocket.write_message(jsonpickle.encode(message))
             return
-        elif data.startswith("kopia_delete"):
+        elif data.startswith("delete_snapshot"):
             parts = data.split(" ")
-            if len(parts) < 2:
-                return
-            config = {}
-            cmd = ["kopia", "snapshot", "list", "--json", "--tags", f"zynthian:{parts[1]}"]
-            result = subprocess.run(cmd, capture_output=True, text=True)
-            snapshots = json.loads(result.stdout)
-            for snapshot in snapshots:
-                os.system(f"kopia snapshot delete {snapshot['id']} --delete")
-            return
+            if len(parts) > 1:
+                cmd = ["kopia", "snapshot", "list", "--json", "--tags", f"zynthian:{parts[1]}"]
+                result = subprocess.run(cmd, capture_output=True, text=True)
+                snapshots = json.loads(result.stdout)
+                for snapshot in snapshots:
+                    cmd = ["kopia", "snapshot", "delete", snapshot['id'], "--delete"]
+                    result = subprocess.run(cmd, capture_output=True, text=True)
+                    message = ZynthianWebSocketMessage('RestoreMessageHandler', result.stderr)
+                    self.websocket.write_message(jsonpickle.encode(message))
+                message = ZynthianWebSocketMessage('RestoreMessageHandler', "RELOAD_PAGE")
+                self.websocket.write_message(jsonpickle.encode(message))
+
         elif data.endswith("zip"):
             with open(data, "rb") as f:
                 with zipfile.ZipFile(f, 'r') as restoreZip:

@@ -15,13 +15,17 @@
   }
 
   .folder_icon {
-    width: 16px;
     display: inline-block;
     cursor: pointer;
   }
+
   .file_icon {
     width: 16px;
     display: inline-block;
+  }
+
+  .repo {
+    cursor: pointer;
   }
 
 </style>
@@ -69,9 +73,11 @@
 		<div class="row advanced-view">
 			<button id="upload_show" title="Do upload restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Upload Restore (tar.gz, zip)</button>
 		</div>
+    {% if 'readonly' not in config['cloud'] %}
 		<div class="row normal-view">
 			<button type="button" onclick="startCloudBackup()" title="Do cloud backup" class="btn btn-lg btn-theme btn-block"><i class="fa fa-save"></i>Cloud Backup</button>
 		</div>
+    {% end %}
 		<div class="row normal-view">
 			<button type="button" onclick="startCloudRestore()" title="Do cloud restore" class="btn btn-lg btn-theme btn-block"><i class="fa fa-share-square"></i>Cloud Restore</button>
 		</div>
@@ -81,17 +87,20 @@
     <div class="row advanced-view">
 			<label>Backups:</label>
 			<div class="tree" id="CLOUD_RESTORE_TREE">
-          {% for host in config["snapshots"] %}
+          {% for repo in config["cloud"]["repos"] %}
           <ul>
-          <li class="folder">
-            <span class="folder_icon">🖥️</span>
-            {{host}}
-          {% for timestamp in config["snapshots"][host] %}
+          <li class="repo">
+            <span class="folder_icon" onclick="selectRepo('{{repo}}')">🖥️
+            {{repo}}</span>
+          {% if repo == config["repo"] %}
+          {% for snapshot in config["snapshots"] %}
           <ul>
-          <li class="folder snapshot collapsed">
-          <input type="checkbox" class="snapshot" name="snapshot" value="{{timestamp}}">
-          {{timestamp}}
-          {% for path in config["snapshots"][host][timestamp] %}
+          <li class="folder collapsed">
+          <div class="snapshot" onclick="toggleSnapshot()">
+          <input type="checkbox" value="{{snapshot}}">
+          {{snapshot}}
+          </div>
+          {% for path in config["snapshots"][snapshot] %}
           <ul>
           <li class="folder" data-path="{{path}}">
           <span class="folder_icon">📂</span>
@@ -99,13 +108,14 @@
           {{path}}
           </li>
           </ul>
-          {% end %}
+          {% end #for for path %}
           </li>
           </ul>
-          {% end %}
+          {% end #for timestamp %}
+          {% end #if repo %}
           </li>
           </ul>
-          {% end %}
+          {% end #for repo%}
 			</div>
 		</div>
     {% else %}
@@ -117,7 +127,7 @@
 		</div>
     {% end %}
 		<div class="row advanced-view">
-			<button type="button" onclick="editCloudConfig()" title="Edit Cloud Backup Profile" class="btn btn-lg btn-theme btn-block">Edit Cloud Backup Profile</button>
+			<button type="button" onclick="editCloudConfig()" title="Edit Cloud Backup" class="btn btn-lg btn-theme btn-block">Edit Cloud Backup</button>
 		</div>
 		<div class="row">
 			<div id="restore-log" class="log-panel"></div>
@@ -195,18 +205,7 @@ $(document).ready(function (){
 			"handler_name": "RestoreMessageHandler",
 			"data": response
 		};
-		window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
-			if (data){
-				console.log("RestoreMessageHandler:onmessage:", data);
-				var logDiv = $("#restore-log");
-				if (data == "EOCOMMAND"){
-					logDiv.removeClass("updating");
-				} else {
-					logDiv.append(data + "<br />");
-					logDiv[0].scrollTop = logDiv[0].scrollHeight;
-				}
-			}
-		});
+		window.zynthianSocket.registerHandler('RestoreMessageHandler', startRestoreSession);
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
 	}
 	restore_advanced_view()
@@ -233,25 +232,25 @@ function onchange_check_advanced_view() {
 	}
 }
 
-const toggleSnapshot = function(e) {
-	if (e.target.classList.contains("snapshot")) {
-    const ch = e.target.closest(".snapshot");
-    if (!ch)
-      return;
-    objs = restoreTree.querySelectorAll(".snapshot");
-    objs.forEach(obj => {
-        obj.classList.add("collapsed");
-    });
-    objs = restoreTree.querySelectorAll('input[type="checkbox"]');
-    objs.forEach(obj => {
-      obj.checked = false;
-    });
-		const li = e.target.closest(".folder");
-		if (li)
-      li.classList.toggle("collapsed");
-    ch.checked = true;
-  }
-};
+function toggleSnapshot() {
+  objs = restoreTree.querySelectorAll(".folder");
+  objs.forEach(obj => {
+      obj.classList.add("collapsed");
+  });
+  objs = restoreTree.querySelectorAll('input[type="checkbox"]');
+  objs.forEach(obj => {
+    obj.checked = false;
+    obj.indeterminate = false;
+  });
+  const li = event.target.closest(".folder");
+  if (li)
+    li.classList.toggle("collapsed");
+  objs = event.target.closest("li").querySelectorAll('input[type="checkbox"]');
+  objs.forEach(obj => {
+    obj.checked = true;
+  });
+  event.srcElement.checked = true;
+}
 
 const toggleFolder = function(e) {
 	if (e.target.classList.contains("folder_icon")) {
@@ -277,7 +276,6 @@ tree.addEventListener("click", toggleFolder);
 tree.addEventListener("change", toggleNode);
 
 const restoreTree = document.getElementById("CLOUD_RESTORE_TREE");
-restoreTree.addEventListener("click", toggleSnapshot);
 restoreTree.addEventListener("change", toggleNode);
 
 function updateParents(li) {
@@ -412,7 +410,7 @@ function clearRestoreLog() {
 function startRestoreSession() {
   var logDiv = $("#restore-log");
   logDiv.addClass("updating");
-  logDiv.html('<button type="button" onclick="clearRestoreLog()">Clear restore log</button><br/>');
+  logDiv.html('<button type="button" onclick="clearRestoreLog()">Clear log</button><br/>');
 
   window.zynthianSocket.registerHandler('RestoreMessageHandler', function(data) {
     if (data) {
@@ -423,6 +421,8 @@ function startRestoreSession() {
         $("#kopia_restore_button").prop("disabled", false).html(
           '<i class="fa fa-cloud-download"></i> Kopia Restore'
         );
+      } else if (data == "RELOAD_PAGE") {
+        location.reload();
       } else {
         logDiv.append(data + "<br />");
         logDiv[0].scrollTop = logDiv[0].scrollHeight;
@@ -442,8 +442,8 @@ function startCloudBackup() {
 			"data": "kopia_backup"
 		};
 		window.zynthianSocket.send(JSON.stringify(socketMessage));
-    //location.reload(); // This refreshes the list of backups but also clears the log of backedup files
-  }
+    show_busy();
+}
 
 function startCloudRestore() {
 		if (!window.zynthianSocket || window.zynthianSocket.readyState !== WebSocket.OPEN) {
@@ -466,18 +466,17 @@ function startCloudRestore() {
 }
 
 function deleteCloudBackup() {
+  startRestoreSession();
   objs = restoreTree.querySelectorAll(".snapshot");
   objs.forEach(obj => {
     if (obj.type == "checkbox" && (obj.checked || obj.indeterminate)) {
-      data = obj.value;
-      var socketMessage = {
-        "handler_name": "RestoreMessageHandler",
-        "data": "kopia_delete " + data
-      };
-      if (confirm("Confirm you want to delete snapshot " + data)) {
-        show_busy();
+      snapshot = obj.value;
+      if (confirm("Confirm you want to delete snapshot " + snapshot)) {
+        var socketMessage = {
+          "handler_name": "RestoreMessageHandler",
+          "data": "delete_snapshot " + snapshot
+        };
         window.zynthianSocket.send(JSON.stringify(socketMessage));
-        location.reload();
       }
       return;
     }
@@ -506,6 +505,28 @@ function submitCloudConfig(event) {
 
 function cancelCloudConfig() {
   document.getElementById('CLOUD_CONFIG_DIALOG').close();
+}
+
+function selectRepo(repo) {
+  if (repo != "{{config['repo']}}")
+    if (confirm("Do you want to switch to repository '" + repo + "'?"))
+      submitHidden("SELECT_REPO", repo);
+}
+
+function submitHidden(name, value) {
+    show_busy();
+    const form = document.getElementById("backup-form");
+    const actionInput = document.createElement("input");
+    actionInput.type = "hidden";
+    actionInput.name = "action";
+    actionInput.value = name;
+    form.appendChild(actionInput);
+    const valueInput = document.createElement("input");
+    valueInput.type = "hidden";
+    valueInput.name = "value";
+    valueInput.value = value;
+    form.appendChild(valueInput);
+    form.submit();
 }
 
 </script>
