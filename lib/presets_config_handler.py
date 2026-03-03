@@ -55,6 +55,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
             'engines': self.get_engine_info(),
             'engine': self.get_argument('ENGINE', 'ZY'),
             'sel_node_id': self.get_argument('SEL_NODE_ID', -1),
+            'musical_artifact_query': self.get_argument('MUSICAL_ARTIFACT_QUERY', ''),
             'musical_artifact_tags': self.get_argument('MUSICAL_ARTIFACT_TAGS', ''),
             'ZYNTHIAN_UPLOAD_MULTIPLE': True
         }
@@ -205,7 +206,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
         try:
             maformats = self.engine_cls.zynapi_martifact_formats()
             result['search_results'] = self.search_artifacts(
-                maformats, self.get_argument('MUSICAL_ARTIFACT_TAGS'))
+                maformats, self.get_argument('MUSICAL_ARTIFACT_QUERY'), self.get_argument('MUSICAL_ARTIFACT_TAGS'))
         except OSError as e:
             logging.error(e)
             result['errors'] = "Can't search Musical Artifacts: {}".format(e)
@@ -234,7 +235,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
         result.update(self.do_get_tree())
         return result
 
-    def search_artifacts(self, formats, tags):
+    def search_artifacts(self, formats, query, tags):
         result = []
         for fmt in formats.split(','):
             query_url = "https://musical-artifacts.com/artifacts.json"
@@ -245,6 +246,8 @@ class PresetsConfigHandler(ZynthianBasicHandler):
             if tags:
                 query_url += sep + 'tags=' + tags
                 # query_url += sep + 'q=' + tags
+            if query:
+                query_url += sep + 'q=' + query
 
             result += requests.get(query_url, verify=certifi.where()).json()
 

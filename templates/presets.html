@@ -101,11 +101,16 @@
 				<label for="MUSICAL_ARTIFACT_TAGS">Search Musical Artifacts:</label>
 				<div class="row no-gutters">
 					<div class="col-xs-12 col-sm-10 col-md-11">
-						<input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
+						<input type="text" id="MUSICAL_ARTIFACT_QUERY" name="MUSICAL_ARTIFACT_QUERY" value="{{ escape(config['musical_artifact_query']) }}" />
 					</div>
 					<div class="col-xs-12 col-sm-2 col-md-1 text-center">
 						<button id="button-search" class="btn btn-theme btn-block" onclick="return do_action('search')" title="Search"><i class="fa fa-search"></i></button>
 						<span id="loading-action-search" style="display:none;"><img src="/img/loading.gif"></span>
+					</div>
+				</div>
+				<div class="row no-gutters">
+					<div class="col-xs-12 col-sm-10 col-md-11">
+						Tags (comma separated): <input type="text" id="MUSICAL_ARTIFACT_TAGS" name="MUSICAL_ARTIFACT_TAGS" value="{{ escape(config['musical_artifact_tags']) }}" />
 					</div>
 				</div>
 				<div class="row" id="presets-search-result" style="display:none"></div>
@@ -125,6 +130,14 @@ var presetsForm = $('#presets-form')[0];
 $(document).ready(function () {
 	load_preset_tree()
 	
+	$('#MUSICAL_ARTIFACT_QUERY').keypress(function(e) {
+		// Enter pressed?
+		if(e.which == 13) {
+			e.preventDefault();
+			$('#button-search').click();
+		}
+	});
+
 	$('#MUSICAL_ARTIFACT_TAGS').keypress(function(e) {
 		// Enter pressed?
 		if(e.which == 13) {
