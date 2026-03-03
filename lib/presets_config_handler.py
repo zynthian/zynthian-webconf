@@ -29,6 +29,8 @@ import shutil
 import logging
 import zipfile
 import py7zr
+import rarfile
+import certifi
 
 import tarfile
 import requests
@@ -244,7 +246,7 @@ class PresetsConfigHandler(ZynthianBasicHandler):
                 query_url += sep + 'tags=' + tags
                 # query_url += sep + 'q=' + tags
 
-            result += requests.get(query_url, verify=False).json()
+            result += requests.get(query_url, verify=certifi.where()).json()
 
         for row in result:
             if "file" not in row:
@@ -283,6 +285,10 @@ class PresetsConfigHandler(ZynthianBasicHandler):
                 dpath = fpath[:-3]
                 with py7zr.SevenZipFile(fpath, 'r') as sz:
                     sz.extractall(dpath)
+            elif fpath.endswith('.rar'):
+                dpath = fpath[:-4]
+                with rarfile.RarFile(fpath) as rf:
+                    rf.extractall(dpath)
 
             if os.path.isdir(dpath):
                 # Unroll nested dir
