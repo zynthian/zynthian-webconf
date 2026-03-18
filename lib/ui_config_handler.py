@@ -93,7 +93,7 @@ class UiConfigHandler(ZynthianConfigHandler):
                 },
                 'advanced': True
             },
-            'ZYNTHIAN_UI_TOUCH_NAVIGATION2': {
+            'ZYNTHIAN_UI_TOUCH_NAVIGATION': {
                 'type': 'select',
                 'title': 'Touch Navigation',
                 'value': touch_navigation,
