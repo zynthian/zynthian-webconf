@@ -46,9 +46,7 @@ class UiConfigHandler(ZynthianConfigHandler):
 
     @tornado.web.authenticated
     def get(self, errors=None):
-        touch_navigation = os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION',
-            os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION',
-            os.environ.get('ZYNTHIAN_TOUCH_KEYPAD', "")))
+        touch_navigation = os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION', "")
         if touch_navigation not in ("", "v5_keypad_left", "v5_keypad_right"):
             touch_navigation = "v5_keypad_left"
 
