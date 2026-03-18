@@ -46,18 +46,11 @@ class UiConfigHandler(ZynthianConfigHandler):
 
     @tornado.web.authenticated
     def get(self, errors=None):
-
-        touch_navigation = os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION2', '_UNDEF_')
-
-        # Backward compatibility
-        if touch_navigation == "_UNDEF_":
-            touch_navigation = os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION', '')
-            if touch_navigation == "1":
-                touch_navigation = "touch_widgets"
-            elif touch_navigation == "0":
-                touch_keypad = os.environ.get('ZYNTHIAN_TOUCH_KEYPAD', '')
-                if touch_keypad == "V5":
-                    touch_navigation = "v5_keypad_left"
+        touch_navigation = os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION',
+            os.environ.get('ZYNTHIAN_UI_TOUCH_NAVIGATION',
+            os.environ.get('ZYNTHIAN_TOUCH_KEYPAD', "")))
+        if touch_navigation not in ("", "v5_keypad_left", "v5_keypad_right"):
+            touch_navigation = "v5_keypad_left"
 
         config = {
             'ZYNTHIAN_UI_POWER_SAVE_MINUTES': {
@@ -106,12 +99,11 @@ class UiConfigHandler(ZynthianConfigHandler):
                 'type': 'select',
                 'title': 'Touch Navigation',
                 'value': touch_navigation,
-                'options': ['', 'touch_widgets', 'v5_keypad_left', 'v5_keypad_right'],
+                'options': ['', 'v5_keypad_left', 'v5_keypad_right'],
                 'option_labels': {
                     '': 'None',
-                    'touch_widgets': 'Touch-widgets',
-                    'v5_keypad_left': 'V5 keypad at left',
-                    'v5_keypad_right': 'V5 keypad at right'
+                    'v5_keypad_left': 'V5 keypad on left',
+                    'v5_keypad_right': 'V5 keypad on right'
                 },
             },
             'ZYNTHIAN_UI_ENABLE_CURSOR': {
@@ -282,13 +274,9 @@ class UiConfigHandler(ZynthianConfigHandler):
         self.request.arguments['ZYNTHIAN_UI_ENABLE_CURSOR'] = self.request.arguments.get(
             'ZYNTHIAN_UI_ENABLE_CURSOR', '0')
         self.request.arguments['ZYNTHIAN_UI_TOUCH_NAVIGATION'] = self.request.arguments.get(
-            'ZYNTHIAN_UI_TOUCH_NAVIGATION', '0')
-        self.request.arguments['ZYNTHIAN_UI_TOUCH_WIDGETS'] = self.request.arguments.get(
-            'ZYNTHIAN_UI_TOUCH_WIDGETS', '0')
+            'ZYNTHIAN_UI_TOUCH_NAVIGATION', '')
         self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get(
             'ZYNTHIAN_VNCSERVER_ENABLED', '0')
-        self.request.arguments['ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT'] = self.request.arguments.get(
-            'ZYNTHIAN_TOUCH_KEYPAD_SIDE_LEFT', '0')
         escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
         errors = self.update_config(escaped_arguments)
         self.restart_ui_flag = True
