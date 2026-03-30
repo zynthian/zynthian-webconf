@@ -365,7 +365,7 @@ function cleanSearchResults() {
 function installMArtifact(name, url, xid) {
 	var bankforced_engines = ["LS"]
 	if (bankforced_engines.includes($("#ENGINE").val()) && $("#SEL_BANK_FULLPATH").val()=="") {
-		alert("You have to select a destination bank!")
+		alert("You have to select a target bank!")
 		return false
 	}
 	if (confirm("Do you really want to install '" + name + "'?")) {
