@@ -47,7 +47,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
     @staticmethod
     def get_public_key():
         try:
-            with open("/root/.ssh/id_rsa.pub") as f:
+            with open("/etc/ssh/ssh_host_rsa_key.pub") as f:
                 return f.readline()
         except:
             # Handle missing file
