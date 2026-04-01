@@ -46,8 +46,12 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
     @staticmethod
     def get_public_key():
-        with open("/root/.ssh/id_rsa.pub") as f:
-            return f.readline()
+        try:
+            with open("/root/.ssh/id_rsa.pub") as f:
+                return f.readline()
+        except:
+            # Handle missing file
+            return None
 
     @tornado.web.authenticated
     def get(self, errors=None):
@@ -86,7 +90,8 @@ class SecurityConfigHandler(ZynthianConfigHandler):
                 'type': 'text',
                 'title': 'Public Key',
                 'value': SecurityConfigHandler.get_public_key(),
-                'advanced': True
+                'advanced': True,
+                'disabled': True
             },
             '_command': {
                 'type': 'hidden',
