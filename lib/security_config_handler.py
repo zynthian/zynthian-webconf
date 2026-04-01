@@ -86,6 +86,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
                 'class': 'btn-warning btn-block',
                 'advanced': True
             },
+            """
             'PUBLIC_KEY': {
                 'type': 'text',
                 'title': 'Public Key',
@@ -93,6 +94,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
                 'advanced': True,
                 'disabled': True
             },
+            """
             '_command': {
                 'type': 'hidden',
                 'value': ''
