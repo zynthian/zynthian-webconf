@@ -47,6 +47,10 @@ div.engine_edit select {
 }
 </style>
 
+<form id="engines-upload-form" action="/upload" enctype="multipart/form-data" method="post">
+	{% module Template('upload.html', config=config) %}
+</form>
+
 <form id="engines-form" action="/sw-engines" enctype="multipart/form-data" method="post">
     <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
     <div class="container-fluid sw-jalv">
@@ -67,6 +71,9 @@ div.engine_edit select {
             </div>
             <div class="col-md-2 col-sm-12">
                 <button name="ZYNTHIAN_ENGINES_ACTION" value="REGENERATE_LV2_PRESETS_CACHE" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Search for Presets</button>
+            </div>
+            <div class="col-md-2 col-sm-12">
+                <button id="button-upload" name="ZYNTHIAN_ENGINES_ACTION" value="UPLOAD_LV2" class="btn btn-block btn-theme" onclick="return false"><i class="fa fa-upload"></i> Install Plugin</button>
             </div>
         </div>
     </div>
@@ -177,6 +184,11 @@ div.engine_edit select {
                         <div class="col-xs-10 engine-description">
                             <textarea id="EDIT_DESCR"></textarea>
                         </div>
+                        {% if not eng_code.startswith("JV/") %}
+                        <div class="col-xs-1" id="UNINSTALL_DIV">
+                            <button name="ZYNTHIAN_ENGINE_UNINSTALL" class="btn btn-theme" onclick="uninstall(); event.preventDefault();">Uninstall</button>
+                        </div>
+                        {% end %}
                         <div class="col-xs-1">
                             <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme" onclick="edit_engine_save_close(); event.preventDefault();">OK</button>
                         </div>
@@ -207,6 +219,46 @@ $("#ZYNTHIAN_ENGINES_FILTER").on('keydown', function(e) {
 
 $(document).ready(function() {
     filter_engines();
+
+    $('#button-upload').click(function(){
+		$('#upload_panel').show(500)
+		$('#upload_progress_panel').hide(500);
+	});
+
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		$("#upload_progress_panel").addClass("active");
+		var socketMessage = {
+			"handler_name": "UploadProgressHandler",
+			"data": $('#input-uploadfile-session')[0].value
+		};
+		window.zynthianSocket.send(JSON.stringify(socketMessage));
+		$("#engines-upload-form").attr("action", "/upload?clientId=" + $('#input-uploadfile-session')[0].value);
+		//redirectUrl=/lib-presets&
+	});
+	connectZynthianWebSocket(deferred);
+
+    $('#upload_panel')[0].onuploadend = function(response) {
+        show_busy();
+		$("#INSTALL_FPATH").val(response)
+        console.log("upload succeeded: " + response);
+
+        const form = document.createElement("form");
+        form.method = "POST";
+        form.action = "sw-engines";
+        const actionInput = document.createElement("input");
+        actionInput.type = "hidden";
+        actionInput.name = "ZYNTHIAN_ENGINES_ACTION";
+        actionInput.value = "UPLOAD_LV2";
+        form.appendChild(actionInput);
+        const pathInput = document.createElement("input");
+        pathInput.type = "hidden";
+        pathInput.name = "INSTALL_FPATH";
+        pathInput.value = response;
+        form.appendChild(pathInput);
+        document.body.appendChild(form);
+        form.submit();
+	}
 });
 
 function reset_filter() {
@@ -271,7 +323,11 @@ function edit_engine(ecode) {
     document.getElementById("EDIT_COMPLEX").value = eng_info[ecode]["COMPLEX"]
     document.getElementById("EDIT_DESCR").value = eng_info[ecode]["DESCR"]
     document.getElementById("EDIT_TYPE").value = eng_info[ecode]["TYPE"]
-
+    el = document.getElementById("UNINSTALL_DIV");
+    if (ecode.startsWith("JV/"))
+        el.style.display = "block";
+    else
+        el.style.display = "none";
     // Category => select options by type
     var cat_select = document.getElementById("EDIT_CAT")
     var n = cat_select.options.length - 1
@@ -381,6 +437,34 @@ function edit_engine_save(close=false) {
 
 function edit_engine_save_close() {
     edit_engine_save(true)
+}
+
+function uninstall() {
+    var scode = document.getElementById("EDIT_CODE").value
+    if (scode) {
+        console.log(scode)
+
+        if(confirm("Do you want to permanently remove LV2 plugin " + scode.substring(3) + "?")) {
+            show_busy();
+            $("#UNINSTALL_ID").val(scode)
+
+            const form = document.createElement("form");
+            form.method = "POST";
+            form.action = "sw-engines";
+            const actionInput = document.createElement("input");
+            actionInput.type = "hidden";
+            actionInput.name = "ZYNTHIAN_ENGINES_ACTION";
+            actionInput.value = "UNINSTALL_LV2";
+            form.appendChild(actionInput);
+            const pathInput = document.createElement("input");
+            pathInput.type = "hidden";
+            pathInput.name = "UNINSTALL_ID";
+            pathInput.value = scode;
+            form.appendChild(pathInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+    }
 }
 
 function enable_engine(ecode) {

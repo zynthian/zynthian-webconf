@@ -4,7 +4,7 @@
 #
 # Engine Manager Handler
 #
-# Copyright (C) 2018 Markus Heidt <markus@heidt-tech.com>
+# Copyright (C) 2018-2026 Markus Heidt <markus@heidt-tech.com>
 #
 # ********************************************************************
 #
@@ -26,7 +26,18 @@ import copy
 import json
 import logging
 import tornado.web
+import zipfile
+import tarfile
+import py7zr
+import rarfile
 
+import os
+import platform
+import subprocess
+import shutil
+from rdflib import Graph, Namespace, RDF
+
+from lib.upload_handler import TMP_DIR
 from lib.zynthian_config_handler import ZynthianBasicHandler
 import zyngine.zynthian_lv2 as zynthian_lv2
 
@@ -34,12 +45,17 @@ import zyngine.zynthian_lv2 as zynthian_lv2
 # Engines Info & Configuration
 # ------------------------------------------------------------------------------
 
+LV2_DIR = "/zynthian/zynthian-plugins/lv2"
+LV2 = Namespace("http://lv2plug.in/ns/lv2core#")
+
 
 class EnginesHandler(ZynthianBasicHandler):
 
     @tornado.web.authenticated
     def get(self, errors=None):
-        config = {}
+        config = {
+            'ZYNTHIAN_UPLOAD_MULTIPLE': False
+        }
 
         config['ZYNTHIAN_ENGINES'] = zynthian_lv2.engines_by_type
         config['ZYNTHIAN_ENGINES_TYPE_TITLE'] = zynthian_lv2.engine_type_title
@@ -72,12 +88,8 @@ class EnginesHandler(ZynthianBasicHandler):
             config['ZYNTHIAN_ENGINES_FILTER'] = ''
 
         if errors:
-            logging.error("Configuring engines failed: {}".format(errors))
-            self.clear()
-            self.set_status(400)
-            self.finish("Configuring engines failed: {}".format(errors))
-        else:
-            super().get("engines.html", "Engines", config, errors)
+            logging.error(f"Configuring engines failed: {errors}")
+        super().get("engines.html", "Engines", config, errors)
 
     @tornado.web.authenticated
     def post(self):
@@ -89,6 +101,11 @@ class EnginesHandler(ZynthianBasicHandler):
                 self.do_regenerate_engines()
             elif action == "REGENERATE_LV2_PRESETS_CACHE":
                 self.do_regenerate_lv2_presets_cache()
+            elif action == "UPLOAD_LV2":
+                errors = self.do_install_lv2(self.get_body_argument("INSTALL_FPATH"))
+            elif action == "UNINSTALL_LV2":
+                zynthian_lv2.remove_engine(self.get_body_argument("UNINSTALL_ID"))
+
         except Exception as e:
             errors = e
         self.get(errors)
@@ -159,5 +176,70 @@ class EnginesHandler(ZynthianBasicHandler):
         zynthian_lv2.generate_presets_cache_workaround()
         zynthian_lv2.generate_all_presets_cache(refresh=False)
         # TODO => send CUIA to reload preset info on running JALV processors
+
+    def do_install_lv2(self, path):
+        if not path:
+            return
+        lpath = path.lower()
+        dpath = "/tmp/engine_install"
+        shutil.rmtree(dpath, True)
+        os.mkdir(dpath)
+        try:
+            if lpath.endswith('.zip'):
+                with zipfile.ZipFile(path, 'r') as zip:
+                    zip.extractall(dpath)
+            elif lpath.endswith('.7z'):
+                with py7zr.SevenZipFile(path, 'r') as sz:
+                    sz.extractall(dpath)
+            elif lpath.endswith('.tar.gz'):
+                tar = tarfile.open(path, "r:gz")
+                tar.extractall(dpath)
+            elif lpath.endswith('.tar.bz2'):
+                tar = tarfile.open(path, "r:bz2")
+                tar.extractall(dpath)
+            elif lpath.endswith('.tar.xz'):
+                tar = tarfile.open(path, "r:xz")
+                tar.extractall(dpath)
+            elif lpath.endswith('.tgz'):
+                tar = tarfile.open(path, "r:gz")
+                tar.extractall(dpath)
+            elif lpath.endswith('.rar'):
+                with rarfile.RarFile(path) as rf:
+                    rf.extractall(dpath)
+            else:
+                return "Unsupported file type. Please upload a zip, 7z, tar.gz, tar.bz2, tar.xz, tgz, or rar file."
+        except Exception as e:
+            logging.warning(e)
+            return e
+
+        # Find all lv2 plugins
+        for root, dirs, files in os.walk(dpath):
+            for d in dirs:
+                if d.endswith(".lv2"):
+                    src = os.path.join(root, d)
+                    dst = os.path.join(LV2_DIR, d)
+                    # Check if the plugin looks okay
+                    for file in os.listdir(src):
+                        if file.endswith(".so"):
+                            result = subprocess.run(["file", f"{src}/{file}"], capture_output=True, text=True)
+                            if platform.machine() not in result.stdout.strip():
+                                return f"LV2 plugin is not {platform.machine()}"
+                            if platform.machine() not in result.stdout.strip():
+                                return f"LV2 plugin is not {platform.system()}"
+                            break
+                    shutil.copytree(src, dst, dirs_exist_ok=True)
+                    uri = self.get_lv2_uri(dst)
+                    zynthian_lv2.add_engine(uri, True)
+                    return None
+        return "Failed to find a valid LV2 plugin in the uploaded file."
+
+    def get_lv2_uri(self, bundle_path):
+        g = Graph()
+        for fname in os.listdir(bundle_path):
+            if fname.endswith(".ttl"):
+                g.parse(os.path.join(bundle_path, fname), format="turtle")
+        for subj in g.subjects(RDF.type, LV2.Plugin):
+            return str(subj)
+        return None
 
 # ------------------------------------------------------------------------------
