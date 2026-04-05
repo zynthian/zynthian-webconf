@@ -32,10 +32,7 @@ import py7zr
 import rarfile
 
 import os
-import platform
-import subprocess
 import shutil
-from rdflib import Graph, Namespace, RDF
 
 from lib.upload_handler import TMP_DIR
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -44,10 +41,6 @@ import zyngine.zynthian_lv2 as zynthian_lv2
 # ------------------------------------------------------------------------------
 # Engines Info & Configuration
 # ------------------------------------------------------------------------------
-
-LV2_DIR = "/zynthian/zynthian-plugins/lv2"
-LV2 = Namespace("http://lv2plug.in/ns/lv2core#")
-
 
 class EnginesHandler(ZynthianBasicHandler):
 
@@ -213,33 +206,7 @@ class EnginesHandler(ZynthianBasicHandler):
             return e
 
         # Find all lv2 plugins
-        for root, dirs, files in os.walk(dpath):
-            for d in dirs:
-                if d.endswith(".lv2"):
-                    src = os.path.join(root, d)
-                    dst = os.path.join(LV2_DIR, d)
-                    # Check if the plugin looks okay
-                    for file in os.listdir(src):
-                        if file.endswith(".so"):
-                            result = subprocess.run(["file", f"{src}/{file}"], capture_output=True, text=True)
-                            if platform.machine() not in result.stdout.strip():
-                                return f"LV2 plugin is not {platform.machine()}"
-                            if platform.machine() not in result.stdout.strip():
-                                return f"LV2 plugin is not {platform.system()}"
-                            break
-                    shutil.copytree(src, dst, dirs_exist_ok=True)
-                    uri = self.get_lv2_uri(dst)
-                    zynthian_lv2.add_engine(uri, True)
-                    return None
-        return "Failed to find a valid LV2 plugin in the uploaded file."
+        return zynthian_lv2.add_engine(dpath)
 
-    def get_lv2_uri(self, bundle_path):
-        g = Graph()
-        for fname in os.listdir(bundle_path):
-            if fname.endswith(".ttl"):
-                g.parse(os.path.join(bundle_path, fname), format="turtle")
-        for subj in g.subjects(RDF.type, LV2.Plugin):
-            return str(subj)
-        return None
 
 # ------------------------------------------------------------------------------
