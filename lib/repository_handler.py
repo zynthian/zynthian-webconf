@@ -80,7 +80,7 @@ class RepositoryHandler(ZynthianConfigHandler):
             else:
                 for repitem in self.repository_list:
                     if version == self.stable_branch + "-last":
-                        stag = self.get_repo_tag_list(repitem[0], filter=self.stable_branch + "-")[-1]
+                        stag = self.get_repo_tag_list(repitem[0], flt=self.stable_branch + "-")[-1]
                     else:
                         stag = version
                     dirty |= self.set_repo_branch(repitem[0], stag)
@@ -118,10 +118,11 @@ class RepositoryHandler(ZynthianConfigHandler):
 
         version_options = {}
         # Get stable tag list => WARNING! zynthian-sys rules!
-        stags = self.get_repo_tag_list("zynthian-sys", filter=self.stable_branch + "-")
+        stags = self.get_repo_tag_list("zynthian-sys", flt=self.stable_branch + "-")
         #for stag in stags:
         #    version_options[stag] = f"stable (FROZEN {stag} => no updates!)"
-        version_options[self.stable_branch + "-last"] = f"stable ({stags[-1]})"
+        if len(stags) > 0:
+            version_options[self.stable_branch + "-last"] = f"stable ({stags[-1]})"
         version_options[self.stable_branch] = f"staging ({self.stable_branch})"
         version_options[self.testing_branch] = f"testing ({self.testing_branch})"
         version_options["custom"] = "custom (individual selection for each repository)"
@@ -173,11 +174,11 @@ class RepositoryHandler(ZynthianConfigHandler):
                 pass # Ignore failed attempts to delete branch, e.g. cannot delete current branch
         check_output(f"git -C '{repo_dir}' fetch --tags --prune --prune-tags --force", shell=True)
 
-    def get_repo_tag_list(self, repo_name, filter=None):
+    def get_repo_tag_list(self, repo_name, flt=None):
         result = []
         repo_dir = self.zynthian_base_dir + "/" + repo_name
-        if filter:
-            for bline in check_output(f"git -C '{repo_dir}' tag -l {filter}*", shell=True).splitlines():
+        if flt:
+            for bline in check_output(f"git -C '{repo_dir}' tag -l {flt}*", shell=True).splitlines():
                 result.append(bline.decode("utf-8").strip())
         else:
             for bline in check_output(f"git -C '{repo_dir}' tag", shell=True).splitlines():
