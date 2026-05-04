@@ -55,7 +55,7 @@ div.engine_edit select {
     <input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
     <div class="container-fluid sw-jalv">
         <div class="row">
-            <div class="col-md-6 col-sm-12">
+            <div class="col-md-4 col-sm-12">
                 <input type="text" name="ZYNTHIAN_ENGINES_FILTER" id="ZYNTHIAN_ENGINES_FILTER" value="{{config['ZYNTHIAN_ENGINES_FILTER']}}" onchange="filter_engines();" onkeyup="filter_engines();"/>
             </div>
             <!--
@@ -67,10 +67,10 @@ div.engine_edit select {
                 <button name="ZYNTHIAN_ENGINES_ALL_ACTION" class="btn btn-theme btn-block" onclick="reset_filter(); event.preventDefault();"><i class="fa fa-globe"></i> All</button>
             </div>
             <div class="col-md-2 col-sm-12">
-                <button name="ZYNTHIAN_ENGINES_ACTION" value="REGENERATE_ENGINES" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Search for Engines</button>
+                <button name="ZYNTHIAN_ENGINES_ACTION" value="REGENERATE_ENGINES" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Scan for Engines</button>
             </div>
             <div class="col-md-2 col-sm-12">
-                <button name="ZYNTHIAN_ENGINES_ACTION" value="REGENERATE_LV2_PRESETS_CACHE" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Search for Presets</button>
+                <button name="ZYNTHIAN_ENGINES_ACTION" value="REGENERATE_LV2_PRESETS_CACHE" class="btn btn-block btn-theme" onclick="confirm_long_time_proc(event)"><i class="fa fa-search"></i> Scan for Presets</button>
             </div>
             <div class="col-md-2 col-sm-12">
                 <button id="button-upload" name="ZYNTHIAN_ENGINES_ACTION" value="UPLOAD_LV2" class="btn btn-block btn-theme" onclick="return false"><i class="fa fa-upload"></i> Install Plugin</button>
@@ -270,9 +270,9 @@ function filter_engines() {
     filter_value=$("#ZYNTHIAN_ENGINES_FILTER")[0].value.toUpperCase();
     $(".engine_row").each(function(index,row_div) {
 	if (row_div.innerText.toUpperCase().includes(filter_value)){
-            row_div.classList.remove("hide");    
+            row_div.classList.remove("hide");
         } else {
-            row_div.classList.add("hide");    
+            row_div.classList.add("hide");
         }
     });
 
