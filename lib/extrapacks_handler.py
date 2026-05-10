@@ -46,6 +46,9 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     pack_info = {
         "Hydrogen_Drumkits": {
             "title": "Hydrogen Drumkits",
+            "author": "Various",
+            "license": "Free (Various)",
+            "image": "",
             "description": "A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.",
             "size": "145MB",
             "url": "https://musical-artifacts.com/artifacts/133",
@@ -55,6 +58,9 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         },
         "IR_Collection": {
             "title": "IR Collection",
+            "author": "Various",
+            "license": "Free (Various)",
+            "image": "",
             "description": "A collection of impulse response files that you can load with the X42's IR convolver plugins and others. It includes several free IR libraries: ccgb, jezwells, l480, openairlib, samplicity-m7 and teufelsberg.",
             "size": "245MB",
             "url": "",
@@ -64,10 +70,49 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         },
         "Conners_IR_library": {
             "title": "Conners IR library",
+            "author": "Conners",
+            "license": "MIT",
+            "image": "",
             "description": "A collection of impulse response files that you can load with the X42's IR convolver plugins and others. A huge collection of well organized, experimental IRs, under MIT license. It will surprise you. ",
             "size": "650MB",
             "url": "https://github.com/itsmusician/IR-Library",
             "recipe": "install_Conners_IR_library.sh",
+            "restart_ui_flag": False,
+            "installed": False
+        },
+        "Amethyst": {
+            "title": "Amethyst",
+            "author": "hozlina",
+            "license": "CC0",
+            "image": "https://os.zynthian.org/files/collections/images/Amethyst.jpg",
+            "description": "Free Lo-fi Melody Sample pack! Inspired by the gem stone Amethyst. My son has autism and rocks are one of his special interests. We LOVE collecting Amethyst. It gives every room it graces and relaxed vibe, which is what I was going for with these samples!<br>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!",
+            "size": "415MB",
+            "url": "https://www.patreon.com/posts/amethyst-lo-fi-155377277?collection=2096448",
+            "collection_url": "https://os.zynthian.org/files/collections/Amethyst.tar.xz",
+            "restart_ui_flag": False,
+            "installed": False
+        },
+        "Blood Money": {
+            "title": "Blood Money",
+            "author": "hozlina",
+            "license": "CC0",
+            "image": "https://os.zynthian.org/files/collections/images/Blood_Money.jpg",
+            "description": "Blood Money is a free Dark Trap sample pack!<br>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!",
+            "size": "924MB",
+            "url": "https://www.patreon.com/posts/155377720?collection=2096448",
+            "collection_url": "https://os.zynthian.org/files/collections/Blood Money.tar.xz",
+            "restart_ui_flag": False,
+            "installed": False
+        },
+        "When We Were Young": {
+            "title": "When We Were Young",
+            "author": "hozlina",
+            "license": "CC0",
+            "image": "https://os.zynthian.org/files/collections/images/When_We_Were_Young.jpg",
+            "description": "When We Were Young is FREE a collection of heartfelt Lo-Fi melody samples!<br>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!",
+            "size": "525MB",
+            "url": "https://www.patreon.com/posts/when-we-were-lo-155380348?collection=2096448",
+            "collection_url": "https://os.zynthian.org/files/collections/When We Were Young.tar.xz",
             "restart_ui_flag": False,
             "installed": False
         }
@@ -100,8 +145,14 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     def do_install_package(self, pack_name):
         errors = None
         try:
-            recipe = self.pack_info[pack_name]['recipe']
-            res = check_output(f"$ZYNTHIAN_RECIPE_DIR/{recipe}", shell=True)
+            info = self.pack_info[pack_name]
+            if "recipe" in info:
+                res = check_output(f"$ZYNTHIAN_RECIPE_DIR/{info['recipe']}", shell=True)
+            elif "collection_url" in info:
+                cmd = f"wget -q -O- \"{info['collection_url']}\" | tar -xJ -C \"{self.my_data_dir}/collections\""
+                res = check_output(cmd, shell=True)
+                if not os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                    raise(f"Can't install package file!")
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
         if errors:
@@ -133,6 +184,14 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         else:
             res = False
         self.pack_info['Conners_IR_library']['installed'] = res
+
+        for pack_name, info in self.pack_info.items():
+            if "collection_url" in info:
+                if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                    res = True
+                else:
+                    res = False
+                self.pack_info[pack_name]['installed'] = res
 
         return {'packs': self.pack_info}
 
