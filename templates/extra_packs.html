@@ -6,11 +6,18 @@ div.package {
 	margin-bottom: 1em;
 	background-color: #f0f0f0;
 	border-radius: 0.5em;
+	border: 2px solid #e0e0e0;
 }
+
+div.installed {
+	background-color: #f0fff0;
+}
+
 div.package img {
 	float: right;
 	width: 25%;
 	margin: 1em;
+	border-color: #e0f0e0;
 }
 </style>
 
@@ -18,22 +25,25 @@ div.package img {
 
 <form id="extra-packs-form" action="/lib-extra-packs" enctype="multipart/form-data" method="post">
     <input type="hidden" id="ZYNTHIAN_EXTRAPACKS_INSTALL" name="ZYNTHIAN_EXTRAPACKS_INSTALL" value="">
+    <input type="hidden" id="ZYNTHIAN_EXTRAPACKS_UNINSTALL" name="ZYNTHIAN_EXTRAPACKS_UNINSTALL" value="">
 
 	<p>From this page you can install extra packages with presets and soundfonts not included in the official SD image.</p>
 
 	<div id='install-button'>
 		{% for pack_name, info in config['packs'].items() %}
-		<div class="package">
+		<div class="package {% if info['installed'] %}installed{% end %}">
 		    <img src="{{ info['image'] }}">
 			<h3>{{ info['title'] }}</h3>
 			<b>Size:</b> {{ info['size'] }}<br>
 			<b>Author:</b> {{ info['author'] }}{% if info['url'] %} (<a href="{{ info['url'] }}">source</a>){% end %}<br>
 			<b>License:</b> {{ info['license'] }}<br>
-			<p>{{ info['description'] }}</p>
+			{% raw info['description'] %}
 			{% if not info['installed'] %}
-			<input id="install_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Install {{ info['title'] }}" onclick="installPackage('{{ pack_name }}')">
+			<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
+			{% elif 'collection_url' in info %}
+			<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
 			{% else %}
-			<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Already Installed!" onclick="">
+			<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
 			{% end %}
 		</div>
 		{% end %}
@@ -46,7 +56,7 @@ div.package img {
 
 <div id="loading-div-background">
 	<div id="loading-div" class="ui-corner-all">
-		Installing package '<span id="pack_name"></span>'. Please wait...
+		<span id="text"></span>'. Please wait...
 	</div>
 </div>
 
@@ -58,11 +68,25 @@ $(document).ready(function (){
 function installPackage(pack_name) {
 	showInstallingBusy(pack_name);
 	$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val(pack_name)
+	$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val("")
+	$("#extra-packs-form").submit()
+}
+
+function uninstallPackage(pack_name) {
+	showUninstallingBusy(pack_name);
+	$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val(pack_name)
+	$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val("")
 	$("#extra-packs-form").submit()
 }
 
 function showInstallingBusy(pack_name){
-	$("#loading-div-background #pack_name").html(pack_name);
+	$("#loading-div-background #text").html("Installing package '" + pack_name + "'");
+	$("#loading-div-background").show();
+	show_busy()
+}
+
+function showUninstallingBusy(pack_name){
+	$("#loading-div-background #text").html("Uninstalling package '" + pack_name + "'");
 	$("#loading-div-background").show();
 	show_busy()
 }

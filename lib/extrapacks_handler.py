@@ -49,7 +49,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             "author": "Various",
             "license": "Free (Various)",
             "image": "",
-            "description": "A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.",
+            "description": "<p>A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.</p>`",
             "size": "145MB",
             "url": "https://musical-artifacts.com/artifacts/133",
             "recipe": "install_hydrogen_drumkits.sh",
@@ -61,7 +61,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             "author": "Various",
             "license": "Free (Various)",
             "image": "",
-            "description": "A collection of impulse response files that you can load with the X42's IR convolver plugins and others. It includes several free IR libraries: ccgb, jezwells, l480, openairlib, samplicity-m7 and teufelsberg.",
+            "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. It includes several free IR libraries: ccgb, jezwells, l480, openairlib, samplicity-m7 and teufelsberg.</p>",
             "size": "245MB",
             "url": "",
             "recipe": "install_ir-lv2-presets.sh",
@@ -73,7 +73,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             "author": "Conners",
             "license": "MIT",
             "image": "",
-            "description": "A collection of impulse response files that you can load with the X42's IR convolver plugins and others. A huge collection of well organized, experimental IRs, under MIT license. It will surprise you. ",
+            "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. A huge collection of well organized, experimental IRs, under MIT license. It will surprise you.</p>",
             "size": "650MB",
             "url": "https://github.com/itsmusician/IR-Library",
             "recipe": "install_Conners_IR_library.sh",
@@ -85,7 +85,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             "author": "hozlina",
             "license": "CC0",
             "image": "https://os.zynthian.org/files/collections/images/Amethyst.jpg",
-            "description": "Free Lo-fi Melody Sample pack! Inspired by the gem stone Amethyst. My son has autism and rocks are one of his special interests. We LOVE collecting Amethyst. It gives every room it graces and relaxed vibe, which is what I was going for with these samples!<br>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!",
+            "description": "<p>Free Lo-fi Melody Sample pack! Inspired by the gem stone Amethyst. My son has autism and rocks are one of his special interests. We LOVE collecting Amethyst. It gives every room it graces and relaxed vibe, which is what I was going for with these samples!</p><p>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!</p>",
             "size": "415MB",
             "url": "https://www.patreon.com/posts/amethyst-lo-fi-155377277?collection=2096448",
             "collection_url": "https://os.zynthian.org/files/collections/Amethyst.tar.xz",
@@ -97,7 +97,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             "author": "hozlina",
             "license": "CC0",
             "image": "https://os.zynthian.org/files/collections/images/Blood_Money.jpg",
-            "description": "Blood Money is a free Dark Trap sample pack!<br>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!",
+            "description": "<p>Blood Money is a free Dark Trap sample pack!</p><p>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!</p>",
             "size": "924MB",
             "url": "https://www.patreon.com/posts/155377720?collection=2096448",
             "collection_url": "https://os.zynthian.org/files/collections/Blood Money.tar.xz",
@@ -109,7 +109,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             "author": "hozlina",
             "license": "CC0",
             "image": "https://os.zynthian.org/files/collections/images/When_We_Were_Young.jpg",
-            "description": "When We Were Young is FREE a collection of heartfelt Lo-Fi melody samples!<br>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!",
+            "description": "<p>When We Were Young is FREE a collection of heartfelt Lo-Fi melody samples!</p><p>The music in this pack is Creative Commons CC0! Please consider using it's contents to make songs you can add to the creative commons!</p>",
             "size": "525MB",
             "url": "https://www.patreon.com/posts/when-we-were-lo-155380348?collection=2096448",
             "collection_url": "https://os.zynthian.org/files/collections/When We Were Young.tar.xz",
@@ -122,23 +122,31 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     def get(self, errors=None):
         config = self.get_config()
         if errors:
-            logging.error("Installing Extra Package Failed: %s" % format(errors))
+            logging.error("ERROR: %s" % format(errors))
         super().get("extra_packs.html", "Extra Packages", config, errors)
 
     @tornado.web.authenticated
     def post(self):
         errors = None
         try:
-            pack_name = self.get_argument('ZYNTHIAN_EXTRAPACKS_INSTALL')
+            install_pack_name = self.get_argument('ZYNTHIAN_EXTRAPACKS_INSTALL')
+            uninstall_pack_name = self.get_argument('ZYNTHIAN_EXTRAPACKS_UNINSTALL')
         except:
-            pack_name = None
-            logging.error(f"No package to install!")
-        if pack_name:
+            install_pack_name = None
+            uninstall_pack_name = None
+        if install_pack_name:
             try:
-                errors = self.do_install_package(pack_name)
-                self.restart_ui_flag = self.pack_info[pack_name]['restart_ui_flag']
+                errors = self.do_install_package(install_pack_name)
+                self.restart_ui_flag = self.pack_info[install_pack_name]['restart_ui_flag']
             except Exception as err:
-                errors = f"Can't install package {pack_name}"
+                errors = f"Can't install package {install_pack_name}"
+                logging.error(err)
+        elif uninstall_pack_name:
+            try:
+                errors = self.do_uninstall_package(uninstall_pack_name)
+                self.restart_ui_flag = self.pack_info[uninstall_pack_name]['restart_ui_flag']
+            except Exception as err:
+                errors = f"Can't uninstall package {uninstall_pack_name}"
                 logging.error(err)
         self.get(errors)
 
@@ -155,6 +163,21 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     raise(f"Can't install package file!")
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
+        if errors:
+            logging.error(errors)
+        return errors
+
+    def do_uninstall_package(self, pack_name):
+        errors = None
+        try:
+            info = self.pack_info[pack_name]
+            if "collection_url" in info:
+                cmd = f"rm -rf \"{self.my_data_dir}/collections/{pack_name}\""
+                res = check_output(cmd, shell=True)
+                if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                    raise(f"Can't uninstall package!")
+        except Exception as e:
+            errors = f"Error uninstalling '{pack_name}' => {e}"
         if errors:
             logging.error(errors)
         return errors
