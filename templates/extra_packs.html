@@ -66,17 +66,21 @@ $(document).ready(function (){
 });
 
 function installPackage(pack_name) {
-	showInstallingBusy(pack_name);
-	$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val(pack_name)
-	$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val("")
-	$("#extra-packs-form").submit()
+	if (confirm("Are you sure to install package '" + pack_name + "'?\nIt would take some time to download and install.")) {
+		showInstallingBusy(pack_name);
+		$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val(pack_name)
+		$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val("")
+		$("#extra-packs-form").submit()
+	}
 }
 
 function uninstallPackage(pack_name) {
-	showUninstallingBusy(pack_name);
-	$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val(pack_name)
-	$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val("")
-	$("#extra-packs-form").submit()
+	if (confirm("Are you sure to uninstall package '" + pack_name + "'?")) {
+		showUninstallingBusy(pack_name);
+		$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val(pack_name)
+		$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val("")
+		$("#extra-packs-form").submit()
+	}
 }
 
 function showInstallingBusy(pack_name){
