@@ -35,12 +35,12 @@ div.package img {
 		    <img src="{{ info['image'] }}">
 			<h3>{{ info['title'] }}</h3>
 			<b>Size:</b> {{ info['size'] }}<br>
-			<b>Author:</b> {{ info['author'] }}{% if info['url'] %} (<a href="{{ info['url'] }}">source</a>){% end %}<br>
+			<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br>
 			<b>License:</b> {{ info['license'] }}<br>
 			{% raw info['description'] %}
 			{% if not info['installed'] %}
 			<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
-			{% elif 'collection_url' in info %}
+			{% elif 'pack_url' in info %}
 			<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
 			{% else %}
 			<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
