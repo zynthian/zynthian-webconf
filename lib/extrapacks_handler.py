@@ -47,49 +47,13 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
     my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 
-    pack_info = {
-        "Hydrogen_Drumkits": {
-            "title": "Hydrogen Drumkits",
-            "author": "Various",
-            "license": "Free (Various)",
-            "image": "",
-            "description": "<p>A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.</p>`",
-            "size": "145MB",
-            "source_url": "https://musical-artifacts.com/artifacts/133",
-            "recipe": "install_hydrogen_drumkits.sh",
-            "restart_ui_flag": True,
-            "installed": False
-        },
-        "IR_Collection": {
-            "title": "IR Collection",
-            "author": "Various",
-            "license": "Free (Various)",
-            "image": "",
-            "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. It includes several free IR libraries: ccgb, jezwells, l480, openairlib, samplicity-m7 and teufelsberg.</p>",
-            "size": "245MB",
-            "source_url": "",
-            "recipe": "install_ir-lv2-presets.sh",
-            "restart_ui_flag": False,
-            "installed": False
-        },
-        "Conners_IR_library": {
-            "title": "Conners IR library",
-            "author": "Conners",
-            "license": "MIT",
-            "image": "",
-            "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. A huge collection of well organized, experimental IRs, under MIT license. It will surprise you.</p>",
-            "size": "650MB",
-            "source_url": "https://github.com/itsmusician/IR-Library",
-            "recipe": "install_Conners_IR_library.sh",
-            "restart_ui_flag": False,
-            "installed": False
-        }
-    }
+    def prepare(self):
+        super().prepare()
+        self.pack_info = self.get_remote_collections("https://os.zynthian.org/files/collections")
+        self.pack_info.update(self.get_extra_packages())
 
     @tornado.web.authenticated
     def get(self, errors=None):
-        self.get_remote_collections("https://os.zynthian.org/files/collections")
-        self.get_installed_info()
         if errors:
             logging.error("ERROR: %s" % format(errors))
         super().get("extra_packs.html", "Extra Packages", { 'packs': self.pack_info }, errors)
@@ -152,6 +116,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         return errors
 
     def get_remote_collections(self, url):
+        col_info = {}
         try:
             page = requests.get(url).text
         except:
@@ -173,6 +138,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     if pack_size < 1000:
                         logging.debug(f"Package '{pack_url}' not available!")
                         continue
+                    pack_size = pack_size/(1000000)
+                    if pack_size < 1000:
+                        pack_size_text = f"{round(pack_size)}MB"
+                    else:
+                        pack_size_text = f"{pack_size/1000:.1f}GB"
                 except Exception as e:
                     logging.debug(f"Can't get info for collection package '{pack_url}' => {e}")
                     continue
@@ -182,11 +152,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     "license": "Unknown",
                     "image": "",
                     "description": "",
-                    "size": f"{round(pack_size//(1024*1024))}MB",
+                    "size": pack_size_text,
                     "source_url": "",
                     "pack_url": pack_url,
                     "restart_ui_flag": False,
-                    "installed": False
+                    "installed": os.path.isdir(f"{self.my_data_dir}/collections/{col_name}")
                 }
                 # Get info from yaml file
                 try:
@@ -196,26 +166,66 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     continue
                 # Parse yaml info
                 try:
-                    col_info = yaml.load(yml, Loader=yaml.SafeLoader)
+                    pack_info = yaml.load(yml, Loader=yaml.SafeLoader)
                 except Exception as e:
                     logging.debug(f"Can't parse yaml info file for collection '{col_url}' => {e}")
                     continue
                 # Complete collection info
-                if "author" in col_info:
-                    info["author"] = col_info["author"]
-                if "license" in col_info:
-                    info["license"] = col_info["license"]
-                if "description" in col_info:
-                    description = "<p>" + col_info["description"].replace("\n", "</p><p>") + "</p>"
+                if "author" in pack_info:
+                    info["author"] = pack_info["author"]
+                if "license" in pack_info:
+                    info["license"] = pack_info["license"]
+                if "description" in pack_info:
+                    description = "<p>" + pack_info["description"].replace("\n", "</p><p>") + "</p>"
                     info["description"] = description
-                if "source_url" in col_info:
-                    info["source_url"] = col_info["source_url"]
-                if "icon" in col_info:
-                    info["image"] = f"{col_url}/{col_info['icon']}"
+                if "source_url" in pack_info:
+                    info["source_url"] = pack_info["source_url"]
+                if "icon" in pack_info:
+                    info["image"] = f"{col_url}/{pack_info['icon']}"
                 # Add to the list
-                self.pack_info[col_name] = info
+                col_info[col_name] = info
+        return col_info
 
-    def get_installed_info(self):
+    def get_extra_packages(self):
+        extra_pack_info = {
+            "Hydrogen_Drumkits": {
+                "title": "Hydrogen Drumkits",
+                "author": "Various",
+                "license": "Free (Various)",
+                "image": "",
+                "description": "<p>A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.</p>`",
+                "size": "145MB",
+                "source_url": "https://musical-artifacts.com/artifacts/133",
+                "recipe": "install_hydrogen_drumkits.sh",
+                "restart_ui_flag": True,
+                "installed": False
+            },
+            "IR_Collection": {
+                "title": "IR Collection",
+                "author": "Various",
+                "license": "Free (Various)",
+                "image": "",
+                "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. It includes several free IR libraries: ccgb, jezwells, l480, openairlib, samplicity-m7 and teufelsberg.</p>",
+                "size": "245MB",
+                "source_url": "",
+                "recipe": "install_ir-lv2-presets.sh",
+                "restart_ui_flag": False,
+                "installed": False
+            },
+            "Conners_IR_library": {
+                "title": "Conners IR library",
+                "author": "Conners",
+                "license": "MIT",
+                "image": "",
+                "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. A huge collection of well organized, experimental IRs, under MIT license. It will surprise you.</p>",
+                "size": "650MB",
+                "source_url": "https://github.com/itsmusician/IR-Library",
+                "recipe": "install_Conners_IR_library.sh",
+                "restart_ui_flag": False,
+                "installed": False
+            }
+        }
+
         # Check if Hydrogen_Drumkits is installed
         drumkits = ["3355606kit", "Audiophob", "circAfrique v4", "Drumkit excepcional", "ElectricEmpireKit"]
         res = True
@@ -223,7 +233,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             if not os.path.isdir(f"{self.data_dir}/soundfonts/hydrogen/{drumkit}"):
                 res = False
                 break
-        self.pack_info['Hydrogen_Drumkits']['installed'] = res
+        extra_pack_info['Hydrogen_Drumkits']['installed'] = res
 
         # Check if IR_collection is installed
         subpacks = ["ccgb", "jezwells", "l480", "openairlib", "samplicity-m7", "teufelsberg"]
@@ -232,23 +242,16 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             if not os.path.islink(f"{self.data_dir}/files/IRs/{subpack}"):
                 res = False
                 break
-        self.pack_info['IR_Collection']['installed'] = res
+        extra_pack_info['IR_Collection']['installed'] = res
 
         # Check if Conners_IR_library is installed
         if os.path.isdir(f"{self.data_dir}/files/IRs/Conners"):
             res = True
         else:
             res = False
-        self.pack_info['Conners_IR_library']['installed'] = res
+        extra_pack_info['Conners_IR_library']['installed'] = res
 
-        for pack_name, info in self.pack_info.items():
-            if "pack_url" in info:
-                if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
-                    res = True
-                else:
-                    res = False
-                self.pack_info[pack_name]['installed'] = res
-
-
+        # Return dictionary
+        return extra_pack_info
 
 # *****************************************************************************
