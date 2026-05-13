@@ -56,7 +56,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     def get(self, errors=None):
         if errors:
             logging.error("ERROR: %s" % format(errors))
-        super().get("extra_packs.html", "Extra Packages", { 'packs': self.pack_info }, errors)
+        super().get("extra_packs.html", "Collections", { 'packs': self.pack_info }, errors)
 
     @tornado.web.authenticated
     def post(self):
