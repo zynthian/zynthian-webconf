@@ -45,6 +45,7 @@ from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler
 from lib.repository_handler import RepositoryHandler
 from lib.midi_log_handler import MidiLogHandler
 from lib.ui_log_handler import UiLogHandler
+from lib.help_handler import HelpHandler
 from lib.engines_handler import EnginesHandler
 from lib.captures_config_handler import CapturesConfigHandler
 from lib.pianoteq_handler import PianoteqHandler
@@ -206,6 +207,7 @@ def make_app():
         (r"/ws$", ZynthianWebSocketHandler),
         (r"/zynterm", ZyntermHandler),
         (r"/zynterm_ws", TermSocket, {'term_manager': term_manager}),
+        (r"/help", HelpHandler),
         (r"/xstatic/(.*)", tornado_xstatic.XStaticFileHandler,
          {'allowed_modules': ['termjs']})
     ], **settings)
