@@ -142,15 +142,15 @@ header#header ul.navbar-nav .dropdown a.dropdown-toggle:active {
 }
 
 header#header ul.navbar-nav .dropdown .dropdown-menu {
-	position: relative;
-	//position:absolute;
-	//top: 1.5em;
-	//left: 0;
+	position: fixed;
+	top: unset;
+	left: unset;
 	background-color: @dark;
 	color: @light;
 	opacity: 0.95;
 	padding-bottom: 1em;
 	border-radius: 0 0 5% 5%;
+	box-shadow: 2px 4px 12px rgba(120, 0, 0, 0.8)
 }
 
 header#header ul.navbar-nav .dropdown .dropdown-menu li {

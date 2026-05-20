@@ -121,12 +121,15 @@ header#header ul.navbar-nav .dropdown a.dropdown-toggle:active {
   color: #ffffff;
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu {
-  position: relative;
+  position: fixed;
+  top: unset;
+  left: unset;
   background-color: #000000;
   color: #ffffff;
   opacity: 0.95;
   padding-bottom: 1em;
   border-radius: 0 0 5% 5%;
+  box-shadow: 2px 4px 12px rgba(120, 0, 0, 0.8);
 }
 header#header ul.navbar-nav .dropdown .dropdown-menu li {
   color: #ffffff;
