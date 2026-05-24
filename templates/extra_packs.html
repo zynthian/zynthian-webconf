@@ -34,9 +34,9 @@ div.package img {
 		<div class="package {% if info['installed'] %}installed{% end %}">
 		    <img src="{{ info['image'] }}">
 			<h3>{{ info['title'] }}</h3>
-			<b>Size:</b> {{ info['size'] }}<br>
 			<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br>
 			<b>License:</b> {{ info['license'] }}<br>
+			<b>Content:</b> {{ info['content'] }} ({{ info['size'] }})<br>
 			{% raw info['description'] %}
 			{% if not info['installed'] %}
 			<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">

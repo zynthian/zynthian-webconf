@@ -30,7 +30,7 @@ import tornado.web
 import urllib.parse
 import oyaml as yaml
 from bs4 import BeautifulSoup
-from subprocess import check_output, STDOUT
+from subprocess import check_output, getoutput, STDOUT
 
 import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -89,11 +89,20 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             info = self.pack_info[pack_name]
             if "recipe" in info:
                 res = check_output(f"$ZYNTHIAN_RECIPE_DIR/{info['recipe']}", shell=True)
-            elif "collection_url" in info:
-                cmd = f"wget -q -O- \"{info['collection_url']}\" | tar -xJ -C \"{self.my_data_dir}/collections\""
+            elif "pack_url" in info and info["pack_url"]:
+                cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{self.my_data_dir}/collections\""
                 res = check_output(cmd, shell=True)
-                if not os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                    info["installed"] = True
+                else:
                     raise(f"Can't install package file!")
+            elif "pack_script" in info and info["pack_script"]:
+                pack_script = info["pack_script"]
+                res = getoutput(f"bash \"{pack_script}\" install")
+                if getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed":
+                    info["installed"] = True
+                else:
+                    raise(f"Can't install package!")
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
         if errors:
@@ -104,11 +113,20 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         errors = None
         try:
             info = self.pack_info[pack_name]
-            if "collection_url" in info:
+            if "pack_url" in info and info["pack_url"]:
                 cmd = f"rm -rf \"{self.my_data_dir}/collections/{pack_name}\""
-                res = check_output(cmd, shell=True)
+                res = getoutput(cmd)
                 if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
                     raise(f"Can't uninstall package!")
+                else:
+                    info["installed"] = False
+            elif "pack_script" in info and info["pack_script"]:
+                pack_script = info["pack_script"]
+                res = getoutput(f"bash \"{pack_script}\" uninstall")
+                if getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed":
+                    raise(f"Can't uninstall package!")
+                else:
+                    info["installed"] = False
         except Exception as e:
             errors = f"Error uninstalling '{pack_name}' => {e}"
         if errors:
@@ -130,34 +148,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 # It's a collection dir =>
                 col_name = href
                 col_url = f"{url}/{col_name}"
-                # Get package size
-                pack_url = f"{col_url}/{col_name}.tar.xz"
-                try:
-                    res = requests.head(pack_url)
-                    pack_size = int(res.headers["content-length"])
-                    if pack_size < 1000:
-                        logging.debug(f"Package '{pack_url}' not available!")
-                        continue
-                    pack_size = pack_size/(1000000)
-                    if pack_size < 1000:
-                        pack_size_text = f"{round(pack_size)}MB"
-                    else:
-                        pack_size_text = f"{pack_size/1000:.1f}GB"
-                except Exception as e:
-                    logging.debug(f"Can't get info for collection package '{pack_url}' => {e}")
+
+                # Ignore theme folder
+                if col_name == "theme":
                     continue
-                info = {
-                    "title": col_name,
-                    "author": "Unknown",
-                    "license": "Unknown",
-                    "image": "",
-                    "description": "",
-                    "size": pack_size_text,
-                    "source_url": "",
-                    "pack_url": pack_url,
-                    "restart_ui_flag": False,
-                    "installed": os.path.isdir(f"{self.my_data_dir}/collections/{col_name}")
-                }
+
                 # Get info from yaml file
                 try:
                     yml = requests.get(f"{col_url}/info.yml").text
@@ -170,6 +165,56 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 except Exception as e:
                     logging.debug(f"Can't parse yaml info file for collection '{col_url}' => {e}")
                     continue
+
+                try:
+                    # Check existance of package file => Get package size
+                    pack_script = None
+                    pack_url = f"{col_url}/{col_name}.tar.xz"
+                    res = requests.head(pack_url)
+                    pack_size = int(res.headers["content-length"])
+                    if pack_size < 1000:
+                        raise f"Package '{pack_url}' not available!"
+                    pack_size = pack_size/(1000000)
+                    if pack_size < 1000:
+                        pack_size_text = f"{round(pack_size)}MB"
+                    else:
+                        pack_size_text = f"{pack_size/1000:.1f}GB"
+                    # Check if it's installed by looking for the collection dir
+                    installed = os.path.isdir(f"{self.my_data_dir}/collections/{col_name}")
+                except:
+                    pack_url = None
+                    # Package file doesn't exist => it may be a script package
+                    try:
+                        res = requests.get(f"{col_url}/{col_name}.sh").text
+                        if res:
+                            pack_script = f"/tmp/{col_name}.sh"
+                            with open(pack_script, "w") as f:
+                                f.write(res)
+                        else:
+                            raise f"Package script not available for {col_name}!"
+                        if "size" in pack_info:
+                            pack_size_text =  pack_info["size"]
+                    except:
+                        logging.debug(f"Can't find package or script for '{col_name}'")
+                        continue
+                    # Check if it's installed by running the package script
+                    installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
+
+
+                info = {
+                    "title": col_name,
+                    "author": "Unknown",
+                    "license": "Unknown",
+                    "image": "",
+                    "description": "",
+                    "content": "miscelanea",
+                    "size": pack_size_text,
+                    "source_url": "",
+                    "pack_url": pack_url,
+                    "pack_script": pack_script,
+                    "restart_ui_flag": False,
+                    "installed": installed
+                }
                 # Complete collection info
                 if "author" in pack_info:
                     info["author"] = pack_info["author"]
@@ -182,6 +227,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["source_url"] = pack_info["source_url"]
                 if "icon" in pack_info:
                     info["image"] = f"{col_url}/{pack_info['icon']}"
+                if "content" in pack_info:
+                    info["content"] = pack_info['content']
                 # Add to the list
                 col_info[col_name] = info
         return col_info
@@ -193,6 +240,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 "author": "Various",
                 "license": "Free (Various)",
                 "image": "",
+                "content": "soundfonts",
                 "description": "<p>A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.</p>`",
                 "size": "145MB",
                 "source_url": "https://musical-artifacts.com/artifacts/133",
@@ -205,6 +253,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 "author": "Various",
                 "license": "Free (Various)",
                 "image": "",
+                "content": "IRs",
                 "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. It includes several free IR libraries: ccgb, jezwells, l480, openairlib, samplicity-m7 and teufelsberg.</p>",
                 "size": "245MB",
                 "source_url": "",
@@ -217,6 +266,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 "author": "Conners",
                 "license": "MIT",
                 "image": "",
+                "content": "IRs",
                 "description": "<p>A collection of impulse response files that you can load with the X42's IR convolver plugins and others. A huge collection of well organized, experimental IRs, under MIT license. It will surprise you.</p>",
                 "size": "650MB",
                 "source_url": "https://github.com/itsmusician/IR-Library",
