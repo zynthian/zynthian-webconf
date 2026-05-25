@@ -1,9 +1,9 @@
 
 <style>
 div.package {
-	padding: 1em;
-	padding-top: 0.3em;
-	margin-bottom: 1em;
+	padding: 1.5em;
+	padding-top: 0.5em;
+	margin-bottom: 2em;
 	background-color: #f0f0f0;
 	border-radius: 0.5em;
 	border: 2px solid #e0e0e0;
@@ -11,13 +11,32 @@ div.package {
 
 div.installed {
 	background-color: #f0fff0;
+	border-color: #e0f0e0;
 }
 
 div.package img {
 	float: right;
 	width: 25%;
 	margin: 1em;
-	border-color: #e0f0e0;
+	margin-right: 0em;
+}
+
+div.package div.info {
+	width: 70%;
+	padding-bottom: 1em;
+	border-bottom: solid 1px #808080;
+}
+
+div.package div.description {
+	padding-top: 1em;
+	padding-bottom: 1.5em;
+}
+
+div.package div.description p {
+	font-size: 1em;
+	color: #505050;
+	margin-top: 0.2em;
+	margin-bottom: 0.2em;
 }
 </style>
 
@@ -27,27 +46,31 @@ div.package img {
     <input type="hidden" id="ZYNTHIAN_EXTRAPACKS_INSTALL" name="ZYNTHIAN_EXTRAPACKS_INSTALL" value="">
     <input type="hidden" id="ZYNTHIAN_EXTRAPACKS_UNINSTALL" name="ZYNTHIAN_EXTRAPACKS_UNINSTALL" value="">
 
-	<p>From this page you can install/uninstall collection packages with presets, soundfonts, samples, midi files, etc.</p>
+	<p>From this page you can install/uninstall collection packages with soundfonts, samples, midi files, presets, etc.</p>
 
-	<div id='install-button'>
-		{% for pack_name, info in config['packs'].items() %}
-		<div class="package {% if info['installed'] %}installed{% end %}">
-		    <img src="{{ info['image'] }}">
-			<h3>{{ info['title'] }}</h3>
-			<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br>
-			<b>License:</b> {{ info['license'] }}<br>
-			<b>Content:</b> {{ info['content'] }} ({{ info['size'] }})<br>
-			{% raw info['description'] %}
-			{% if not info['installed'] %}
-			<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
-			{% elif 'pack_url' in info %}
-			<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
-			{% else %}
-			<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
-			{% end %}
+	{% for pack_name, info in config['packs'].items() %}
+	<div class="package {% if info['installed'] %}installed{% end %}">
+		<img src="{{ info['image'] }}">
+		<h3>{{ info['title'] }}</h3>
+		<div class="info">
+			<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br/>
+			<b>License:</b> {{ info['license'] }}<br/>
+			<b>Content:</b> {{ info['content'] }}<br/>
+			<b>Size:</b> {{ info['size'] }}<br/>
 		</div>
+		<div class="description">
+			{% raw info['description'] %}
+		</div>
+		{% if not info['installed'] %}
+		<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
+		{% elif 'pack_url' in info %}
+		<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
+		{% else %}
+		<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
 		{% end %}
 	</div>
+	{% end %}
+
 
 	<div>
 		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}
