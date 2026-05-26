@@ -167,13 +167,28 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     continue
 
                 try:
-                    # Check existance of package file => Get package size
+                    # Check for a package script ...
+                    res = requests.get(f"{col_url}/{col_name}.sh").text
+                    if res:
+                        pack_script = f"/tmp/{col_name}.sh"
+                        with open(pack_script, "w") as f:
+                            f.write(res)
+                    else:
+                        raise f"Package script not available for {col_name}!"
+                    if "size" in pack_info:
+                        pack_size_text =  pack_info["size"]
+                    # Check if it's installed by running the package script
+                    installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
+                    pack_url = None
+                except:
+                    # No package script => Check existance of package file => Get package size
                     pack_script = None
                     pack_url = f"{col_url}/{col_name}.tar.xz"
                     res = requests.head(pack_url)
                     pack_size = int(res.headers["content-length"])
                     if pack_size < 1000:
-                        raise f"Package '{pack_url}' not available!"
+                        logging.debug(f"Can't find package or script for '{col_name}'")
+                        continue
                     pack_size = pack_size/(1000000)
                     if pack_size < 1000:
                         pack_size_text = f"{round(pack_size)}MB"
@@ -181,25 +196,6 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                         pack_size_text = f"{pack_size/1000:.1f}GB"
                     # Check if it's installed by looking for the collection dir
                     installed = os.path.isdir(f"{self.my_data_dir}/collections/{col_name}")
-                except:
-                    pack_url = None
-                    # Package file doesn't exist => it may be a script package
-                    try:
-                        res = requests.get(f"{col_url}/{col_name}.sh").text
-                        if res:
-                            pack_script = f"/tmp/{col_name}.sh"
-                            with open(pack_script, "w") as f:
-                                f.write(res)
-                        else:
-                            raise f"Package script not available for {col_name}!"
-                        if "size" in pack_info:
-                            pack_size_text =  pack_info["size"]
-                    except:
-                        logging.debug(f"Can't find package or script for '{col_name}'")
-                        continue
-                    # Check if it's installed by running the package script
-                    installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
-
 
                 info = {
                     "title": col_name,
