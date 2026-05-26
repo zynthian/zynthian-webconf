@@ -231,19 +231,6 @@ class ExtraPacksHandler(ZynthianBasicHandler):
 
     def get_extra_packages(self):
         extra_pack_info = {
-            "Hydrogen_Drumkits": {
-                "title": "Hydrogen Drumkits",
-                "author": "Various",
-                "license": "Free (Various)",
-                "image": "",
-                "content": "soundfonts",
-                "description": "<p>A collection of drumkits, using the Hydrogen format, that you can load with Fabla and DrMr sampler.</p>`",
-                "size": "145MB",
-                "source_url": "https://musical-artifacts.com/artifacts/133",
-                "recipe": "install_hydrogen_drumkits.sh",
-                "restart_ui_flag": True,
-                "installed": False
-            },
             "IR_Collection": {
                 "title": "IR Collection",
                 "author": "Various",
@@ -271,15 +258,6 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 "installed": False
             }
         }
-
-        # Check if Hydrogen_Drumkits is installed
-        drumkits = ["3355606kit", "Audiophob", "circAfrique v4", "Drumkit excepcional", "ElectricEmpireKit"]
-        res = True
-        for drumkit in drumkits:
-            if not os.path.isdir(f"{self.data_dir}/soundfonts/hydrogen/{drumkit}"):
-                res = False
-                break
-        extra_pack_info['Hydrogen_Drumkits']['installed'] = res
 
         # Check if IR_collection is installed
         subpacks = ["ccgb", "jezwells", "l480", "openairlib", "samplicity-m7", "teufelsberg"]
