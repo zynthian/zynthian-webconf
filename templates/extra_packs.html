@@ -5,8 +5,7 @@ div.package {
 	padding-top: 0.5em;
 	margin-bottom: 2em;
 	background-color: #f0f0f0;
-	border-radius: 0.5em;
-	border: 2px solid #e0e0e0;
+	border-bottom: 2px solid #e0e0e0;
 }
 
 div.installed {
@@ -43,34 +42,50 @@ div.package div.description p {
 <h2>{{ title }}</h2>
 
 <form id="extra-packs-form" action="/lib-extra-packs" enctype="multipart/form-data" method="post">
-    <input type="hidden" id="ZYNTHIAN_EXTRAPACKS_INSTALL" name="ZYNTHIAN_EXTRAPACKS_INSTALL" value="">
-    <input type="hidden" id="ZYNTHIAN_EXTRAPACKS_UNINSTALL" name="ZYNTHIAN_EXTRAPACKS_UNINSTALL" value="">
+	<input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
+	<input type="hidden" id="ZYNTHIAN_EXTRAPACKS_INSTALL" name="ZYNTHIAN_EXTRAPACKS_INSTALL" value="">
+	<input type="hidden" id="ZYNTHIAN_EXTRAPACKS_UNINSTALL" name="ZYNTHIAN_EXTRAPACKS_UNINSTALL" value="">
 
-	<p>From this page you can install/uninstall collection packages with soundfonts, samples, midi files, presets, etc.</p>
-
-	{% for pack_name, info in config['packs'].items() %}
-	<div class="package {% if info['installed'] %}installed{% end %}">
-		<img src="{{ info['image'] }}">
-		<h3>{{ info['title'] }}</h3>
-		<div class="info">
-			<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br/>
-			<b>License:</b> {{ info['license'] }}<br/>
-			<b>Content:</b> {{ info['content'] }}<br/>
-			<b>Size:</b> {{ info['size'] }}<br/>
-		</div>
-		<div class="description">
-			{% raw info['description'] %}
-		</div>
-		{% if not info['installed'] %}
-		<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
-		{% elif 'pack_url' in info %}
-		<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
-		{% else %}
-		<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
-		{% end %}
-	</div>
+    <ul class="nav nav-tabs" role="tablist">
+	{% for pack_type, packs in config['packs'].items() %}
+		{% set _pack_type = pack_type.replace(' ','_') %}
+		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == _pack_type %}active{% end %}">
+			<a id="#{{ _pack_type }}" href="#{{ _pack_type }}" class="tab_anchor" onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ pack_type }}')" role="tab" data-toggle="tab">{{ pack_type }}
+				<span id="pack_type_count_{{ _pack_type }}">({{ len(packs) }})</span>
+			</a>
+		</li>
 	{% end %}
+	</ul>
 
+	<div class="tab-content">
+	{% for pack_type, packs in config['packs'].items() %}
+		{% set _pack_type = pack_type.replace(' ','_') %}
+		<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == _pack_type %}active{% end %}" id="{{ _pack_type }}">
+		{% for pack_name, info in packs.items() %}
+			<div class="package {% if info['installed'] %}installed{% end %}">
+				<img src="{{ info['image'] }}">
+				<h3>{{ info['title'] }}</h3>
+				<div class="info">
+					<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br/>
+					<b>License:</b> {{ info['license'] }}<br/>
+					<b>Content:</b> {{ info['content'] }}<br/>
+					<b>Size:</b> {{ info['size'] }}<br/>
+				</div>
+				<div class="description">
+					{% raw info['description'] %}
+				</div>
+				{% if not info['installed'] %}
+				<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
+				{% elif 'pack_url' in info %}
+				<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
+				{% else %}
+				<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
+				{% end %}
+			</div>
+		{% end %}
+		</div>
+	{% end %}
+	</div>
 
 	<div>
 		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}

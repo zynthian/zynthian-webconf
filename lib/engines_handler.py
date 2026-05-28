@@ -65,14 +65,12 @@ class EnginesHandler(ZynthianBasicHandler):
             zynthian_lv2.engine_categories)
 
         try:
-            config['ZYNTHIAN_ACTIVE_TAB'] = self.get_argument(
-                'ZYNTHIAN_ACTIVE_TAB')
+            config['ZYNTHIAN_ACTIVE_TAB'] = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
         except:
             pass
 
         if not 'ZYNTHIAN_ACTIVE_TAB' in config or len(config['ZYNTHIAN_ACTIVE_TAB']) == 0:
-            config['ZYNTHIAN_ACTIVE_TAB'] = zynthian_lv2.EngineType.MIDI_SYNTH.value.replace(
-                " ", "_")
+            config['ZYNTHIAN_ACTIVE_TAB'] = zynthian_lv2.EngineType.MIDI_SYNTH.value.replace(" ", "_")
 
         try:
             config['ZYNTHIAN_ENGINES_FILTER'] = self.get_argument(

@@ -45,20 +45,36 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 class ExtraPacksHandler(ZynthianBasicHandler):
     data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
     my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
-    package_cache_fpath = "/tmp/packages_cache.yml"
+    package_cache_fpath = "/tmp/pack_info_cache.yml"
+
+    remote_url_base = "https://os.zynthian.org/packages"
+    package_cats = ["Soundfonts",
+                    "Samples",
+                    "Neural Models",
+                    "IRs" ]
 
     def prepare(self):
         super().prepare()
         force_reload = (self.request.headers.get("Cache-Control") == "no-cache")
         logging.debug(f"FORCE PACKAGE INFO RELOAD => {force_reload}")
         if force_reload or not self.get_cache_packages():
-            self.get_remote_packages("https://os.zynthian.org/files/collections")
+            self.get_remote_packages()
 
     @tornado.web.authenticated
     def get(self, errors=None):
         if errors:
             logging.error("ERROR: %s" % format(errors))
-        super().get("extra_packs.html", "Collections", { 'packs': self.pack_info }, errors)
+
+        try:
+            active_tab = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
+        except:
+            active_tab = self.package_cats[0]
+
+        config = {
+            'packs': self.pack_info,
+            'ZYNTHIAN_ACTIVE_TAB': active_tab
+        }
+        super().get("extra_packs.html", "Packages", config, errors)
 
     @tornado.web.authenticated
     def post(self):
@@ -96,7 +112,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["installed"] = True
                     self.save_cache_packages()
                 else:
-                    raise(f"Failed to download/unpack from '{info['pack_url']}'!")
+                    raise Exception(f"Failed to download/unpack from '{info['pack_url']}'!")
             elif "pack_script" in info and info["pack_script"]:
                 pack_script = info["pack_script"]
                 res = getoutput(f"bash \"{pack_script}\" install")
@@ -104,7 +120,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["installed"] = True
                     self.save_cache_packages()
                 else:
-                    raise(f"Install script failed!")
+                    raise Exception(f"Install script failed!")
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
         if errors:
@@ -119,7 +135,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 cmd = f"rm -rf \"{self.my_data_dir}/collections/{pack_name}\""
                 res = getoutput(cmd)
                 if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
-                    raise(f"Can't uninstall package!")
+                    raise Exception(f"Can't uninstall package!")
                 else:
                     info["installed"] = False
                     self.save_cache_packages()
@@ -127,7 +143,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 pack_script = info["pack_script"]
                 res = getoutput(f"bash \"{pack_script}\" uninstall")
                 if getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed":
-                    raise(f"Can't uninstall package!")
+                    raise Exception(f"Can't uninstall package!")
                 else:
                     info["installed"] = False
                     self.save_cache_packages()
@@ -152,13 +168,25 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         with open(self.package_cache_fpath, "w") as f:
              yaml.dump(self.pack_info, f)
 
-    def get_remote_packages(self, url):
+    def get_remote_packages(self):
         self.pack_info = {}
+        for cat in self.package_cats:
+            res = self.get_packages_from_url(self.remote_url_base + "/" + cat)
+            if res:
+                self.pack_info[cat] = res
+        self.save_cache_packages()
+
+    def get_packages_from_url(self, url):
+        pack_info = {}
         try:
-            page = requests.get(url).text
-        except:
-            return
-        soup = BeautifulSoup(page, 'html.parser')
+            res = requests.get(url)
+            if res.status_code != 200:
+                raise Exception(f"Error {res.status_code}")
+        except Exception as e:
+            logging.error(f"Can't get packages from '{url}' => {e}")
+            return pack_info
+        res.encoding='utf-8'
+        soup = BeautifulSoup(res.text, 'html.parser')
         for node in soup.find_all("a")[::-1]:
             href = urllib.parse.unquote(node.get('href'))
             if href[-1] == "/":
@@ -180,30 +208,39 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 # Get info from yaml file
                 try:
                     res = requests.get(f"{pack_base_url}/info.yml")
+                except Exception as e:
+                    logging.error(e)
+                    continue
+
+                if res.status_code == 200:
                     res.encoding='utf-8'
                     yml = res.text
-                except:
-                    logging.debug(f"Can't find YAML info file for collection '{pack_base_url}'")
+                else:
+                    logging.error(f"Can't find YAML info file for collection '{pack_base_url}' => Error {res.status_code}")
                     continue
                 # Parse yaml info
                 try:
                     yml_info = yaml.load(yml, Loader=yaml.SafeLoader)
                 except Exception as e:
-                    logging.debug(f"Can't parse YAML info file for collection '{pack_base_url}' => {e}")
+                    logging.error(f"Can't parse YAML info file for collection '{pack_base_url}' => {e}")
                     continue
 
                 #logging.debug(f"Found Package => {pack_name} => {time.ctime()}")
 
                 try:
                     # Check for a package script ...
-                    res = requests.get(f"{pack_base_url}/{pack_name}.sh")
+                    try:
+                        res = requests.get(f"{pack_base_url}/{pack_name}.sh")
+                    except Exception as e:
+                        logging.error(e)
+                        continue
                     if res.status_code == 200:
                         res.encoding='utf-8'
                         pack_script = f"/tmp/{pack_name}.sh"
                         with open(pack_script, "w") as f:
                             f.write(res.text)
                     else:
-                        raise f"Package script not available for {pack_name}!"
+                        raise Exception(f"Package script not available for {pack_name}!")
                     if "size" in yml_info:
                         pack_size_text =  yml_info["size"]
                     else:
@@ -215,7 +252,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     # No package script => Check existance of package file => Get package size
                     pack_script = None
                     pack_url = f"{pack_base_url}/{pack_name}.tar.xz"
-                    res = requests.head(pack_url)
+                    try:
+                        res = requests.head(pack_url)
+                    except Exception as e:
+                        logging.error(e)
+                        continue
                     if res.status_code == 200:
                         if "size" in yml_info:
                             # Trust size from info file
@@ -224,7 +265,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                             # Get size by querying package tar.xz file
                             pack_size = int(res.headers["content-length"])
                             if pack_size < 1000:
-                                logging.debug(f"Package file for '{pack_name}' is too small ({pack_size}).")
+                                logging.error(f"Package file for '{pack_name}' is too small ({pack_size}).")
                                 continue
                             pack_size = pack_size/(1000000)
                             if pack_size < 1000:
@@ -234,11 +275,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                         # Check if it's installed by looking for the collection dir
                         installed = os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}")
                     else:
-                        logging.debug(f"Can't find package or script for '{pack_name}'")
+                        logging.error(f"Can't find package or script for '{pack_name}'!")
                         continue
 
-
                 info = {
+                    "name": pack_name,
                     "title": pack_name,
                     "author": "unknown",
                     "license": "unknown",
@@ -253,6 +294,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     "installed": installed
                 }
                 # Complete collection info
+                if "title" in yml_info:
+                    info["title"] = yml_info["title"]
                 if "author" in yml_info:
                     info["author"] = yml_info["author"]
                 if "license" in yml_info:
@@ -269,8 +312,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 if "restart_ui" in yml_info:
                     info["restart_ui"] = yml_info['restart_ui']
                 # Add to the list
-                self.pack_info[pack_name] = info
+                pack_info[pack_name] = info
+        return pack_info
 
-        self.save_cache_packages()
 
 # *****************************************************************************
