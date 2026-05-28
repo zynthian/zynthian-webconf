@@ -10,7 +10,7 @@ div.package {
 
 div.installed {
 	background-color: #f0fff0;
-	border-color: #e0f0e0;
+	border-color: #d0f0d0;
 }
 
 div.package img {
@@ -23,12 +23,21 @@ div.package img {
 div.package div.info {
 	width: 70%;
 	padding-bottom: 1em;
-	border-bottom: solid 1px #808080;
+	border-bottom: solid 1px #A0A0A0;
 }
 
 div.package div.description {
 	padding-top: 1em;
 	padding-bottom: 1.5em;
+}
+
+div.package div.description a.read_more {
+	color: #20A020;
+}
+
+div.package div.description a.read_less {
+	display: none;
+	color: #A02020;
 }
 
 div.package div.description div.extended {
@@ -66,7 +75,8 @@ div.package div.description p {
 		{% set _pack_type = pack_type.replace(' ','_') %}
 		<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == _pack_type %}active{% end %}" id="{{ _pack_type }}">
 		{% for pack_name, info in packs.items() %}
-			<div class="package {% if info['installed'] %}installed{% end %}">
+			{% set _pack_name = pack_name.replace(' ','_') %}
+			<div id="pack_{{ _pack_name }}" class="package {% if info['installed'] %}installed{% end %}">
 				<img src="{{ info['image'] }}">
 				<h3>{{ info['title'] }}</h3>
 				<div class="info">
@@ -76,7 +86,10 @@ div.package div.description p {
 					<b>Size:</b> {{ info['size'] }}<br/>
 				</div>
 				<div class="description">
-					{% raw info['description'] %}
+					<p>{% raw info['description'] %}
+						<a class="read_more" href="javascript:expand_description('pack_{{ _pack_name }}')">[+]</a>
+						<a class="read_less" href="javascript:collapse_description('pack_{{ _pack_name }}')">[-]</a>
+					</p>
 					<div class="extended">
 					{% raw info['description_extended'] %}
 					</div>
@@ -109,6 +122,20 @@ div.package div.description p {
 $(document).ready(function (){
 	$("#loading-div-background").hide();
 });
+
+function expand_description(pack_id) {
+	var selbase = "div#" + pack_id + " div.description";
+	$(selbase + " div.extended").slideDown(500);
+	$(selbase + " a.read_more").hide();
+	$(selbase + " a.read_less").show();
+}
+
+function collapse_description(pack_id) {
+	var selbase = "div#" + pack_id + " div.description";
+	$(selbase + " div.extended").slideUp(500);
+	$(selbase + " a.read_more").show();
+	$(selbase + " a.read_less").hide();
+}
 
 function installPackage(pack_name) {
 	if (confirm("Are you sure to install package '" + pack_name + "'?\nIt would take some time to download and install.")) {

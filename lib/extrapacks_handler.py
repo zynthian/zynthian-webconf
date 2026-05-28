@@ -303,7 +303,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["license"] = yml_info["license"]
                 if "description" in yml_info:
                     parts = yml_info["description"].split("\n", 1)
-                    info["description"] = f"<p>{parts[0]}</p>"
+                    info["description"] = parts[0]
                     if len(parts) > 1 and parts[1].strip():
                         ext_desc = parts[1].replace("\n", "</p><p>")
                         info["description_extended"] = f"<p>{ext_desc}</p>"
