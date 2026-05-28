@@ -285,6 +285,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     "license": "unknown",
                     "image": "",
                     "description": "",
+                    "description_extended": "",
                     "content": "miscelanea",
                     "size": pack_size_text,
                     "source_url": "",
@@ -301,8 +302,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 if "license" in yml_info:
                     info["license"] = yml_info["license"]
                 if "description" in yml_info:
-                    description = "<p>" + yml_info["description"].replace("\n", "</p><p>") + "</p>"
-                    info["description"] = description
+                    parts = yml_info["description"].split("\n", 1)
+                    info["description"] = f"<p>{parts[0]}</p>"
+                    if len(parts) > 1 and parts[1].strip():
+                        ext_desc = parts[1].replace("\n", "</p><p>")
+                        info["description_extended"] = f"<p>{ext_desc}</p>"
                 if "source_url" in yml_info:
                     info["source_url"] = yml_info["source_url"]
                 if "icon" in yml_info:

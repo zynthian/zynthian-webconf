@@ -31,6 +31,10 @@ div.package div.description {
 	padding-bottom: 1.5em;
 }
 
+div.package div.description div.extended {
+	display: none;
+}
+
 div.package div.description p {
 	font-size: 1em;
 	color: #505050;
@@ -73,11 +77,14 @@ div.package div.description p {
 				</div>
 				<div class="description">
 					{% raw info['description'] %}
+					<div class="extended">
+					{% raw info['description_extended'] %}
+					</div>
 				</div>
 				{% if not info['installed'] %}
-				<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['title'] }}'" onclick="installPackage('{{ pack_name }}')">
+				<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['name'] }}'" onclick="installPackage('{{ pack_name }}')">
 				{% elif 'pack_url' in info %}
-				<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['title'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
+				<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['name'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
 				{% else %}
 				<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
 				{% end %}
