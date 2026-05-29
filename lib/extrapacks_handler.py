@@ -45,7 +45,7 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 class ExtraPacksHandler(ZynthianBasicHandler):
     data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
     my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
-    package_cache_fpath = "/tmp/pack_info_cache.yml"
+    package_cache_dpath = "/tmp/pack_info"
 
     remote_url_base = "https://os.zynthian.org/packages"
     package_cats = ["Soundfonts",
@@ -101,10 +101,17 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 logging.error(err)
         self.get(errors)
 
+    def get_pack_info(self, pack_name):
+        for packs in self.pack_info.values():
+            try:
+                return packs[pack_name]
+            except:
+                pass
+
     def do_install_package(self, pack_name):
         errors = None
         try:
-            info = self.pack_info[pack_name]
+            info = self.get_pack_info(pack_name)
             if "pack_url" in info and info["pack_url"]:
                 cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{self.my_data_dir}/collections\""
                 res = check_output(cmd, shell=True)
@@ -130,7 +137,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     def do_uninstall_package(self, pack_name):
         errors = None
         try:
-            info = self.pack_info[pack_name]
+            info = self.get_pack_info(pack_name)
             if "pack_url" in info and info["pack_url"]:
                 cmd = f"rm -rf \"{self.my_data_dir}/collections/{pack_name}\""
                 res = getoutput(cmd)
@@ -154,9 +161,10 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         return errors
 
     def get_cache_packages(self):
-        if os.path.isfile(self.package_cache_fpath):
+        fpath = self.package_cache_dpath + "/info.yml"
+        if os.path.isfile(fpath):
             try:
-                with open(self.package_cache_fpath, "r") as f:
+                with open(fpath, "r") as f:
                     yml = f.read()
                     self.pack_info = yaml.load(yml, Loader=yaml.SafeLoader)
                     return True
@@ -165,15 +173,20 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         return False
 
     def save_cache_packages(self):
-        with open(self.package_cache_fpath, "w") as f:
+        with open(self.package_cache_dpath + "/info.yml", "w") as f:
              yaml.dump(self.pack_info, f)
 
     def get_remote_packages(self):
         self.pack_info = {}
+        # Create tmp dir for package scripts
+        if not os.path.exists(self.package_cache_dpath):
+            os.makedirs(self.package_cache_dpath)
+        # Get package lists by category
         for cat in self.package_cats:
             res = self.get_packages_from_url(self.remote_url_base + "/" + cat)
             if res:
                 self.pack_info[cat] = res
+        # Save package info cache
         self.save_cache_packages()
 
     def get_packages_from_url(self, url):
@@ -236,7 +249,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                         continue
                     if res.status_code == 200:
                         res.encoding='utf-8'
-                        pack_script = f"/tmp/{pack_name}.sh"
+                        pack_script = f"{self.package_cache_dpath}/{pack_name}.sh"
                         with open(pack_script, "w") as f:
                             f.write(res.text)
                     else:
