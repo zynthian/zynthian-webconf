@@ -88,14 +88,12 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         if install_pack_name:
             try:
                 errors = self.do_install_package(install_pack_name)
-                self.restart_ui_flag = self.pack_info[install_pack_name]['restart_ui']
             except Exception as err:
                 errors = f"Can't install package {install_pack_name}"
                 logging.error(err)
         elif uninstall_pack_name:
             try:
                 errors = self.do_uninstall_package(uninstall_pack_name)
-                self.restart_ui_flag = self.pack_info[uninstall_pack_name]['restart_ui']
             except Exception as err:
                 errors = f"Can't uninstall package {uninstall_pack_name}"
                 logging.error(err)
@@ -132,6 +130,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             errors = f"Error installing '{pack_name}' => {e}"
         if errors:
             logging.error(errors)
+        else:
+            self.restart_ui_flag = info['restart_ui']
         return errors
 
     def do_uninstall_package(self, pack_name):
@@ -158,6 +158,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             errors = f"Error uninstalling '{pack_name}' => {e}"
         if errors:
             logging.error(errors)
+        else:
+            self.restart_ui_flag = info['restart_ui']
         return errors
 
     def get_cache_packages(self):
