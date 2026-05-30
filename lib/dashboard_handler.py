@@ -202,7 +202,7 @@ class DashboardHandler(ZynthianBasicHandler):
                     'USER_SOUNDFONTS': {
                         'title': 'User Soundfonts',
                         'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts")),
-                        'url': "/lib-soundfont"
+                        'url': "/lib-presets"
                     },
                     'AUDIO_CAPTURES': {
                         'title': 'Audio Captures',
