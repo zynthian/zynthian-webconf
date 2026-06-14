@@ -210,7 +210,7 @@ class DashboardHandler(ZynthianBasicHandler):
                     'USER_SOUNDFONTS': {
                         'title': 'User Soundfonts',
                         'value': str(self.get_num_of_files(my_data_dir + "/soundfonts", "*.sf?")),
-                        'url': "/lib-soundfont"
+                        'url': "/lib-presets"
                     },
                     'AUDIO_CAPTURES': {
                         'title': 'Audio Captures',
@@ -455,7 +455,7 @@ class DashboardHandler(ZynthianBasicHandler):
     def get_midi_network_services():
         res = []
         if DashboardHandler.is_service_active("jacknetumpd"):
-            res.append("UMP")
+            res.append("MIDI 2.0")
         if DashboardHandler.is_service_active("jackrtpmidid"):
             res.append("RTP")
         if DashboardHandler.is_service_active("qmidinet"):

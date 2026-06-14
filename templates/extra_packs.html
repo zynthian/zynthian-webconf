@@ -92,8 +92,10 @@ div.package div.description p {
 				</div>
 				<div class="description">
 					<p>{% raw info['description'] %}
+					{% if info['description_extended'] %}
 						<a class="read_more" href="javascript:expand_description('pack_{{ _pack_name }}')">[+]</a>
 						<a class="read_less" href="javascript:collapse_description('pack_{{ _pack_name }}')">[-]</a>
+					{% end %}
 					</p>
 					<div class="extended">
 					{% raw info['description_extended'] %}
@@ -119,7 +121,7 @@ div.package div.description p {
 
 <div id="loading-div-background">
 	<div id="loading-div" class="ui-corner-all">
-		<span id="text"></span>'. Please wait...
+		<span id="text"></span>. Please wait...
 	</div>
 </div>
 
