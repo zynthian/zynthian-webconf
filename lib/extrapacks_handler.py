@@ -187,7 +187,12 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         for cat in self.package_cats:
             res = self.get_packages_from_url(self.remote_url_base + "/" + cat)
             if res:
-                self.pack_info[cat] = res
+                # Order packages by title
+                pack_list = sorted(res.values(), key=lambda p: p['title'])
+                pack_dict = {}
+                for p in pack_list:
+                    pack_dict[p['name']] = p
+                self.pack_info[cat] = pack_dict
         # Save package info cache
         self.save_cache_packages()
 
