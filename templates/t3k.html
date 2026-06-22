@@ -1,0 +1,19 @@
+
+<h2>{{ title }}</h2>
+
+<p><a href="https://www.tone3000.com/"><b>Tone 3000</b></a> is a ...
+
+<p>From this page you can configure your Tone 3000 API key:</p>
+
+<form id="t3k-form" action="/sw-t3k" enctype="multipart/form-data" method="post">
+	<div id='api-key'>
+		<div class="col-lg-10 col-md-10 col-xs-10">
+			<b>Tone 3000 API key:</b><br/>
+			<input type="text" name="ZYNTHIAN_T3K_API_KEY" value="{{ config['ZYNTHIAN_T3K_API_KEY'] }}" />
+		</div>
+		<div class="col-2-10 col-md-2 col-xs-2">
+			<br/>
+			<button name="ZYNTHIAN_T3K_API_KEY_ACTION" value="STORE_T3K_API_KEY" class="btn btn-theme">Save</button>
+		</div>
+	</div>
+</form>

@@ -86,6 +86,7 @@
 								<a href="#menu-hw" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false" aria-label="Sofware">Software <span class="caret"></span></a>
 								<ul class="dropdown-menu">
 									<li {% if request.uri=='/sw-engines' %}class="active"{% end %}><a href="/sw-engines">Engines</a></li>
+									<li {% if request.uri=='/sw-t3k' %}class="active"{% end %}><a href="/sw-t3k">Tone 3000</a></li>
 									{% try %}{% if info['sw-pianoteq'] %}
 									<li {% if request.uri=='/sw-pìanoteq' %}class="active"{% end %}><a href="/sw-pianoteq">Pianoteq</a></li>
 									{% end %}{% except %}{% end %}
