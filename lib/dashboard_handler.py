@@ -50,6 +50,9 @@ class DashboardHandler(ZynthianBasicHandler):
         git_info_webconf = self.get_git_info("/zynthian/zynthian-webconf")
         git_info_data = self.get_git_info("/zynthian/zynthian-data")
 
+        # Get dir paths from config vars
+        my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR')
+
         # Get Memory & SD Card info
         ram_info = self.get_ram_info()
         root_info = self.get_root_info()
@@ -96,19 +99,19 @@ class DashboardHandler(ZynthianBasicHandler):
                 'icon': 'glyphicon glyphicon-tasks',
                         'info': {
                             'OS_INFO': {
-                                'title': "{}".format(self.get_os_info())
+                                'title': self.get_os_info()
                             },
                             'BUILD_DATE': {
                                 'title': 'Build Date',
-                                'value': self.get_build_info()['Timestamp'],
+                                'value': self.get_build_info()['Timestamp']
                             },
                             'RAM': {
                                 'title': 'Memory',
-                                'value': "{} ({}/{})".format(ram_info['usage'], ram_info['used'], ram_info['total'])
+                                'value': f"{ram_info['usage']} ({ram_info['used']}/{ram_info['total']})"
                             },
                             'STORAGE': {
                                 'title': 'Internal Storage',
-                                'value': "{} ({}/{} {})".format(root_info['usage'], root_info['used'], root_info['total'], root_info['fs'])
+                                'value': f"{root_info['usage']} ({root_info['used']}/{root_info['total']} {root_info['fs']})"
                             },
                             'TEMPERATURE': {
                                 'title': 'Temperature',
@@ -126,7 +129,7 @@ class DashboardHandler(ZynthianBasicHandler):
                 'info': {
                     'FINE_TUNING': {
                         'title': 'Tuning',
-                        'value': "{} Hz".format(os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING', "440")),
+                        'value': f"{os.environ.get('ZYNTHIAN_MIDI_FINE_TUNING', '440')} Hz",
                         'url': "/ui-midi-options"
                     },
                     'MASTER_CHANNEL': {
@@ -161,28 +164,28 @@ class DashboardHandler(ZynthianBasicHandler):
                 'info': {
                     'ZYNCODER': {
                         'title': 'zyncoder',
-                        'value': "%s (%s) %s" % (git_info_zyncoder['branch'], git_info_zyncoder['gitid'][0:7], 'Update available' if git_info_zyncoder['update'] == '1' else ''),
-                        'url': "https://github.com/zynthian/zyncoder/commit/{}".format(git_info_zyncoder['gitid'])
+                        'value': f"{git_info_zyncoder['branch']} ({git_info_zyncoder['gitid'][0:7]}) {'Update available' if git_info_zyncoder['update'] == '1' else ''}",
+                        'url': f"https://github.com/zynthian/zyncoder/commit/{git_info_zyncoder['gitid']}"
                     },
                     'UI': {
                         'title': 'zynthian-ui',
-                        'value': "{} ({})".format(git_info_ui['branch'], git_info_ui['gitid'][0:7], 'Update available' if git_info_ui['update'] == '1' else ''),
-                        'url': "https://github.com/zynthian/zynthian-ui/commit/{}".format(git_info_ui['gitid'])
+                        'value': f"{git_info_ui['branch']} ({git_info_ui['gitid'][0:7]}) {'Update available' if git_info_ui['update'] == '1' else ''}",
+                        'url': f"https://github.com/zynthian/zynthian-ui/commit/{git_info_ui['gitid']}"
                     },
                     'SYS': {
                         'title': 'zynthian-sys',
-                        'value': "{} ({})".format(git_info_sys['branch'], git_info_sys['gitid'][0:7], 'Update available' if git_info_sys['update'] == '1' else ''),
-                        'url': "https://github.com/zynthian/zynthian-sys/commit/{}".format(git_info_sys['gitid'])
+                        'value': f"{git_info_sys['branch']} ({git_info_sys['gitid'][0:7]}) {'Update available' if git_info_sys['update'] == '1' else ''}",
+                        'url': f"https://github.com/zynthian/zynthian-sys/commit/{git_info_sys['gitid']}"
                     },
                     'DATA': {
                         'title': 'zynthian-data',
-                        'value': "{} ({})".format(git_info_data['branch'], git_info_data['gitid'][0:7], 'Update available' if git_info_data['update'] == '1' else ''),
-                        'url': "https://github.com/zynthian/zynthian-data/commit/{}".format(git_info_data['gitid'])
+                        'value': f"{git_info_data['branch']} ({git_info_data['gitid'][0:7]}) {'Update available' if git_info_data['update'] == '1' else ''}",
+                        'url': f"https://github.com/zynthian/zynthian-data/commit/{git_info_data['gitid']}"
                     },
                     'WEBCONF': {
                         'title': 'zynthian-webconf',
-                        'value': "{} ({})".format(git_info_webconf['branch'], git_info_webconf['gitid'][0:7], 'Update available' if git_info_webconf['update'] == '1' else ''),
-                        'url': "https://github.com/zynthian/zynthian-webconf/commit/{}".format(git_info_webconf['gitid'])
+                        'value': f"{git_info_webconf['branch']} ({git_info_webconf['gitid'][0:7]}) {'Update available' if git_info_webconf['update'] == '1' else ''}",
+                        'url': f"https://github.com/zynthian/zynthian-webconf/commit/{git_info_webconf['gitid']}"
                     }
                 }
             },
@@ -191,27 +194,32 @@ class DashboardHandler(ZynthianBasicHandler):
                 'info': {
                     'SNAPSHOTS': {
                         'title': 'Snapshots',
-                        'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/snapshots")),
+                        'value': str(self.get_num_of_files(my_data_dir + "/snapshots")),
                         'url': "/lib-snapshot"
                     },
-                    'USER_PRESETS': {
-                        'title': 'User Presets',
-                        'value': str(self.get_num_of_presets(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/presets")),
-                        'url': "/lib-presets"
+                    #'USER_PRESETS': {
+                    #    'title': 'User Presets',
+                    #    'value': str(self.get_num_of_presets(my_data_dir + "/presets")),
+                    #    'url': "/lib-presets"
+                    #},
+                    'COLLECTIONS': {
+                        'title': 'Collections',
+                        'value': str(self.get_num_of_dirs(my_data_dir + "/collections")),
+                        'url': "/lib-extra-packs"
                     },
                     'USER_SOUNDFONTS': {
                         'title': 'User Soundfonts',
-                        'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/soundfonts")),
+                        'value': str(self.get_num_of_files(my_data_dir + "/soundfonts", "*.sf?")),
                         'url': "/lib-presets"
                     },
                     'AUDIO_CAPTURES': {
                         'title': 'Audio Captures',
-                        'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture", "*.wav")),
+                        'value': str(self.get_num_of_files(my_data_dir + "/capture", "*.wav")),
                         'url': "/lib-captures"
                     },
                     'MIDI_CAPTURES': {
                         'title': 'MIDI Captures',
-                        'value': str(self.get_num_of_files(os.environ.get('ZYNTHIAN_MY_DATA_DIR')+"/capture", "*.mid")),
+                        'value': str(self.get_num_of_files(my_data_dir + "/capture", "*.mid")),
                         'url': "/lib-captures"
                     }
                 }
@@ -262,7 +270,7 @@ class DashboardHandler(ZynthianBasicHandler):
                 dname = os.path.basename(exdir)
                 config['SYSTEM']['info']['MEDIA_' + dname] = {
                     'title': "USB/" + dname,
-                    'value': "{} ({}/{} {})".format(media_info['usage'], media_info['used'], media_info['total'], media_info['fs']),
+                    'value': f"{media_info['usage']} ({media_info['used']}/{media_info['total']} {media_info['fs']})",
                     'url': "/lib-captures"
                 }
 
@@ -277,13 +285,10 @@ class DashboardHandler(ZynthianBasicHandler):
 
     @staticmethod
     def get_git_info(path, check_updates=False):
-        branch = check_output("cd %s; git branch | grep '*'" %
-                              path, shell=True).decode()[2:-1]
-        gitid = check_output("cd %s; git rev-parse HEAD" %
-                             path, shell=True).decode()[:-1]
+        branch = check_output(f"cd {path}; git branch | grep '*'", shell=True).decode()[2:-1]
+        gitid = check_output(f"cd {path}; git rev-parse HEAD", shell=True).decode()[:-1]
         if check_updates:
-            update = check_output(
-                "cd %s; git remote update; git status --porcelain -bs | grep behind | wc -l" % path, shell=True).decode()
+            update = check_output(f"cd {path}; git remote update; git status --porcelain -bs | grep behind | wc -l", shell=True).decode()
         else:
             update = None
         return {"branch": branch, "gitid": gitid, "update": update}
@@ -310,11 +315,11 @@ class DashboardHandler(ZynthianBasicHandler):
                     try:
                         k, v = row.split(": ")
                         info[k] = v
-                        logging.debug("Build info => {}: {}".format(k, v))
+                        logging.debug(f"Build info => {k}: {v}")
                     except:
                         pass
         except Exception as e:
-            logging.warning("Can't get build info! => {}".format(e))
+            logging.warning(f"Can't get build info! => {e}")
             info['Timestamp'] = '???'
 
         return info
@@ -373,8 +378,7 @@ class DashboardHandler(ZynthianBasicHandler):
         if volume is None:
             volume = "/dev/mmcblk0p2\|/dev/root"
         try:
-            out = check_output(
-                "df -hT | grep '{}'".format(volume), shell=True).decode()
+            out = check_output(f"df -hT | grep '{volume}'", shell=True).decode()
             parts = re.split('\s+', out)
             return {'fs': parts[1], 'total': parts[2], 'used': parts[3], 'free': parts[4], 'usage': parts[5]}
         except:
@@ -391,9 +395,8 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_media_info(mpath="/media/usb0"):
         try:
-            out = check_output("mountpoint '{}'".format(
-                mpath), shell=True).decode()
-            if out.startswith("{} is a mountpoint".format(mpath)):
+            out = check_output(f"mountpoint '{mpath}'", shell=True).decode()
+            if out.startswith(f"{mpath} is a mountpoint"):
                 return DashboardHandler.get_volume_info(mpath)
             else:
                 return None
@@ -404,36 +407,40 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_num_of_files(path, pattern=None):
         if pattern:
-            pattern = "-name \"{}\"".format(pattern)
+            pattern = f"-name \"{pattern}\""
         else:
             pattern = ""
         try:
-            n = int(check_output("find {} -type f -follow {} | wc -l".format(path,
-                    pattern), shell=True, stderr=DEVNULL).decode())
+            n = int(check_output(f"find {path} -type f -follow {pattern} -not -path '*/.*' -not -name '.*' | wc -l", shell=True, stderr=DEVNULL).decode())
         except Exception as e:
-            logging.error(
-                "Can't get num of files for '{}' => {}".format(path, e))
+            logging.error(f"Can't get num of files for '{path}' => {e}")
             n = 0
         return n
 
     @staticmethod
+    def get_num_of_dirs(path):
+        try:
+            n = int(check_output(f"ls {path} -1 | wc -l", shell=True, stderr=DEVNULL).decode())
+        except Exception as e:
+            logging.error(f"Can't get num of dirs for '{path}' => {e}")
+            n = 0
+        return n
+
+    # This should be reviewed and updated => It's not used currently!'
+    @staticmethod
     def get_num_of_presets(path):
         # LV2 presets
-        n1 = int(check_output(
-            "find {}/lv2 -type f -prune -name manifest.ttl | wc -l".format(path), shell=True).decode())
-        logging.debug("LV2 presets => {}".format(n1))
+        n1 = int(check_output(f"find {path}/lv2 -type f -prune -name manifest.ttl | wc -l", shell=True).decode())
+        logging.debug(f"LV2 presets => {n1}")
         # Pianoteq presets
-        n2 = int(check_output(
-            "find {}/pianoteq -type f -prune | wc -l".format(path), shell=True).decode())
-        logging.debug("Pianoteq presets => {}".format(n2))
+        n2 = int(check_output(f"find {path}/pianoteq -type f -prune | wc -l", shell=True).decode())
+        logging.debug(f"Pianoteq presets => {n2}")
         # Puredata presets
-        n3 = int(check_output("find {}/puredata/*/* -type d -prune | wc -l".format(path),
-                 shell=True, stderr=DEVNULL).decode())
-        logging.debug("Puredata presets => {}".format(n3))
+        n3 = int(check_output(f"find {path}/puredata/*/* -type d -prune | wc -l", shell=True, stderr=DEVNULL).decode())
+        logging.debug(f"Puredata presets => {n3}")
         # ZynAddSubFX presets
-        n4 = int(check_output(
-            "find {}/zynaddsubfx -type f -name *.xiz | wc -l".format(path), shell=True).decode())
-        logging.debug("ZynAddSubFX presets => {}".format(n4))
+        n4 = int(check_output(f"find {path}/zynaddsubfx -type f -name *.xiz | wc -l", shell=True).decode())
+        logging.debug(f"ZynAddSubFX presets => {n4}")
         return n1 + n2 + n3 + n4
 
     @staticmethod
@@ -457,11 +464,11 @@ class DashboardHandler(ZynthianBasicHandler):
 
     @staticmethod
     def is_service_active(service):
-        cmd = "systemctl is-active %s" % service
+        cmd = f"systemctl is-active {service}"
         try:
             result = check_output(cmd, shell=True).decode('utf-8', 'ignore')
         except Exception as e:
-            result = "ERROR: %s" % e
+            result = f"ERROR: {e}"
         # print("Is service "+str(service)+" active? => "+str(result))
         if result.strip() == 'active':
             return True
