@@ -86,7 +86,8 @@ class T3kHandler(ZynthianBasicHandler):
                 </html>
                 """)
             except Exceptions as e:
-                logging.error("caanot start local server: {e}")
+                logging.error("Cannot start local server: {e}")
+                error="Cannot start local server."
         self.get(error)
 
     def get_t3k_api_key(self):

@@ -9,11 +9,11 @@
 	<div id='api-key'>
 		<div class="col-lg-10 col-md-10 col-xs-10">
 			<b>Tone 3000 API key:</b><br/>
-			<input type="text" name="ZYNTHIAN_T3K_API_KEY" value="{{ config['ZYNTHIAN_T3K_API_KEY'] }}" type="password"/>
+			<input type="text" name="ZYNTHIAN_T3K_API_KEY" value="{{ config['ZYNTHIAN_T3K_API_KEY'] }}"/>
 		</div>
 		<div class="col-2-10 col-md-2 col-xs-2">
 			<br/>
-			<button name="ZYNTHIAN_T3K_ACTION" value="STORE_T3K_API_KEY" class="btn btn-theme">Save</button>
+			<button name="ZYNTHIAN_T3K_ACTION" value="STORE_T3K_API_KEY" class="btn btn-theme">Save API key</button>
 		</div>
 		<div class="col-2-10 col-md-2 col-xs-2">
 			<br/>
@@ -22,8 +22,6 @@
 				<br/>
 				<button name="ZYNTHIAN_T3K_ACTION" value="GO_TO_T3K" class="btn btn-theme">Browse Tone 3000 library</button>
 			</div>
-			{% else %}
-			Browse Tone 3000 library
 			{% end %}
 		</div>
 	</div>
