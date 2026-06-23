@@ -54,7 +54,6 @@ from lib.t3k_handler import T3kHandler
 from lib.extrapacks_handler import ExtraPacksHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.presets_config_handler import PresetsConfigHandler
-from lib.presets_t3k_handler import PresetsT3kHandler
 from lib.software_update_handler import SoftwareUpdateHandler
 from lib.system_backup_handler import SystemBackupHandler
 from lib.upload_handler import UploadHandler
@@ -179,7 +178,6 @@ def make_app():
         (r"/lib-presets$", PresetsConfigHandler),
         (r"/lib-presets/(.*)$", PresetsConfigHandler),
         (r"/lib-presets/(.*)/(.*)$", PresetsConfigHandler),
-        (r"/lib-t3k$", PresetsT3kHandler),
         (r"/lib-captures$", CapturesConfigHandler),
         (r"/lib-extra-packs$", ExtraPacksHandler),
         (r"/hw-kit$", KitConfigHandler),
