@@ -13,12 +13,15 @@
 		</div>
 		<div class="col-2-10 col-md-2 col-xs-2">
 			<br/>
-			<button name="ZYNTHIAN_T3K_API_KEY_ACTION" value="STORE_T3K_API_KEY" class="btn btn-theme">Save</button>
+			<button name="ZYNTHIAN_T3K_ACTION" value="STORE_T3K_API_KEY" class="btn btn-theme">Save</button>
 		</div>
 		<div class="col-2-10 col-md-2 col-xs-2">
 			<br/>
 			{% if config['ZYNTHIAN_T3K_URL'] %}
-			<a href="{{ config['ZYNTHIAN_T3K_URL'] }}">Browse Tone 3000 library</a>
+			<div class="col-2-10 col-md-2 col-xs-2">
+				<br/>
+				<button name="ZYNTHIAN_T3K_ACTION" value="GO_TO_T3K" class="btn btn-theme">Browse Tone 3000 library</button>
+			</div>
 			{% else %}
 			Browse Tone 3000 library
 			{% end %}

@@ -33,7 +33,7 @@ import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
 
 # ------------------------------------------------------------------------------
-# Tone 3000 Configuration
+# Tone 3000 configuration
 # ------------------------------------------------------------------------------
 
 class T3kHandler(ZynthianBasicHandler):
@@ -55,7 +55,7 @@ class T3kHandler(ZynthianBasicHandler):
     def post(self):
         error = None
         try:
-            action = self.get_argument('ZYNTHIAN_T3K_API_KEY_ACTION')
+            action = self.get_argument('ZYNTHIAN_T3K_ACTION')
         except:
             action = None
             logging.error(f"No action!")
@@ -63,7 +63,27 @@ class T3kHandler(ZynthianBasicHandler):
         if action == "STORE_T3K_API_KEY":
             t3k_api_key = self.get_argument('ZYNTHIAN_T3K_API_KEY')
             error = self.do_save_config()
-            logging.error(f"{error}")
+            if error:
+                logging.error(f"{error}")
+        elif action == "GO_TO_T3K":
+            state,authorize_url = self.get_authorize_url()    
+            self.start_local_server(state)
+            self.set_header("Content-Type", "text/html; charset=UTF-8")
+            self.write(f"""
+            <html>
+            <head>
+                <title>Tone 3000</title>
+                <script>
+                    window.onload = function() {
+                        window.open("{config['ZYNTHIAN_T3K_URL']}", "_blank");
+                    };
+                </script>
+            </head>
+            <body>
+                <p>One moment...</p>
+            </body>
+            </html>
+            """)
         self.get(error)
 
     def get_t3k_api_key(self):
@@ -89,11 +109,10 @@ class T3kHandler(ZynthianBasicHandler):
 
             query_string = urllib.parse.urlencode(params)
             authorize_url = f"{AUTHORIZE_URL}?{query_string}"
-            self.start_local_server(state)
         except Exception as e:
             logging.error(f"{e}")
             
-        return(authorize_url)
+        return state,authorize_url
 
     def do_save_config(self):
         error = None
