@@ -66,24 +66,27 @@ class T3kHandler(ZynthianBasicHandler):
             if error:
                 logging.error(f"{error}")
         elif action == "GO_TO_T3K":
-            state,authorize_url = self.get_authorize_url()    
-            self.start_local_server(state)
-            self.set_header("Content-Type", "text/html; charset=UTF-8")
-            self.write(f"""
-            <html>
-            <head>
-                <title>Tone 3000</title>
-                <script>
-                    window.onload = function() {
-                        window.open("{config['ZYNTHIAN_T3K_URL']}", "_blank");
-                    };
-                </script>
-            </head>
-            <body>
-                <p>One moment...</p>
-            </body>
-            </html>
-            """)
+            state,authorize_url = self.get_authorize_url()
+            try:    
+                self.start_local_server(state)
+                self.set_header("Content-Type", "text/html; charset=UTF-8")
+                self.write(f"""
+                <html>
+                <head>
+                    <title>Tone 3000</title>
+                    <script>
+                        window.onload = function() {
+                            window.open("{authorize_url}", "_blank");
+                        };
+                    </script>
+                </head>
+                <body>
+                    <p>One moment...</p>
+                </body>
+                </html>
+                """)
+            except Exceptions as e:
+                logging.error("caanot start local server: {e}")
         self.get(error)
 
     def get_t3k_api_key(self):
@@ -140,7 +143,7 @@ class T3kHandler(ZynthianBasicHandler):
             httpd.shutdown_event.wait()
             httpd.shutdown()
             httpd.server_close()
-            logging.info(f"Local callback server started at http://localhost:{PORT}")
+            logging.info(f"Local callback server stopped at http://localhost:{PORT}")
 
 # Local webserver callback
 class WebServerCallbackHandler(http.server.BaseHTTPRequestHandler):
