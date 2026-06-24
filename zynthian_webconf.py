@@ -51,6 +51,7 @@ from lib.captures_config_handler import CapturesConfigHandler
 from lib.pianoteq_handler import PianoteqHandler
 from lib.dsp56300_handler import dsp56300Handler
 from lib.t3k_handler import T3kHandler
+from lib.t3k_callback_handler import T3kCallbackHandler
 from lib.extrapacks_handler import ExtraPacksHandler
 from lib.zynthian_websocket_handler import ZynthianWebSocketHandler
 from lib.presets_config_handler import PresetsConfigHandler
@@ -178,6 +179,7 @@ def make_app():
         (r"/lib-presets$", PresetsConfigHandler),
         (r"/lib-presets/(.*)$", PresetsConfigHandler),
         (r"/lib-presets/(.*)/(.*)$", PresetsConfigHandler),
+        (r"/lib-t3k$", T3kCallbackHandler),
         (r"/lib-captures$", CapturesConfigHandler),
         (r"/lib-extra-packs$", ExtraPacksHandler),
         (r"/hw-kit$", KitConfigHandler),
