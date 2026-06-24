@@ -26,6 +26,8 @@ import os
 import sys
 import logging
 import tornado.web
+from tornado_session import SessionMixin
+from urllib.parse import parse_qs, urlparse
 
 import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -34,7 +36,9 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 # Tone 3000 callback
 # ------------------------------------------------------------------------------
 
-class T3kCallbackHandler(ZynthianBasicHandler):
+class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
+    TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
+
     @tornado.web.authenticated
     def get(self):
         zynthian_my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
@@ -42,7 +46,7 @@ class T3kCallbackHandler(ZynthianBasicHandler):
         nam_dir = f"{zynthian_my_data_dir}/files/Neural Models"
         
         # Parse URL
-        parsed_url = urlparse(self.path)
+        parsed_url = urlparse(self.request.path)
         query_params = parse_qs(parsed_url.query)
 
         code = query_params.get("code", [None])[0]
@@ -51,7 +55,7 @@ class T3kCallbackHandler(ZynthianBasicHandler):
         canceled = query_params.get("canceled", [None])[0] == "true"
 
         # Check state
-        if state != self.server.session.get("t3k_state"):
+        if state != self.session.get("t3k_state"):
             logging.error("State mismatch. Possible CSRF attack.")
             self.send_response(400)
             self.end_headers()
@@ -66,7 +70,6 @@ class T3kCallbackHandler(ZynthianBasicHandler):
             self.wfile.write(
                 b"<h1>Canceled</h1><p>"
             )
-            self.server.shutdown_event.set()
             return
 
         if not code:
@@ -88,7 +91,7 @@ class T3kCallbackHandler(ZynthianBasicHandler):
             logging.info(f"code_verifier: {code_verifier[:10]}...")
 
             token_response = requests.post(
-                TOKEN_URL,
+                self.TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
                     "client_id": CLIENT_ID,

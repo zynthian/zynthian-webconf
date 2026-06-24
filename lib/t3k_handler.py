@@ -24,10 +24,13 @@
 
 import os
 import sys
-#import psutil
-#import shutil
 import logging
 import tornado.web
+import base64
+import hashlib
+import secrets
+import socket
+import netifaces
 
 import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -37,10 +40,6 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 # ------------------------------------------------------------------------------
 
 class T3kHandler(ZynthianBasicHandler):
-    REDIRECT_URI = "http://localhost/lib-t3k"
-    AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
-    TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
-
     @tornado.web.authenticated
     def get(self, errors=None):
         config = {
@@ -83,7 +82,8 @@ class T3kHandler(ZynthianBasicHandler):
                     <p>One moment...</p>
                 </body>
                 </html>
-                """)           
+                """)
+                print(f"{authorize_url=}")
             except Exceptions as e:
                 logging.error(f"Cannot start local server: {e}")
                 error="Cannot start local server."
@@ -92,43 +92,41 @@ class T3kHandler(ZynthianBasicHandler):
     def get_t3k_api_key(self):
         return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
     
-    def get_authorize_url(self):
-        authorize_url = None
-        try:
-            code_verifier = secrets.token_urlsafe(128)
-            
-            code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
-            code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
-        except Exceptions as e:
-            logging.error(f"Cannot start local server: {e}")
-            error="Cannot start local server."
-        self.get(error)
+    def get_interface_ip(self):
+        interfaces = ['eth0', 'wlan0']
+        
+        for iface in interfaces:
+            ip = self.get_interface_ip_from_iface(iface)  # ✅ Mit self.
+            if ip and (ip.startswith('192.168.') or ip.startswith('10.') or ip.startswith('172.')):
+                logging.debug(f"IP found {iface}: {ip}")
+                return ip
 
-    def get_t3k_api_key(self):
-        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
-    
-    def get_authorize_url(self):
-        authorize_url = None
-        try:
-            code_verifier = secrets.token_urlsafe(128)
-            
-            code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
-            code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
-        except Exceptions as e:
-            logging.error(f"Cannot start local server: {e}")
-            error="Cannot start local server."
-        self.get(error)
+        logging.error("No local IP found.")
+        return None
 
-    def get_t3k_api_key(self):
-        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
-    
+    def get_interface_ip_from_iface(self, iface_name):
+        try:
+            iface = netifaces.ifaddresses(iface_name)
+            if netifaces.AF_INET in iface:
+                ip = iface[netifaces.AF_INET][0]['addr']
+                return ip
+        except Exception as e:
+            logging.debug(f"Interface {iface_name} not available: {e}")
+        return None
+
     def get_authorize_url(self):
+        print(f"==========={self.get_interface_ip()}")
+        REDIRECT_URI = f"http://{self.get_interface_ip()}/lib-t3k"
+        AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
+
         authorize_url = None
+        state = None
         try:
             code_verifier = secrets.token_urlsafe(128)
             
             code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
             code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
+            state = secrets.token_urlsafe(32)
 
             params = {
                 "client_id": self.get_t3k_api_key(),
@@ -144,7 +142,7 @@ class T3kHandler(ZynthianBasicHandler):
             authorize_url = f"{AUTHORIZE_URL}?{query_string}"
         except Exception as e:
             logging.error(f"{e}")
-            
+            print(f"{e}")
         return state,authorize_url
 
     def do_save_config(self):
@@ -157,5 +155,5 @@ class T3kHandler(ZynthianBasicHandler):
         except Exceptions as e:
             error = "Cannot store Tone 3000 API key."
         return(error)
-
+    
 # *****************************************************************************
