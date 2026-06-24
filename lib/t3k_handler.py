@@ -74,19 +74,49 @@ class T3kHandler(ZynthianBasicHandler):
                 <head>
                     <title>Tone 3000</title>
                     <script>
-                        window.onload = function() {
+                        window.onload = function() {{
                             window.open("{authorize_url}", "_blank");
-                        };
+                        }};
                     </script>
                 </head>
                 <body>
                     <p>One moment...</p>
                 </body>
                 </html>
-                """)
+                """)           
             except Exceptions as e:
                 logging.error(f"Cannot start local server: {e}")
                 error="Cannot start local server."
+        self.get(error)
+
+    def get_t3k_api_key(self):
+        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
+    
+    def get_authorize_url(self):
+        authorize_url = None
+        try:
+            code_verifier = secrets.token_urlsafe(128)
+            
+            code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+            code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
+        except Exceptions as e:
+            logging.error(f"Cannot start local server: {e}")
+            error="Cannot start local server."
+        self.get(error)
+
+    def get_t3k_api_key(self):
+        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
+    
+    def get_authorize_url(self):
+        authorize_url = None
+        try:
+            code_verifier = secrets.token_urlsafe(128)
+            
+            code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
+            code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
+        except Exceptions as e:
+            logging.error(f"Cannot start local server: {e}")
+            error="Cannot start local server."
         self.get(error)
 
     def get_t3k_api_key(self):
