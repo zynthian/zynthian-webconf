@@ -317,7 +317,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
 
         try:
             jackd_options = os.environ.get('JACKD_OPTIONS', "-P 70 -t 2000 -s -d alsa -d hw:0 -r 48000 -p 256 -n 2")
-            alsa_config = re.split('-d\salsa', jackd_options)[1] + " "
+            alsa_config = re.split(r"-d\salsa", jackd_options)[1] + " "
             val = re.search(r"-d\s*(\S*)", alsa_config)
             device = "hw:0" if val is None else val.group(1)[3:]
             val = re.search(r"-r\s*(\S*)", alsa_config)
@@ -476,7 +476,7 @@ class AudioConfigHandler(ZynthianConfigHandler):
             changed = self.request.arguments['_changed'][0].decode()
             if changed.startswith("ALSA") or command == "SAVE":
                 jackd_options = self.get_argument('JACKD_OPTIONS', os.environ.get('JACKD_OPTIONS', "-P 70 -t 2000 -s -d alsa -d hw:0 -r 48000 -p 256 -n 2"))
-                jack_config, alsa_config = re.split('-d\salsa', jackd_options)
+                jack_config, alsa_config = re.split(r'-d\salsa', jackd_options)
                 val = self.get_argument('ALSA_DEVICE')
                 if val.endswith(" (Not detected)"):
                     val = val[:-15]

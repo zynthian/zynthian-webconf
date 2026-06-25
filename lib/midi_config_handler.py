@@ -525,21 +525,15 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
     @tornado.web.authenticated
     def post(self):
-        self.request.arguments['ZYNTHIAN_MIDI_FILTER_OUTPUT'] = self.request.arguments.get(
-            'ZYNTHIAN_MIDI_FILTER_OUTPUT', '0')
-        self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get(
-            'ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', '0')
-        self.request.arguments['ZYNTHIAN_MIDI_BANK_CHANGE'] = self.request.arguments.get(
-            'ZYNTHIAN_MIDI_BANK_CHANGE', '0')
-        self.request.arguments['ZYNTHIAN_MIDI_MASTER_CHANNEL'] = self.request.arguments.get(
-            'ZYNTHIAN_MIDI_MASTER_CHANNEL', '0')
+        self.request.arguments['ZYNTHIAN_MIDI_FILTER_OUTPUT'] = self.request.arguments.get('ZYNTHIAN_MIDI_FILTER_OUTPUT', '0')
+        self.request.arguments['ZYNTHIAN_MIDI_PROG_CHANGE_ZS3'] = self.request.arguments.get('ZYNTHIAN_MIDI_PROG_CHANGE_ZS3', '0')
+        self.request.arguments['ZYNTHIAN_MIDI_BANK_CHANGE'] = self.request.arguments.get('ZYNTHIAN_MIDI_BANK_CHANGE', '0')
+        self.request.arguments['ZYNTHIAN_MIDI_MASTER_CHANNEL'] = self.request.arguments.get('ZYNTHIAN_MIDI_MASTER_CHANNEL', '0')
 
-        escaped_request_arguments = tornado.escape.recursive_unicode(
-            self.request.arguments)
+        escaped_request_arguments = tornado.escape.recursive_unicode(self.request.arguments)
         errors = {}
         try:
-            freq = float(self.request.arguments.get(
-                'ZYNTHIAN_MIDI_FINE_TUNING', '440.0')[0])
+            freq = float(self.request.arguments.get('ZYNTHIAN_MIDI_FINE_TUNING', '440.0')[0])
             if freq < 392.0 or freq > 493.88:
                 errors['ZYNTHIAN_MIDI_FINE_TUNING'] = "Frequency must be in the range 392.00 - 493.88 Hz!"
         except:
@@ -556,24 +550,19 @@ class MidiConfigHandler(ZynthianConfigHandler):
                 if filter_add_argument.startswith('FILTER_ADD'):
                     del escaped_request_arguments[filter_add_argument]
 
-            profile_saveas_fname = self.get_argument(
-                'zynthian_midi_profile_saveas_fname')
+            profile_saveas_fname = self.get_argument('zynthian_midi_profile_saveas_fname')
 
             if profile_saveas_fname:
                 # New MIDI profile
-                self.current_midi_profile_script = self.PROFILES_DIRECTORY + \
-                    '/' + profile_saveas_fname + '.sh'
+                self.current_midi_profile_script = self.PROFILES_DIRECTORY + '/' + profile_saveas_fname + '.sh'
                 try:
                     # create file as copy of default:
-                    zynconf.get_midi_config_fpath(
-                        self.current_midi_profile_script)
-                    zynconf.update_midi_profile(
-                        escaped_request_arguments, self.current_midi_profile_script)
+                    zynconf.get_midi_config_fpath(self.current_midi_profile_script)
+                    zynconf.update_midi_profile(escaped_request_arguments, self.current_midi_profile_script)
                     mode = os.stat(self.current_midi_profile_script).st_mode
                     mode |= (mode & 0o444) >> 2	 # copy R bits to X
                     os.chmod(self.current_midi_profile_script, mode)
-                    errors = zynconf.save_config(
-                        {'ZYNTHIAN_SCRIPT_MIDI_PROFILE': self.current_midi_profile_script})
+                    errors = zynconf.save_config({'ZYNTHIAN_SCRIPT_MIDI_PROFILE': self.current_midi_profile_script})
                     self.load_midi_profile_directories()
                 except:
                     errors['zynthian_midi_profile_saveas_script'] = "Can't create new profile!"
@@ -582,10 +571,8 @@ class MidiConfigHandler(ZynthianConfigHandler):
                 # DELETE
                 if self.current_midi_profile_script.startswith(self.PROFILES_DIRECTORY):
                     os.remove(self.current_midi_profile_script)
-                    self.current_midi_profile_script = "{}/default.sh".format(
-                        self.PROFILES_DIRECTORY)
-                    errors = zynconf.save_config(
-                        {'ZYNTHIAN_SCRIPT_MIDI_PROFILE': self.current_midi_profile_script})
+                    self.current_midi_profile_script = f"{self.PROFILES_DIRECTORY}/default.sh"
+                    errors = zynconf.save_config({'ZYNTHIAN_SCRIPT_MIDI_PROFILE': self.current_midi_profile_script})
                     self.load_midi_profile_directories()
                 else:
                     errors['zynthian_midi_profile_delete_script'] = 'You are allowed to delete user profiles only!'
@@ -601,8 +588,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
                     for k in update_parameters:
                         del escaped_request_arguments[k]
 
-                    zynconf.update_midi_profile(
-                        escaped_request_arguments, self.current_midi_profile_script)
+                    zynconf.update_midi_profile(escaped_request_arguments, self.current_midi_profile_script)
                     errors = self.update_config(escaped_request_arguments)
                 else:
                     errors['zynthian_midi_profile_new_script_name'] = 'No profile name!'
@@ -613,16 +599,14 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
     def load_midi_profile_directories(self):
         # Get profiles list
-        self.midi_profile_scripts = [
-            "%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)]
+        self.midi_profile_scripts = ["%s/%s" % (self.PROFILES_DIRECTORY, x) for x in os.listdir(self.PROFILES_DIRECTORY)]
         # If list is empty ...
         if len(self.midi_profile_scripts) == 0:
             self.current_midi_profile_script = "%s/default.sh" % self.PROFILES_DIRECTORY
             self.midi_profile_scripts = [self.current_midi_profile_script]
             try:
                 # Try to copy from default template
-                default_src = "%s/config/default_midi_profile.sh" % os.getenv(
-                    'ZYNTHIAN_SYS_DIR', "/zynthian/zynthian-sys")
+                default_src = "%s/config/default_midi_profile.sh" % os.getenv('ZYNTHIAN_SYS_DIR', "/zynthian/zynthian-sys")
                 copyfile(default_src, self.current_midi_profile_script)
             except Exception as e:
                 logging.error(e)
@@ -630,11 +614,9 @@ class MidiConfigHandler(ZynthianConfigHandler):
         else:
             if not self.current_midi_profile_script:
                 if 'ZYNTHIAN_SCRIPT_MIDI_PROFILE' in self.request.arguments:
-                    self.current_midi_profile_script = self.get_argument(
-                        'ZYNTHIAN_SCRIPT_MIDI_PROFILE')
+                    self.current_midi_profile_script = self.get_argument('ZYNTHIAN_SCRIPT_MIDI_PROFILE')
                 else:
-                    self.current_midi_profile_script = os.getenv(
-                        'ZYNTHIAN_SCRIPT_MIDI_PROFILE', self.midi_profile_scripts[0])
+                    self.current_midi_profile_script = os.getenv('ZYNTHIAN_SCRIPT_MIDI_PROFILE', self.midi_profile_scripts[0])
             if self.current_midi_profile_script not in self.midi_profile_scripts:
                 self.current_midi_profile_script = self.midi_profile_scripts[0]
 
@@ -649,7 +631,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
 
     def load_midi_profiles(self):
         self.midi_profile_presets = {}
-        p = re.compile("export (\w*)=\"(.*)\"")
+        p = re.compile(r"export (\w*)=\"(.*)\"")
         invalid_files = []
         for midi_profile_script in self.midi_profile_scripts:
             # logging.info(midi_profile_script)
@@ -668,8 +650,7 @@ class MidiConfigHandler(ZynthianConfigHandler):
                 invalid_files.append(midi_profile_script)
 
         for midi_profile_script in invalid_files:
-            logging.warning(
-                "Invalid MIDI profile will be ignored: " + midi_profile_script)
+            logging.warning("Invalid MIDI profile will be ignored: " + midi_profile_script)
             self.midi_profile_scripts.remove(midi_profile_script)
 
         if self.current_midi_profile_script:
