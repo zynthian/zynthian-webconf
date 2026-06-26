@@ -31,6 +31,7 @@ import hashlib
 import secrets
 import socket
 import netifaces
+import urllib.parse
 
 import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -65,7 +66,7 @@ class T3kHandler(ZynthianBasicHandler):
             if error:
                 logging.error(f"{error}")
         elif action == "GO_TO_T3K":
-            state,authorize_url = self.get_authorize_url()
+            authorize_url = self.get_authorize_url()
             try:    
                 self.set_header("Content-Type", "text/html; charset=UTF-8")
                 self.write(f"""
@@ -115,7 +116,6 @@ class T3kHandler(ZynthianBasicHandler):
         return None
 
     def get_authorize_url(self):
-        print(f"==========={self.get_interface_ip()}")
         REDIRECT_URI = f"http://{self.get_interface_ip()}/lib-t3k"
         AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
 
@@ -123,11 +123,11 @@ class T3kHandler(ZynthianBasicHandler):
         state = None
         try:
             code_verifier = secrets.token_urlsafe(128)
-            
             code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
             code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
             state = secrets.token_urlsafe(32)
-
+            print(f"1:{state=}")
+            
             params = {
                 "client_id": self.get_t3k_api_key(),
                 "redirect_uri": REDIRECT_URI,
@@ -138,12 +138,20 @@ class T3kHandler(ZynthianBasicHandler):
                 "prompt": "select_tone",
             }
 
+            self.set_secure_cookie(
+                "t3k_state",
+                state,
+                expires_days=1
+            )
+            print(f"2:{self.get_secure_cookie('t3k_state')}")
+
             query_string = urllib.parse.urlencode(params)
             authorize_url = f"{AUTHORIZE_URL}?{query_string}"
         except Exception as e:
             logging.error(f"{e}")
             print(f"{e}")
-        return state,authorize_url
+
+        return authorize_url
 
     def do_save_config(self):
         error = None

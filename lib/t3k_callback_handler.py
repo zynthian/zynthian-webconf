@@ -26,8 +26,7 @@ import os
 import sys
 import logging
 import tornado.web
-from tornado_session import SessionMixin
-from urllib.parse import parse_qs, urlparse
+import urllib.parse
 
 import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
@@ -36,48 +35,59 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 # Tone 3000 callback
 # ------------------------------------------------------------------------------
 
-class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
+class T3kCallbackHandler(ZynthianBasicHandler):
     TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
+
+    def get_t3k_api_key(self):
+        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
 
     @tornado.web.authenticated
     def get(self):
+        REDIRECT_URI = f"http://{self.get_interface_ip()}/lib-t3k"
         zynthian_my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
         ir_dir = f"{zynthian_my_data_dir}/files/IRs"
         nam_dir = f"{zynthian_my_data_dir}/files/Neural Models"
         
         # Parse URL
-        parsed_url = urlparse(self.request.path)
-        query_params = parse_qs(parsed_url.query)
+        #parsed_url = urllib.parse(self.request.path)
+        #query_params = urllib.parse_qs(parsed_url.query)
 
-        code = query_params.get("code", [None])[0]
-        state = query_params.get("state", [None])[0]
-        tone_id = query_params.get("tone_id", [None])[0]
-        canceled = query_params.get("canceled", [None])[0] == "true"
+        #code = query_params.get("code", [None])[0]
+        #state = query_params.get("state", [None])[0]
+        #tone_id = query_params.get("tone_id", [None])[0]
+        #canceled = query_params.get("canceled", [None])[0] == "true"
+        code = self.get_argument('code', None)
+        state = self.get_argument('state', None)
+        tone_id = self.get_argument('tone_id', None)
+        canceled = self.get_argument('canceled', None)
 
         # Check state
-        if state != self.session.get("t3k_state"):
-            logging.error("State mismatch. Possible CSRF attack.")
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(b"State mismatch. Possible CSRF attack.")
-            self.server.shutdown_event.set()
+        expected_state = self.get_secure_cookie("t3k_state", max_age_days=1)
+        if expected_state is None:
+            self.write("Error: No session found. Please start again.")
             return
+        
+        print(f"A:{expected_state=}")
+        expected_state = expected_state.decode('utf-8')
+        print(f"B:{expected_state=}")
+        print(f"{state=} {expected_state=}")
+        
+        if not state:
+            self.send_error(400, reason="Session expired or missing.")
+            return
+
+        #if state != expected_state:
+        #    self.send_error(400, reason="State mismatch. Possible CSRF.")
+        #    return
 
         if canceled:
             logging.error("User has cancelled flow.")
-            self.send_response(200)
-            self.end_headers()
-            self.wfile.write(
-                b"<h1>Canceled</h1><p>"
-            )
+            self.send_error(200, reason="Canceled.")
             return
 
         if not code:
             logging.error("No code.")
-            self.send_response(400)
-            self.end_headers()
-            self.wfile.write(b"No code.")
-            self.server.shutdown_event.set()
+            self.send_error(400, reason="No code.")
             return
 
         logging.info(f"Got code: {code}\nTone-ID: {tone_id}")
@@ -85,7 +95,7 @@ class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
         # === Token exchange ===
         try:
             logging.info("Sending token to T3k:")
-            logging.info(f"client_id: {CLIENT_ID}")
+            logging.info(f"client_id: {self.get_t3k_api_key()}")
             logging.info(f"redirect_uri: {REDIRECT_URI}")
             logging.info(f"code: {code}")
             logging.info(f"code_verifier: {code_verifier[:10]}...")
@@ -94,7 +104,7 @@ class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
                 self.TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
-                    "client_id": CLIENT_ID,
+                    "client_id": self.get_t3k_api_key(),
                     "redirect_uri": REDIRECT_URI,
                     "code": code,
                     "code_verifier": code_verifier,
@@ -104,15 +114,10 @@ class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
 
             logging.info(f"Response state: {token_response.status_code}")
             logging.info(f"Response body: {token_response.text}")
-
+            print(f"{token_response.status_code}")
             if token_response.status_code != 200:
                 logging.error("Token exchange failed!")
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(
-                    f"<h1>Token exchange error</h1><p>State: {token_response.status_code}</p><pre>{token_response.text}</pre>".encode()
-                )
-                self.server.shutdown_event.set()
+                self.send_error(500, f"<h1>Token exchange error</h1><p>State: {token_response.status_code}</p><pre>{token_response.text}</pre>".encode())
                 return
 
             token_data = token_response.json()
@@ -121,10 +126,7 @@ class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
 
         except Exception as e:
             logging.error(f"Token exchange exception: {e}")
-            self.send_response(500)
-            self.end_headers()
-            self.wfile.write(f"<h1>Error</h1><p>{e}</p>".encode())
-            self.server.shutdown_event.set()
+            self.send_error(500, f"<h1>Error</h1><p>{e}</p>".encode())
             return
 
         # === Get tone data ===
@@ -140,12 +142,7 @@ class T3kCallbackHandler(ZynthianBasicHandler, SessionMixin):
 
             if tone_response.status_code != 200:
                 logging.error("Error while retrieving tone meta data.")
-                self.send_response(500)
-                self.end_headers()
-                self.wfile.write(
-                    f"<h1>Error</h1><p>Tone meta data is not available</p><pre>{tone_response.text}</pre>".encode()
-                )
-                self.server.shutdown_event.set()
+                self.send_error(500, f"<h1>Error</h1><p>Tone meta data is not available</p><pre>{tone_response.text}</pre>".encode())
                 return
 
             tone_data = tone_response.json()

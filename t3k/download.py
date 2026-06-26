@@ -5,67 +5,56 @@ import os
 import secrets
 import socketserver
 import threading
-import urllib.parse
-import webbrowser
-from urllib.parse import parse_qs, urlparse
-
+import urllib
+import netifaces
 import requests
+import logging
+import argparse
 
-# === Konfiguration ===
-CLIENT_ID = "t3k_pub_jN64LmaLWMdcqlnyfFxFtIzGbDfnfvPr"
-REDIRECT_URI = "http://localhost:8000/callback"
+def get_interface_ip_from_iface(iface_name):
+    try:
+        iface = netifaces.ifaddresses(iface_name)
+        if netifaces.AF_INET in iface:
+            ip = iface[netifaces.AF_INET][0]['addr']
+            return ip
+    except Exception as e:
+        logging.debug(f"Interface {iface_name} not available: {e}")
+    return None
+
+# === Configuration Constants ===
 AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
 TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
 
-# === 1. PKCE: Code Verifier generieren ===
+# Default Zynthian Paths
+ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
+DEFAULT_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
+DEFAULT_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
+
+# === 1. PKCE: Generate Code Verifier ===
 code_verifier = secrets.token_urlsafe(128)
 
 # === 2. Code Challenge (S256) ===
 code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
 code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8").rstrip("=")
 
-# === 3. State generieren ===
+# === 3. Generate State ===
 state = secrets.token_urlsafe(32)
 
-# === 4. OAuth-Parameter ===
-params = {
-    "client_id": CLIENT_ID,
-    "redirect_uri": REDIRECT_URI,
-    "response_type": "code",
-    "code_challenge": code_challenge,
-    "code_challenge_method": "S256",
-    "state": state,
-    "prompt": "select_tone",
-}
-
-# === 5. URL-encode ===
-query_string = urllib.parse.urlencode(params)
-
-# === 6. Vollständige URL ===
-authorize_url = f"{AUTHORIZE_URL}?{query_string}"
-
-# === 7. Öffne im Browser ===
-print("🌐 Öffne den OAuth-Flow im Browser...")
-print("👉 Bitte wähle einen Tone aus und bestätige.")
-print(authorize_url)
-webbrowser.open(authorize_url)
-
-
-# === 8. Lokaler Webserver für Callback ===
+# === Local Webserver for Callback ===
 class CallbackHandler(http.server.BaseHTTPRequestHandler):
     def do_GET(self):
         # Parse URL
-        parsed_url = urlparse(self.path)
-        query_params = parse_qs(parsed_url.query)
+        parsed_url = urllib.parse.urlparse(self.path)
+        query_params = urllib.parse.parse_qs(parsed_url.query)
 
         code = query_params.get("code", [None])[0]
-        state = query_params.get("state", [None])[0]
+        state_param = query_params.get("state", [None])[0]
         tone_id = query_params.get("tone_id", [None])[0]
         canceled = query_params.get("canceled", [None])[0] == "true"
 
-        # Prüfe State
-        if state != self.server.session.get("t3k_state"):
-            print("❌ State mismatch. Possible CSRF attack.")
+        # Check State
+        if state_param != self.server.session.get("t3k_state"):
+            print("State mismatch. Possible CSRF attack.")
             self.send_response(400)
             self.end_headers()
             self.wfile.write(b"State mismatch. Possible CSRF attack.")
@@ -73,175 +62,159 @@ class CallbackHandler(http.server.BaseHTTPRequestHandler):
             return
 
         if canceled:
-            print("⏸️ Benutzer hat den Flow abgebrochen.")
+            print("User cancelled the flow.")
             self.send_response(200)
             self.end_headers()
             self.wfile.write(
-                b"<h1>Abgebrochen</h1><p>Der Benutzer hat den Flow abgebrochen.</p>"
+                b"<h1>Cancelled</h1><p>The user has cancelled the process.</p>"
             )
             self.server.shutdown_event.set()
             return
 
         if not code:
-            print("❌ Kein Code erhalten.")
+            print("No authorization code received.")
             self.send_response(400)
             self.end_headers()
-            self.wfile.write(b"Kein Code erhalten.")
+            self.wfile.write(b"No authorization code received.")
             self.server.shutdown_event.set()
             return
 
-        print(f"✅ Code erhalten: {code}")
-        print(f"✅ Tone-ID: {tone_id}")
+        print(f"Code received: {code}")
+        print(f"Tone-ID: {tone_id}")
 
-        # === Token Austausch ===
+        # === Token Exchange ===
         try:
-            print("📤 Sende Token-Anfrage an Tone3000...")
-            print(f"  - client_id: {CLIENT_ID}")
-            print(f"  - redirect_uri: {REDIRECT_URI}")
-            print(f"  - code: {code}")
-            print(
-                f"  - code_verifier: {code_verifier[:10]}..."
-            )  # nur erste 10 Zeichen zeigen
+            client_id = self.server.session.get("client_id")
+            redirect_uri = self.server.session.get("redirect_uri")
 
+            print("Sending token request to Tone3000...")
             token_response = requests.post(
                 TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
-                    "client_id": CLIENT_ID,
-                    "redirect_uri": REDIRECT_URI,
+                    "client_id": client_id,
+                    "redirect_uri": redirect_uri,
                     "code": code,
                     "code_verifier": code_verifier,
                 },
                 timeout=10,
             )
 
-            print(f"📬 Antwort-Status: {token_response.status_code}")
-            print(f"📬 Antwort-Body: {token_response.text}")
-
             if token_response.status_code != 200:
-                print("❌ Token-Austausch fehlgeschlagen!")
+                print("Token exchange failed!")
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(
-                    f"<h1>Fehler beim Token-Austausch</h1><p>Status: {token_response.status_code}</p><pre>{token_response.text}</pre>".encode()
+                    f"<h1>Token Exchange Error</h1><p>Status: {token_response.status_code}</p><pre>{token_response.text}</pre>".encode()
                 )
                 self.server.shutdown_event.set()
                 return
 
             token_data = token_response.json()
             access_token = token_data["access_token"]
-            print(f"✅ Token erfolgreich erhalten: {access_token[:20]}...")
+            print(f"Token successfully received: {access_token[:20]}...")
 
         except Exception as e:
-            print(f"❌ Ausnahme beim Token-Austausch: {e}")
+            print(f"Exception during token exchange: {e}")
             self.send_response(500)
             self.end_headers()
-            self.wfile.write(f"<h1>Fehler</h1><p>{e}</p>".encode())
+            self.wfile.write(f"<h1>Error</h1><p>{e}</p>".encode())
             self.server.shutdown_event.set()
             return
 
-        # === Tone-Metadaten abrufen ===
+        # === Fetch Tone Metadata ===
         try:
-            print("📥 Lade Tone-Metadaten...")
+            print("Fetching tone metadata...")
             tone_response = requests.get(
                 f"https://www.tone3000.com/api/v1/tones/{tone_id}",
                 headers={"Authorization": f"Bearer {access_token}"},
                 timeout=10,
             )
-            print(f"  Tone-Status: {tone_response.status_code}")
-            print(f"  Tone-Body: {tone_response.text}")
 
             if tone_response.status_code != 200:
-                print("❌ Fehler beim Abrufen der Tone-Metadaten.")
+                print("Error fetching tone metadata.")
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(
-                    f"<h1>Fehler</h1><p>Tone-Metadaten nicht verfügbar</p><pre>{tone_response.text}</pre>".encode()
+                    f"<h1>Error</h1><p>Tone metadata not available</p><pre>{tone_response.text}</pre>".encode()
                 )
                 self.server.shutdown_event.set()
                 return
 
             tone_data = tone_response.json()
-            # Prüfe, ob es sich um einen IR-Tone handelt
             is_ir_tone = (
                 tone_data.get("gear") == "ir" or tone_data.get("platform") == "ir"
             )
 
-            # Sammle alle aX_models_count-Werte
             a_models_count = [
                 value
                 for key, value in tone_data.items()
                 if key.startswith("a") and key.endswith("_models_count")
             ]
 
-            # Wenn alle 0 und IR-Tone → setze tone_name = "IR"
             if is_ir_tone and all(count == 0 for count in a_models_count):
-                tone_name = "IR"
+                tone_type = "IR"
             else:
-                tone_name = "NAM"
+                tone_type = "NAM"
 
-            print(f"✅ Tone: {tone_name}")
+            print(f"Tone Type: {tone_type}")
 
         except Exception as e:
-            print(f"❌ Fehler beim Abrufen der Tone-Metadaten: {e}")
+            print(f"Error fetching tone metadata: {e}")
             self.send_response(500)
             self.end_headers()
-            self.wfile.write(f"<h1>Fehler</h1><p>Tone-Metadaten: {e}</p>".encode())
+            self.wfile.write(f"<h1>Error</h1><p>Tone Metadata: {e}</p>".encode())
             self.server.shutdown_event.set()
             return
 
-        # === Modelle abrufen ===
+        # === Determine Download Directory ===
+        if tone_type == "IR":
+            download_dir = self.server.session.get("ir_dir")
+        else:
+            download_dir = self.server.session.get("nam_dir")
+        
+        os.makedirs(download_dir, exist_ok=True)
+
+        # === Fetch Models ===
         try:
-            print("📥 Lade Modelle...")
+            print("Fetching models...")
             models_response = requests.get(
                 "https://www.tone3000.com/api/v1/models",
                 params={"tone_id": tone_id},
                 headers={"Authorization": f"Bearer {access_token}"},
                 timeout=10,
             )
-            print(f"  Modelle-Status: {models_response.status_code}")
-            print(f"  Modelle-Body (raw): {models_response.text}")
 
             if models_response.status_code != 200:
-                print("❌ Fehler beim Abrufen der Modelle.")
+                print("Error fetching models.")
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(
-                    f"<h1>Fehler</h1><p>Modelle nicht verfügbar</p><pre>{models_response.text}</pre>".encode()
+                    f"<h1>Error</h1><p>Models not available</p><pre>{models_response.text}</pre>".encode()
                 )
                 self.server.shutdown_event.set()
                 return
 
             models_data = models_response.json()
-            print(f"✅ JSON-Struktur: {models_data}")
-
-            # Extrahiere die Liste der Modelle
             models = models_data.get("data", [])
             if not isinstance(models, list):
-                print(
-                    "⚠️ Warnung: 'data' ist keine Liste. Versuche als Liste zu behandeln..."
-                )
                 models = models
 
-            print(f"✅ {len(models)} Modelle gefunden.")
+            print(f"{len(models)} models found.")
 
         except Exception as e:
-            print(f"❌ Fehler beim Abrufen der Modelle: {e}")
+            print(f"Error fetching models: {e}")
             self.send_response(500)
             self.end_headers()
-            self.wfile.write(f"<h1>Fehler</h1><p>Modelle: {e}</p>".encode())
+            self.wfile.write(f"<h1>Error</h1><p>Models: {e}</p>".encode())
             self.server.shutdown_event.set()
             return
 
-        # === Download der Modelle ===
-        download_dir = f"downloads/{tone_name}"
-        os.makedirs(download_dir, exist_ok=True)
-
+        # === Download Models ===
         downloaded_files = []
         for model in models:
             model_url = model.get("model_url")
             if not model_url:
-                print("⚠️ Kein model_url für Modell, überspringe...")
                 continue
 
             model_name = (
@@ -249,9 +222,7 @@ class CallbackHandler(http.server.BaseHTTPRequestHandler):
             )
             file_path = os.path.join(download_dir, model_name)
             try:
-                print(f"📥 Download: {model_name} → {file_path}")
-
-                # ✅ Wichtig: Authorization-Header beim Download verwenden!
+                print(f"Downloading: {model_name} -> {file_path}")
                 download_response = requests.get(
                     model_url,
                     headers={"Authorization": f"Bearer {access_token}"},
@@ -259,67 +230,128 @@ class CallbackHandler(http.server.BaseHTTPRequestHandler):
                     timeout=30,
                 )
 
-                if download_response.status_code != 200:
-                    print(
-                        f"❌ Download fehlgeschlagen: {download_response.status_code}"
-                    )
-                    print(f"  Antwort: {download_response.text}")
-                    continue
-
-                with open(file_path, "wb") as f:
-                    for chunk in download_response.iter_content(chunk_size=8192):
-                        f.write(chunk)
-                downloaded_files.append(file_path)
-                print(f"✅ Erfolgreich heruntergeladen: {file_path}")
+                if download_response.status_code == 200:
+                    with open(file_path, "wb") as f:
+                        for chunk in download_response.iter_content(chunk_size=8192):
+                            f.write(chunk)
+                    downloaded_files.append(file_path)
+                    print(f"Successfully downloaded: {file_path}")
+                else:
+                    print(f"Download failed for {model_name}: {download_response.status_code}")
 
             except Exception as e:
-                print(f"❌ Fehler beim Herunterladen von {model_name}: {e}")
+                print(f"Error downloading {model_name}: {e}")
 
-        # === Antwort an den Client ===
+        # === Response to Client ===
         self.send_response(200)
         self.send_header("Content-type", "text/html")
         self.end_headers()
         html = f"""
-        <h1>✅ Erfolgreich heruntergeladen!</h1>
-        <p><strong>Tone:</strong> {tone_name}</p>
-        <p><strong>Download-Verzeichnis:</strong> {download_dir}</p>
-        <p><strong>Heruntergeladene Dateien:</strong></p>
+        <h1 style="color: green;">Successfully downloaded!</h1>
+        <p><strong>Tone Type:</strong> {tone_type}</p>
+        <p><strong>Download Directory:</strong> {download_dir}</p>
+        <p><strong>Downloaded Files:</strong></p>
         <ul>
         {"".join(f"<li>{f}</li>" for f in downloaded_files)}
         </ul>
-        <p><a href="/">Zurück</a></p>
+        <hr>
+        <p>
+            <a href="javascript:void(0)" onclick="window.close();">
+                Close this window
+            </a>
+        </p>
         """
         self.wfile.write(html.encode())
-
-        # === Server beenden ===
         self.server.shutdown_event.set()
 
 
-# === Starte lokalen Server ===
-def start_server():
-    PORT = 8000
-    Handler = CallbackHandler
+# === Start Local Server ===
+def start_server(client_id, port, interface, ir_dir, nam_dir):
+    # Determine Redirect URI based on IP
+    ip_addr = get_interface_ip_from_iface(interface)
+    if not ip_addr:
+        print(f"Error: Could not determine IP address for interface {interface}.")
+        return
+    
+    redirect_uri = f"http://{ip_addr}:{port}/callback"
 
-    with socketserver.TCPServer(("", PORT), Handler) as httpd:
-        httpd.session = {"t3k_state": state}
+    # Prepare OAuth URL
+    params = {
+        "client_id": client_id,
+        "redirect_uri": redirect_uri,
+        "response_type": "code",
+        "code_challenge": code_challenge,
+        "code_challenge_method": "S256",
+        "state": state,
+        "prompt": "select_tone",
+    }
+    query_string = urllib.parse.urlencode(params)
+    authorize_url = f"{AUTHORIZE_URL}?{query_string}"
+
+    print(f"\nAuthorization URL:\n{authorize_url}\n")
+
+    Handler = CallbackHandler
+    with socketserver.TCPServer(("", port), Handler) as httpd:
+        httpd.session = {
+            "t3k_state": state, 
+            "client_id": client_id, 
+            "redirect_uri": redirect_uri,
+            "ir_dir": ir_dir,
+            "nam_dir": nam_dir
+        }
         httpd.shutdown_event = threading.Event()
 
-        print(f"\n🌐 Lokaler Server läuft auf http://localhost:{PORT}")
-        print(
-            "💡 Warte auf Callback... (öffne den Browser, wenn du noch nicht eingeloggt bist)"
-        )
+        print(f"Local server running on {ip_addr}:{port}")
+        print("Waiting for callback... (open the browser if you are not logged in)")
 
         server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
         server_thread.start()
 
-        # Warte auf Callback
         httpd.shutdown_event.wait()
-
         httpd.shutdown()
         httpd.server_close()
-        print("\n✅ OAuth-Flow abgeschlossen. Server gestoppt.")
+        print("\nOAuth flow completed. Server stopped.")
 
 
-# === Starte alles ===
+# === Main Execution ===
 if __name__ == "__main__":
-    start_server()
+    parser = argparse.ArgumentParser(description="Tone3000 Model Downloader for Zynthian")
+    parser.add_argument(
+        "--client_id", 
+        required=True, 
+        help="The OAuth Client ID provided by Tone3000"
+    )
+    parser.add_argument(
+        "--port", 
+        type=int, 
+        default=63342, 
+        help="Local port for the callback server (default: 63342)"
+    )
+    parser.add_argument(
+        "--interface", 
+        type=str, 
+        default="eth0", 
+        help="Network interface to determine the IP address (default: eth0)"
+    )
+    parser.add_argument(
+        "--ir_dir", 
+        type=str, 
+        default=DEFAULT_IR_DIR, 
+        help=f"Directory for IR files (default: {DEFAULT_IR_DIR})"
+    )
+    parser.add_argument(
+        "--nam_dir", 
+        type=str, 
+        default=DEFAULT_NAM_DIR, 
+        help=f"Directory for NAM profiles (default: {DEFAULT_NAM_DIR})"
+    )
+    
+    args = parser.parse_args()
+    
+    start_server(
+        args.client_id, 
+        args.port, 
+        args.interface, 
+        args.ir_dir, 
+        args.nam_dir
+    )
