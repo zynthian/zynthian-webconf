@@ -10,6 +10,8 @@ import argparse
 import asyncio
 import tornado.ioloop
 import tornado.web
+import subprocess  # Added to kill existing processes
+import time        # Added for sleep
 
 # === Configuration Constants ===
 AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
@@ -19,6 +21,7 @@ TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
 ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 DEFAULT_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
 DEFAULT_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
+DEFAULT_SERVER_WAIT = 3600  # 1 hour in seconds
 
 # === PKCE & State Generation ===
 code_verifier = secrets.token_urlsafe(128)
@@ -35,19 +38,33 @@ def get_interface_ip_from_iface(iface_name):
         logging.debug(f"Interface {iface_name} not available: {e}")
     return None
 
+def kill_process_on_port(port):
+    """
+    Finds and kills any process currently listening on the specified port.
+    Works on Linux/Unix systems.
+    """
+    try:
+        print(f"Checking if port {port} is in use...")
+        # 'fuser -k' kills the process using the port. 
+        # -k: kill, -n tcp: only TCP ports
+        subprocess.run(["fuser", "-k", f"{port}/tcp"], 
+                       stdout=subprocess.DEVNULL, 
+                       stderr=subprocess.DEVNULL)
+        # Give the OS a moment to actually release the socket
+        time.sleep(0.5)
+    except Exception as e:
+        print(f"Warning: Could not clear port {port}: {e}")
+
 # === Tornado Request Handler ===
 class CallbackHandler(tornado.web.RequestHandler):
     async def get(self):
-        # Parse URL parameters
         code = self.get_argument("code", None)
         state_param = self.get_argument("state", None)
         tone_id = self.get_argument("tone_id", None)
         canceled = self.get_argument("canceled", "false") == "true"
 
-        # Access app settings
         app_settings = self.application.settings
 
-        # Check State
         if state_param != app_settings.get("t3k_state"):
             self.set_status(400)
             self.write("State mismatch. Possible CSRF attack.")
@@ -69,7 +86,6 @@ class CallbackHandler(tornado.web.RequestHandler):
         print(f"Code received: {code}")
         print(f"Tone-ID: {tone_id}")
 
-        # === Token Exchange ===
         try:
             print("Sending token request to Tone3000...")
             token_response = requests.post(
@@ -99,7 +115,6 @@ class CallbackHandler(tornado.web.RequestHandler):
             self.application.shutdown_server()
             return
 
-        # === Fetch Tone Metadata ===
         try:
             print("Fetching tone metadata...")
             tone_response = requests.get(
@@ -116,10 +131,14 @@ class CallbackHandler(tornado.web.RequestHandler):
 
             tone_data = tone_response.json()
             is_ir_tone = (tone_data.get("gear") == "ir" or tone_data.get("platform") == "ir")
-            
             a_models_count = [v for k, v in tone_data.items() if k.startswith("a") and k.endswith("_models_count")]
-            tone_type = "IR" if (is_ir_tone and all(c == 0 for c in a_models_count)) else "NAM"
-            print(f"Tone Type: {tone_type}")
+            
+            if is_ir_tone and all(c == 0 for c in a_models_count):
+                tone_type = "IR"
+            else:
+                tone_type = "NAM"
+            
+            print(f"Detected Tone Type: {tone_type}")
 
         except Exception as e:
             self.set_status(500)
@@ -127,11 +146,13 @@ class CallbackHandler(tornado.web.RequestHandler):
             self.application.shutdown_server()
             return
 
-        # === Determine Download Directory ===
-        download_dir = app_settings.get("ir_dir") if tone_type == "IR" else app_settings.get("nam_dir")
+        if tone_type == "IR":
+            download_dir = app_settings.get("ir_dir")
+        else:
+            download_dir = app_settings.get("nam_dir")
+        
         os.makedirs(download_dir, exist_ok=True)
 
-        # === Fetch Models ===
         try:
             print("Fetching models...")
             models_response = requests.get(
@@ -159,7 +180,6 @@ class CallbackHandler(tornado.web.RequestHandler):
             self.application.shutdown_server()
             return
 
-        # === Download Models ===
         downloaded_files = []
         for model in models:
             model_url = model.get("model_url")
@@ -179,19 +199,16 @@ class CallbackHandler(tornado.web.RequestHandler):
             except Exception as e:
                 print(f"Error downloading {model_name}: {e}")
 
-        # === Response to Client ===
         html = f"""
         <h1 style="color: green;">Successfully downloaded!</h1>
         <p><strong>Tone Type:</strong> {tone_type}</p>
-        <p><strong>Download Directory:</strong> {download_dir}</p>
+        <p><strong>Saved to:</strong> {download_dir}</p>
         <p><strong>Downloaded Files:</strong></p>
         <ul>{"".join(f"<li>{f}</li>" for f in downloaded_files)}</ul>
         <hr>
         <p><a href="javascript:void(0)" onclick="window.close();">Close this window</a></p>
         """
         self.write(html)
-        
-        # Schedule shutdown after 1 second to ensure the browser receives the response
         asyncio.get_event_loop().call_later(1, self.application.shutdown_server)
 
 # === Tornado Application Wrapper ===
@@ -201,11 +218,13 @@ class ToneApp(tornado.web.Application):
 
     def shutdown_server(self):
         print("Shutting down Tornado IOLoop...")
-        # Correct way to stop the loop in modern Tornado/Asyncio
         tornado.ioloop.IOLoop.current().stop()
 
 # === Main Execution ===
-def start_server(client_id, port, interface, ir_dir, nam_dir):
+def start_server(client_id, port, interface, ir_dir, nam_dir, server_wait):
+    # 1. Clear the port first to avoid "Address already in use"
+    kill_process_on_port(port)
+
     ip_addr = get_interface_ip_from_iface(interface)
     if not ip_addr:
         print(f"Error: Could not determine IP address for interface {interface}.")
@@ -213,7 +232,6 @@ def start_server(client_id, port, interface, ir_dir, nam_dir):
     
     redirect_uri = f"http://{ip_addr}:{port}/callback"
 
-    # Prepare OAuth URL
     params = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
@@ -226,7 +244,6 @@ def start_server(client_id, port, interface, ir_dir, nam_dir):
     authorize_url = f"{AUTHORIZE_URL}?{urllib.parse.urlencode(params)}"
     print(f"\nAuthorization URL:\n{authorize_url}\n")
 
-    # Tornado Settings
     settings = {
         "client_id": client_id,
         "redirect_uri": redirect_uri,
@@ -240,14 +257,17 @@ def start_server(client_id, port, interface, ir_dir, nam_dir):
     app.listen(port, address="0.0.0.0")
 
     print(f"Tornado server running on {ip_addr}:{port}")
-    print("Waiting for callback... (open the browser if you are not logged in)")
+    print(f"Server will automatically shut down after {server_wait} seconds if no callback is received.")
+    print("Waiting for callback...")
+
+    asyncio.get_event_loop().call_later(server_wait, app.shutdown_server)
 
     try:
         tornado.ioloop.IOLoop.current().start()
     except KeyboardInterrupt:
         pass
     finally:
-        print("\nOAuth flow completed. Server stopped.")
+        print("\nOAuth flow completed or timed out. Server stopped.")
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Tone3000 Model Downloader for Zynthian (Tornado)")
@@ -256,6 +276,7 @@ if __name__ == "__main__":
     parser.add_argument("--interface", type=str, default="eth0", help="Network interface (default: eth0)")
     parser.add_argument("--ir_dir", type=str, default=DEFAULT_IR_DIR, help=f"IR dir (default: {DEFAULT_IR_DIR})")
     parser.add_argument("--nam_dir", type=str, default=DEFAULT_NAM_DIR, help=f"NAM dir (default: {DEFAULT_NAM_DIR})")
+    parser.add_argument("--wait", type=int, default=DEFAULT_SERVER_WAIT, help=f"Server timeout in seconds (default: {DEFAULT_SERVER_WAIT})")
     
     args = parser.parse_args()
-    start_server(args.client_id, args.port, args.interface, args.ir_dir, args.nam_dir)
+    start_server(args.client_id, args.port, args.interface, args.ir_dir, args.nam_dir, args.wait)
