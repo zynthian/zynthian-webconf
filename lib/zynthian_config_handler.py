@@ -23,9 +23,9 @@
 # ********************************************************************
 
 import os
-import liblo
 import logging
 import tornado.web
+import pyliblo3 as liblo
 from time import sleep
 from subprocess import check_output
 

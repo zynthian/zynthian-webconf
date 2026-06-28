@@ -363,7 +363,7 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_ram_info():
         out = check_output("free -m | grep 'Mem'", shell=True).decode()
-        parts = re.split('\s+', out)
+        parts = re.split(r'\s+', out)
         return {'total': parts[1]+"M", 'used': parts[2]+"M", 'free': parts[3]+"M", 'usage': "{}%".format(int(100*float(parts[2])/float(parts[1])))}
 
     @staticmethod
@@ -376,10 +376,10 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_volume_info(volume=None):
         if volume is None:
-            volume = "/dev/mmcblk0p2\|/dev/root"
+            volume = "/dev/mmcblk0p2\\|/dev/root"
         try:
             out = check_output(f"df -hT | grep '{volume}'", shell=True).decode()
-            parts = re.split('\s+', out)
+            parts = re.split(r'\s+', out)
             return {'fs': parts[1], 'total': parts[2], 'used': parts[3], 'free': parts[4], 'usage': parts[5]}
         except:
             return {'fs': 'NA', 'total': 'NA', 'used': 'NA', 'free': 'NA', 'usage': 'NA'}

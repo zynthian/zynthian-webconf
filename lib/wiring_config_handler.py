@@ -1348,8 +1348,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     else:
                         res[vname] = sv
                 except Exception as e:
-                    logging.warning(
-                        "Can't complete custom profile entry '{}' => {}".format(vname, e))
+                    logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
 
         for i in range(4):
             base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_AD{:02d}".format(i+1)
@@ -1366,8 +1365,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     else:
                         res[vname] = sv
                 except Exception as e:
-                    logging.warning(
-                        "Can't complete custom profile entry '{}' => {}".format(vname, e))
+                    logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
 
         for i in range(4):
             base_name = "ZYNTHIAN_WIRING_ZYNAPTIK_DA{:02d}".format(i+1)
@@ -1384,8 +1382,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     else:
                         res[vname] = sv
                 except Exception as e:
-                    logging.warning(
-                        "Can't complete custom profile entry '{}' => {}".format(vname, e))
+                    logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
 
         for i in range(4):
             base_name = 'ZYNTHIAN_WIRING_ZYNTOF{:02d}'.format(i+1)
@@ -1402,8 +1399,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     else:
                         res[vname] = sv
                 except Exception as e:
-                    logging.warning(
-                        "Can't complete custom profile entry '{}' => {}".format(vname, e))
+                    logging.warning("Can't complete custom profile entry '{}' => {}".format(vname, e))
 
         return res
 
@@ -1428,7 +1424,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
     def load_custom_profiles(self):
         self.custom_profiles = {}
-        p = re.compile("(\w*)=\"(.*)\"")
+        p = re.compile(r"(\w*)=\"(.*)\"")
 
         self.custom_profiles[""] = {}
         for fname in sorted(os.listdir(self.PROFILES_DIRECTORY)):
@@ -1444,21 +1440,15 @@ class WiringConfigHandler(ZynthianConfigHandler):
                             if m:
                                 profile_values[m.group(1)] = m.group(2)
                         except Exception as e:
-                            logging.warning(
-                                "Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
+                            logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
                 try:
-                    profile_values = WiringConfigHandler.complete_custom_profile(
-                        profile_values)
-                    self.custom_profiles[fname] = WiringConfigHandler.tweak_custom_profile(
-                        profile_values)
-                    logging.debug(
-                        "LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
+                    profile_values = WiringConfigHandler.complete_custom_profile(profile_values)
+                    self.custom_profiles[fname] = WiringConfigHandler.tweak_custom_profile(profile_values)
+                    logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
                 except Exception as e:
-                    logging.warning(
-                        "Can't complete wiring custom profile '{}': {}".format(fpath, e))
+                    logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))
             except Exception as e:
-                logging.warning(
-                    "Invalid wiring custom profile '{}' will be ignored: {}".format(fpath, e))
+                logging.warning("Invalid wiring custom profile '{}' will be ignored: {}".format(fpath, e))
 
     def save_custom_profile(self, fname, data):
         try:
@@ -1469,8 +1459,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                         f.write("{}=\"{}\"\n".format(k, v[0]))
             logging.debug("SAVED WIRING CUSTOM PROFILE '{}'".format(fpath))
         except Exception as e:
-            logging.warning(
-                "Can't save wiring custom profile '{}': {}".format(fpath, e))
+            logging.warning("Can't save wiring custom profile '{}': {}".format(fpath, e))
 
     def delete_custom_profile(self, fname):
         try:
@@ -1478,14 +1467,12 @@ class WiringConfigHandler(ZynthianConfigHandler):
             os.remove(fpath)
             logging.debug("DELETED WIRING CUSTOM PROFILE '{}'".format(fpath))
         except Exception as e:
-            logging.warning(
-                "Can't delete wiring custom profile '{}': {}".format(fpath, e))
+            logging.warning("Can't delete wiring custom profile '{}': {}".format(fpath, e))
 
     @classmethod
     def rebuild_zyncoder(cls):
         try:
-            cmd = "cd %s/zyncoder/build;cmake ..;make" % os.environ.get(
-                'ZYNTHIAN_DIR')
+            cmd = "cd %s/zyncoder/build;cmake ..;make" % os.environ.get('ZYNTHIAN_DIR')
             check_output(cmd, shell=True)
         except Exception as e:
             logging.error("Rebuilding Zyncoder Library: %s" % e)
@@ -1494,7 +1481,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
 
     @classmethod
     def get_custom_profile(cls, fname):
-        p = re.compile("(\w*)=\"(.*)\"")
+        p = re.compile(r"(\w*)=\"(.*)\"")
 
         profile_values = {}
         fpath = "{}/{}".format(cls.PROFILES_DIRECTORY, fname)
@@ -1508,17 +1495,13 @@ class WiringConfigHandler(ZynthianConfigHandler):
                         if m:
                             profile_values[m.group(1)] = m.group(2)
                     except Exception as e:
-                        logging.warning(
-                            "Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
+                        logging.warning("Invalid line in wiring custom profile '{}' will be ignored: {}\n{}".format(fpath, e, line))
             try:
                 profile_values = cls.complete_custom_profile(profile_values)
-                logging.debug(
-                    "LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
+                logging.debug("LOADED WIRING CUSTOM PROFILE '{}'".format(fpath))
             except Exception as e:
-                logging.warning(
-                    "Can't complete wiring custom profile '{}': {}".format(fpath, e))
+                logging.warning("Can't complete wiring custom profile '{}': {}".format(fpath, e))
         except Exception as e:
-            logging.warning(
-                "Invalid wiring custom profile '{}' will be ignored: {}".format(fpath, e))
+            logging.warning("Invalid wiring custom profile '{}' will be ignored: {}".format(fpath, e))
 
         return profile_values

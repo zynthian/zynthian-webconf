@@ -420,7 +420,7 @@ class SnapshotAddOptionsHandler(tornado.web.RequestHandler):
                 data = json.load(fp)
                 fp.close()
 
-            p = re.compile("export ZYNTHIAN_MIDI_(\w*)=\"(.*)\"")
+            p = re.compile(r"export ZYNTHIAN_MIDI_(\w*)=\"(.*)\"")
             profile_values = {}
             with open(midi_profile_script, "r") as midi_fp:
                 for line in midi_fp:
