@@ -404,6 +404,16 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,rotate=180',
             'FRAMEBUFFER': '/dev/fb0'
         },
+        'Raspberry Pi Touch Display 2 (7 inch)': {
+            'DISPLAY_CONFIG':
+                'disable_overscan=1\n' +
+                'dtoverlay=vc4-kms-dsi-ili9881-7inch\n',
+            'DISPLAY_WIDTH': '1280',
+            'DISPLAY_HEIGHT': '720',
+            'DISPLAY_ROTATION': "Right",
+            'DISPLAY_KERNEL_OPTIONS': '',
+            'FRAMEBUFFER': '/dev/fb0'
+        },
         'MIPI DSI 800x480': {
             'DISPLAY_CONFIG': '',
             'DISPLAY_WIDTH': '800',
@@ -499,9 +509,15 @@ class DisplayConfigHandler(ZynthianConfigHandler):
         }
         config['DISPLAY_ROTATION'] = {
             'type': 'select',
-            'title': "Touch Rotation",
+            'title': "Display Rotation",
             'value': str(os.environ.get('DISPLAY_ROTATION')),
-            'options': ["None", "Inverted"],
+            'options': ["None", "Right", "Inverted", "Left"],
+            'option_labels': {
+                'None': "None (0\u00b0)",
+                'Right': "Right (90\u00b0)",
+                'Inverted': "Inverted (180\u00b0)",
+                'Left': "Left (270\u00b0)",
+            },
             'disabled': custom_options_disabled
         }
         config['DISPLAY_KERNEL_OPTIONS'] = {
