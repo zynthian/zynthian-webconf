@@ -36,6 +36,7 @@ def get_interface_ip_from_iface(iface_name):
             return iface[netifaces.AF_INET][0]['addr']
     except Exception as e:
         logging.debug(f"Interface {iface_name} not available: {e}")
+        return "127.0.0.1"
     return None
 
 def kill_process_on_port(port):
