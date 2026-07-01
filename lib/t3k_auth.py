@@ -2,7 +2,7 @@
 # ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# Login Handler
+# Tone 3000 OAuth configuration
 #
 # Copyright (C) 2026 Holger Wirtz <holger@zynthian.org>
 #
@@ -26,15 +26,58 @@ import secrets
 import hashlib
 import base64
 
-if not hasattr(t3k_auth, '_initialized'):
-    # PKCE & state generation
-    code_verifier = secrets.token_urlsafe(128)
-    code_challenge_hash = hashlib.sha256(code_verifier.encode("utf-8")).digest()
-    code_challenge = base64.urlsafe_b64encode(code_challenge_hash).decode("utf-8").rstrip("=")
-    state_token = secrets.token_urlsafe(32)
+class PKCEManager:
+    _instance = None
+    _initialized = False
 
-    t3k_auth.code_verifier = code_verifier
-    t3k_auth.code_challenge = code_challenge
-    t3k_auth.state_token = state_token
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
 
-    t3k_auth._initialized = True
+    def __init__(self):
+        if not self._initialized:
+            # Nur einmal initialisieren
+            object.__setattr__(self, '_code_verifier', secrets.token_urlsafe(128))
+            code_challenge_hash = hashlib.sha256(self._code_verifier.encode("utf-8")).digest()
+            object.__setattr__(self, '_code_challenge', base64.urlsafe_b64encode(code_challenge_hash).decode("utf-8").rstrip("="))
+            object.__setattr__(self, '_state_token', secrets.token_urlsafe(32))
+
+            # Markiere als initialisiert
+            object.__setattr__(self, '_initialized', True)
+
+    # --- Properties für die Werte ---
+    @property
+    def code_challenge(self):
+        return self._code_challenge
+
+    @property
+    def state_token(self):
+        return self._state_token
+
+    @property
+    def code_verifier(self):
+        return self._code_verifier
+
+    # --- Verhindere Überschreibung der Werte ---
+    def __setattr__(self, name, value):
+        # Verhindere Änderung der sensiblen Werte nach Initialisierung
+        if name in ('_code_verifier', '_code_challenge', '_state_token') and hasattr(self, '_initialized'):
+            raise AttributeError(f"Cannot modify {name} after initialization")
+        super().__setattr__(name, value)
+
+pkce_manager = PKCEManager()
+
+def __getattr__(name):
+    return getattr(pkce_manager, name)
+
+if __name__ == "__main__":
+    import t3k_auth
+    print("State Token:", t3k_auth.state_token)
+    print("Code Challenge:", t3k_auth.code_challenge)
+    print("Code Verifier:", t3k_auth.code_verifier)
+    import t3k_auth
+    print("State Token:", t3k_auth.state_token)
+    print("Code Challenge:", t3k_auth.code_challenge)
+    print("Code Verifier:", t3k_auth.code_verifier)
+

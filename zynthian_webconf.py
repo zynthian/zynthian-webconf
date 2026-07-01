@@ -39,7 +39,6 @@ from terminado import TermSocket, SingleTermManager
 sys.path.append(os.environ.get('ZYNTHIAN_UI_DIR'))
 from zyncoder.zyncore import lib_zyncore_init_minimal
 lib_zyncore_init_minimal()
-import lib.t3k_auth
 
 from lib.zynterm_handler import ZyntermHandler
 from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler

@@ -2,7 +2,7 @@
 # ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# Tone3000 Config Handler
+# Tone3000 config handler
 #
 # Copyright (C) 2026 Holger Wirtz <holger@zynthian.org>
 #
@@ -31,53 +31,22 @@ import asyncio
 import tornado.web
 import t3k_auth
 
-# === Configuration Constants ===
+# === Configuration constants ===
 AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
 TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
 REDIRECT_URI = "http://localhost/lib-t3k-download"
 
-# Default Zynthian Paths
+# Default Zynthian paths
 ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 DEFAULT_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
 DEFAULT_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
-DEFAULT_SERVER_WAIT = 3600  # 1 hour in seconds
-
-def get_t3k_api_key(self):
-    return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
-
-def get_authorize_url(self):
-    params = {
-        "client_id": self.get_t3k_api_key(),
-        "redirect_uri": REDIRECT_URI,
-        "response_type": "code",
-        "code_challenge": t3k_auth.code_challenge,
-        "code_challenge_method": "S256",
-        "state": t3k_auth.state_token,
-        "prompt": "select_tone",
-    }
-
-    query_string = urllib.parse.urlencode(params)
-    authorize_url = f"{AUTHORIZE_URL}?{query_string}"
-
-    return authorize_url
-
-def do_save_config(self):
-    error = None
-    config = {
-        "ZYNTHIAN_T3K_API_KEY": self.get_argument('ZYNTHIAN_T3K_API_KEY'),
-    }
-    try:
-        error = zynconf.save_config(config, updsys=True)
-    except Exceptions as e:
-        error = "Cannot store Tone 3000 API key."
-    return(error)
 
 class T3kConfigHandler(ZynthianBasicHandler):
         @tornado.web.authenticated
         def get(self, errors=None):
             config = {
-                'ZYNTHIAN_T3K_API_KEY': get_t3k_api_key(),
-                'ZYNTHIAN_T3K_URL': get_authorize_url()
+                'ZYNTHIAN_T3K_API_KEY': self.get_t3k_api_key(),
+                'ZYNTHIAN_T3K_URL': self.get_authorize_url()
             }
             if errors:
                 logging.error("T3k Action Failed: %s" % format(errors))
@@ -94,11 +63,11 @@ class T3kConfigHandler(ZynthianBasicHandler):
 
             if action == "STORE_T3K_API_KEY":
                 t3k_api_key = self.get_argument('ZYNTHIAN_T3K_API_KEY')
-                error = do_save_config()
+                error = self.do_save_config()
                 if error:
                     logging.error(f"{error}")
             elif action == "GO_TO_T3K":
-                authorize_url = get_authorize_url()
+                authorize_url = self.get_authorize_url()
                 try:    
                     self.set_header("Content-Type", "text/html; charset=UTF-8")
                     self.write(f"""
@@ -117,6 +86,36 @@ class T3kConfigHandler(ZynthianBasicHandler):
                     </html>
                     """)
 
+    def do_save_config(self):
+        error = None
+        config = {
+            "ZYNTHIAN_T3K_API_KEY": self.get_argument('ZYNTHIAN_T3K_API_KEY'),
+        }
+        try:
+            error = zynconf.save_config(config, updsys=True)
+        except Exceptions as e:
+            error = "Cannot store Tone 3000 API key."
+        return(error)
+
+    def get_t3k_api_key(self):
+        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
+
+    def get_authorize_url(self):
+        params = {
+            "client_id": self.get_t3k_api_key(),
+            "redirect_uri": REDIRECT_URI,
+            "response_type": "code",
+            "code_challenge": t3k_auth.code_challenge,
+            "code_challenge_method": "S256",
+            "state": t3k_auth.state_token,
+            "prompt": "select_tone",
+        }
+
+        query_string = urllib.parse.urlencode(params)
+        authorize_url = f"{AUTHORIZE_URL}?{query_string}"
+
+        return authorize_url
+
 class T3kDownloadHandler(ZynthianBasicHandler):
     @tornado.web.authenticated
     def get(self):
@@ -131,6 +130,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             return
 
         if canceled:
+            logging.debug(f"User cancelled the flow.")
             print("User cancelled the flow.")
             self.write("<h1>Cancelled</h1><p>The user has cancelled the process.</p>")
             return
@@ -140,10 +140,11 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             self.write("No authorization code received.")
             return
 
-        print(f"Code received: {code}")
-        print(f"Tone-ID: {tone_id}")
+        logging.debug(f"Code received: {code}\nTone-ID: {tone_id}")
+        print(f"Code received: {code}\nTone-ID: {tone_id}")
 
         try:
+            logging.debug(f"Sending token request to Tone3000...")
             print("Sending token request to Tone3000...")
             token_response = requests.post(
                 TOKEN_URL,
@@ -163,14 +164,15 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 return
 
             access_token = token_response.json()["access_token"]
+            logging.debug(f"Token successfully received: {access_token[:20]}...")
             print(f"Token successfully received: {access_token[:20]}...")
-
         except Exception as e:
             self.set_status(500)
             self.write(f"<h1>Error</h1><p>{e}</p>")
             return
 
         try:
+            logging.debug(f"Fetching tone metadata...")
             print("Fetching tone metadata...")
             tone_response = requests.get(
                 f"https://www.tone3000.com/api/v1/tones/{tone_id}",
@@ -192,6 +194,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             else:
                 tone_type = "NAM"
             
+            logging.debug(f"Detected Tone Type: {tone_type}")
             print(f"Detected Tone Type: {tone_type}")
 
         except Exception as e:
@@ -207,6 +210,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
         os.makedirs(download_dir, exist_ok=True)
 
         try:
+            logging.debug(f"Fetching models...")
             print("Fetching models...")
             models_response = requests.get(
                 "https://www.tone3000.com/api/v1/models",
@@ -224,6 +228,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             if not isinstance(models, list):
                 models = [models] if models else []
 
+            logging.debug(f"{len(models)} models found.")
             print(f"{len(models)} models found.")
 
         except Exception as e:
@@ -239,6 +244,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             model_name = model.get("name", "model.bin").replace("/", "_").replace("\\", "_")
             file_path = os.path.join(download_dir, model_name)
             try:
+                logging.debug(f"Downloading: {model_name} -> {file_path}")
                 print(f"Downloading: {model_name} -> {file_path}")
                 res = requests.get(model_url, headers={"Authorization": f"Bearer {access_token}"}, stream=True, timeout=30)
                 if res.status_code == 200:
@@ -246,8 +252,10 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                         for chunk in res.iter_content(chunk_size=8192):
                             f.write(chunk)
                     downloaded_files.append(file_path)
+                    logging.debug(f"Successfully downloaded: {file_path}")
                     print(f"Successfully downloaded: {file_path}")
             except Exception as e:
+                logging.debug(f"Error downloading {model_name}: {e}")
                 print(f"Error downloading {model_name}: {e}")
 
         html = f"""
