@@ -43,6 +43,7 @@ TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
 ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 DEFAULT_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
 DEFAULT_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
+DEFAULT_NETWORK_INTERFACE_NAME = "eth0"
 
 def get_t3k_api_key():
     return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
@@ -152,7 +153,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
         if canceled:
             logging.debug(f"User cancelled the flow.")
-            print("User cancelled the flow.")
             self.write("<h1>Cancelled</h1><p>The user has cancelled the process.</p>")
             return
 
@@ -162,11 +162,9 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             return
 
         logging.debug(f"Code received: {code}\nTone-ID: {tone_id}")
-        print(f"Code received: {code}\nTone-ID: {tone_id}")
 
         try:
             logging.debug(f"Sending token request to Tone3000...")
-            print("Sending token request to Tone3000...")
             token_response = requests.post(
                 TOKEN_URL,
                 data={
@@ -186,7 +184,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
             access_token = token_response.json()["access_token"]
             logging.debug(f"Token successfully received: {access_token[:20]}...")
-            print(f"Token successfully received: {access_token[:20]}...")
         except Exception as e:
             self.set_status(500)
             self.write(f"<h1>Error</h1><p>{e}</p>")
@@ -194,7 +191,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
         try:
             logging.debug(f"Fetching tone metadata...")
-            print("Fetching tone metadata...")
             tone_response = requests.get(
                 f"https://www.tone3000.com/api/v1/tones/{tone_id}",
                 headers={"Authorization": f"Bearer {access_token}"},
@@ -208,9 +204,8 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
             tone_data = tone_response.json()
             logging.debug(f"{tone_data=}")
-            print(f"{tone_data=}")
 
-            is_ir_tone = (tone_data.get("gear") == "ir" or tone_data.get("platform") == "ir")
+            is_ir_tone = (tone_data.get("format") == "ir")
             a_models_count = [v for k, v in tone_data.items() if k.startswith("a") and k.endswith("_models_count")]
             
             if is_ir_tone and all(c == 0 for c in a_models_count):
@@ -219,7 +214,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 tone_type = "NAM"
             
             logging.debug(f"Detected Tone Type: {tone_type}")
-            print(f"Detected Tone Type: {tone_type}")
 
         except Exception as e:
             self.set_status(500)
@@ -237,7 +231,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
         try:
             logging.debug(f"Fetching models...")
-            print("Fetching models...")
             models_response = requests.get(
                 "https://www.tone3000.com/api/v1/models",
                 params={"tone_id": tone_id},
@@ -255,12 +248,18 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 models = [models] if models else []
 
             logging.debug(f"{len(models)} models found.")
-            print(f"{len(models)} models found.")
 
         except Exception as e:
             self.set_status(500)
             self.write(f"<h1>Error</h1><p>Models: {e}</p>")
             return
+
+        self.write("""
+            <link rel="stylesheet" href="/css/fonts.css">
+            <link rel="stylesheet" href="/css/style.css">
+            <link rel="stylesheet" href="/css/default.css">
+            <link rel="stylesheet" href="/css/zynthian.css">
+        """)
 
         downloaded_files = []
         for model in models:
@@ -271,7 +270,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             file_path = os.path.join(download_dir, model_name)
             try:
                 logging.debug(f"Downloading: {model_name} -> {file_path}")
-                print(f"Downloading: {model_name} -> {file_path}")
                 res = requests.get(model_url, headers={"Authorization": f"Bearer {access_token}"}, stream=True, timeout=30)
                 if res.status_code == 200:
                     with open(file_path, "wb") as f:
@@ -279,10 +277,8 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                             f.write(chunk)
                     downloaded_files.append(file_path)
                     logging.debug(f"Successfully downloaded: {file_path}")
-                    print(f"Successfully downloaded: {file_path}")
             except Exception as e:
                 logging.debug(f"Error downloading {model_name}: {e}")
-                print(f"Error downloading {model_name}: {e}")
 
         html = f"""
         <h1 style="color: green;">Successfully downloaded!</h1>
