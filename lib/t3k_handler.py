@@ -29,23 +29,40 @@ import logging
 import argparse
 import asyncio
 import tornado.web
-import t3k_auth
+import netifaces
+
+import zynconf
+from lib.zynthian_config_handler import ZynthianBasicHandler
+import lib.t3k_auth
 
 # === Configuration constants ===
 AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
 TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
-REDIRECT_URI = "http://localhost/lib-t3k-download"
 
 # Default Zynthian paths
 ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 DEFAULT_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
 DEFAULT_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
 
+def get_t3k_api_key():
+    return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
+
+def get_redirect_uri(iface_name):
+    try:
+        iface = netifaces.ifaddresses(iface_name)
+        if netifaces.AF_INET in iface:
+            return f"http://{iface[netifaces.AF_INET][0]['addr']}/lib-t3k-download"
+    except Exception as e:
+        logging.debug(f"Interface {iface_name} not available: {e}")
+        return f"http://127.0.0.1/lib-t3k-download"
+    return None
+
+
 class T3kConfigHandler(ZynthianBasicHandler):
         @tornado.web.authenticated
         def get(self, errors=None):
             config = {
-                'ZYNTHIAN_T3K_API_KEY': self.get_t3k_api_key(),
+                'ZYNTHIAN_T3K_API_KEY': get_t3k_api_key(),
                 'ZYNTHIAN_T3K_URL': self.get_authorize_url()
             }
             if errors:
@@ -85,36 +102,38 @@ class T3kConfigHandler(ZynthianBasicHandler):
                     </body>
                     </html>
                     """)
+                except Exceptions as e:
+                    logging.error(f"Cannot start local server: {e}")
+                    error="Cannot start local server."
+            self.get(error)
 
-    def do_save_config(self):
-        error = None
-        config = {
-            "ZYNTHIAN_T3K_API_KEY": self.get_argument('ZYNTHIAN_T3K_API_KEY'),
-        }
-        try:
-            error = zynconf.save_config(config, updsys=True)
-        except Exceptions as e:
-            error = "Cannot store Tone 3000 API key."
-        return(error)
+        def do_save_config(self):
+            error = None
+            config = {
+                "ZYNTHIAN_T3K_API_KEY": self.get_argument('ZYNTHIAN_T3K_API_KEY'),
+            }
+            try:
+                error = zynconf.save_config(config, updsys=True)
+            except Exceptions as e:
+                error = "Cannot store Tone 3000 API key."
+            return(error)
 
-    def get_t3k_api_key(self):
-        return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
+        def get_authorize_url(self):
+            params = {
+                "client_id": get_t3k_api_key(),
+                "redirect_uri": get_redirect_uri('eth0'),
+                "response_type": "code",
+                "code_challenge": lib.t3k_auth.code_challenge,
+                "code_challenge_method": "S256",
+                "state": lib.t3k_auth.state_token,
+                "prompt": "select_tone",
+            }
 
-    def get_authorize_url(self):
-        params = {
-            "client_id": self.get_t3k_api_key(),
-            "redirect_uri": REDIRECT_URI,
-            "response_type": "code",
-            "code_challenge": t3k_auth.code_challenge,
-            "code_challenge_method": "S256",
-            "state": t3k_auth.state_token,
-            "prompt": "select_tone",
-        }
+            query_string = urllib.parse.urlencode(params)
+            authorize_url = f"{AUTHORIZE_URL}?{query_string}"
 
-        query_string = urllib.parse.urlencode(params)
-        authorize_url = f"{AUTHORIZE_URL}?{query_string}"
+            return authorize_url
 
-        return authorize_url
 
 class T3kDownloadHandler(ZynthianBasicHandler):
     @tornado.web.authenticated
@@ -124,7 +143,9 @@ class T3kDownloadHandler(ZynthianBasicHandler):
         tone_id = self.get_argument("tone_id", None)
         canceled = self.get_argument("canceled", "false") == "true"
 
-        if state_param != t3k_auth.state_token:
+        app_settings = self.application.settings
+
+        if state_param != lib.t3k_auth.state_token:
             self.set_status(400)
             self.write("State mismatch. Possible CSRF attack.")
             return
@@ -150,10 +171,10 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
-                    "client_id": app_settings.get("client_id"),
-                    "redirect_uri": app_settings.get("redirect_uri"),
+                    "client_id": get_t3k_api_key(),
+                    "redirect_uri": get_redirect_uri('eth0'),
                     "code": code,
-                    "code_verifier": t3k_auth.code_verifier,
+                    "code_verifier": lib.t3k_auth.code_verifier,
                 },
                 timeout=10,
             )
@@ -186,6 +207,9 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 return
 
             tone_data = tone_response.json()
+            logging.debug(f"{tone_data=}")
+            print(f"{tone_data=}")
+
             is_ir_tone = (tone_data.get("gear") == "ir" or tone_data.get("platform") == "ir")
             a_models_count = [v for k, v in tone_data.items() if k.startswith("a") and k.endswith("_models_count")]
             
@@ -203,10 +227,12 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             return
 
         if tone_type == "IR":
-            download_dir = app_settings.get("ir_dir")
+            download_dir = DEFAULT_IR_DIR
         else:
-            download_dir = app_settings.get("nam_dir")
-        
+            download_dir = DEFAULT_NAM_DIR
+
+        if tone_data['title']:
+            download_dir = download_dir + "/" + tone_data['title']
         os.makedirs(download_dir, exist_ok=True)
 
         try:
@@ -268,5 +294,3 @@ class T3kDownloadHandler(ZynthianBasicHandler):
         <p><a href="javascript:void(0)" onclick="window.close();">Close this window</a></p>
         """
         self.write(html)
-        self.get(error)
-
