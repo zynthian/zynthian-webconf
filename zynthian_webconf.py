@@ -73,6 +73,8 @@ from lib.display_config_handler import DisplayConfigHandler
 from lib.audio_config_handler import AudioConfigHandler
 from lib.dashboard_handler import DashboardHandler
 from lib.login_handler import LoginHandler, LogoutHandler
+from lib.t3k_handler import T3kConfigHandler, T3kDownloadHandler
+
 # autopep8: on
 
 # ------------------------------------------------------------------------------
@@ -179,6 +181,8 @@ def make_app():
         (r"/lib-presets/(.*)/(.*)$", PresetsConfigHandler),
         (r"/lib-captures$", CapturesConfigHandler),
         (r"/lib-extra-packs$", ExtraPacksHandler),
+        (r"/lib-t3k-config", T3kConfigHandler),
+        (r"/lib-t3k-download", T3kDownloadHandler),
         (r"/hw-kit$", KitConfigHandler),
         (r"/hw-audio$", AudioConfigHandler),
         (r"/hw-audio-mixer$", AudioMixerHandler),
