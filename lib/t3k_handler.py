@@ -23,47 +23,34 @@
 # ********************************************************************
 
 import os
-import urllib.parse
-import requests
 import logging
+import requests
 import argparse
-import asyncio
 import tornado.web
-import netifaces
+import urllib.parse
 
 import zynconf
 from lib.zynthian_config_handler import ZynthianBasicHandler
+
 import lib.t3k_auth
 
+
 # === Configuration constants ===
-AUTHORIZE_URL = "https://www.tone3000.com/api/v1/oauth/authorize"
-TOKEN_URL = "https://www.tone3000.com/api/v1/oauth/token"
 
-# Default Zynthian paths
-ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
-DEFAULT_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
-DEFAULT_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
-DEFAULT_NETWORK_INTERFACE_NAME = "eth0"
-
-def get_t3k_api_key():
-    return(os.environ.get('ZYNTHIAN_T3K_API_KEY'))
-
-def get_redirect_uri(iface_name):
-    try:
-        iface = netifaces.ifaddresses(iface_name)
-        if netifaces.AF_INET in iface:
-            return f"http://{iface[netifaces.AF_INET][0]['addr']}/lib-t3k-download"
-    except Exception as e:
-        logging.debug(f"Interface {iface_name} not available: {e}")
-        return f"http://127.0.0.1/lib-t3k-download"
-    return None
-
+T3K_API_URLBASE = "https://www.tone3000.com/api/v1"
+T3K_API_KEY = os.environ.get("ZYNTHIAN_T3K_API_KEY", "")
+AUTHORIZE_URL = f"{T3K_API_URLBASE}/oauth/authorize"
+TOKEN_URL = f"{T3K_API_URLBASE}/oauth/token"
 
 class T3kConfigHandler(ZynthianBasicHandler):
+
+        def get_redirect_uri(self):
+            return f"https://{self.request.host}/lib-t3k-download"
+
         @tornado.web.authenticated
         def get(self, errors=None):
             config = {
-                'ZYNTHIAN_T3K_API_KEY': get_t3k_api_key(),
+                'ZYNTHIAN_T3K_API_KEY': T3K_API_KEY,
                 'ZYNTHIAN_T3K_URL': self.get_authorize_url()
             }
             if errors:
@@ -121,22 +108,30 @@ class T3kConfigHandler(ZynthianBasicHandler):
 
         def get_authorize_url(self):
             params = {
-                "client_id": get_t3k_api_key(),
-                "redirect_uri": get_redirect_uri('eth0'),
+                "client_id": T3K_API_KEY,
+                "redirect_uri": self.get_redirect_uri(),
                 "response_type": "code",
                 "code_challenge": lib.t3k_auth.code_challenge,
                 "code_challenge_method": "S256",
                 "state": lib.t3k_auth.state_token,
                 "prompt": "select_tone",
             }
-
             query_string = urllib.parse.urlencode(params)
             authorize_url = f"{AUTHORIZE_URL}?{query_string}"
-
             return authorize_url
 
 
 class T3kDownloadHandler(ZynthianBasicHandler):
+
+    # Zynthian paths
+    ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
+    ZYNTHIAN_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
+    ZYNTHIAN_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
+
+
+    def get_redirect_uri(self):
+        return f"https://{self.request.host}/lib-t3k-download"
+
     @tornado.web.authenticated
     def get(self):
         code = self.get_argument("code", None)
@@ -169,8 +164,8 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 TOKEN_URL,
                 data={
                     "grant_type": "authorization_code",
-                    "client_id": get_t3k_api_key(),
-                    "redirect_uri": get_redirect_uri('eth0'),
+                    "client_id": T3K_API_KEY,
+                    "redirect_uri": self.get_redirect_uri(),
                     "code": code,
                     "code_verifier": lib.t3k_auth.code_verifier,
                 },
@@ -191,19 +186,27 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
         try:
             logging.debug(f"Fetching tone metadata...")
+
             tone_response = requests.get(
-                f"https://www.tone3000.com/api/v1/tones/{tone_id}",
+                f"{T3K_API_URLBASE}/tones/{tone_id}",
                 headers={"Authorization": f"Bearer {access_token}"},
                 timeout=10,
             )
 
+            tone_response = requests.get(
+                f"{T3K_API_URLBASE}/tones/{tone_id}",
+                headers={"Authorization": f"Bearer {access_token}"},
+                timeout=10,
+            )
+
+            logging.debug(f"Tone Response Status Code => {tone_response.status_code}")
             if tone_response.status_code != 200:
                 self.set_status(500)
                 self.write("<h1>Error</h1><p>Tone metadata not available</p>")
                 return
 
             tone_data = tone_response.json()
-            logging.debug(f"{tone_data=}")
+            logging.debug(f"Tone Data => {tone_data=}")
 
             is_ir_tone = (tone_data.get("format") == "ir")
             a_models_count = [v for k, v in tone_data.items() if k.startswith("a") and k.endswith("_models_count")]
@@ -221,9 +224,9 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             return
 
         if tone_type == "IR":
-            download_dir = DEFAULT_IR_DIR
+            download_dir = self.ZYNTHIAN_IR_DIR
         else:
-            download_dir = DEFAULT_NAM_DIR
+            download_dir = self.ZYNTHIAN_NAM_DIR
 
         if tone_data['title']:
             download_dir = download_dir + "/" + tone_data['title']
@@ -231,8 +234,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 
         try:
             logging.debug(f"Fetching models...")
-            models_response = requests.get(
-                "https://www.tone3000.com/api/v1/models",
+            models_response = requests.get(f"{T3K_API_URLBASE}/models",
                 params={"tone_id": tone_id},
                 headers={"Authorization": f"Bearer {access_token}"},
                 timeout=10,
@@ -267,6 +269,8 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             if not model_url: continue
 
             model_name = model.get("name", "model.bin").replace("/", "_").replace("\\", "_")
+            if model_name[-4:].lower() != ".nam":
+                model_name += ".nam"
             file_path = os.path.join(download_dir, model_name)
             try:
                 logging.debug(f"Downloading: {model_name} -> {file_path}")
