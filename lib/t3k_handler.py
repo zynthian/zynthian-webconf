@@ -283,14 +283,69 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                     logging.debug(f"Successfully downloaded: {file_path}")
             except Exception as e:
                 logging.debug(f"Error downloading {model_name}: {e}")
-
-        html = f"""
-        <h1 style="color: green;">Successfully downloaded!</h1>
-        <p><strong>Tone Type:</strong> {tone_type}</p>
-        <p><strong>Saved to:</strong> {download_dir}</p>
-        <p><strong>Downloaded Files:</strong></p>
-        <ul>{"".join(f"<li>{f}</li>" for f in downloaded_files)}</ul>
-        <hr>
-        <p><a href="javascript:void(0)" onclick="window.close();">Close this window</a></p>
+        downloaded_files_html = "".join(f"<li>{f}</li>" for f in downloaded_files)
+        html = f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Tone 3000 download successful</title>
+<link rel="stylesheet" href="/css/fonts.css">
+<link rel="stylesheet" href="/css/style.css">
+<link rel="stylesheet" href="/css/default.css">
+<link rel="stylesheet" href="/css/zynthian.css">
+</head>
+<body>
+    <h1 style="color: green;">Downloads</h1>
+    <p><strong>Tone type:</strong> {tone_type}</p>
+    <p><strong>Path:</strong> {download_dir}</p>
+    <p><strong>Downloaded files:</strong></p>
+    <ul>{downloaded_files_html}</ul>
+    <hr>
+    <p>
+        <button id="closeButton" onclick="closeWindow();">Close in 5 seconds</button>
+    </p>
+    <script>
+        let countdownTimer = null;
+        
+        function closeWindow() {{
+            // Countdown stoppen, falls aktiv
+            if (countdownTimer) {{
+                clearInterval(countdownTimer);
+            }}
+            
+            // Fenster schließen
+            window.close();
+        }}
+        
+        function startCountdown(seconds) {{
+            const button = document.getElementById('closeButton');
+            let count = seconds;
+            
+            // Button nicht deaktivieren, sondern nur visuell anpassen
+            button.classList.add('countdown-active');
+            button.textContent = `Close in ${{count}} seconds`;
+            
+            countdownTimer = setInterval(function() {{
+                count--;
+                if (count > 0) {{
+                    button.textContent = `Close in ${{count}} seconds`;
+                }} else {{
+                    clearInterval(countdownTimer);
+                    button.textContent = "Closing...";
+                    // Fenster schließen, wenn Countdown abgelaufen ist
+                    setTimeout(function() {{
+                        window.close();
+                    }}, 500);
+                }}
+            }}, 1000);
+        }}
+        
+        // Starte den Countdown nach 1 Sekunde
+        setTimeout(function() {{
+            startCountdown(4);
+        }}, 1000);
+    </script>
+</body>
+</html>
         """
         self.write(html)
