@@ -23,6 +23,7 @@
 # ********************************************************************
 
 import os
+import shutil
 import logging
 import requests
 import argparse
@@ -42,92 +43,164 @@ T3K_API_KEY = os.environ.get("ZYNTHIAN_T3K_API_KEY", "")
 AUTHORIZE_URL = f"{T3K_API_URLBASE}/oauth/authorize"
 TOKEN_URL = f"{T3K_API_URLBASE}/oauth/token"
 
+# Zynthian paths
+ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
+ZYNTHIAN_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
+ZYNTHIAN_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
+
+
 class T3kConfigHandler(ZynthianBasicHandler):
 
-        def get_redirect_uri(self):
-            return f"https://{self.request.host}/lib-t3k-download"
+    def get_redirect_uri(self):
+        return f"https://{self.request.host}/lib-t3k-download"
 
-        @tornado.web.authenticated
-        def get(self, errors=None):
-            config = {
-                'ZYNTHIAN_T3K_API_KEY': T3K_API_KEY,
-                'ZYNTHIAN_T3K_URL': self.get_authorize_url()
-            }
-            if errors:
-                logging.error("T3k Action Failed: %s" % format(errors))
-            super().get("t3k.html", "Tone 3000", config, errors)
+    @tornado.web.authenticated
+    def get(self, errors=None):
 
-        @tornado.web.authenticated
-        def post(self):
-            error = None
+        models = self.get_installed_models()
+        logging.debug(models)
+        try:
+            active_tab = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
+        except:
+            active_tab = list(models.keys())[0].replace(' ','_')
+
+        config = {
+            'ZYNTHIAN_T3K_API_KEY': T3K_API_KEY,
+            'ZYNTHIAN_T3K_URL': self.get_authorize_url(),
+            'ZYNTHIAN_ACTIVE_TAB': active_tab,
+            'models': models
+        }
+        super().get("t3k.html", "Neural Models & IRs", config, errors)
+
+    @tornado.web.authenticated
+    def post(self):
+        error = None
+        try:
+            model_action = self.get_argument('ZYNTHIAN_MODEL_ACTION')
+        except:
+            model_action = None
+        try:
+            tk3_action = self.get_argument('ZYNTHIAN_T3K_ACTION')
+        except:
+            tk3_action = None
+
+        if model_action == "RELOAD":
+            pass
+        elif model_action == "REMOVE":
             try:
-                action = self.get_argument('ZYNTHIAN_T3K_ACTION')
+                model_name = self.get_argument('ZYNTHIAN_MODEL_NAME')
+                try:
+                    model_path = f"{ZYNTHIAN_MY_DATA_DIR}/files/{model_name}"
+                    if os.path.isdir(model_path):
+                        logging.debug(f"Removing folder '{model_path}'...")
+                        shutil.rmtree(model_path)
+                    else:
+                        logging.debug(f"Removing file '{model_path}'...")
+                        os.remove(model_path)
+                except:
+                    error = f"Can't remove model {model_name}!"
+                    logging.error(error)
             except:
-                action = None
-                logging.error(f"No action!")
-
-            if action == "STORE_T3K_API_KEY":
-                t3k_api_key = self.get_argument('ZYNTHIAN_T3K_API_KEY')
-                error = self.do_save_config()
-                if error:
-                    logging.error(f"{error}")
-            elif action == "GO_TO_T3K":
-                authorize_url = self.get_authorize_url()
-                try:    
-                    self.set_header("Content-Type", "text/html; charset=UTF-8")
-                    self.write(f"""
-                    <html>
-                    <head>
-                        <title>Tone 3000</title>
-                        <script>
-                            window.onload = function() {{
-                                window.open("{authorize_url}", "_blank");
-                            }};
-                        </script>
-                    </head>
-                    <body>
-                        <p>One moment...</p>
-                    </body>
-                    </html>
-                    """)
-                except Exceptions as e:
-                    logging.error(f"Cannot start local server: {e}")
-                    error="Cannot start local server."
-            self.get(error)
-
-        def do_save_config(self):
-            error = None
-            config = {
-                "ZYNTHIAN_T3K_API_KEY": self.get_argument('ZYNTHIAN_T3K_API_KEY'),
-            }
+                error = "Can't get model name!"
+                logging.error(error)
+        elif tk3_action == "SAVE_T3K_API_KEY":
+            t3k_api_key = self.get_argument('ZYNTHIAN_T3K_API_KEY')
+            error = self.do_save_config()
+            if error:
+                logging.error(f"{error}")
+        elif tk3_action == "GO_TO_T3K":
+            authorize_url = self.get_authorize_url()
             try:
-                error = zynconf.save_config(config, updsys=True)
+                self.set_header("Content-Type", "text/html; charset=UTF-8")
+                self.write(f"""
+                <html>
+                <head>
+                    <title>Tone 3000</title>
+                    <script>
+                        window.onload = function() {{
+                            window.open("{authorize_url}", "_blank");
+                        }};
+                    </script>
+                </head>
+                <body>
+                    <p>One moment...</p>
+                </body>
+                </html>
+                """)
             except Exceptions as e:
-                error = "Cannot store Tone 3000 API key."
-            return(error)
+                logging.error(f"Cannot start local server: {e}")
+                error="Cannot start local server."
 
-        def get_authorize_url(self):
-            params = {
-                "client_id": T3K_API_KEY,
-                "redirect_uri": self.get_redirect_uri(),
-                "response_type": "code",
-                "code_challenge": lib.t3k_auth.code_challenge,
-                "code_challenge_method": "S256",
-                "state": lib.t3k_auth.state_token,
-                "prompt": "select_tone",
-            }
-            query_string = urllib.parse.urlencode(params)
-            authorize_url = f"{AUTHORIZE_URL}?{query_string}"
-            return authorize_url
+        self.get(error)
+
+    def do_save_config(self):
+        global T3K_API_KEY
+        error = None
+        T3K_API_KEY = self.get_argument('ZYNTHIAN_T3K_API_KEY')
+        config = {
+            "ZYNTHIAN_T3K_API_KEY": T3K_API_KEY,
+        }
+        try:
+            error = zynconf.save_config(config, updsys=True)
+        except Exceptions as e:
+            error = "Cannot store Tone 3000 API key."
+        return(error)
+
+    def get_authorize_url(self):
+        params = {
+            "client_id": T3K_API_KEY,
+            "redirect_uri": self.get_redirect_uri(),
+            "response_type": "code",
+            "code_challenge": lib.t3k_auth.code_challenge,
+            "code_challenge_method": "S256",
+            "state": lib.t3k_auth.state_token,
+            "prompt": "select_tone",
+        }
+        query_string = urllib.parse.urlencode(params)
+        authorize_url = f"{AUTHORIZE_URL}?{query_string}"
+        return authorize_url
+
+    def get_installed_models(self):
+        res = {}
+
+        # Get user Neural Models
+        models = {}
+        for dir in os.listdir(ZYNTHIAN_NAM_DIR):
+            dpath = f"{ZYNTHIAN_NAM_DIR}/{dir}"
+            if os.path.isdir(dpath):
+                model_files = []
+                for f in os.listdir(dpath):
+                    parts = os.path.splitext(f)
+                    if parts[1].lower() in ('.nam', '.json', '.aidax'):
+                        model_files.append(f)
+                info = {
+                    'name': dir,
+                    'model_files': model_files
+                }
+                models[dir] = info
+        res["Neural Models"] = models
+
+        # Get user IRs
+        models = {}
+        for dir in os.listdir(ZYNTHIAN_IR_DIR):
+            dpath = f"{ZYNTHIAN_IR_DIR}/{dir}"
+            if os.path.isdir(dpath):
+                model_files = []
+                for f in os.listdir(dpath):
+                    parts = os.path.splitext(f)
+                    if parts[1].lower() in ('.wav', '.flac'):
+                        model_files.append(f"{dir}/{f}")
+                info = {
+                    'name': dir,
+                    'model_files': model_files
+                }
+                models[dir] = info
+        res["IRs"] = models
+
+        return res
 
 
 class T3kDownloadHandler(ZynthianBasicHandler):
-
-    # Zynthian paths
-    ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
-    ZYNTHIAN_IR_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/IRs"
-    ZYNTHIAN_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
-
 
     def get_redirect_uri(self):
         return f"https://{self.request.host}/lib-t3k-download"
@@ -224,9 +297,9 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             return
 
         if tone_type == "IR":
-            download_dir = self.ZYNTHIAN_IR_DIR
+            download_dir = ZYNTHIAN_IR_DIR
         else:
-            download_dir = self.ZYNTHIAN_NAM_DIR
+            download_dir = ZYNTHIAN_NAM_DIR
 
         if tone_data['title']:
             download_dir = download_dir + "/" + tone_data['title']
@@ -284,6 +357,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             except Exception as e:
                 logging.debug(f"Error downloading {model_name}: {e}")
         downloaded_files_html = "".join(f"<li>{f}</li>" for f in downloaded_files)
+
         html = f"""<!DOCTYPE html>
 <html>
 <head>
@@ -344,6 +418,9 @@ class T3kDownloadHandler(ZynthianBasicHandler):
         setTimeout(function() {{
             startCountdown(4);
         }}, 1000);
+
+        // Send reload message to opener
+        window.opener.postMessage("reload")
     </script>
 </body>
 </html>

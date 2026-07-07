@@ -1,26 +1,230 @@
+<style>
+
+div.tab-content div.tab-pane {
+	background-color: #ffffff;
+	/*border-right: solid 1px #A0A0A0;
+	border-left: solid 1px #A0A0A0;*/
+}
+
+div.nav-tabs li a {
+	font-size: 140%
+	font-weight: bold;
+}
+
+a.t3k_logo img {
+	float: right;
+	margin-top:  0.4em;
+	margin-left:  1em;
+	margin-bottom:  1em;
+	width: 30%;
+}
+
+@media (max-width: 768px) {
+	a.t3k_logo img {
+		float: none;
+		margin-top:  0.4em;
+		margin-left:  0em;
+		margin-bottom:  0em;
+		width: 100%;
+	}
+}
+
+div#t3k-config {
+	display: none;
+	margin: 0.1em;
+	margin-top: 0.5em;
+	margin-bottom: 0.5em;
+	padding: 1em;
+	background: #C0C0C0;
+	border: solid 1px #B0B0B0;
+	border-radius: 0.3em;
+}
+
+div#t3k-config p {
+	padding-left: 1em;
+	font-size: 100%;
+	color: #303030;
+}
+
+div.model_dir {
+	padding-top: 0.3em;
+	padding-bottom: 0.3em;
+	font-weight: bold;
+	font-size: 110%;
+	border-bottom: solid 1px #D0D0D0;
+	cursor: pointer;
+}
+
+div.model_dir:hover {
+	background: #D0D0D0;
+}
+
+div.model_files {
+	display: none;
+}
+
+div.model_file {
+	padding-top: 0.3em;
+	padding-bottom: 0.3em;
+	font-weight: bold;
+	font-size: 90%;
+	border-bottom: solid 1px #D0D0D0;
+}
+
+</style>
+
 <h2>{{ title }}</h2>
 
-<p><a href="https://www.tone3000.com/"><b>Tone 3000</b></a> (T3K) is the world's largest community-driven platform for sharing and discovering digital models of amps, pedals, outboard gear, full rigs, signal chains, and more.
-T3K is built on the open-source project Neural Amp Modeler (NAM) by Steve Atkinson. A huge thanks to Steve, Pablo, Dom, Ross, Scott, Jon, and the entire NAM community,
-
 <form id="t3k-form" action="/lib-t3k-config" enctype="multipart/form-data" method="post">
-	{% if config['ZYNTHIAN_T3K_URL'] %}
-	<div class="col-2-10 col-md-2 col-xs-2">
-		<br/>
-		<button name="ZYNTHIAN_T3K_ACTION" value="GO_TO_T3K" class="btn btn-theme">Browse Tone 3000 library</button>
+	<input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
+	<input type="hidden" id="ZYNTHIAN_MODEL_ACTION" name="ZYNTHIAN_MODEL_ACTION" />
+	<input type="hidden" id="ZYNTHIAN_MODEL_NAME" name="ZYNTHIAN_MODEL_NAME" />
+
+	<a class="t3k_logo" href="https://tone3000.com" target="_blank"><img src="/img/logo_t3k.png" /></a>
+
+	<p><a href="https://www.tone3000.com/"><b>Tone 3000</b></a> (T3K) is the world's largest community-driven platform for sharing
+	and discovering digital models of amps, pedals, outboard gear, full rigs, signal chains, and more.
+	T3K is built on top of the open-source project <a href="https://www.neuralampmodeler.com/" target="_blank">Neural Amp Modeler (NAM)</a> by Steve Atkinson.
+	A huge thanks to Steve, Pablo, Dom, Ross, Scott, Jon, and the entire NAM community.</p>
+
+	{% if config['ZYNTHIAN_T3K_API_KEY'] %}
+	<div class="row">
+		<div class="col-lg-10 col-md-9 col-xs-8"><button name="ZYNTHIAN_T3K_ACTION" value="GO_TO_T3K" class="btn btn-theme btn-lg btn-block"><i class="fa fa-search"></i> Browse</button></div>
+		<div class="col-lg-2 col-md-3 col-xs-4"><button class="btn btn-theme btn-lg btn-block" onclick="toggle_t3k_config(); return false"><i class="fa fa-gear"></i> Config</button></div>
 	</div>
 	{% end %}
-	<P>
-	<div class="col-lg-10 col-md-10 col-xs-10">
-		<br/>
-		<b>Tone 3000 API key:</b><br/>
-		<input type="text" name="ZYNTHIAN_T3K_API_KEY" value="{{ config['ZYNTHIAN_T3K_API_KEY'] }}"/>
+
+	<div id="t3k-config" class="row">
+		<p>To enable browsing Neural Models &amp; IRs, you need to generate an API Key from your <a href="https://www.tone3000.com/settings">TONE3000 account settings</a>.</p>
+		<div class="col-lg-9 col-md-8 col-xs-12">
+			<b>API key:</b><br/>
+			<input type="text" name="ZYNTHIAN_T3K_API_KEY" value="{{ config['ZYNTHIAN_T3K_API_KEY'] }}"/>
+		</div>
+		<div class="col-lg-3 col-md-4 col-xs-12">
+			&nbsp;<br/>
+			<button name="ZYNTHIAN_T3K_ACTION" value="SAVE_T3K_API_KEY" class="btn btn-theme btn-block">Save API Key</button>
+		</div>
 	</div>
-	<div class="col-2-10 col-md-2 col-xs-2">
-		<button name="ZYNTHIAN_T3K_ACTION" value="STORE_T3K_API_KEY" class="btn btn-theme">Save API key</button>
+
+    <ul class="nav nav-tabs" role="tablist">
+	{% for model_type, models in config['models'].items() %}
+		{% set _model_type = model_type.replace(' ','_') %}
+		<li class="{% if config['ZYNTHIAN_ACTIVE_TAB'] == _model_type %}active{% end %}">
+			<a id="#{{ _model_type }}" href="#{{ _model_type }}" class="tab_anchor" onclick="$('#ZYNTHIAN_ACTIVE_TAB').val('{{ model_type }}')" role="tab" data-toggle="tab">{{ model_type }}
+				<span id="model_type_count_{{ _model_type }}">({{ len(models) }})</span>
+			</a>
+		</li>
+	{% end %}
+	</ul>
+
+	<div class="tab-content">
+	{% set _model_counter = 0 %}
+	{% for model_type, models in config['models'].items() %}
+		{% set _model_type = model_type.replace(' ','_') %}
+		<div class="tab-pane {% if config['ZYNTHIAN_ACTIVE_TAB'] == _model_type %}active{% end %}" id="{{ _model_type }}">
+		{% for model_name, info in models.items() %}
+			<div class="row">
+				<div class="col-lg-11 col-md-11 col-xs-11 model_dir" onclick="toggleModelFiles({{ _model_counter }})">{{ model_name }}</div>
+				<div class="col-lg-1 col-md-1 col-xs-1 align-right">
+					<button class="btn btn-theme btn-md" onclick="removeModelFolder(&quot;{{ model_type }}&quot;, &quot;{{ model_name }}&quot;);" title="Remove model folder '{{ model_name }}'"><i class="fa fa-remove"></i></button>
+				</div>
+			</div>
+			<div id="model_files_{{ _model_counter }}" class="model_files">
+			{% for model_file in info["model_files"] %}
+				<div class="row">
+					<div class="col-lg-1 col-md-1 col-xs-1"></div>
+					<div class="col-lg-10 col-md-10 col-xs-10 model_file">{{ model_file }}</div>
+					<div class="col-lg-1 col-md-1 col-xs-1 align-left">
+						<button class="btn btn-theme btn-sm" onclick="removeModelFile(&quot;{{ model_type }}&quot;, &quot;{{ model_name }}&quot;, &quot;{{ model_file }}&quot;);" title="Remove model file '{{ model_name }}'"><i class="fa fa-remove"></i></button>
+					</div>
+				</div>
+			{% end %}
+			</div>
+			{% set _model_counter = _model_counter + 1 %}
+		{% end %}
+		</div>
+	{% end %}
 	</div>
+
+
 	<div>
 		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}
 	</div>
-
 </form>
+
+
+<div id="loading-div-background">
+	<div id="loading-div" class="ui-corner-all">
+		<span id="text"></span>. Please wait...
+	</div>
+</div>
+
+<script type="text/javascript">
+$(document).ready(function (){
+	$("#loading-div-background").hide();
+	{% if config['ZYNTHIAN_T3K_API_KEY'] %}
+	collapse_t3k_config();
+	{% else %}
+	expand_t3k_config();
+	{% end %}
+
+	window.addEventListener("message", (event) => {
+		//if (event.origin !== "http://example.org") return;
+		reloadModels()
+		// THIS IS NOT RELOADING!!!
+	});
+});
+
+function toggle_t3k_config() {
+	$("div#t3k-config").slideToggle(500);
+}
+
+function expand_t3k_config() {
+	$("div#t3k-config").slideDown(500);
+}
+
+function collapse_t3k_config() {
+	$("div#t3k-config").slideUp(500);
+}
+
+function toggleModelFiles(counter) {
+	$("div#model_files_" + counter).slideToggle(500);
+}
+
+function reloadModels() {
+	$("#ZYNTHIAN_MODEL_ACTION").val("RELOAD")
+	$("#ZYNTHIAN_MODEL_NAME").val("")
+	//$("#t3k-form").submit()
+	document.getElementById("t3k-form").submit();
+	return true
+}
+
+function removeModelFolder(model_type, model_name) {
+	if (confirm("Are you sure to remove model folder '" + model_name + "'?")) {
+		showRemoveBusy(model_name);
+		$("#ZYNTHIAN_MODEL_ACTION").val("REMOVE")
+		$("#ZYNTHIAN_MODEL_NAME").val(model_type + "/" + model_name)
+		$("#t3k-form").submit()
+		return true
+	}
+	return false
+}
+
+function removeModelFile(model_type, model_name, model_file) {
+	if (confirm("Are you sure to remove model file '" + model_file + "' from folder '" + model_name + "'?")) {
+		showRemoveBusy(model_name + "/" + model_file);
+		$("#ZYNTHIAN_MODEL_ACTION").val("REMOVE")
+		$("#ZYNTHIAN_MODEL_NAME").val(model_type + "/" + model_name + "/" + model_file)
+		$("#t3k-form").submit()
+		return true
+	}
+	return false
+}
+
+function showRemoveBusy(model_name){
+	$("#loading-div-background #text").html("Removing '" + model_name + "'");
+	$("#loading-div-background").show();
+	show_busy()
+}
+</script>
+
