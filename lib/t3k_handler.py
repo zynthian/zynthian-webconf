@@ -376,7 +376,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
     <ul>{downloaded_files_html}</ul>
     <hr>
     <p>
-        <button id="closeButton" onclick="closeWindow();">Close in 5 seconds</button>
+        <button id="closeButton" onclick="closeWindow();">Close in 1 seconds</button>
     </p>
     <script>
         let countdownTimer = null;
@@ -416,7 +416,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
         
         // Starte den Countdown nach 1 Sekunde
         setTimeout(function() {{
-            startCountdown(4);
+            startCountdown(1);
         }}, 1000);
 
         // Send reload message to opener
