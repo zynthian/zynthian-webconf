@@ -49,10 +49,11 @@ class dsp56300Handler(ZynthianBasicHandler):
     config_dpath = "/root/.local/share/The Usual Suspects"
     plugins_dpath = "/usr/local/lib/lv2"
     gear_info = {
-        "Osirus": "http://theusualsuspects.lv2.Osirus",
-        "OsTIrus": "http://theusualsuspects.lv2.OsTIrus",
-        "Vavra": "http://theusualsuspects.lv2.Vavra",
-        "Xenia": "http://theusualsuspects.lv2.Xenia"
+        "Osirus": "http://theusualsuspects.lv2/Osirus",
+        "OsTIrus": "http://theusualsuspects.lv2/OsTIrus",
+        "Vavra": "http://theusualsuspects.lv2/Vavra",
+        "Xenia": "http://theusualsuspects.lv2/Xenia",
+        "JE8086": "http://theusualsuspects.lv2/JE8086"
     }
 
     @tornado.web.authenticated
