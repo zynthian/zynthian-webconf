@@ -50,13 +50,10 @@ class AudioMixerHandler(tornado.web.RequestHandler):
         result = {}
 
         try:
-            logging.debug(
-                'updating webconfig view: {} with {}'.format(ctrl, val))
+            logging.debug('updating webconfig view: {} with {}'.format(ctrl, val))
             for websocket_message_handler in AudioMixerHandler.websocket_message_handler_list:
-                logging.debug('message_handler: {}'.format(
-                    websocket_message_handler))
+                logging.debug('message_handler: {}'.format(websocket_message_handler))
                 websocket_message_handler.update_controller_value(ctrl, val)
-
         except Exception as err:
             result['errors'] = str(err)
             logging.error(err)
