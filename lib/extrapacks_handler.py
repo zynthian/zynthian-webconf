@@ -232,7 +232,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             else:
                 # No package script => Check existance of package file => Get package size
                 pack_script = None
-                pack_url = f"{pack_base_url}/{pack_name}.tar.xz"
+                pack_url = f"{pack_base_url}.tar.xz"
                 try:
                     res = requests.head(pack_url)
                 except Exception as e:
