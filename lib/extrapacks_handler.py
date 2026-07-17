@@ -30,6 +30,7 @@ import requests
 import tornado.web
 import urllib.parse
 import oyaml as yaml
+from pathlib import Path
 from bs4 import BeautifulSoup
 from subprocess import check_output, getoutput, STDOUT
 
@@ -45,20 +46,20 @@ from lib.zynthian_config_handler import ZynthianBasicHandler
 class ExtraPacksHandler(ZynthianBasicHandler):
     data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
     my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
-    package_cache_dpath = "/tmp/pack_info"
+    packages_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian") + "/zynthian-packages"
 
-    remote_url_base = "https://os.zynthian.org/packages"
-    package_cats = ["Soundfonts",
-                    "Samples",
-                    "Neural Models",
-                    "IRs" ]
+    #package_cache_dpath = "/tmp/pack_info"
+    #package_info_cache_fpath = self.package_cache_dpath + "/info.yml"
+    package_info_cache_fpath = "/tmp/package_info.yml"
+
+    download_url_base = "https://os.zynthian.org/packages"
 
     def prepare(self):
         super().prepare()
         force_reload = (self.request.headers.get("Cache-Control") == "no-cache")
         logging.debug(f"FORCE PACKAGE INFO RELOAD => {force_reload}")
         if force_reload or not self.get_cache_packages():
-            self.get_remote_packages()
+            self.get_packages()
 
     @tornado.web.authenticated
     def get(self, errors=None):
@@ -68,7 +69,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         try:
             active_tab = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
         except:
-            active_tab = self.package_cats[0]
+            active_tab = "Soundfonts"
 
         config = {
             'packs': self.pack_info,
@@ -163,10 +164,9 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         return errors
 
     def get_cache_packages(self):
-        fpath = self.package_cache_dpath + "/info.yml"
-        if os.path.isfile(fpath):
+        if os.path.isfile(self.package_info_cache_fpath):
             try:
-                with open(fpath, "r") as f:
+                with open(self.package_info_cache_fpath, "r") as f:
                     yml = f.read()
                     self.pack_info = yaml.load(yml, Loader=yaml.SafeLoader)
                     return True
@@ -175,169 +175,129 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         return False
 
     def save_cache_packages(self):
-        with open(self.package_cache_dpath + "/info.yml", "w") as f:
+        with open(self.package_info_cache_fpath, "w") as f:
              yaml.dump(self.pack_info, f)
 
-    def get_remote_packages(self):
+    def get_packages(self):
         self.pack_info = {}
-        # Create tmp dir for package scripts
-        if not os.path.exists(self.package_cache_dpath):
-            os.makedirs(self.package_cache_dpath)
-        # Get package lists by category
-        for cat in self.package_cats:
-            res = self.get_packages_from_url(self.remote_url_base + "/" + cat)
-            if res:
-                # Order packages by title
-                pack_list = sorted(res.values(), key=lambda p: p['title'])
-                pack_dict = {}
-                for p in pack_list:
-                    pack_dict[p['name']] = p
-                self.pack_info[cat] = pack_dict
+        for item in sorted(Path(self.packages_dir).iterdir()):
+            if item.is_dir() and item.name[0] != '.':
+                res = self.get_packages_from_cat(item)
+                if res:
+                    # Order packages by title
+                    pack_list = sorted(res.values(), key=lambda p: p['title'])
+                    pack_dict = {}
+                    for p in pack_list:
+                        pack_dict[p['name']] = p
+                    self.pack_info[item.name] = pack_dict
         # Save package info cache
         self.save_cache_packages()
 
-    def get_packages_from_url(self, url):
+    def get_packages_from_cat(self, dpath):
         pack_info = {}
-        try:
-            res = requests.get(url)
-            if res.status_code != 200:
-                raise Exception(f"Error {res.status_code}")
-        except Exception as e:
-            logging.error(f"Can't get packages from '{url}' => {e}")
-            return pack_info
-        res.encoding='utf-8'
-        soup = BeautifulSoup(res.text, 'html.parser')
-        for node in soup.find_all("a")[::-1]:
-            href = urllib.parse.unquote(node.get('href'))
-            if href[-1] == "/":
-                href = href[:-1]
-            if not href.startswith("http") and href[0] not in ("/", "?"):
-                # It's a collection dir =>
-                pack_name = href
 
-                # Ignore duplicates
-                if pack_name in self.pack_info:
-                    continue
+        for pack_dpath in dpath.iterdir():
+            if not pack_dpath.is_dir():
+                continue
 
-                # Ignore theme folder
-                if pack_name == "theme":
-                    continue
+            cat_name = dpath.name
+            pack_name = pack_dpath.name
 
-                pack_base_url = f"{url}/{pack_name}"
+            # Ignore duplicates
+            if pack_name in self.pack_info:
+                continue
 
-                # Get info from yaml file
+            # Get info from yaml file
+            info_yml_fpath = f"{pack_dpath}/info.yml"
+            try:
+                with open(info_yml_fpath, "r", encoding="utf-8") as fd:
+                    yml_info = yaml.safe_load(fd)
+            except FileNotFoundError:
+                logging.error(f"Can't find YAML file '{info_yml_fpath}'.")
+            except yaml.YAMLError as exc:
+                logging.error(f"Can't parse YAML file '{info_yml_fpath}' => {exc}")
+
+            pack_base_url = f"{self.download_url_base}/{cat_name}/{pack_name}"
+
+            # Check for a package script ...
+            pack_script = Path(f"{pack_dpath}/{pack_name}.sh")
+            if pack_script.is_file():
+                if "size" in yml_info:
+                    pack_size_text =  yml_info["size"]
+                else:
+                    pack_size_text =  "unknown"
+                # Check if it's installed by running the package script
+                installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
+                pack_url = None
+            else:
+                # No package script => Check existance of package file => Get package size
+                pack_script = None
+                pack_url = f"{pack_base_url}/{pack_name}.tar.xz"
                 try:
-                    res = requests.get(f"{pack_base_url}/info.yml")
+                    res = requests.head(pack_url)
                 except Exception as e:
                     logging.error(e)
-                    continue
-
                 if res.status_code == 200:
-                    res.encoding='utf-8'
-                    yml = res.text
-                else:
-                    logging.error(f"Can't find YAML info file for collection '{pack_base_url}' => Error {res.status_code}")
-                    continue
-                # Parse yaml info
-                try:
-                    yml_info = yaml.load(yml, Loader=yaml.SafeLoader)
-                except Exception as e:
-                    logging.error(f"Can't parse YAML info file for collection '{pack_base_url}' => {e}")
-                    continue
-
-                #logging.debug(f"Found Package => {pack_name} => {time.ctime()}")
-
-                try:
-                    # Check for a package script ...
-                    try:
-                        res = requests.get(f"{pack_base_url}/{pack_name}.sh")
-                    except Exception as e:
-                        logging.error(e)
-                        continue
-                    if res.status_code == 200:
-                        res.encoding='utf-8'
-                        pack_script = f"{self.package_cache_dpath}/{pack_name}.sh"
-                        with open(pack_script, "w") as f:
-                            f.write(res.text)
-                    else:
-                        raise Exception(f"Package script not available for {pack_name}!")
                     if "size" in yml_info:
+                        # Trust size from info file
                         pack_size_text =  yml_info["size"]
                     else:
-                        pack_size_text =  "unknown"
-                    # Check if it's installed by running the package script
-                    installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
-                    pack_url = None
-                except:
-                    # No package script => Check existance of package file => Get package size
-                    pack_script = None
-                    pack_url = f"{pack_base_url}/{pack_name}.tar.xz"
-                    try:
-                        res = requests.head(pack_url)
-                    except Exception as e:
-                        logging.error(e)
-                        continue
-                    if res.status_code == 200:
-                        if "size" in yml_info:
-                            # Trust size from info file
-                            pack_size_text =  yml_info["size"]
+                        # Get size by querying package tar.xz file
+                        pack_size = int(res.headers["content-length"])
+                        if pack_size < 1000:
+                            logging.error(f"Package file for '{pack_name}' is too small ({pack_size}).")
+                            continue
+                        pack_size = pack_size/(1000000)
+                        if pack_size < 1000:
+                            pack_size_text = f"{round(pack_size)}MB"
                         else:
-                            # Get size by querying package tar.xz file
-                            pack_size = int(res.headers["content-length"])
-                            if pack_size < 1000:
-                                logging.error(f"Package file for '{pack_name}' is too small ({pack_size}).")
-                                continue
-                            pack_size = pack_size/(1000000)
-                            if pack_size < 1000:
-                                pack_size_text = f"{round(pack_size)}MB"
-                            else:
-                                pack_size_text = f"{pack_size/1000:.1f}GB"
-                        # Check if it's installed by looking for the collection dir
-                        installed = os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}")
-                    else:
-                        logging.error(f"Can't find package or script for '{pack_name}'!")
-                        continue
+                            pack_size_text = f"{pack_size/1000:.1f}GB"
+                    # Check if it's installed by looking for the collection dir
+                    installed = os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}")
+                else:
+                    logging.error(f"Can't find package or script for '{pack_name}'!")
+                    continue
 
-                info = {
-                    "name": pack_name,
-                    "title": pack_name,
-                    "author": "unknown",
-                    "license": "unknown",
-                    "image": "",
-                    "description": "",
-                    "description_extended": "",
-                    "content": "miscelanea",
-                    "size": pack_size_text,
-                    "source_url": "",
-                    "pack_url": pack_url,
-                    "pack_script": pack_script,
-                    "restart_ui": False,
-                    "installed": installed
-                }
-                # Complete collection info
-                if "title" in yml_info:
-                    info["title"] = yml_info["title"]
-                if "author" in yml_info:
-                    info["author"] = yml_info["author"]
-                if "license" in yml_info:
-                    info["license"] = yml_info["license"]
-                if "description" in yml_info:
-                    parts = yml_info["description"].split("\n", 1)
-                    info["description"] = parts[0]
-                    if len(parts) > 1 and parts[1].strip():
-                        ext_desc = parts[1].replace("\n", "</p><p>")
-                        info["description_extended"] = f"<p>{ext_desc}</p>"
-                if "source_url" in yml_info:
-                    info["source_url"] = yml_info["source_url"]
-                if "icon" in yml_info:
-                    info["image"] = f"{pack_base_url}/{yml_info['icon']}"
-                if "content" in yml_info:
-                    info["content"] = yml_info['content']
-                if "restart_ui" in yml_info:
-                    info["restart_ui"] = yml_info['restart_ui']
-                # Add to the list
-                pack_info[pack_name] = info
+            info = {
+                "name": pack_name,
+                "title": pack_name,
+                "author": "unknown",
+                "license": "unknown",
+                "image": "",
+                "description": "",
+                "description_extended": "",
+                "content": "miscelanea",
+                "size": pack_size_text,
+                "source_url": "",
+                "pack_url": pack_url,
+                "pack_script": pack_script,
+                "restart_ui": False,
+                "installed": installed
+            }
+            # Complete collection info
+            if "title" in yml_info:
+                info["title"] = yml_info["title"]
+            if "author" in yml_info:
+                info["author"] = yml_info["author"]
+            if "license" in yml_info:
+                info["license"] = yml_info["license"]
+            if "description" in yml_info:
+                parts = yml_info["description"].split("\n", 1)
+                info["description"] = parts[0]
+                if len(parts) > 1 and parts[1].strip():
+                    ext_desc = parts[1].replace("\n", "</p><p>")
+                    info["description_extended"] = f"<p>{ext_desc}</p>"
+            if "source_url" in yml_info:
+                info["source_url"] = yml_info["source_url"]
+            if "icon" in yml_info:
+                info["image"] = f"package_files/{cat_name}/{pack_name}/{yml_info['icon']}"
+            if "content" in yml_info:
+                info["content"] = yml_info['content']
+            if "restart_ui" in yml_info:
+                info["restart_ui"] = yml_info['restart_ui']
+            # Add to the list
+            pack_info[pack_name] = info
+
         return pack_info
-
 
 # *****************************************************************************

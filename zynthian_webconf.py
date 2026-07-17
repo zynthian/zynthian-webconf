@@ -158,6 +158,7 @@ def make_app():
         (r"/help$", HelpHandler),
         (r"/help/(.*)/(.*)$", HelpHandler),
         (r"/help_files/(.*)$", tornado.web.StaticFileHandler, {'path': 'help'}),
+        (r"/package_files/(.*)$", tornado.web.StaticFileHandler, {'path': 'packages'}),
         (r"/(.*\.html)$", tornado.web.StaticFileHandler, {'path': 'html'}),
         (r"/(favicon\.ico)$", tornado.web.StaticFileHandler, {'path': 'img'}),
         (r"/fonts/(.*)$", tornado.web.StaticFileHandler, {'path': 'fonts'}),
