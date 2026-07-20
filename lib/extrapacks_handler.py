@@ -112,8 +112,20 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         try:
             info = self.get_pack_info(pack_name)
             if "pack_url" in info and info["pack_url"]:
-                cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{self.my_data_dir}/collections\""
+                # Download and uncompress package data to collections directory
+                dst_dpath = self.my_data_dir + "/collections"
+                cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{dst_dpath}\""
                 res = check_output(cmd, shell=True)
+                # Overwrite package info with fresh info from packages repository
+                try:
+                    pack_dpath = self.packages_dir + "/" + info['cat'] + "/" + pack_name
+                    cmd = f"cp -a \"{pack_dpath}/info.yml\" \"{dst_dpath}/{pack_name}\""
+                    res = check_output(cmd, shell=True)
+                    cmd = f"cp -a \"{pack_dpath}/Art\" \"{dst_dpath}/{pack_name}\""
+                    res = check_output(cmd, shell=True)
+                except Exception as e:
+                    logging.error(f"Can't update package info from repository => {e}")
+                # Check installation and update cache
                 if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
                     info["installed"] = True
                     self.save_cache_packages()
@@ -259,6 +271,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     continue
 
             info = {
+                "cat": cat_name,
                 "name": pack_name,
                 "title": pack_name,
                 "author": "unknown",
@@ -270,7 +283,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 "size": pack_size_text,
                 "source_url": "",
                 "pack_url": pack_url,
-                "pack_script": pack_script,
+                "pack_script": str(pack_script),
                 "restart_ui": False,
                 "installed": installed
             }
