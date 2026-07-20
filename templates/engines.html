@@ -184,13 +184,13 @@ div.engine_edit select {
                         <div class="col-xs-10 engine-description">
                             <textarea id="EDIT_DESCR"></textarea>
                         </div>
-                        {% if not eng_code.startswith("JV/") %}
-                        <div class="col-xs-1" id="UNINSTALL_DIV">
-                            <button name="ZYNTHIAN_ENGINE_UNINSTALL" class="btn btn-theme" onclick="uninstall(); event.preventDefault();">Uninstall</button>
-                        </div>
-                        {% end %}
                         <div class="col-xs-1">
-                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme" onclick="edit_engine_save_close(); event.preventDefault();">OK</button>
+                            <button name="ZYNTHIAN_ENGINE_EDIT_SAVE" class="btn btn-theme" onclick="edit_engine_save_close(); event.preventDefault();"><i class="fa fa-save"> save</i></button>
+                            <!--
+                            <span id="UNINSTALL_DIV">
+                                <button name="ZYNTHIAN_ENGINE_UNINSTALL" class="btn btn-danger" onclick="lv2_plugin_uninstall(); event.preventDefault();"><i class="fa fa-remove"> remove</i></button>
+                            </span>
+                            -->
                         </div>
                     </div>
                 </div>
@@ -324,10 +324,12 @@ function edit_engine(ecode) {
     document.getElementById("EDIT_DESCR").value = eng_info[ecode]["DESCR"]
     document.getElementById("EDIT_TYPE").value = eng_info[ecode]["TYPE"]
     el = document.getElementById("UNINSTALL_DIV");
-    if (ecode.startsWith("JV/"))
-        el.style.display = "block";
-    else
-        el.style.display = "none";
+    if (el) {
+        if (ecode.startsWith("JV/"))
+            el.style.display = "block";
+        else
+            el.style.display = "none";
+    }
     // Category => select options by type
     var cat_select = document.getElementById("EDIT_CAT")
     var n = cat_select.options.length - 1
@@ -342,7 +344,7 @@ function edit_engine(ecode) {
     }
     cat_select.value = eng_info[ecode]["CAT"]
 
-    // DOM manupulation
+    // DOM manipulation
     dst_elm.appendChild(src_elm)
     src_elm.style.display = "block"
     dst_elm.classList.add("engine_edit_sel")
@@ -439,7 +441,7 @@ function edit_engine_save_close() {
     edit_engine_save(true)
 }
 
-function uninstall() {
+function lv2_plugin_uninstall() {
     var scode = document.getElementById("EDIT_CODE").value
     if (scode) {
         console.log(scode)
