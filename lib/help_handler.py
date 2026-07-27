@@ -110,6 +110,7 @@ class HelpHandler(ZynthianBasicHandler):
 div.help_ui {
     background-color: #ffffff;
     font-size: 130%;
+    color: #202020;
 }
 .help_ui h1,
 .help_ui h2,
@@ -121,8 +122,15 @@ div.help_ui {
 .help_ui title {
     color: #202020;
 }
-.help_ui a {
-    color: #5050ff;
+.help_ui li {
+    margin-left: 1em;
+}
+.help_ui a,
+.help_ui li a {
+    color: #202090;
+}
+.help_ui .note-block {
+    color: #ffffff;
 }
 </style>
 """
