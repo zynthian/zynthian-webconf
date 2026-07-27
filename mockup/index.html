@@ -370,12 +370,14 @@ function resetCaptureLogText() {
 
   elem = document.getElementById("log_text_ts")
   if (elem) {
-    elem.innerHTML = "0:00:00.00"
+    elem.innerHTML = "-:--:--.------"
   }
   
   elem = document.getElementById("log_text_input")
   if (elem) {
     elem.value = ""
+    elem.readOnly = true;
+    elem.disabled = true;
   }
 }
 
@@ -399,16 +401,18 @@ function setCaptureLogText(text) {
   elem = document.getElementById("log_text_input")
   if (elem) {
     elem.value = text
+    elem.readOnly = false
+    elem.disabled = false
   }
 }
 
 
 function saveCaptureLogText() {
-  // Save locally the currently edited text line
   var save_pos = -1;
   var elem = document.getElementById("log_text_pos")
-  if (elem) save_pos = parseInt(elem.value)
-  if (save_pos >= 0 && save_pos < log_lines.length) {
+  save_pos = parseInt(elem.value)
+  // Save locally the currently edited text line
+  if (save_pos > 0 && save_pos < log_lines.length) {
     elem = document.getElementById("log_text_input")
     if (elem) {
       log_lines[save_pos][1] = "TEXT: " + elem.value
@@ -424,7 +428,7 @@ function tsToString(ts) {
   ts -= hours * 3600
   var mins = Math.floor(ts / 60)
   ts -= mins * 60
-  var tstext = `${hours}:${String(mins).padStart(2, '0')}:${String(ts.toFixed(2)).padStart(5, '0')}`
+  var tstext = `${hours}:${String(mins).padStart(2, '0')}:${String(ts.toFixed(6)).padStart(9, '0')}`
   return tstext
 }
 
