@@ -47,6 +47,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
     my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
     packages_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian") + "/zynthian-packages"
+    collections_dir = data_dir + "/collections"
 
     #package_cache_dpath = "/tmp/pack_info"
     #package_info_cache_fpath = self.package_cache_dpath + "/info.yml"
@@ -113,20 +114,19 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             info = self.get_pack_info(pack_name)
             if "pack_url" in info and info["pack_url"]:
                 # Download and uncompress package data to collections directory
-                dst_dpath = self.my_data_dir + "/collections"
-                cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{dst_dpath}\""
+                cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{self.collections_dir}\""
                 res = check_output(cmd, shell=True)
                 # Overwrite package info with fresh info from packages repository
                 try:
                     pack_dpath = self.packages_dir + "/" + info['cat'] + "/" + pack_name
-                    cmd = f"cp -a \"{pack_dpath}/info.yml\" \"{dst_dpath}/{pack_name}\""
+                    cmd = f"cp -a \"{pack_dpath}/info.yml\" \"{self.collections_dir}/{pack_name}\""
                     res = check_output(cmd, shell=True)
-                    cmd = f"cp -a \"{pack_dpath}/Art\" \"{dst_dpath}/{pack_name}\""
+                    cmd = f"cp -a \"{pack_dpath}/Art\" \"{self.collections_dir}/{pack_name}\""
                     res = check_output(cmd, shell=True)
                 except Exception as e:
                     logging.error(f"Can't update package info from repository => {e}")
                 # Check installation and update cache
-                if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                if os.path.isdir(f"{self.collections_dir}/{pack_name}"):
                     info["installed"] = True
                     self.save_cache_packages()
                 else:
@@ -152,9 +152,9 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         try:
             info = self.get_pack_info(pack_name)
             if "pack_url" in info and info["pack_url"]:
-                cmd = f"rm -rf \"{self.my_data_dir}/collections/{pack_name}\""
+                cmd = f"rm -rf \"{self.collections_dir}/{pack_name}\""
                 res = getoutput(cmd)
-                if os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}"):
+                if os.path.isdir(f"{self.collections_dir}/{pack_name}"):
                     raise Exception(f"Can't uninstall package!")
                 else:
                     info["installed"] = False
@@ -265,7 +265,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                         else:
                             pack_size_text = f"{pack_size/1000:.1f}GB"
                     # Check if it's installed by looking for the collection dir
-                    installed = os.path.isdir(f"{self.my_data_dir}/collections/{pack_name}")
+                    installed = os.path.isdir(f"{self.collections_dir}/{pack_name}")
                 else:
                     logging.error(f"Can't find package or script for '{pack_name}'!")
                     continue

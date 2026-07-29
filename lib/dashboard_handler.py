@@ -51,7 +51,8 @@ class DashboardHandler(ZynthianBasicHandler):
         git_info_data = self.get_git_info("/zynthian/zynthian-data")
 
         # Get dir paths from config vars
-        my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR')
+        data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
+        my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
 
         # Get Memory & SD Card info
         ram_info = self.get_ram_info()
@@ -204,12 +205,12 @@ class DashboardHandler(ZynthianBasicHandler):
                     #},
                     'COLLECTIONS': {
                         'title': 'Collections',
-                        'value': str(self.get_num_of_dirs(my_data_dir + "/collections")),
+                        'value': str(self.get_num_of_dirs(data_dir + "/collections")),
                         'url': "/lib-extra-packs"
                     },
                     'USER_SOUNDFONTS': {
-                        'title': 'User Soundfonts',
-                        'value': str(self.get_num_of_files(my_data_dir + "/soundfonts", "*.sf?")),
+                        'title': 'Soundfonts',
+                        'value': str(self.get_num_of_files(data_dir + "/soundfonts", "*.sf?") + self.get_num_of_files(my_data_dir + "/soundfonts", "*.sf?")),
                         'url': "/lib-presets"
                     },
                     'AUDIO_CAPTURES': {
