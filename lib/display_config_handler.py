@@ -429,7 +429,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'Generic 4k HDMI Display': {
-            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1\nhdmi_enable_4kp60=1'
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1\nhdmi_enable_4kp60=1',
             'DISPLAY_WIDTH': '',
             'DISPLAY_HEIGHT': '',
             'DISPLAY_ROTATION': "None",
