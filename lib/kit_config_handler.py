@@ -168,6 +168,7 @@ class KitConfigHandler(ZynthianConfigHandler):
             for k, v in WiringConfigHandler.get_custom_profile(wiring_layout_custom_profile).items():
                 pconfig[k] = [v]
 
+            pconfig['ZYNTHIAN_UI_ENABLE_CURSOR'] = ["0"]
             pconfig['ZYNTHIAN_UI_FONT_SIZE'] = [ui_font_size]
             pconfig['ZYNTHIAN_OVERCLOCKING'] = [overclocking]
 

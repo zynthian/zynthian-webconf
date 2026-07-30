@@ -389,7 +389,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'Pi 7 Touchscreen Display 800x480': {
-            'DISPLAY_CONFIG': '',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d',
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
@@ -397,7 +397,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'Pi 7 Touchscreen Display 800x480 (inverted)': {
-            'DISPLAY_CONFIG': 'display_lcd_rotate=2',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisplay_lcd_rotate=2',
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "Inverted",
@@ -405,7 +405,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'MIPI DSI 800x480': {
-            'DISPLAY_CONFIG': '',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d',
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
@@ -413,7 +413,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'MIPI DSI 800x480 (inverted)': {
-            'DISPLAY_CONFIG': 'display_lcd_rotate=2',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisplay_lcd_rotate=2',
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "Inverted",
@@ -421,7 +421,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'Generic HDMI/DSI Display': {
-            'DISPLAY_CONFIG': 'disable_overscan=1',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1',
             'DISPLAY_WIDTH': '',
             'DISPLAY_HEIGHT': '',
             'DISPLAY_ROTATION': "None",
@@ -429,9 +429,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'FRAMEBUFFER': '/dev/fb0'
         },
         'Generic 4k HDMI Display': {
-            'DISPLAY_CONFIG':
-                'disable_overscan=1\n' +
-                'hdmi_enable_4kp60=1\n',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1\nhdmi_enable_4kp60=1'
             'DISPLAY_WIDTH': '',
             'DISPLAY_HEIGHT': '',
             'DISPLAY_ROTATION': "None",
