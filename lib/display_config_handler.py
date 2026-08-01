@@ -50,7 +50,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
                 'dtoverlay=goodix_z2',
             'DISPLAY_WIDTH': '1024',
             'DISPLAY_HEIGHT': '600',
-            'DISPLAY_ROTATION': "None",
+            'DISPLAY_ROTATION': "Inverted",
             'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-2:1024x600M@70,rotate=180',
             'FRAMEBUFFER': '/dev/fb0'
         },
