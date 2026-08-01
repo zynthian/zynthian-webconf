@@ -420,7 +420,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,rotate=180',
             'FRAMEBUFFER': '/dev/fb0'
         },
-        'Generic HDMI/DSI Display': {
+        'Generic HDMI Display': {
             'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1',
             'DISPLAY_WIDTH': '',
             'DISPLAY_HEIGHT': '',
