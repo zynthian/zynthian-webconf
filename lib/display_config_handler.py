@@ -51,8 +51,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_WIDTH': '1024',
             'DISPLAY_HEIGHT': '600',
             'DISPLAY_ROTATION': "Inverted",
-            'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-2:1024x600M@70,rotate=180',
-            'FRAMEBUFFER': '/dev/fb0'
+            'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-2:1024x600M@70,panel_orientation=upside_down',
+            'FRAMEBUFFER': ''
         },
         'ZynScreen 3.5 (v1)': {
             'DISPLAY_CONFIG':
@@ -214,7 +214,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,rotate=270',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 4.3 HDMI+GPIO (inverted)': {
             'DISPLAY_CONFIG':
@@ -229,8 +229,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "Inverted",
-            'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,rotate=180',
-            'FRAMEBUFFER': '/dev/fb0'
+            'DISPLAY_KERNEL_OPTIONS': 'video=HDMI-A-1:800x480M@60,panel_orientation=upside_down',
+            'FRAMEBUFFER': ''
         },
         'WaveShare 5 HDMI+GPIO': {
             'DISPLAY_CONFIG':
@@ -245,7 +245,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 5 HDMI+USB': {
             'DISPLAY_CONFIG':
@@ -259,7 +259,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 7 HDMI+GPIO 1024x600': {
             'DISPLAY_CONFIG':
@@ -274,7 +274,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '600',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 7 HDMI+GPIO 800x480': {
             'DISPLAY_CONFIG':
@@ -289,7 +289,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 7 HDMI+USB 1024x600': {
             'DISPLAY_CONFIG':
@@ -303,7 +303,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '600',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 7 HDMI+USB 800x480': {
             'DISPLAY_CONFIG':
@@ -317,7 +317,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 10.1 HDMI+USB 1920x1080': {
             'DISPLAY_CONFIG':
@@ -336,7 +336,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '1080',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 5 or 7 DSI': {
             'DISPLAY_CONFIG':
@@ -346,7 +346,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'WaveShare 5 or 7 DSI (inverted)': {
             'DISPLAY_CONFIG':
@@ -355,8 +355,8 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "Inverted",
-            'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480M@60,rotate=180',
-            'FRAMEBUFFER': '/dev/fb0'
+            'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480M@60,panel_orientation=upside_down',
+            'FRAMEBUFFER': ''
         },
         'Sainsmart 1.8': {
             'DISPLAY_CONFIG': 'dtoverlay=sainsmart18,rotate=90',
@@ -386,7 +386,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'Pi 7 Touchscreen Display 800x480': {
             'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d',
@@ -394,15 +394,15 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'Pi 7 Touchscreen Display 800x480 (inverted)': {
-            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisplay_lcd_rotate=2',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d',
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "Inverted",
-            'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,rotate=180',
-            'FRAMEBUFFER': '/dev/fb0'
+            'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,panel_orientation=upside_down',
+            'FRAMEBUFFER': ''
         },
         'MIPI DSI 800x480': {
             'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d',
@@ -410,15 +410,15 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'MIPI DSI 800x480 (inverted)': {
-            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisplay_lcd_rotate=2',
+            'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d',
             'DISPLAY_WIDTH': '800',
             'DISPLAY_HEIGHT': '480',
             'DISPLAY_ROTATION': "Inverted",
-            'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,rotate=180',
-            'FRAMEBUFFER': '/dev/fb0'
+            'DISPLAY_KERNEL_OPTIONS': 'video=DSI-1:800x480@60,panel_orientation=upside_down',
+            'FRAMEBUFFER': ''
         },
         'Generic HDMI Display': {
             'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1',
@@ -426,7 +426,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'Generic 4k HDMI Display': {
             'DISPLAY_CONFIG': 'dtoverlay=vc4-kms-v3d\ndisable_overscan=1\nhdmi_enable_4kp60=1',
@@ -434,7 +434,7 @@ class DisplayConfigHandler(ZynthianConfigHandler):
             'DISPLAY_HEIGHT': '',
             'DISPLAY_ROTATION': "None",
             'DISPLAY_KERNEL_OPTIONS': '',
-            'FRAMEBUFFER': '/dev/fb0'
+            'FRAMEBUFFER': ''
         },
         'Custom Device': {
             'DISPLAY_CONFIG': '',
