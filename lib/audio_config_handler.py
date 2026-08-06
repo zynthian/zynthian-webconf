@@ -248,53 +248,63 @@ soundcard_presets = {
         'SOUNDCARD_CONFIG': '',
         'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:Microphone -r 48000 -p 256 -n 2 -X raw',
         'SOUNDCARD_MIXER': 'Speaker Left,Mic Left,Speaker Right,Mic Right'
-    },
-    'RBPi Headphones': {
-        'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
-        'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -p 512 -n 3 -o 2 -X raw',
-        'SOUNDCARD_MIXER': 'Headphone'
-    },
-    'RBPi HDMI': {
-        'SOUNDCARD_CONFIG': 'dtparam=audio=on',
-        'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:#DEVNAME# -r 48000 -p 512 -n 2 -o 2 -X raw',
-        'SOUNDCARD_MIXER': 'HDMI Left,HDMI Right'
-    },
-    'Dummy device': {
-        'SOUNDCARD_CONFIG': '',
-        'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:Dummy -r 48000 -p 256 -n 2 -X raw',
-        'SOUNDCARD_MIXER': ''
-    },
-    'Custom device': {
-        'SOUNDCARD_CONFIG': '',
-        'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
-        'SOUNDCARD_MIXER': ''
     }
 }
 
-if rpi_version_number != 5:
+if rpi_version_number == 5:
     del soundcard_presets["ZynAudio8x"]
-
-try:
-    zynthian_engine_alsa_mixer.init_zynapi_instance()
-    rbpi_device_name = zynthian_engine_alsa_mixer.zynapi_get_rbpi_device_name()
-    logging.info("RBPi Device Name: '{}'".format(rbpi_device_name))
-except Exception as err:
-    rbpi_device_name = None
-    logging.error(err)
-
-if rbpi_device_name == "Headphones":
-    soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace(
-        "#DEVNAME#", "Headphones")
-    soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace(
-        "#DEVNAME#", "b1")
-elif rbpi_device_name == "ALSA":
-    soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'] = soundcard_presets['RBPi Headphones']['JACKD_OPTIONS'].replace(
-        "#DEVNAME#", "ALSA")
-    soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'] = soundcard_presets['RBPi HDMI']['JACKD_OPTIONS'].replace(
-        "#DEVNAME#", "ALSA")
+    soundcard_presets['RBPi HDMI-1'] = {
+        'SOUNDCARD_CONFIG': "",
+        'JACKD_OPTIONS': "-P 70 -s -S -d alsa -P sysdefault:CARD=vc4hdmi0 -r 48000 -p 256 -n 2",
+        'SOUNDCARD_MIXER': "PCM"
+    }
+    soundcard_presets['RBPi HDMI-2'] = {
+        'SOUNDCARD_CONFIG': "",
+        'JACKD_OPTIONS': "-P 70 -s -S -d alsa -P sysdefault:CARD=vc4hdmi1 -r 48000 -p 256 -n 2",
+        'SOUNDCARD_MIXER': "PCM"
+    }
 else:
-    del soundcard_presets['RBPi Headphones']
-    del soundcard_presets['RBPi HDMI']
+    try:
+        zynthian_engine_alsa_mixer.init_zynapi_instance()
+        rbpi_device_name = zynthian_engine_alsa_mixer.zynapi_get_rbpi_device_name()
+        logging.info("RBPi Device Name: '{}'".format(rbpi_device_name))
+    except Exception as err:
+        rbpi_device_name = None
+        logging.error(err)
+    if rbpi_device_name == "Headphones":
+        soundcard_presets['RBPi Headphones'] = {
+            'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
+            'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:Headphones -r 48000 -p 512 -n 3 -o 2 -X raw',
+            'SOUNDCARD_MIXER': 'Headphone'
+        }
+        soundcard_presets['RBPi HDMI'] = {
+            'SOUNDCARD_CONFIG': 'dtparam=audio=on',
+            'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:b1 -r 48000 -p 512 -n 2 -o 2 -X raw',
+            'SOUNDCARD_MIXER': 'HDMI Left,HDMI Right'
+        }
+    elif rbpi_device_name == "ALSA":
+        soundcard_presets['RBPi Headphones'] = {
+            'SOUNDCARD_CONFIG': 'dtparam=audio=on\naudio_pwm_mode=2',
+            'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:ALSA -r 48000 -p 512 -n 3 -o 2 -X raw',
+            'SOUNDCARD_MIXER': 'Headphone'
+        }
+        soundcard_presets['RBPi HDMI'] = {
+            'SOUNDCARD_CONFIG': 'dtparam=audio=on',
+            'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:ALSA -r 48000 -p 512 -n 2 -o 2 -X raw',
+            'SOUNDCARD_MIXER': 'HDMI Left,HDMI Right'
+        }
+
+# Append custom & dummy configs:
+soundcard_presets['Dummy device'] = {
+    'SOUNDCARD_CONFIG': '',
+    'JACKD_OPTIONS': '-P 70 -s -d alsa -d hw:Dummy -r 48000 -p 256 -n 2 -X raw',
+    'SOUNDCARD_MIXER': ''
+}
+soundcard_presets['Custom device'] = {
+    'SOUNDCARD_CONFIG': '',
+    'JACKD_OPTIONS': '-P 70 -s -S -d alsa -d hw:0 -r 48000 -p 256 -n 2 -X raw',
+    'SOUNDCARD_MIXER': ''
+}
 
 # ------------------------------------------------------------------------------
 # Audio Configuration Class
