@@ -153,6 +153,19 @@ class SecurityConfigHandler(ZynthianConfigHandler):
             if config['PASSWORD'][0] != config['REPEAT_PASSWORD'][0]:
                 return {'REPEAT_PASSWORD': "Passwords does not match!"}
 
+            pattern = re.compile(
+                r'(?P<quote>")|'
+                r'(?P<backtick>`)|'
+                r'(?P<backslash>\\)|'
+                r'(?P<shell>\$\([^)]*\))'
+            )
+            match = pattern.search(config['PASSWORD'][0])
+            if match:
+                if match.lastgroup == 'shell':
+                    return {'PASSWORD': f"Illegal character sequence in password: $(..)"}
+                else:
+                    return {'PASSWORD': f"Illegal character sequence in password: {match.lastgroup}"}
+
             # Change system password (PAM)
             try:
                 passwd = config['PASSWORD'][0]
@@ -174,7 +187,8 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
             # Change WIFI password
             try:
-                check_output(f"nmcli con modify zynthian-ap wifi-sec.psk \"{config['PASSWORD'][0]}\"", shell=True)
+                #check_output(f"nmcli con modify zynthian-ap wifi-sec.psk \"{config['PASSWORD'][0]}\"", shell=True)
+                check_output(f"nmcli con modify zynthian-ap wifi-sec.psk", shell=True)
             except Exception as e:
                 logging.error(f"Can't set new password for WIFI HotSpot! => {e}")
                 return {'REPEAT_PASSWORD': "Can't set new password for WIFI HotSpot!"}
