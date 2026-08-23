@@ -1080,7 +1080,7 @@ Media queries
 		padding-top: 80px;
 	}
 	
-	.team-member,.col-lg-4 {
+	.team-member .col-lg-4 {
 		margin-bottom: 30px;
 	}
 	

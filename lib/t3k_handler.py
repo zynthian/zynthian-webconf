@@ -212,34 +212,35 @@ class T3kConfigHandler(ZynthianBasicHandler):
 
 class T3kDownloadHandler(ZynthianBasicHandler):
 
+    arch = "2"
+
     def get_redirect_uri(self):
         return f"https://{self.request.host}/lib-t3k-download"
 
     @tornado.web.authenticated
     def get(self):
+        saved = self.get_secure_cookie("nam_architecture")
+        self.arch = saved.decode() if saved else "2"
+
         code = self.get_argument("code", None)
         state_param = self.get_argument("state", None)
         tone_id = self.get_argument("tone_id", None)
         canceled = self.get_argument("canceled", "false") == "true"
-
-        app_settings = self.application.settings
+        #app_settings = self.application.settings
 
         if state_param != lib.t3k_auth.state_token:
             self.set_status(400)
             self.write("State mismatch. Possible CSRF attack.")
             return
-
         if canceled:
             logging.debug(f"User cancelled the flow.")
             self.write("<h1>Cancelled</h1><p>The user has cancelled the process.</p>")
             return
-
         if not code:
             self.set_status(400)
-            self.write("No authorization code received.")
+            self.write("<h1>Error</h1><p>No auth-code received.</p>")
             return
-
-        logging.debug(f"Code received: {code}\nTone-ID: {tone_id}")
+        logging.debug(f"Auth-Code received: {code}\nTone-ID: {tone_id}")
 
         try:
             logging.debug(f"Sending token request to Tone3000...")
@@ -254,82 +255,69 @@ class T3kDownloadHandler(ZynthianBasicHandler):
                 },
                 timeout=10,
             )
-
             if token_response.status_code != 200:
                 self.set_status(500)
                 self.write(f"<h1>Token Exchange Error</h1><pre>{token_response.text}</pre>")
                 return
-
             access_token = token_response.json()["access_token"]
             logging.debug(f"Token successfully received: {access_token[:20]}...")
         except Exception as e:
             self.set_status(500)
-            self.write(f"<h1>Error</h1><p>{e}</p>")
+            self.write(f"<h1>Error</h1><p>Wrong Token Exchange: {e}</p>")
             return
 
         try:
-            logging.debug(f"Fetching tone metadata...")
-
+            logging.debug(f"Fetching tone metadata for tone '{tone_id}'...")
             tone_response = requests.get(
                 f"{T3K_API_URLBASE}/tones/{tone_id}",
                 headers={"Authorization": f"Bearer {access_token}"},
                 timeout=10,
             )
-
-            tone_response = requests.get(
-                f"{T3K_API_URLBASE}/tones/{tone_id}",
-                headers={"Authorization": f"Bearer {access_token}"},
-                timeout=10,
-            )
-
-            logging.debug(f"Tone Response Status Code => {tone_response.status_code}")
+            logging.debug(f"... Response Status Code => {tone_response.status_code}")
             if tone_response.status_code != 200:
                 self.set_status(500)
-                self.write("<h1>Error</h1><p>Tone metadata not available</p>")
+                self.write(f"<h1>Error</h1><p>Tone metadata not available ({tone_response.status_code})</p>")
                 return
-
             tone_data = tone_response.json()
-            logging.debug(f"Tone Data => {tone_data=}")
-
+            logging.debug(f"Tone Data => {tone_data}")
             is_ir_tone = (tone_data.get("format") == "ir")
             a_models_count = [v for k, v in tone_data.items() if k.startswith("a") and k.endswith("_models_count")]
-            
             if is_ir_tone and all(c == 0 for c in a_models_count):
                 tone_type = "IR"
             else:
                 tone_type = "NAM"
-            
             logging.debug(f"Detected Tone Type: {tone_type}")
-
         except Exception as e:
             self.set_status(500)
-            self.write(f"<h1>Error</h1><p>Tone Metadata: {e}</p>")
+            self.write(f"<h1>Error</h1><p>Tone metadata. {e}</p>")
             return
 
         try:
-            logging.debug(f"Fetching models...")
+            logging.debug(f"Fetching models for tone '{tone_id}'...")
             models_response = requests.get(f"{T3K_API_URLBASE}/models",
-                params={"tone_id": tone_id},
+                params={
+                    "tone_id": tone_id,
+                    "architecture": self.arch
+                },
                 headers={"Authorization": f"Bearer {access_token}"},
                 timeout=10,
             )
-
+            logging.debug(f"... Response Status Code => {models_response.status_code}")
             if models_response.status_code != 200:
+                self.write(f"<h1>Error</h1><p>Tone models not available ({models_response.status_code})</p>")
                 self.set_status(500)
-                self.write("<h1>Error</h1><p>Models not available</p>")
                 return
-
+            #logging.debug(f"Models Data => {models_response.json()}")
             models = models_response.json().get("data", [])
             if not isinstance(models, list):
                 models = [models] if models else []
-
             logging.debug(f"{len(models)} models found.")
-
         except Exception as e:
             self.set_status(500)
-            self.write(f"<h1>Error</h1><p>Models: {e}</p>")
+            self.write(f"<h1>Error</h1><p>Tone models: {e}</p>")
             return
 
+        # Preload CSS so it's cached'
         self.write("""
             <link rel="stylesheet" href="/css/fonts.css">
             <link rel="stylesheet" href="/css/style.css">
@@ -338,6 +326,7 @@ class T3kDownloadHandler(ZynthianBasicHandler):
         """)
 
         downloaded_files = []
+        download_dir = ZYNTHIAN_NAM_DIR
         for model in models:
             model_url = model.get("model_url")
             if not model_url: continue
@@ -387,10 +376,10 @@ class T3kDownloadHandler(ZynthianBasicHandler):
 <head>
     <meta charset="UTF-8">
     <title>Tone 3000 download successful</title>
-<link rel="stylesheet" href="/css/fonts.css">
-<link rel="stylesheet" href="/css/style.css">
-<link rel="stylesheet" href="/css/default.css">
-<link rel="stylesheet" href="/css/zynthian.css">
+    <link rel="stylesheet" href="/css/fonts.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/default.css">
+    <link rel="stylesheet" href="/css/zynthian.css">
 </head>
 <body>
     <h1 style="color: green;">Downloads</h1>
