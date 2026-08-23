@@ -42,6 +42,7 @@ T3K_API_URLBASE = "https://www.tone3000.com/api/v1"
 T3K_API_KEY = os.environ.get("ZYNTHIAN_T3K_API_KEY", "")
 AUTHORIZE_URL = f"{T3K_API_URLBASE}/oauth/authorize"
 TOKEN_URL = f"{T3K_API_URLBASE}/oauth/token"
+ALLOWED_EXTENSIONS = {'.nam', '.wav', '.flac', '.json', '.aidax'}
 
 # Zynthian paths
 ZYNTHIAN_MY_DATA_DIR = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
@@ -305,15 +306,6 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             self.write(f"<h1>Error</h1><p>Tone Metadata: {e}</p>")
             return
 
-        if tone_type == "IR":
-            download_dir = ZYNTHIAN_IR_DIR
-        else:
-            download_dir = ZYNTHIAN_NAM_DIR
-
-        if tone_data['title']:
-            download_dir = download_dir + "/" + tone_data['title']
-        os.makedirs(download_dir, exist_ok=True)
-
         try:
             logging.debug(f"Fetching models...")
             models_response = requests.get(f"{T3K_API_URLBASE}/models",
@@ -351,8 +343,31 @@ class T3kDownloadHandler(ZynthianBasicHandler):
             if not model_url: continue
 
             model_name = model.get("name", "model.bin").replace("/", "_").replace("\\", "_")
-            if model_name[-4:].lower() != ".nam":
-                model_name += ".nam"
+            architecture = model.get("architecture_version")
+            fmat = model.get("format")
+            logging.debug(f"MODEL: {model}")
+            logging.debug(f"ARCH: {architecture}")
+            logging.debug(f"FORMAT: {fmat}")
+            if architecture is None:
+                download_dir = ZYNTHIAN_IR_DIR
+            else:
+                download_dir = ZYNTHIAN_NAM_DIR
+
+            if tone_data['title']:
+                download_dir = download_dir + "/" + tone_data['title']
+            os.makedirs(download_dir, exist_ok=True)
+
+            # Get extension from URL
+            _, ext = os.path.splitext(os.path.basename(model_url))
+
+            if ext.lower() not in ALLOWED_EXTENSIONS:
+                # Fallback to .nam for unknown extensions
+                logging.warning(f"Unknown extension {ext} from {model_url}, defaulting to .nam")
+                ext = ".nam"
+
+            if not model_name.endswith(ext):
+                model_name += ext
+
             file_path = os.path.join(download_dir, model_name)
             try:
                 logging.debug(f"Downloading: {model_name} -> {file_path}")
