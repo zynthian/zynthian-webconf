@@ -178,9 +178,8 @@ $(document).ready(function (){
 	{% end %}
 
 	window.addEventListener("message", (event) => {
-		//if (event.origin !== "http://example.org") return;
-		reloadModels()
-		// THIS IS NOT RELOADING!!!
+		if (event.data === 'reload')
+			reloadModels()
 	});
 });
 
