@@ -51,11 +51,16 @@ ZYNTHIAN_NAM_DIR = f"{ZYNTHIAN_MY_DATA_DIR}/files/Neural Models"
 
 class T3kConfigHandler(ZynthianBasicHandler):
 
+    arch = "2"
+
     def get_redirect_uri(self):
         return f"https://{self.request.host}/lib-t3k-download"
 
     @tornado.web.authenticated
     def get(self, errors=None):
+
+        saved = self.get_secure_cookie("nam_architecture")
+        self.arch = saved.decode() if saved else "2"
 
         models = self.get_installed_models()
         logging.debug(models)
@@ -68,7 +73,8 @@ class T3kConfigHandler(ZynthianBasicHandler):
             'ZYNTHIAN_T3K_API_KEY': T3K_API_KEY,
             'ZYNTHIAN_T3K_URL': self.get_authorize_url(),
             'ZYNTHIAN_ACTIVE_TAB': active_tab,
-            'models': models
+            'models': models,
+            'architecture': self.arch
         }
         super().get("t3k.html", "Neural Models & IRs", config, errors)
 
@@ -109,7 +115,9 @@ class T3kConfigHandler(ZynthianBasicHandler):
             if error:
                 logging.error(f"{error}")
         elif tk3_action == "GO_TO_T3K":
-            authorize_url = self.get_authorize_url()
+            self.arch = self.get_argument('ZYNTHIAN_NAM_ARCH')
+            self.set_secure_cookie("nam_architecture", self.arch, expires_days=30)
+            authorize_url = self.get_authorize_url(self.arch)
             try:
                 self.set_header("Content-Type", "text/html; charset=UTF-8")
                 self.write(f"""
@@ -146,7 +154,7 @@ class T3kConfigHandler(ZynthianBasicHandler):
             error = "Cannot store Tone 3000 API key."
         return(error)
 
-    def get_authorize_url(self):
+    def get_authorize_url(self, architecture=2):
         params = {
             "client_id": T3K_API_KEY,
             "redirect_uri": self.get_redirect_uri(),
@@ -154,6 +162,7 @@ class T3kConfigHandler(ZynthianBasicHandler):
             "code_challenge": lib.t3k_auth.code_challenge,
             "code_challenge_method": "S256",
             "state": lib.t3k_auth.state_token,
+            "architecture": architecture,
             "prompt": "select_tone",
         }
         query_string = urllib.parse.urlencode(params)
