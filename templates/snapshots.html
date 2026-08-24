@@ -362,7 +362,7 @@ function addMidiOptions() {
 						console.log("AddSnapshotOptions Error: " + data["errors"])
 					} else {
 						optionsData = getMidiProfileStateData(data);
-						$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData);
+						$("#MIDI_PROFILE_STATE").bootstrapTable('load', optionsData)
 					}
 				}
 			} else {
@@ -375,18 +375,23 @@ function addMidiOptions() {
 function getMidiProfileStateData(snapshotDetails) {
 	result = [];
 	for (midiKey in snapshotDetails.midi_profile_state){
-		result.push({'key': midiKey, 'name': midiKey, 'value': snapshotDetails.midi_profile_state[midiKey].replace(/\\n/g,"\n")});
+		try {
+			val = snapshotDetails.midi_profile_state[midiKey].replace(/\\n/g,"\n")
+			result.push({'key': midiKey, 'name': midiKey, 'value': val})
+		}
+		catch (error) {
+		}
 	}
-	return result;
+	return result
 }
 
 function renderControllers(ctrl) {
   let result = '<div>';
   for (key in ctrl) {
-    result += '<div class="row"><div class="col-md-6>';
+    result += '<div class="row"><div class="col-md-6>'
     result += key;
-    result += '</div><div class="col-md-6">';
-    result += ctrl[key].value;
+    result += '</div><div class="col-md-6">'
+    result += ctrl[key].value
     result += "</div></div>"
   }
   result += '</div>';
