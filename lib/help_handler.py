@@ -70,15 +70,15 @@ class HelpHandler(ZynthianBasicHandler):
             with open(fpath, "r") as f:
                 html = f.read()
                 try:
-                    html = self.get_body(html, subdir)
+                    html = self.get_body(html, subdir, fname= os.path.splitext(html_file)[0])
                 except Exception as e:
                     logging.error(e)
 
         except:
-            html = f"<h3>Content ''{subdir}/{html_file}' not found!</h3>"
+            html = f"<h3>Content '{subdir}/{html_file}' not found!</h3>"
         return html
 
-    def get_body(self, html, subdir=None):
+    def get_body(self, html, subdir=None, fname=None):
         soup = BeautifulSoup(html, "html.parser")
         # Get list of css files
         css_fpaths = []
@@ -104,8 +104,15 @@ class HelpHandler(ZynthianBasicHandler):
         html = ""
         for css_fpath in css_fpaths:
             html += f"<link rel=\"stylesheet\" href=\"{css_fpath}\">\n"
-
         html += f"<link rel=\"stylesheet\" href=\"/help_files/style_webconf.css\">\n"
-        html += "<div class=\"help_ui\">\n" + soup.body.decode_contents() + "\n</div>"
+        html += "<div class=\"help_ui\">\n"
+        if fname:
+            fpath = f"{subdir}/screenshots/{fname}"
+            if os.path.isfile(self.help_files_dpath + "/" + fpath + ".mp4"):
+                html += f"<video class='screenshot' controls autoplay muted loop><source src=\"/help_files/{fpath}.mp4\" type='video/mp4'></video>\n"
+            elif os.path.isfile(self.help_files_dpath + "/" + fpath + ".png"):
+                html += f"<img class='screenshot' src=\"/help_files/{fpath}.png\"/>\n"
+        html += soup.body.decode_contents()
+        html += "\n</div>"
         return html
 
