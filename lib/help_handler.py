@@ -105,35 +105,7 @@ class HelpHandler(ZynthianBasicHandler):
         for css_fpath in css_fpaths:
             html += f"<link rel=\"stylesheet\" href=\"{css_fpath}\">\n"
 
-        html += """
-<style>
-div.help_ui {
-    background-color: #ffffff;
-    font-size: 130%;
-    color: #202020;
-}
-.help_ui h1,
-.help_ui h2,
-.help_ui h3,
-.help_ui h4 {
-    font-family: 'Audiowide';
-    color: #202020;
-}
-.help_ui title {
-    color: #202020;
-}
-.help_ui li {
-    margin-left: 1em;
-}
-.help_ui a,
-.help_ui li a {
-    color: #202090;
-}
-.help_ui .note-block {
-    color: #ffffff;
-}
-</style>
-"""
+        html += f"<link rel=\"stylesheet\" href=\"/help_files/style_webconf.css\">\n"
         html += "<div class=\"help_ui\">\n" + soup.body.decode_contents() + "\n</div>"
         return html
 
