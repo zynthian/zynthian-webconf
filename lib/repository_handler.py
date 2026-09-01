@@ -46,7 +46,8 @@ class RepositoryHandler(ZynthianConfigHandler):
         ['zynthian-webconf', False],
         ['zyncoder', True],
         ['zynthian-sys', True],
-        ['zynthian-data', True]
+        ['zynthian-data', True],
+        ['zynthian-help', True]
     ]
 
     @tornado.web.authenticated

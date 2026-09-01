@@ -49,6 +49,7 @@ class DashboardHandler(ZynthianBasicHandler):
         git_info_sys = self.get_git_info("/zynthian/zynthian-sys")
         git_info_webconf = self.get_git_info("/zynthian/zynthian-webconf")
         git_info_data = self.get_git_info("/zynthian/zynthian-data")
+        git_info_help = self.get_git_info("/zynthian/zynthian-help")
 
         # Get dir paths from config vars
         data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
@@ -187,7 +188,13 @@ class DashboardHandler(ZynthianBasicHandler):
                         'title': 'zynthian-webconf',
                         'value': f"{git_info_webconf['branch']} ({git_info_webconf['gitid'][0:7]}) {'Update available' if git_info_webconf['update'] == '1' else ''}",
                         'url': f"https://github.com/zynthian/zynthian-webconf/commit/{git_info_webconf['gitid']}"
+                    },
+                    'HELP': {
+                        'title': 'zynthian-help',
+                        'value': f"{git_info_help['branch']} ({git_info_help['gitid'][0:7]}) {'Update available' if git_info_help['update'] == '1' else ''}",
+                        'url': f"https://github.com/zynthian/zynthian-help/commit/{git_info_help['gitid']}"
                     }
+
                 }
             },
             'LIBRARY': {
@@ -198,11 +205,11 @@ class DashboardHandler(ZynthianBasicHandler):
                         'value': str(self.get_num_of_files(my_data_dir + "/snapshots")),
                         'url': "/lib-snapshot"
                     },
-                    #'USER_PRESETS': {
-                    #    'title': 'User Presets',
-                    #    'value': str(self.get_num_of_presets(my_data_dir + "/presets")),
-                    #    'url': "/lib-presets"
-                    #},
+                    'USER_PRESETS': {
+                        'title': 'User Presets',
+                        'value': str(self.get_num_of_presets(my_data_dir + "/presets")),
+                        'url': "/lib-presets"
+                    },
                     'COLLECTIONS': {
                         'title': 'Collections',
                         'value': str(self.get_num_of_dirs(data_dir + "/collections")),
@@ -251,6 +258,10 @@ class DashboardHandler(ZynthianBasicHandler):
                     'MIDI': {
                         'title': 'MIDI Services',
                         'value': self.get_midi_network_services()
+                    },
+                    'BLUETOOTH': {
+                        'title': 'Bluetooth',
+                        'value': self.get_bluetooth_status()
                     }
                 }
             }
@@ -462,6 +473,10 @@ class DashboardHandler(ZynthianBasicHandler):
         if DashboardHandler.is_service_active("qmidinet"):
             res.append("QMidiNet")
         return ", ".join(res)
+
+    @staticmethod
+    def get_bluetooth_status():
+        return DashboardHandler.bool2onoff(os.environ.get('ZYNTHIAN_MIDI_BLE_ENABLED', "0"))
 
     @staticmethod
     def is_service_active(service):
