@@ -95,8 +95,7 @@ else:
     # log_level = logging.ERROR
 
 # Set root logging level
-logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s',
-                    stream=sys.stderr, level=log_level)
+logging.basicConfig(format='%(levelname)s:%(module)s: %(message)s', stream=sys.stderr, level=log_level)
 logging.getLogger().setLevel(level=log_level)
 
 # ------------------------------------------------------------------------------
@@ -107,8 +106,7 @@ logging.getLogger().setLevel(level=log_level)
 class CaptureLogStaticFileHandler(tornado.web.StaticFileHandler):
     def set_extra_headers(self, path):
         # Disable cache
-        self.set_header('Cache-Control',
-                        'no-store, no-cache, must-revalidate, max-age=0')
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
 # ------------------------------------------------------------------------------
 # Build Web App & Start Server
@@ -117,8 +115,7 @@ class CaptureLogStaticFileHandler(tornado.web.StaticFileHandler):
 
 # Try to load from config file. If doesn't exist, generate a new one and save it!
 def get_cookie_secret():
-    cookie_secret_fpath = "%s/webconf_cookie_secret.txt" % os.environ.get(
-        'ZYNTHIAN_CONFIG_DIR')
+    cookie_secret_fpath = "%s/webconf_cookie_secret.txt" % os.environ.get('ZYNTHIAN_CONFIG_DIR')
     try:
         with open(cookie_secret_fpath, "r") as fh:
             cookie_secret = fh.read().strip()
@@ -134,8 +131,7 @@ def get_cookie_secret():
                 fh.flush()
                 os.fsync(fh.fileno())
         except Exception as e:
-            logging.error("Can't save cookie secret file '%s': %s" % (
-                cookie_secret_fpath, e))
+            logging.error("Can't save cookie secret file '%s': %s" % (cookie_secret_fpath, e))
         return cookie_secret
 
 
@@ -217,8 +213,7 @@ def make_app():
 
 async def amain():
     app = make_app()
-    app.listen(os.environ.get('ZYNTHIAN_WEBCONF_PORT', 80),
-               max_body_size=MAX_STREAMED_SIZE)
+    app.listen(os.environ.get('ZYNTHIAN_WEBCONF_PORT', 80), max_body_size=MAX_STREAMED_SIZE)
     app.listen(443, max_body_size=MAX_STREAMED_SIZE, ssl_options={
         "certfile": "cert/cert.pem",
         "keyfile": "cert/key.pem"

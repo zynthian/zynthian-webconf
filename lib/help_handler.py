@@ -2,9 +2,9 @@
 # ********************************************************************
 # ZYNTHIAN PROJECT: Zynthian Web Configurator
 #
-# UI Configuration Handler
+# Help Topic Handler
 #
-# Copyright (C) 2017 Fernando Moyano <jofemodo@zynthian.org>
+# Copyright (C) 2026 Fernando Moyano <jofemodo@zynthian.org>
 #
 # ********************************************************************
 #
