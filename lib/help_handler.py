@@ -106,12 +106,19 @@ class HelpHandler(ZynthianBasicHandler):
             html += f"<link rel=\"stylesheet\" href=\"{css_fpath}\">\n"
         html += f"<link rel=\"stylesheet\" href=\"/help_files/style_webconf.css\">\n"
         html += "<div class=\"help_ui\">\n"
+
         if fname:
-            fpath = f"{subdir}/screenshots/{fname}"
+            fpath = f"screenshots/{subdir}/{fname}"
+            fpath_com = f"screenshots/common/{fname}"
             if os.path.isfile(self.help_files_dpath + "/" + fpath + ".mp4"):
                 html += f"<video class='screenshot' controls autoplay muted loop><source src=\"/help_files/{fpath}.mp4\" type='video/mp4'></video>\n"
             elif os.path.isfile(self.help_files_dpath + "/" + fpath + ".png"):
                 html += f"<img class='screenshot' src=\"/help_files/{fpath}.png\"/>\n"
+            elif os.path.isfile(self.help_files_dpath + "/" + fpath_com + ".mp4"):
+                html += f"<video class='screenshot' controls autoplay muted loop><source src=\"/help_files/{fpath_com}.mp4\" type='video/mp4'></video>\n"
+            elif os.path.isfile(self.help_files_dpath + "/" + fpath_com + ".png"):
+                html += f"<img class='screenshot' src=\"/help_files/{fpath_com}.png\"/>\n"
+
         html += soup.body.decode_contents()
         html += "\n</div>"
         return html
