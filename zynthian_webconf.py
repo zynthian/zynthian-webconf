@@ -152,6 +152,7 @@ def make_app():
         (r"/mockup/(.*)$", tornado.web.StaticFileHandler, {'path': 'mockup'}),
         # (r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
         (r"/help$", HelpHandler),
+        (r"/help/(.*)$", HelpHandler),
         (r"/help/(.*)/(.*)$", HelpHandler),
         (r"/help_files/(.*)$", tornado.web.StaticFileHandler, {'path': 'help'}),
         (r"/package_files/(.*)$", tornado.web.StaticFileHandler, {'path': 'packages'}),
