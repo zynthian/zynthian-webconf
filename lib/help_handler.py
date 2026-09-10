@@ -127,10 +127,14 @@ class HelpHandler(ZynthianBasicHandler):
                 html += f"<video class='screenshot' controls autoplay muted loop><source src=\"/help_files/{fpath_lay}.mp4\" type='video/mp4'></video>\n"
             elif os.path.isfile(self.help_files_dpath + "/" + fpath_lay + ".png"):
                 html += f"<img class='screenshot' src=\"/help_files/{fpath_lay}.png\"/>\n"
+            elif os.path.isfile(self.help_files_dpath + "/" + fpath_lay + ".jpg"):
+                html += f"<img class='screenshot' src=\"/help_files/{fpath_lay}.jpg\"/>\n"
             elif os.path.isfile(self.help_files_dpath + "/" + fpath_com + ".mp4"):
                 html += f"<video class='screenshot' controls autoplay muted loop><source src=\"/help_files/{fpath_com}.mp4\" type='video/mp4'></video>\n"
             elif os.path.isfile(self.help_files_dpath + "/" + fpath_com + ".png"):
                 html += f"<img class='screenshot' src=\"/help_files/{fpath_com}.png\"/>\n"
+            elif os.path.isfile(self.help_files_dpath + "/" + fpath_com + ".jpg"):
+                html += f"<img class='screenshot' src=\"/help_files/{fpath_com}.jpg\"/>\n"
         html += soup.body.decode_contents()
         html += "\n</div>"
         return html
