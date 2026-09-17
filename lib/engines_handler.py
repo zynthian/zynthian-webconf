@@ -61,8 +61,7 @@ class EnginesHandler(ZynthianBasicHandler):
             except:
                 pass
         config['ZYNTHIAN_ENGINES_JSON'] = json.JSONEncoder().encode(sengines)
-        config['ZYNTHIAN_ENGINE_CATS_JSON'] = json.JSONEncoder().encode(
-            zynthian_lv2.engine_categories)
+        config['ZYNTHIAN_ENGINE_CATS_JSON'] = json.JSONEncoder().encode(zynthian_lv2.engine_categories)
 
         try:
             config['ZYNTHIAN_ACTIVE_TAB'] = self.get_argument('ZYNTHIAN_ACTIVE_TAB')
@@ -73,10 +72,14 @@ class EnginesHandler(ZynthianBasicHandler):
             config['ZYNTHIAN_ACTIVE_TAB'] = zynthian_lv2.EngineType.MIDI_SYNTH.value.replace(" ", "_")
 
         try:
-            config['ZYNTHIAN_ENGINES_FILTER'] = self.get_argument(
-                'ZYNTHIAN_ENGINES_FILTER')
+            config['ZYNTHIAN_ENGINES_FILTER'] = self.get_argument('ZYNTHIAN_ENGINES_FILTER')
         except:
             config['ZYNTHIAN_ENGINES_FILTER'] = ''
+
+        if "advanced" in self.request.path:
+            config['ADVANCED_EDIT'] = 1
+        else:
+            config['ADVANCED_EDIT'] = 0
 
         if errors:
             logging.error(f"Configuring engines failed: {errors}")
@@ -104,7 +107,7 @@ class EnginesHandler(ZynthianBasicHandler):
     @tornado.web.authenticated
     def put(self):
         ucargs = tornado.escape.recursive_unicode(self.request.arguments)
-        # logging.debug(f"Saving engine info RAW => {ucargs}")
+        #logging.debug(f"Saving engine info RAW => {ucargs}")
         eng_code = ucargs['ENGINE_CODE'][0]
         eng_enabled = bool(int(ucargs['ENGINE_ENABLED'][0]))
         eng_title = ucargs['ENGINE_TITLE'][0]
@@ -138,7 +141,7 @@ class EnginesHandler(ZynthianBasicHandler):
         if edit > 0:
             if edit > zynthian_lv2.engines[eng_code]['EDIT']:
                 zynthian_lv2.engines[eng_code]['EDIT'] = edit
-            # logging.debug(f"Saving engine info => {zynthian_lv2.engines[eng_code]}")
+            #logging.debug(f"Saving engine info => {zynthian_lv2.engines[eng_code]}")
             zynthian_lv2.save_engines()
 
     @tornado.web.authenticated

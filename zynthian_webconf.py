@@ -190,6 +190,7 @@ def make_app():
         (r"/sw-pianoteq$", PianoteqHandler),
         (r"/sw-dsp56300$", dsp56300Handler),
         (r"/sw-engines$", EnginesHandler),
+        (r"/sw-engines-advanced$", EnginesHandler),
         (r"/sw-repos$", RepositoryHandler),
         (r"/ui-options$", UiConfigHandler),
         (r"/ui-keybind$", UiKeybindHandler),
