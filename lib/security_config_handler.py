@@ -187,8 +187,7 @@ class SecurityConfigHandler(ZynthianConfigHandler):
 
             # Change WIFI password
             try:
-                #check_output(f"nmcli con modify zynthian-ap wifi-sec.psk \"{config['PASSWORD'][0]}\"", shell=True)
-                check_output(f"nmcli con modify zynthian-ap wifi-sec.psk", shell=True)
+                check_output(f"nmcli con modify zynthian-ap wifi-sec.psk \"{config['PASSWORD'][0]}\"", shell=True)
             except Exception as e:
                 logging.error(f"Can't set new password for WIFI HotSpot! => {e}")
                 return {'REPEAT_PASSWORD': "Can't set new password for WIFI HotSpot!"}
