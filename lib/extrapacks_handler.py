@@ -138,7 +138,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["installed"] = True
                     self.save_cache_packages()
                 else:
-                    raise Exception(f"Install script failed!")
+                    raise Exception(f"Install script failed:\n{res}")
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
         if errors:

@@ -115,7 +115,54 @@ div.package div.description p {
 	</div>
 
 	<div>
-		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}
+		/-- {% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %} --/
+		{% if errors %}
+		<!-- Error Modal Trigger & Structure -->
+		<div class="modal fade" id="errorModal" tabindex="-1" role="dialog" aria-labelledby="errorModalLabel" aria-hidden="true">
+			<div class="modal-dialog modal-lg" role="document">
+				<div class="modal-content">
+					<div class="modal-header bg-danger text-white">
+						<h5 class="modal-title" id="errorModalLabel">Installation Failed</h5>
+						<button type="button" class="close text-white" data-dismiss="modal" aria-label="Close">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<p>The following errors occurred during installation. You can select and copy this text for troubleshooting:</p>
+						<textarea class="form-control" id="errorText" rows="10" readonly style="font-family: monospace; background-color: #f8f9fa;">{% raw str(errors) %}</textarea>
+					</div>
+					<div class="modal-content-footer p-3 text-right">
+						<button type="button" class="btn btn-secondary" id="copyErrorBtn" onclick="copyErrorToClipboard()">Select all</button>
+						<button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Script to auto-show modal and handle copying -->
+		<script>
+			$(document).ready(function() {
+				// Automatically open the modal on page load if errors exist
+				$('#errorModal').modal('show');
+			});
+
+			function copyErrorToClipboard() {
+				var copyText = document.getElementById("errorText");
+				copyText.select();
+				copyText.setSelectionRange(0, 99999); // For mobile devices
+				navigator.clipboard.writeText(copyText.value);
+
+				// Optional: Visual feedback change for the button
+				var btn = document.getElementById("copyErrorBtn");
+				btn.innerText = "Copied!";
+				btn.className = "btn btn-success";
+				setTimeout(function() {
+					btn.innerText = "Copy to Clipboard";
+					btn.className = "btn btn-secondary";
+				}, 2000);
+			}
+		</script>
+		{% end %}
 	</div>
 </form>
 
