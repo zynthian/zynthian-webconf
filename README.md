@@ -1,10 +1,12 @@
 # Zynthian Web Configuration Tool
 
-[Zynthian](http://zynthian.org) is an Open Synth Platform based in Raspberry Pi, Linux (Raspbian) and Free Software Synthesizers (mostly).
+[Zynthian](http://zynthian.org) is an Open Synth Platform based on Raspberry Pi, Linux and Free Software Synthesizers.
 
-The [ZynthianOS SD-image](https://os.zynthian.org/zynthianos-last-stable.zip) includes all the software you need for building a ZynthianBox, including a good amount of sound libraries and presets. This repository contains the software for the Web Configuration Tool.
+The [ZynthianOS SD-image](https://os.zynthian.org/zynthianos-last-stable.zip) has all the software you need for building a ZynthianBox, including a good amount of sound libraries and presets.
 
-![Image of Zynthian Box Design](http://zynthian.org/img/github/zynthian_webconf_dashboard.png)
+This repository contains the software for the Web Configuration Tool.
+
+![Image of Zynthian Box Design](https://wiki.zynthian.org/images/4/49/Zynthian_webconf_dashboard.png)
 
 You can learn more about the Zynthian Project in any of our sites: 
 
