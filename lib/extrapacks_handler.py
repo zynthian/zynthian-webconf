@@ -47,20 +47,19 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     data_dir = os.environ.get('ZYNTHIAN_DATA_DIR', "/zynthian/zynthian-data")
     my_data_dir = os.environ.get('ZYNTHIAN_MY_DATA_DIR', "/zynthian/zynthian-my-data")
     packages_dir = os.environ.get('ZYNTHIAN_DIR', "/zynthian") + "/zynthian-packages"
+    installed_packages_dir = os.environ.get('ZYNTHIAN_CONFIG_DIR', "/zynthian/config") + "/packages"
     collections_dir = data_dir + "/collections"
 
-    #package_cache_dpath = "/tmp/pack_info"
-    #package_info_cache_fpath = self.package_cache_dpath + "/info.yml"
     package_info_cache_fpath = "/tmp/package_info.yml"
 
     download_url_base = "https://os.zynthian.org/packages"
 
     def prepare(self):
         super().prepare()
-        force_reload = (self.request.headers.get("Cache-Control") == "no-cache")
-        logging.debug(f"FORCE PACKAGE INFO RELOAD => {force_reload}")
-        if force_reload or not self.get_cache_packages():
-            self.get_packages()
+        #force_reload = (self.request.headers.get("Cache-Control") == "no-cache")
+        #logging.debug(f"FORCE PACKAGE INFO RELOAD => {force_reload}")
+        #if force_reload or not self.get_cache_packages():
+        self.get_packages()
 
     @tornado.web.authenticated
     def get(self, errors=None):
@@ -82,22 +81,30 @@ class ExtraPacksHandler(ZynthianBasicHandler):
     def post(self):
         errors = None
         try:
-            install_pack_name = self.get_argument('ZYNTHIAN_EXTRAPACKS_INSTALL')
-            uninstall_pack_name = self.get_argument('ZYNTHIAN_EXTRAPACKS_UNINSTALL')
+            command = self.get_argument('COMMAND')
+            pack_name = self.get_argument('PACKAGE')
         except:
-            install_pack_name = None
-            uninstall_pack_name = None
-        if install_pack_name:
+            command = None
+            pack_name = None
+        if command == "INSTALL":
             try:
-                errors = self.do_install_package(install_pack_name)
+                errors = self.do_install_package(pack_name)
             except Exception as err:
-                errors = f"Can't install package {install_pack_name}"
+                errors = f"Can't install package {pack_name}"
                 logging.error(err)
-        elif uninstall_pack_name:
+        elif command == "UNINSTALL":
             try:
-                errors = self.do_uninstall_package(uninstall_pack_name)
+                errors = self.do_uninstall_package(pack_name)
             except Exception as err:
-                errors = f"Can't uninstall package {uninstall_pack_name}"
+                errors = f"Can't uninstall package {pack_name}"
+                logging.error(err)
+        elif command == "UPDATE":
+            try:
+                errors = self.do_uninstall_package(pack_name)
+                if not errors:
+                    errors = self.do_install_package(pack_name)
+            except Exception as err:
+                errors = f"Can't update package {pack_name}"
                 logging.error(err)
         self.get(errors)
 
@@ -128,7 +135,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 # Check installation and update cache
                 if os.path.isdir(f"{self.collections_dir}/{pack_name}"):
                     info["installed"] = True
-                    self.save_cache_packages()
+                    info["update"] = False
+                    #self.save_cache_packages()
                 else:
                     raise Exception(f"Failed to download/unpack from '{info['pack_url']}'!")
             elif "pack_script" in info and info["pack_script"]:
@@ -136,11 +144,16 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 res = getoutput(f"bash \"{pack_script}\" install")
                 if getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed":
                     info["installed"] = True
-                    self.save_cache_packages()
+                    info["update"] = False
+                    #self.save_cache_packages()
                 else:
                     raise Exception(f"Install script failed!")
+
+            self.save_installed_package(info)
+
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
+
         if errors:
             logging.error(errors)
         else:
@@ -158,7 +171,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     raise Exception(f"Can't uninstall package!")
                 else:
                     info["installed"] = False
-                    self.save_cache_packages()
+                    #self.save_cache_packages()
             elif "pack_script" in info and info["pack_script"]:
                 pack_script = info["pack_script"]
                 res = getoutput(f"bash \"{pack_script}\" uninstall")
@@ -166,7 +179,12 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     raise Exception(f"Can't uninstall package!")
                 else:
                     info["installed"] = False
-                    self.save_cache_packages()
+                    #self.save_cache_packages()
+
+            # Remove from installed packages dir
+            cmd = f"rm -rf \"{self.installed_packages_dir}/{info['cat']}/{pack_name}\""
+            res = getoutput(cmd)
+
         except Exception as e:
             errors = f"Error uninstalling '{pack_name}' => {e}"
         if errors:
@@ -190,6 +208,45 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         with open(self.package_info_cache_fpath, "w") as f:
              yaml.dump(self.pack_info, f)
 
+    def check_update(self, info):
+        installed_info_fpath = f"{self.installed_packages_dir}/{info['cat']}/{info['name']}/info.yml"
+        if os.path.isfile(installed_info_fpath):
+            try:
+                with open(installed_info_fpath, "r") as f:
+                    yml = f.read()
+                    installed_info = yaml.load(yml, Loader=yaml.SafeLoader)
+                    # Check version info
+                    if 'version' in info:
+                        if 'version' in installed_info and installed_info['version'] < info['version']:
+                            return True
+                        else:
+                            return False
+                    # Else try calling script
+                    elif 'pack_script' in info:
+                        available_git_version = getoutput(f"bash \"{info['pack_script']}\" git_version").split("\n")[0]
+                        if available_git_version:
+                            if 'git_version' in installed_info and installed_info['git_version'] == available_git_version:
+                                return False
+                            info['git_version'] = available_git_version
+                            return True
+                        else:
+                            return False
+            except Exception as e:
+                logging.error(e)
+        return False
+
+    def save_installed_package(self, info):
+        # Copy to installed packages dir
+        dst = Path(f"{self.installed_packages_dir}/{info['cat']}")
+        dst.mkdir(parents=True, exist_ok=True)
+        cmd = f"cp -a \"{info['pack_dpath']}\" \"{dst}\""
+        res = getoutput(cmd)
+
+        # Save updated info.yml
+        installed_info_fpath = f"{self.installed_packages_dir}/{info['cat']}/{info['name']}/info.yml"
+        with open(installed_info_fpath, "w") as f:
+             yaml.dump(info, f)
+
     def get_packages(self):
         self.pack_info = {}
         for item in sorted(Path(self.packages_dir).iterdir()):
@@ -203,7 +260,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                         pack_dict[p['name']] = p
                     self.pack_info[item.name] = pack_dict
         # Save package info cache
-        self.save_cache_packages()
+        #self.save_cache_packages()
 
     def get_packages_from_cat(self, dpath):
         pack_info = {}
@@ -231,6 +288,15 @@ class ExtraPacksHandler(ZynthianBasicHandler):
 
             pack_base_url = f"{self.download_url_base}/{cat_name}/{pack_name}"
 
+            # Check installed packages dir
+            if os.path.isdir(self.installed_packages_dir):
+                if os.path.isdir(f"{self.installed_packages_dir}/{cat_name}/{pack_name}"):
+                    installed = True
+                else:
+                    installed = False
+            else:
+                installed = None
+
             # Check for a package script ...
             pack_script = Path(f"{pack_dpath}/{pack_name}.sh")
             if pack_script.is_file():
@@ -238,22 +304,25 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     pack_size_text =  yml_info["size"]
                 else:
                     pack_size_text =  "unknown"
-                # Check if it's installed by running the package script
-                installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
+                if installed is None:
+                    # Check if it's installed by running the package script
+                    installed = (getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed")
                 pack_url = None
             else:
-                # No package script => Check existance of package file => Get package size
+                # No package script
                 pack_script = None
                 pack_url = f"{pack_base_url}.tar.xz"
-                try:
-                    res = requests.head(pack_url)
-                except Exception as e:
-                    logging.error(e)
-                if res.status_code == 200:
-                    if "size" in yml_info:
-                        # Trust size from info file
-                        pack_size_text =  yml_info["size"]
-                    else:
+
+                # Get size from info file
+                if "size" in yml_info:
+                    pack_size_text =  yml_info["size"]
+                # Else check existance of package file => Get package size
+                else:
+                    try:
+                        res = requests.head(pack_url)
+                    except Exception as e:
+                        logging.error(e)
+                    if res.status_code == 200:
                         # Get size by querying package tar.xz file
                         pack_size = int(res.headers["content-length"])
                         if pack_size < 1000:
@@ -264,11 +333,9 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                             pack_size_text = f"{round(pack_size)}MB"
                         else:
                             pack_size_text = f"{pack_size/1000:.1f}GB"
+                if installed is None:
                     # Check if it's installed by looking for the collection dir
                     installed = os.path.isdir(f"{self.collections_dir}/{pack_name}")
-                else:
-                    logging.error(f"Can't find package or script for '{pack_name}'!")
-                    continue
 
             info = {
                 "cat": cat_name,
@@ -282,12 +349,13 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 "content": "miscelanea",
                 "size": pack_size_text,
                 "source_url": "",
+                "pack_dpath": str(pack_dpath),
                 "pack_url": pack_url,
                 "pack_script": str(pack_script),
                 "restart_ui": False,
-                "installed": installed
+                "installed": installed,
             }
-            # Complete collection info
+            # Complete package info
             if "title" in yml_info:
                 info["title"] = yml_info["title"]
             if "author" in yml_info:
@@ -308,6 +376,12 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 info["content"] = yml_info['content']
             if "restart_ui" in yml_info:
                 info["restart_ui"] = yml_info['restart_ui']
+            if "version" in yml_info:
+                info["version"] = yml_info['version']
+            if installed:
+                info["update"] = self.check_update(info)
+            else:
+                info["update"] = False
             # Add to the list
             pack_info[pack_name] = info
 

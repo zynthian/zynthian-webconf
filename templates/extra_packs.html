@@ -15,14 +15,27 @@ div.package {
 }
 
 div.installed {
-	background-color: #d0ffd0;
+	background-color: #e0e0e0;
+	/*background-color: #d0ffd0;*/
 }
 
-div.package img {
+div.package div.right_panel {
 	float: right;
-	width: 25%;
+	width: 30%;
 	margin: 1em;
 	margin-right: 0em;
+}
+
+div.package div.right_panel img {
+	width: 100%;
+}
+
+div.package div.right_panel input {
+	margin-top: 0.3em;
+}
+
+div.clear {
+	clear: both;
 }
 
 div.package div.info {
@@ -61,8 +74,8 @@ div.package div.description p {
 
 <form id="extra-packs-form" action="/lib-extra-packs" enctype="multipart/form-data" method="post">
 	<input type="hidden" id="ZYNTHIAN_ACTIVE_TAB" name="ZYNTHIAN_ACTIVE_TAB" value="{{ config['ZYNTHIAN_ACTIVE_TAB'] }}" />
-	<input type="hidden" id="ZYNTHIAN_EXTRAPACKS_INSTALL" name="ZYNTHIAN_EXTRAPACKS_INSTALL" value="">
-	<input type="hidden" id="ZYNTHIAN_EXTRAPACKS_UNINSTALL" name="ZYNTHIAN_EXTRAPACKS_UNINSTALL" value="">
+	<input type="hidden" id="COMMAND" name="COMMAND" value="">
+	<input type="hidden" id="PACKAGE" name="PACKAGE" value="">
 
     <ul class="nav nav-tabs" role="tablist">
 	{% for pack_type, packs in config['packs'].items() %}
@@ -82,7 +95,21 @@ div.package div.description p {
 		{% for pack_name, info in packs.items() %}
 			{% set _pack_name = pack_name.replace(' ','_') %}
 			<div id="pack_{{ _pack_name }}" class="package {% if info['installed'] %}installed{% end %}">
-				<img src="{{ info['image'] }}">
+
+				<div class="right_panel">
+					<img src="{{ info['image'] }}">
+					{% if not info['installed'] %}
+					<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install" onclick="installPackage('{{ pack_name }}')">
+					{% elif 'pack_url' in info %}
+					{% if info['update'] %}
+					<input id="update_{{ pack_name }}" class="btn btn-lg btn-info" type="button" value="Update" onclick="updatePackage('{{ pack_name }}')">
+					{% end %}
+					<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-danger" type="button" value="Remove" onclick="uninstallPackage('{{ pack_name }}')">
+					{% else %}
+					<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Installed!" onclick="">
+					{% end %}
+				</div>
+
 				<h3>{{ info['title'] }}</h3>
 				<div class="info">
 					<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br/>
@@ -101,13 +128,7 @@ div.package div.description p {
 					{% raw info['description_extended'] %}
 					</div>
 				</div>
-				{% if not info['installed'] %}
-				<input id="install_{{ pack_name }}" class="btn btn-lg btn-success" type="button" value="Install '{{ info['name'] }}'" onclick="installPackage('{{ pack_name }}')">
-				{% elif 'pack_url' in info %}
-				<input id="uninstall_{{ pack_name }}" class="btn btn-lg btn-theme" type="button" value="Uninstall '{{ info['name'] }}'" onclick="uninstallPackage('{{ pack_name }}')">
-				{% else %}
-				<input id="none_{{ pack_name }}" class="btn btn-lg btn-warning" type="button" value="Already Installed!" onclick="">
-				{% end %}
+				<div class="clear"></div>
 			</div>
 		{% end %}
 		</div>
@@ -145,31 +166,34 @@ function collapse_description(pack_id) {
 }
 
 function installPackage(pack_name) {
-	if (confirm("Are you sure to install package '" + pack_name + "'?\nIt would take some time to download and install.")) {
-		showInstallingBusy(pack_name);
-		$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val(pack_name)
-		$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val("")
+	if (confirm("Are you sure to install package '" + pack_name + "'?\nIt could take some time to download and install.")) {
+		showMessageBusy("Installing package '" + pack_name + "'");
+		$("#COMMAND").val("INSTALL")
+		$("#PACKAGE").val(pack_name)
 		$("#extra-packs-form").submit()
 	}
 }
 
 function uninstallPackage(pack_name) {
-	if (confirm("Are you sure to uninstall package '" + pack_name + "'?")) {
-		showUninstallingBusy(pack_name);
-		$("#ZYNTHIAN_EXTRAPACKS_UNINSTALL").val(pack_name)
-		$("#ZYNTHIAN_EXTRAPACKS_INSTALL").val("")
+	if (confirm("Are you sure to remove package '" + pack_name + "'?")) {
+		showMessageBusy("Uninstalling package '" + pack_name + "'");
+		$("#COMMAND").val("UNIINSTALL")
+		$("#PACKAGE").val(pack_name)
 		$("#extra-packs-form").submit()
 	}
 }
 
-function showInstallingBusy(pack_name){
-	$("#loading-div-background #text").html("Installing package '" + pack_name + "'");
-	$("#loading-div-background").show();
-	show_busy()
+function updatePackage(pack_name) {
+	if (confirm("Are you sure to update package '" + pack_name + "'?\nIt could take some time to download and update.")) {
+		showMessageBusy("Updating package '" + pack_name + "'");
+		$("#COMMAND").val("UPDATE")
+		$("#PACKAGE").val(pack_name)
+		$("#extra-packs-form").submit()
+	}
 }
 
-function showUninstallingBusy(pack_name){
-	$("#loading-div-background #text").html("Uninstalling package '" + pack_name + "'");
+function showMessageBusy(message){
+	$("#loading-div-background #text").html(message);
 	$("#loading-div-background").show();
 	show_busy()
 }
