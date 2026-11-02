@@ -145,42 +145,6 @@ header#header ul.navbar-nav .dropdown .dropdown-menu li a:hover {
   background-color: #000000;
   /*background-color: @grey;*/
 }
-.modal {
-  color: #606060;
-  background-color: #000000;
-  overflow-y: auto;
-}
-.modal-header,
-.modal-footer {
-  color: #ffffff;
-  background-color: #606060;
-}
-.modal-body {
-  color: #ffffff;
-  background-color: #000000;
-}
-.modal-body input,
-.modal-body textarea,
-.modal-body select {
-  color: #202020;
-}
-.modal-body input[type='file'] {
-  color: #ffffff;
-}
-.modal h3 {
-  text-transform: none;
-  color: #ffffff;
-}
-.modal h4 {
-  text-transform: none;
-  color: #ffffff;
-}
-.modal p {
-  margin-top: 12px;
-  margin-bottom: 0px;
-  font-size: 100%;
-  color: #ffffff;
-}
 .content-section h2 {
   font-family: 'audiowide';
 }
@@ -210,6 +174,50 @@ ol {
 }
 .content-section li a:hover {
   color: #c00127;
+}
+.modal {
+  color: #606060;
+  background-color: #000000;
+  overflow-y: auto;
+}
+.modal-header,
+.modal-footer {
+  color: #ffffff;
+  background-color: #606060;
+}
+.modal-header .close {
+  margin-top: 0.2em;
+  font-size: 140%;
+  color: #ffffff;
+}
+.modal-body {
+  color: #ffffff;
+  background-color: #000000;
+}
+.modal-body input,
+.modal-body textarea,
+.modal-body select {
+  color: #202020;
+}
+.modal-body input[type='file'] {
+  color: #ffffff;
+}
+.modal h3 {
+  font-family: 'audiowide';
+  font-size: 160%;
+  text-transform: none;
+  color: #ffffff;
+}
+.modal h4 {
+  font-size: 140%;
+  text-transform: none;
+  color: #ffffff;
+}
+.modal p {
+  margin-top: 12px;
+  margin-bottom: 0px;
+  font-size: 120%;
+  color: #ffffff;
 }
 .form-control-feedback {
   border-radius: 0px 8px 8px 0px;

@@ -136,7 +136,53 @@ div.package div.description p {
 	</div>
 
 	<div>
-		{% if errors %}<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>{% end %}
+		{% if errors %}
+		<!--<div class="alert alert-danger">{% raw str(errors).replace("\n", "<br>") %}</div>-->
+		<!-- Error Modal Trigger & Structure -->
+		<div id="errorModal" class="modal">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header bg-danger text-white">
+						<button type="button" class="close btn btn-lg" data-dismiss="modal" aria-label="Close"><i class="fa fa-times-circle"></i></button>
+						<h4 class="modal-title" id="errorModalLabel">Action Failed</h4>
+					</div>
+					<div class="modal-body">
+						<p>The following errors occurred while executing the action. You can copy this text for troubleshooting:</p>
+						<br/>
+						<textarea class="form-control" id="errorText" rows="10" readonly style="font-family: monospace; background-color: #f8f9fa;">{% raw str(errors) %}</textarea>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-lg btn-theme" id="copyErrorBtn" onclick="copyErrorToClipboard()">Copy to clipboard</button>
+						<button type="button" class="btn btn-lg btn-danger" data-dismiss="modal">Close</button>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Script to auto-show modal and handle copying -->
+		<script>
+			$(document).ready(function() {
+				// Automatically open the modal on page load if errors exist
+				$('#errorModal').modal('show');
+			});
+
+			function copyErrorToClipboard() {
+				var copyText = document.getElementById("errorText");
+				copyText.select();
+				copyText.setSelectionRange(0, 99999); // For mobile devices
+				navigator.clipboard.writeText(copyText.value);
+
+				// Optional: Visual feedback change for the button
+				var btn = document.getElementById("copyErrorBtn");
+				btn.innerText = "Copied!";
+				btn.className = "btn btn-lg btn-success";
+				setTimeout(function() {
+					btn.innerText = "Copy to Clipboard";
+					btn.className = "btn btn-lg btn-theme";
+				}, 2000);
+			}
+		</script>
+		{% end %}
 	</div>
 </form>
 

@@ -90,13 +90,13 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             try:
                 errors = self.do_install_package(pack_name)
             except Exception as err:
-                errors = f"Can't install package {pack_name}"
+                errors = f"Can't install package {pack_name}.\n{errors}"
                 logging.error(err)
         elif command == "UNINSTALL":
             try:
                 errors = self.do_uninstall_package(pack_name)
             except Exception as err:
-                errors = f"Can't uninstall package {pack_name}"
+                errors = f"Can't uninstall package {pack_name}.\n{errors}"
                 logging.error(err)
         elif command == "UPDATE":
             try:
@@ -104,7 +104,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 if not errors:
                     errors = self.do_install_package(pack_name)
             except Exception as err:
-                errors = f"Can't update package {pack_name}"
+                errors = f"Can't update package {pack_name}.\n{errors}"
                 logging.error(err)
         self.get(errors)
 
