@@ -315,7 +315,7 @@ class DashboardHandler(ZynthianBasicHandler):
     def get_cpu_info():
         res = os.environ.get('RBPI_VERSION')
         if res.startswith("Unknown"):
-            res = os.environ.get('MACHINE_HW_NAME')
+            res = "CPU " + os.environ.get('MACHINE_HW_NAME')
         return res
 
     @staticmethod
