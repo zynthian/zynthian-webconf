@@ -72,7 +72,7 @@ class DashboardHandler(ZynthianBasicHandler):
                 'icon': 'glyphicon glyphicon-cog',
                         'info': {
                             'RBPI_VERSION': {
-                                'title': os.environ.get('RBPI_VERSION')
+                                'title': self.get_cpu_info()
                             },
                             'SOUNDCARD_NAME': {
                                 'title': 'Audio',
@@ -310,6 +310,13 @@ class DashboardHandler(ZynthianBasicHandler):
         with open("/etc/hostname") as f:
             hostname = f.readline()
             return hostname
+
+    @staticmethod
+    def get_cpu_info():
+        res = os.environ.get('RBPI_VERSION')
+        if res.startswith("Unknown"):
+            res = os.environ.get('MACHINE_HW_NAME')
+        return res
 
     @staticmethod
     def get_os_info():
