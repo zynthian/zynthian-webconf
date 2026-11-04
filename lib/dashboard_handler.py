@@ -349,7 +349,10 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_i2c_chips():
         res = []
-        out = check_output("i2cdetect -y 1", shell=True).decode().split("\n")
+        try:
+            out = check_output("i2cdetect -y 1", shell=True).decode().split("\n")
+        except:
+            out = ""
         if len(out) > 3:
             for i in range(1, 8):
                 for adr in out[i][4:].split(" "):
