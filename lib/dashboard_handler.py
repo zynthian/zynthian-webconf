@@ -413,7 +413,7 @@ class DashboardHandler(ZynthianBasicHandler):
 
     @staticmethod
     def get_root_device():
-        return check_output("findmnt -n -o SOURCE /", encoding="utf-8", shell=True).strip()
+        return check_output("findmnt -n -o SOURCE / | cut -d'[' -f1", encoding="utf-8", shell=True).strip()
 
     @staticmethod
     def get_root_info():
