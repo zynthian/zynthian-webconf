@@ -403,7 +403,7 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_volume_info(volume=None):
         if volume is None:
-            volume = "/dev/mmcblk0p2\\|/dev/root"
+            volume = "/dev/mmcblk0p2\\|/dev/md0\\|/dev/root"
         try:
             out = check_output(f"df -hT | grep '{volume}'", shell=True).decode()
             parts = re.split(r'\s+', out)
