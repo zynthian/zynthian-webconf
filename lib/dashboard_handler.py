@@ -72,7 +72,7 @@ class DashboardHandler(ZynthianBasicHandler):
                 'icon': 'glyphicon glyphicon-cog',
                         'info': {
                             'RBPI_VERSION': {
-                                'title': os.environ.get('RBPI_VERSION')
+                                'title': self.get_cpu_info()
                             },
                             'SOUNDCARD_NAME': {
                                 'title': 'Audio',
@@ -312,6 +312,18 @@ class DashboardHandler(ZynthianBasicHandler):
             return hostname
 
     @staticmethod
+    def get_cpu_info():
+        res = os.environ.get('RBPI_VERSION')
+        if res.startswith("Unknown"):
+            res = os.environ.get('MACHINE_HW_NAME', "Unknown")
+            virtu = os.environ.get('VIRTUALIZATION', "")
+            if virtu:
+                res = virtu.upper() + " @ " + res
+            else:
+                res = "CPU " + res
+        return res
+
+    @staticmethod
     def get_os_info():
         return check_output("lsb_release -ds", shell=True).decode()
 
@@ -391,7 +403,7 @@ class DashboardHandler(ZynthianBasicHandler):
     @staticmethod
     def get_volume_info(volume=None):
         if volume is None:
-            volume = "/dev/mmcblk0p2\\|/dev/root"
+            volume = "/dev/mmcblk0p2\\|/dev/md0\\|/dev/root"
         try:
             out = check_output(f"df -hT | grep '{volume}'", shell=True).decode()
             parts = re.split(r'\s+', out)
@@ -401,7 +413,7 @@ class DashboardHandler(ZynthianBasicHandler):
 
     @staticmethod
     def get_root_device():
-        return check_output("findmnt -n -o SOURCE /", encoding="utf-8", shell=True).strip()
+        return check_output("findmnt -n -o SOURCE / | cut -d'[' -f1", encoding="utf-8", shell=True).strip()
 
     @staticmethod
     def get_root_info():

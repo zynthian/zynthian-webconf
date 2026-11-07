@@ -48,6 +48,7 @@ class KitConfigHandler(ZynthianConfigHandler):
         'V1',
         'Z2',
         'Z2 PROTOTYPE',
+        'LXC@x86_64'
         'Custom'
     ]
 
@@ -80,20 +81,27 @@ class KitConfigHandler(ZynthianConfigHandler):
     def configure_kit(self, pconfig):
         kit_version = pconfig['ZYNTHIAN_KIT_VERSION'][0]
         if kit_version != "Custom":
-            if kit_version == "MINI V2":
+            if kit_version == "LXC@x86_64":
+                soundcard_name = "Dummy device"
+                display_name = "VNC UI"
+                wiring_layout = "TOUCH_ONLY"
+                wiring_layout_custom_profile = "v5"
+                ui_font_size = "16"
+                overclocking = "None"
+            elif kit_version == "MINI V2":
                 soundcard_name = "HifiBerry DAC+ light"
                 display_name = "MIPI DSI 800x480 (inverted)"
                 wiring_layout = "MINI_V2"
                 wiring_layout_custom_profile = "v5"
                 ui_font_size = "16"
-                overclocking = "Medium"
+                overclocking = "None"
             elif kit_version == "V5":
                 soundcard_name = "V5 ADAC"
                 display_name = "MIPI DSI 800x480 (inverted)"
                 wiring_layout = "V5"
                 wiring_layout_custom_profile = "v5"
                 ui_font_size = "16"
-                overclocking = "Maximum"
+                overclocking = "Medium"
             elif kit_version == "Z2":
                 soundcard_name = "Z2 ADAC"
                 display_name = "Z2 Display"
