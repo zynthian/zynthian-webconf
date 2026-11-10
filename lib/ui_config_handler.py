@@ -49,7 +49,7 @@ class UiConfigHandler(ZynthianConfigHandler):
         ('ZYNTHIAN_MIXER_DPM_RANGE_DB', ("DPM range", 72.0, 24.0, 120.0)),
         ('ZYNTHIAN_MIXER_DPM_ZERO_DB', ("DPM 0dB reference", -18.0, None, -3.0)),
         ('ZYNTHIAN_MIXER_DPM_DECAY_DB_PER_S', ("DPM decay rate", 40.0, 1.0, 200.0)),
-        ('ZYNTHIAN_MIXER_DPM_HOLD_S', ("DPM peak hold time", 1.2, 0.0, 30.0)),
+        ('ZYNTHIAN_MIXER_DPM_HOLD_S', ("DPM peak hold time", 2.0, 0.0, 30.0)),
         ('ZYNTHIAN_MIXER_FADER_ZERO_DB', ("Fader 0dB reference", -10.0, -40.0, -1.0)),
     ])
 
