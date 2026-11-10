@@ -23,7 +23,6 @@
 # ********************************************************************
 
 import os
-import math
 import logging
 import tornado.web
 from collections import OrderedDict
@@ -44,76 +43,6 @@ class UiConfigHandler(ZynthianConfigHandler):
         "Orbitron",
         "Abel"
     ]
-
-    mixer_settings = OrderedDict([
-        ('ZYNTHIAN_MIXER_DPM_RANGE_DB', ("DPM range", 72.0, 24.0, 120.0)),
-        ('ZYNTHIAN_MIXER_DPM_ZERO_DB', ("DPM 0dB reference", -18.0, None, -3.0)),
-        ('ZYNTHIAN_MIXER_DPM_DECAY_DB_PER_S', ("DPM decay rate", 40.0, 1.0, 200.0)),
-        ('ZYNTHIAN_MIXER_DPM_HOLD_S', ("DPM peak hold time", 2.0, 0.0, 30.0)),
-        ('ZYNTHIAN_MIXER_FADER_ZERO_DB', ("Fader 0dB reference", -10.0, -40.0, -1.0)),
-    ])
-
-    def get_mixer_setting(self, name):
-        """ Get current value of a mixer meter / fader setting as a string suitable for display """
-
-        return os.environ.get(name, f"{self.mixer_settings[name][1]:g}")
-
-    def validate_mixer_settings(self):
-        """ Validate posted mixer meter / fader settings
-
-        Valid values are normalised in the request arguments.
-        Invalid values are removed from the request arguments so that they are not saved, leaving the previous value in place.
-        Returns: Dictionary of error messages indexed by variable name (empty if all valid)
-        """
-
-        errors = {}
-        values = {}
-        zero_name = 'ZYNTHIAN_MIXER_DPM_ZERO_DB'
-        range_name = 'ZYNTHIAN_MIXER_DPM_RANGE_DB'
-
-        for name, (label, default, vmin, vmax) in self.mixer_settings.items():
-            raw = self.get_argument(name, None)
-            if raw is None:
-                continue
-            try:
-                val = float(raw)
-            except ValueError:
-                val = math.nan
-            if math.isfinite(val):
-                values[name] = val
-            else:
-                errors[name] = f"{label} must be a number"
-
-        label, default, vmin, vmax = self.mixer_settings[range_name]
-        if range_name in values and not vmin <= values[range_name] <= vmax:
-            errors[range_name] = f"{label} must be between {vmin:g} and {vmax:g}"
-            del values[range_name]
-        if range_name in values:
-            range_db = values[range_name]
-        else:
-            try:
-                range_db = float(self.get_mixer_setting(range_name))
-            except ValueError:
-                range_db = math.nan
-            if not vmin <= range_db <= vmax:
-                range_db = default
-
-        for name, (label, default, vmin, vmax) in self.mixer_settings.items():
-            if name == range_name or name not in values:
-                continue
-            if name == zero_name:
-                # Reference must leave at least 6dB of meter scale below it and must not exceed the start of the red range (-3dBFS)
-                vmin = 6.0 - range_db
-            if not vmin <= values[name] <= vmax:
-                errors[name] = f"{label} must be between {vmin:g} and {vmax:g}"
-                del values[name]
-
-        for name in self.mixer_settings:
-            if name in values:
-                self.request.arguments[name] = [f"{values[name]:g}".encode()]
-            elif name in self.request.arguments:
-                del self.request.arguments[name]
-        return errors
 
     @tornado.web.authenticated
     def get(self, errors=None):
@@ -217,42 +146,6 @@ class UiConfigHandler(ZynthianConfigHandler):
                 'type': 'text',
                 'title': 'Long-push time (ms)',
                 'value': os.environ.get('ZYNTHIAN_UI_SWITCH_LONG_MS', '2000'),
-                'advanced': True
-            },
-            '_SECTION_UI_MIXER_METERS_': {
-                'type': 'html',
-                'content': "<h3>Mixer Meters & Faders</h3>"
-                           "<p class=\"text-muted\">Meter is red from -3dBFS to 0dBFS and yellow from the 0dB reference to -3dBFS.</p>",
-                'advanced': True
-            },
-            'ZYNTHIAN_MIXER_DPM_RANGE_DB': {
-                'type': 'text',
-                'title': 'Meter range (dB below 0dBFS)',
-                'value': self.get_mixer_setting('ZYNTHIAN_MIXER_DPM_RANGE_DB'),
-                'advanced': True
-            },
-            'ZYNTHIAN_MIXER_DPM_ZERO_DB': {
-                'type': 'text',
-                'title': 'Meter 0dB reference (dBFS)',
-                'value': self.get_mixer_setting('ZYNTHIAN_MIXER_DPM_ZERO_DB'),
-                'advanced': True
-            },
-            'ZYNTHIAN_MIXER_DPM_DECAY_DB_PER_S': {
-                'type': 'text',
-                'title': 'Meter decay rate (dB per second)',
-                'value': self.get_mixer_setting('ZYNTHIAN_MIXER_DPM_DECAY_DB_PER_S'),
-                'advanced': True
-            },
-            'ZYNTHIAN_MIXER_DPM_HOLD_S': {
-                'type': 'text',
-                'title': 'Meter peak hold time (seconds, 0 for none)',
-                'value': self.get_mixer_setting('ZYNTHIAN_MIXER_DPM_HOLD_S'),
-                'advanced': True
-            },
-            'ZYNTHIAN_MIXER_FADER_ZERO_DB': {
-                'type': 'text',
-                'title': 'Fader 0dB reference (dB relative to top of fader)',
-                'value': self.get_mixer_setting('ZYNTHIAN_MIXER_FADER_ZERO_DB'),
                 'advanced': True
             },
             '_SECTION_UI_COLORS_': {
@@ -382,8 +275,7 @@ class UiConfigHandler(ZynthianConfigHandler):
             'ZYNTHIAN_UI_TOUCH_NAVIGATION', '')
         self.request.arguments['ZYNTHIAN_VNCSERVER_ENABLED'] = self.request.arguments.get(
             'ZYNTHIAN_VNCSERVER_ENABLED', '0')
-        errors = self.validate_mixer_settings()
         escaped_arguments = tornado.escape.recursive_unicode(self.request.arguments)
-        self.update_config(escaped_arguments)
+        errors = self.update_config(escaped_arguments)
         self.restart_ui_flag = True
         self.get(errors)
