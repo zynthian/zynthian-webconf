@@ -41,13 +41,23 @@ from zyngui.zynthian_gui import zynthian_gui
 
 ADS1115_I2C_ADDRESS = ""
 MCP4728_I2C_ADDRESS = ""
+MCP23017_I2C_ADDRESS_1 = ""
+MCP23017_I2C_ADDRESS_2 = ""
+MCP23017_I2C_ADDRESSES = []
 
 for i2chip in DashboardHandler.get_i2c_chips():
     parts = i2chip.split('@')
-    if parts[0] == 'ADS1115':
+    if parts[0] == 'MCP23017':
+        MCP23017_I2C_ADDRESSES.append(parts[1])
+    elif parts[0] == 'ADS1115':
         ADS1115_I2C_ADDRESS = parts[1]
     elif parts[0] == 'MCP4728':
         MCP4728_I2C_ADDRESS = parts[1]
+
+if len(MCP23017_I2C_ADDRESSES) > 0:
+    MCP23017_I2C_ADDRESS_1 = MCP23017_I2C_ADDRESSES[0]
+    if len(MCP23017_I2C_ADDRESSES) > 1:
+        MCP23017_I2C_ADDRESS_2 = MCP23017_I2C_ADDRESSES[1]
 
 # ------------------------------------------------------------------------------
 # Wiring Configuration
@@ -632,7 +642,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP23017_I2C_ADDRESS'),
                     'options': ['', '0x20', '0x21', '0x22', '0x23', '0x24', '0x25', '0x26', '0x27'],
                     'advanced': True,
-                    'disabled': custom_options_disabled,
+                    'disabled': False,
                     'div_class': "col-sm-4"
                 }
                 config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP23017_INTA_PIN'] = {
@@ -653,7 +663,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                         '27': 'WPi-GPIO 27 (pin 36)'
                     },
                     'advanced': True,
-                    'disabled': custom_options_disabled,
+                    'disabled': False,
                     'div_class': "col-sm-4"
                 }
                 config['ZYNTHIAN_WIRING_ZYNAPTIK_MCP23017_INTB_PIN'] = {
@@ -674,7 +684,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                         '27': 'WPi-GPIO 27 (pin 36)'
                     },
                     'advanced': True,
-                    'disabled': custom_options_disabled,
+                    'disabled': False,
                     'div_class': "col-sm-4"
                 }
             else:
@@ -697,7 +707,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_ADS1115_I2C_ADDRESS', ADS1115_I2C_ADDRESS),
                     'options': ['', '0x48', '0x49', '0x4A', '0x4B'],
                     'advanced': True,
-                    'disabled': custom_options_disabled,
+                    'disabled': False,
                     'div_class': "col-sm-4"
                 }
             else:
@@ -712,7 +722,7 @@ class WiringConfigHandler(ZynthianConfigHandler):
                     'value': os.environ.get('ZYNTHIAN_WIRING_ZYNAPTIK_MCP4728_I2C_ADDRESS', MCP4728_I2C_ADDRESS),
                     'options': ['', '0x60', '0x61', '0x62', '0x63', '0x64', '0x65', '0x66', '0x67'],
                     'advanced': True,
-                    'disabled': custom_options_disabled,
+                    'disabled': False,
                     'div_class': "col-sm-4"
                 }
             else:
