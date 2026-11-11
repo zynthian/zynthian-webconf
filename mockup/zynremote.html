@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Zynthian Remote</title>
+
+<link rel="stylesheet" href="css/zynthian-mockup.css" />
+<link rel="stylesheet" href="css/audiowide.css" />
+<link rel="stylesheet" href="css/font-awesome-all-min.css" />
+
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    body {
+        background-color: #000;
+        overflow: hidden;
+    }
+    .audio-wrapper {
+        float: right;
+    }
+    /* Style the audio iframe to look like a small control widget */
+    .audio-frame {
+        width: 300px;
+        height: 45px;
+        border: none;
+        overflow: hidden;
+        background: transparent;
+        overflow: hidden;
+    }
+    /* Responsive, Proportionate VNC Frame Wrapper */
+    .vnc-frame {
+        width: 100%;
+        height: 100%;
+
+        /* Set this to match Zynthian resolution */
+        /*max-width: 800px;
+        max-height: 480px;*/
+
+        border: 0px;
+        background-color: #000;
+        overflow: hidden;
+    }
+
+    div.zynthian_mockup_container {
+        display: block;
+    }
+
+    svg.v5_mockup {
+        display: block;
+    }
+
+    svg.v5_mockup svg#push-buttons image {
+        cursor: pointer;
+    }
+
+    svg.v5_mockup svg#push-knobs circle {
+        cursor: pointer;
+        opacity: 0.01;
+        r: 40px;
+        fill: #808080;
+    }
+    svg.v5_mockup svg#push-knobs circle:hover {
+        cursor: pointer;
+        opacity: 0.1;
+        fill: #c0c000;
+    }
+</style>
+</head>
+
+<body>
+    <div class="audio-wrapper">
+        <iframe
+            class="audio-frame"
+            id="audioStreamNode">
+        </iframe>
+    </div>
+
+    <div id="zynthian_mockup_container" class="zynthian_mockup_container">
+
+    <svg id="v5_mockup" class="v5_mockup" viewBox="0 0 1920 1000" >
+        <svg id="leds" x="133" y="208">
+            <circle id="led-11" cx="50" cy="50" fill="#505050" />
+            <circle id="led-12" cx="172" cy="50" fill="#505050" />
+            <circle id="led-13" cx="294" cy="50" fill="#505050" />
+            <circle id="led-14" cx="416" cy="50" fill="#505050" />
+
+            <circle id="led-21" cx="50" cy="165" fill="#505050" />
+            <circle id="led-22" cx="172" cy="165" fill="#505050" />
+            <circle id="led-23" cx="294" cy="165" fill="#505050" />
+            <circle id="led-24" cx="416" cy="165" fill="#505050" />
+
+            <circle id="led-31" cx="50" cy="275" fill="#505050" />
+            <circle id="led-32" cx="172" cy="275" fill="#505050" />
+            <circle id="led-33" cx="294" cy="275" fill="#505050" />
+            <circle id="led-34" cx="416" cy="275" fill="#505050" />
+
+            <circle id="led-41" cx="50" cy="390" fill="#505050" />
+            <circle id="led-42" cx="172" cy="390" fill="#505050" />
+            <circle id="led-43" cx="294" cy="390" fill="#505050" />
+            <circle id="led-44" cx="416" cy="390" fill="#505050" />
+
+            <circle id="led-51" cx="50" cy="505" fill="#505050" />
+            <circle id="led-52" cx="172" cy="505" fill="#505050" />
+            <circle id="led-53" cx="294" cy="505" fill="#505050" />
+            <circle id="led-54" cx="416" cy="505" fill="#505050" />
+        </svg>
+
+        <image id="v5_render" href="v5_render_zenital_mockup_1910.png" x="0" y="0" />
+        <!-- Embedded Native KasmVNC Visual Interface -->
+        <foreignObject x="731" y="254" width="800" height="480">
+            <iframe
+                class="vnc-frame"
+                id="vncVisualNode"
+                scrolling="no"
+                allow="clipboard-read; clipboard-write">
+            </iframe>
+
+        </foreignObject>
+
+        <svg id="push-buttons" x="68" y="155">
+            <image id="but-11" href="button_push.png" x="50" y="50" data-id="0" />
+            <image id="but-12" href="button_push.png" x="172" y="50" data-id="1" />
+            <image id="but-13" href="button_push.png" x="294" y="50" data-id="2" />
+            <image id="but-14" href="button_push.png" x="416" y="50" data-id="3" />
+
+            <image id="but-21" href="button_push.png" x="50" y="165" data-id="4" />
+            <image id="but-22" href="button_push.png" x="172" y="165" data-id="5" />
+            <image id="but-23" href="button_push.png" x="294" y="165" data-id="6" />
+            <image id="but-24" href="button_push.png" x="416" y="165" data-id="7" />
+
+            <image id="but-31" href="button_push.png" x="50" y="275" data-id="8" />
+            <image id="but-32" href="button_push.png" x="172" y="275" data-id="9" />
+            <image id="but-33" href="button_push.png" x="294" y="275" data-id="10" />
+            <image id="but-34" href="button_push.png" x="416" y="275" data-id="11" />
+
+            <image id="but-41" href="button_push.png" x="50" y="390" data-id="12" />
+            <image id="but-42" href="button_push.png" x="172" y="390" data-id="13" />
+            <image id="but-43" href="button_push.png" x="294" y="390" data-id="14" />
+            <image id="but-44" href="button_push.png" x="416" y="390" data-id="15" />
+
+            <image id="but-51" href="button_push.png" x="50" y="505" data-id="16" />
+            <image id="but-52" href="button_push.png" x="172" y="505" data-id="17" />
+            <image id="but-53" href="button_push.png" x="294" y="505" data-id="18" />
+            <image id="but-54" href="button_push.png" x="416" y="505" data-id="19" />
+        </svg>
+
+        <svg id="push-buttons-outline" x="79" y="154">
+            <rect id="bout-11" x="50" y="50" data-id="0" />
+            <rect id="bout-12" x="172" y="50" data-id="1" />
+            <rect id="bout-13" x="294" y="50" data-id="2" />
+            <rect id="bout-14" x="416" y="50" data-id="3" />
+
+            <rect id="bout-21" x="50" y="165"  data-id="4" />
+            <rect id="bout-22" x="172" y="165" data-id="5" />
+            <rect id="bout-23" x="294" y="165" data-id="6" />
+            <rect id="bout-24" x="416" y="165" data-id="7" />
+
+            <rect id="bout-31" x="50" y="275" data-id="8" />
+            <rect id="bout-32" x="172" y="275" data-id="9" />
+            <rect id="bout-33" x="294" y="275" data-id="10" />
+            <rect id="bout-34" x="416" y="275" data-id="11" />
+
+            <rect id="bout-41" x="50" y="390" data-id="12" />
+            <rect id="bout-42" x="172" y="390" data-id="13" />
+            <rect id="bout-43" x="294" y="390" data-id="14" />
+            <rect id="bout-44" x="416" y="390" data-id="15" />
+
+            <rect id="bout-51" x="50" y="505" data-id="16" />
+            <rect id="bout-52" x="172" y="505" data-id="17" />
+            <rect id="bout-53" x="294" y="505" data-id="18" />
+            <rect id="bout-54" x="416" y="505" data-id="19" />
+        </svg>
+
+        <svg id="push-knobs-outline" x="1658" y="125">
+            <circle id="knout-1" cx="60" cy="60" data-id="20" />
+            <circle id="knout-2" cx="60" cy="260" data-id="21" />
+            <circle id="knout-3" cx="60" cy="455" data-id="22" />
+            <circle id="knout-4" cx="60" cy="670" data-id="23" />
+        </svg>
+
+        <svg id="rotate-knobs-arrow" x="1594" y="60">
+            <image id="rknob-1" href="arrow-rotation-r.png" x="73" y="50" />
+            <image id="lknob-1" href="arrow-rotation-l.png" x="50" y="50" />
+            <image id="rknob-2" href="arrow-rotation-r.png" x="73" y="250" />
+            <image id="lknob-2" href="arrow-rotation-l.png" x="50" y="250" />
+            <image id="rknob-3" href="arrow-rotation-r.png" x="73" y="445" />
+            <image id="lknob-3" href="arrow-rotation-l.png" x="50" y="445" />
+            <image id="rknob-4" href="arrow-rotation-r.png" x="73" y="660" />
+            <image id="lknob-4" href="arrow-rotation-l.png" x="50" y="660" />
+        </svg>
+
+        <svg id="push-knobs" x="1658" y="125">
+            <circle id="knob-1" cx="60" cy="60" data-id="20" pointer-events="all" />
+            <circle id="knob-2" cx="60" cy="260" data-id="21" pointer-events="all" />
+            <circle id="knob-3" cx="60" cy="455" data-id="22" pointer-events="all" />
+            <circle id="knob-4" cx="60" cy="670" data-id="23" pointer-events="all" />
+        </svg>
+
+    </svg>
+    </div>
+
+    <script>
+    const targetHost = "zynthian-pc.local";
+
+    const wsPort = "8370"
+    const vncPort = "8443";
+    const audioPort = "8889";
+
+    const audioPath = "zynstream";
+
+    const wsUrl = "ws://" + targetHost + ":" + wsPort;
+    const vncUrl = "https://" + targetHost + ":" + vncPort + "/?resize=remote";
+    const audioUrl = "http://" + targetHost + ":" + audioPort + "/" + audioPath + "/";
+
+    window.addEventListener('DOMContentLoaded', () => {
+        console.log("Loading VNC Link:", vncUrl);
+        console.log("Loading Audio Link:", audioUrl);
+        document.getElementById('vncVisualNode').src = vncUrl;
+        document.getElementById('audioStreamNode').src = audioUrl;
+    });
+
+    // Open the websocket connection with zynthian UI
+    var zynWS = null;
+    try {
+        zynWS = new WebSocket(wsUrl);
+        zynWS.onopen = () => {
+            console.log("Connected to Zynthian UI Websocket");
+        };
+        zynWS.onmessage = (event) => {
+            console.log("Incomming Data => " + event.data)
+            try {
+                const data = JSON.parse(event.data);
+                if (data["wsled_state"]) {
+                    queueLedState(data["wsled_state"])
+                    setLedState(1)
+                }
+            } catch (error) {
+                console.error("Failed to parse incoming packet:", error);
+            }
+        };
+        zynWS.onclose = () => {
+            console.log("Disconnected from Zynthian UI Websocket");
+            setLedStateOff()
+        };
+
+    } catch (error) {
+        console.error("Failed to open websocket connection at " + wsUrl, error);
+    }
+
+    //-----------------------------------------------------------------------------
+    // Mockup LEDs
+    //-----------------------------------------------------------------------------
+
+    var wscolor_off = "#505050";
+    var wscolor_white = "#F0F0F0";
+    var wscolor_red = "#C00000";
+    var wscolor_green = "#00F000";
+    var wscolor_yellow = "#D0D000";
+    var wscolor_orange = "#F08000";
+    var wscolor_blue = "#0050FF";
+    var wscolor_blue_light = "#00E0E0";
+    var wscolor_purple = "#E000E0";
+    var ledstate_colors = {
+        "0": wscolor_off,
+        "B": wscolor_blue,
+        "G": wscolor_green,
+        "R": wscolor_red,
+        "O": wscolor_orange,
+        "Y": wscolor_yellow,
+        "P": wscolor_purple
+    }
+
+    var v5_led_order = [0, 1, 2, 3, 7, 6, 5, 4, 8, 9, 10 , 11, 15, 14, 13, 12, 16, 17, 18, 19]
+    var led_state = null
+
+    function setLedColor(led_id, color) {
+        var elem = document.getElementById(led_id)
+        elem.setAttribute("fill", color)
+    }
+
+    function queueLedState(ls) {
+        led_state = ls
+    }
+
+    function setLedState(fix_order) {
+        if (!led_state) return;
+        var c = 0;
+        var cc = 0;
+        var lsl = led_state.split(",")
+        for (let i = 1; i <= 5; i++) {
+            for (let j = 1; j <= 4; j++) {
+                if (fix_order) cc = v5_led_order[c]
+                else cc = c
+                color = ledstate_colors[lsl[cc]];
+                setLedColor(`led-${i}${j}`, color);
+                c++;
+            }
+        }
+        led_state = null;
+    }
+
+    function setLedStateOff() {
+        for (let i = 1; i <= 5; i++) {
+            for (let j = 1; j <= 4; j++) {
+                setLedColor(`led-${i}${j}`, wscolor_off);
+            }
+        }
+    }
+
+    //-----------------------------------------------------------------------------
+    // Buttons & Encoders Action
+    //-----------------------------------------------------------------------------
+
+    function zynswitchCUIA(zswi, action) {
+        if (zynWS.readyState === WebSocket.OPEN) {
+            const payload = {
+                cuia: "zynswitch",
+                args: [zswi, action]
+            };
+            var data = JSON.stringify(payload)
+            console.log(data)
+            zynWS.send(data);
+        }
+    }
+
+    function zynpotCUIA(zpi, delta) {
+        if (zynWS.readyState === WebSocket.OPEN) {
+            const payload = {
+                cuia: "zynpot",
+                args: [zpi, delta]
+            };
+            var data = JSON.stringify(payload)
+            console.log(data)
+            zynWS.send(data);
+        }
+    }
+
+    // Variables for push & drag management
+
+    let last_pushed_zswi = -1;
+    let isDragging = false;
+    let isDragged = false;
+    let lastY = 0;
+    let pixelAccumulator = 0;
+    let visualAngle = 0;
+    const PIXELS_PER_TICK = 10;     // Sensitivity: How many pixels of vertical drag equal 1 encoder click/tick
+
+    function startDrag(ev) {
+        isDragging = true;
+        isDragged = false;
+        lastY = ev.clientY;
+        pixelAccumulator = 0;
+        //encoder.setPointerCapture(ev.pointerId);
+    }
+
+    function stopDrag(ev) {
+        if (!isDragging) return;
+        isDragging = false;
+        //encoder.releasePointerCapture(ev.pointerId);
+    }
+
+    function zynswitchAction(target, action, ev) {
+        if (action == "P") {
+            zswi = parseInt(target.getAttribute('data-id'));
+            last_pushed_zswi = zswi;
+            startDrag(ev)
+        }
+        else {
+            zswi = last_pushed_zswi
+            last_pushed_zswi = -1
+            stopDrag(ev)
+        }
+
+        if (zswi < 0) {
+            return;
+        }
+        // Visual Feedback
+        else if (zswi >= 20) {
+            var knob_id = zswi - 19
+            if (action == "P") setKnobPush(knob_id, true);
+            else setKnobPush(knob_id, false);
+        }
+        else if (zswi < 20) {
+            var but_id = `${1 + Math.floor(zswi / 4)}${1 + zswi % 4}`
+            if (action == "P") setButtonPush(but_id, true)
+            else setButtonPush(but_id, false)
+        }
+
+        // CUIA
+        if (!isDragged) {
+            zynswitchCUIA(zswi + 4, action)
+        }
+    }
+
+    function zynpotDrag(target, ev) {
+        if (!isDragging || last_pushed_zswi < 20) return;
+
+        // Dragging UP increases value (positive delta), dragging DOWN decreases it
+        const deltaY = lastY - ev.clientY;
+        lastY = ev.clientY;
+        pixelAccumulator += deltaY;
+
+        // Check if movement crossed one or more tick thresholds
+        while (Math.abs(pixelAccumulator) >= PIXELS_PER_TICK) {
+            const step = pixelAccumulator > 0 ? 1 : -1;
+            pixelAccumulator -= step * PIXELS_PER_TICK;
+
+            visualAngle = (visualAngle + step * 15) % 360;
+            //dial.setAttribute('transform', `rotate(${visualAngle} 50 50)`);
+
+            let zpi = last_pushed_zswi - 20
+            zynpotCUIA(zpi, step);
+            if (!isDragged) {
+                isDragged = true;
+                // Cancel push action
+                if (last_pushed_zswi >= 0)
+                    zynswitchCUIA(last_pushed_zswi + 4, "X")
+            }
+        }
+    }
+
+    function zynswitchConfigure(butid) {
+        var butObj = document.getElementById(butid)
+
+        // Pointer Listeners
+        butObj.addEventListener('pointerdown', (e) => zynswitchAction(e.target, "P", e));
+        //butObj.addEventListener('pointerup', (e) => zynswitchAction(e.target, "R", e));
+
+    }
+
+    // Configure silicone buttons
+    for (let i = 1; i <= 5; i++) {
+        for (let j = 1; j <= 4; j++) {
+            zynswitchConfigure(`but-${i}${j}`);
+        }
+    }
+
+    // Configure knob rotary & switches
+    for (let i = 1; i <= 4; i++) {
+        zynswitchConfigure(`knob-${i}`);
+    }
+
+    // Configure Drag & Release Actions
+    window.addEventListener('pointermove', (e) => zynpotDrag(e.target, e));
+    window.addEventListener('pointerup', (e) => zynswitchAction(e.target, "R", e));
+    window.addEventListener('pointercancel', (e) => zynswitchAction(e.target, "R", e));
+
+    //-----------------------------------------------------------------------------
+    // Mockup buttons & rotary graphics
+    //-----------------------------------------------------------------------------
+
+    var autoFadeTimeOuts = {}
+
+    function fadeElem(eid, state) {
+        var elem = document.querySelector("svg#v5_mockup #" + eid)
+        if (elem) {
+            if (state) {
+                elem.style.opacity = "1";
+                elem.classList.remove("fadeOutElem")
+                elem.classList.add("fadeInElem")
+            }
+            else {
+                elem.style.opacity = "0";
+                elem.classList.remove("fadeInElem")
+                elem.classList.add("fadeOutElem")
+            }
+        }
+    }
+
+    function autoFadeElemOutCB(eid) {
+        fadeElem(eid, false)
+        autoFadeTimeOuts[eid] = null
+    }
+
+    function autoFadeElem(eid) {
+        if (autoFadeTimeOuts[eid]) clearTimeout(autoFadeTimeOuts[eid])
+        fadeElem(eid, true)
+        autoFadeTimeOuts[eid] = setTimeout(autoFadeElemOutCB, 100, eid)
+    }
+
+    function setButtonPush(bid, state) {
+        console.log(`BUTTON PUSH ${bid}: ${state}`);
+        fadeElem("but-" + bid, state)
+        fadeElem("bout-" + bid, state)
+    }
+
+    function setKnobPush(kid, state) {
+        console.log(`KNOB PUSH ${kid}: ${state}`);
+        fadeElem("knout-" + kid, state)
+    }
+
+    function setKnobRotation(kid, dval) {
+        console.log(`KNOB ROTATION ${kid}: ${dval}`);
+        if (dval>0) autoFadeElem("rknob-" + kid)
+        else if (dval<0) autoFadeElem("lknob-" + kid)
+    }
+
+    </script>
+
+</body>
+</html>
