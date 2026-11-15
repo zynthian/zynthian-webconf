@@ -216,6 +216,37 @@
         white-space: nowrap;
     }
     #keys-legend .note { margin: 8px 0 0; font-size: 12px; color: #9aa3b2; }
+
+    /* noVNC viewer, positioned over the mockup's screen (foreignObject) in page coordinates, so
+       noVNC does the scaling itself and maps the pointer correctly */
+    #novnc-screen {
+        position: absolute;
+        background: #000;
+        overflow: hidden;
+        z-index: 5;
+    }
+    #novnc-screen[hidden] { display: none; }
+    /* The device hides its pointer (blank X cursor) and noVNC copies it as an inline style on its
+       canvas: show a normal arrow in the browser only. The device's display is not affected. */
+    #novnc-screen canvas { cursor: pointer !important; }
+    #novnc-status, #novnc-auth {
+        position: absolute;
+        left: 50%; top: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 2;
+        color: #cfd6e2;
+        font: 14px sans-serif;
+        text-align: center;
+        max-width: 90%;
+    }
+    #novnc-status a { color: #7fb2ff; }
+    #novnc-auth { display: flex; flex-direction: column; gap: 8px; background: #1b1f27;
+        padding: 16px 20px; border-radius: 8px; border: 1px solid #3a4150; }
+    #novnc-auth[hidden] { display: none; }
+    #novnc-auth input { font-size: 15px; padding: 6px 8px; border-radius: 4px; border: 1px solid #4a5263;
+        background: #0f1217; color: #e8ecf2; }
+    #novnc-auth button { font-size: 14px; padding: 6px; border-radius: 4px; border: 0; background: #2f6fdb;
+        color: #fff; cursor: pointer; }
 </style>
 </head>
 
@@ -226,6 +257,16 @@
             id="audioStreamNode"
             allow="autoplay">
         </iframe>
+    </div>
+
+    <!-- noVNC viewer (real device): placed over the mockup's screen area by novncPlace() -->
+    <div id="novnc-screen" hidden>
+        <div id="novnc-status"></div>
+        <form id="novnc-auth" hidden>
+            <label for="novnc-password">VNC password</label>
+            <input type="password" id="novnc-password" autocomplete="current-password">
+            <button type="submit">Connect</button>
+        </form>
     </div>
 
     <div id="zynthian_mockup_container" class="zynthian_mockup_container">
@@ -402,32 +443,70 @@
     </div>
 
     <script>
-    const targetHost = "zynthian-pc.local";
+    // The zynthian is the host serving this page (webconf)
+    // The zynthian is the host serving this page (webconf)
+    const targetHost = window.location.hostname;
+    const pageSecure = window.location.protocol === "https:";
+    const pageParams = new URLSearchParams(window.location.search);
+    const wsScheme = pageSecure ? "wss://" : "ws://";
+    const sameOriginWs = (path) => wsScheme + window.location.host + path;
 
-    const wsPort = "8370"
-    const vncPort = "8443";
-    const audioPort = "8889";
+    // Proxy mode (?proxy, virtual.zynthian.org): everything is served from the same origin as this page,
+    // behind a reverse proxy that maps /zynws => websocket, /vnc/ => KasmVNC and /audio/ => audio stream.
+    const proxied = pageParams.has("proxy");
 
-    const audioPath = "zynstream";
+    // Connection settings, from zrLoadConfig():
+    //  - vncViewer "kasm": KasmVNC's own web client in an iframe (containers, virtual.zynthian.org)
+    //  - vncViewer "novnc": noVNC client embedded in this page (real device: x11vnc mirroring the display)
+    //  - audioUrl: audio stream (WHEP) page, null when not available (the audio widget is hidden)
+    // Webconf bridges the websocket, VNC and audio on the page's own origin (see lib/zynremote_handler.py),
+    // so it all works the same over http (ws://) and https (wss://). ?vnc=kasm|novnc overrides the viewer.
+    let vncViewer = null, vncUrl = null, wsUrl = null, audioUrl = null;
 
-    // Proxy mode (?proxy): everything is served from the same origin as this page, behind a
-    // reverse proxy that maps /zynws => websocket, /vnc/ => KasmVNC and /audio/ => audio stream.
-    const proxied = new URLSearchParams(window.location.search).has("proxy");
+    async function zrLoadConfig() {
+        if (proxied) {
+            vncViewer = "kasm";
+            wsUrl = sameOriginWs("/zynws");
+            vncUrl = window.location.origin + "/vnc/?resize=scale&path=vnc/websockify";
+            audioUrl = window.location.origin + "/audio/zynstream/?muted=false";
+            return;
+        }
+        let cfg = null;
+        try {
+            const r = await fetch("/zynremote/config", { cache: "no-store" });
+            if (r.ok) cfg = await r.json();
+        } catch (e) { }
+        if (!cfg) {
+            // Webconf without the bridges: direct connections (http only)
+            console.warn("No /zynremote/config: using direct connections");
+            cfg = { vnc: "novnc", kasm_url: "https://" + targetHost + ":8443/?resize=scale",
+                    legacy: true, audio_path: null };
+        }
+        const forced = pageParams.get("vnc");
+        vncViewer = (forced === "kasm" || forced === "novnc") ? forced : (cfg.vnc || "novnc");
+        if (cfg.legacy) {
+            wsUrl = "ws://" + targetHost + ":8370";
+            vncUrl = vncViewer === "novnc" ? wsScheme + targetHost + ":6080/websockify" : cfg.kasm_url;
+        } else {
+            wsUrl = sameOriginWs(cfg.ws_path);
+            vncUrl = vncViewer === "novnc" ? sameOriginWs(cfg.novnc_path) : cfg.kasm_url;
+        }
+        audioUrl = cfg.audio_path ? window.location.origin + cfg.audio_path : null;
+    }
 
-    const wsUrl = proxied ?
-        (window.location.protocol === "https:" ? "wss://" : "ws://") + window.location.host + "/zynws" :
-        "ws://" + targetHost + ":" + wsPort;
-    const vncUrl = proxied ?
-        window.location.origin + "/vnc/?resize=scale&path=vnc/websockify" :
-        "https://" + targetHost + ":" + vncPort + "/?resize=scale";
-    const audioUrl = proxied ?
-        window.location.origin + "/audio/" + audioPath + "/?muted=false" :
-        "http://" + targetHost + ":" + audioPort + "/" + audioPath + "/?muted=false";
-
-    window.addEventListener('DOMContentLoaded', () => {
-        console.log("Loading VNC Link:", vncUrl);
-        console.log("Loading Audio Link:", audioUrl);
-        document.getElementById('vncVisualNode').src = vncUrl;
+    window.addEventListener('DOMContentLoaded', async () => {
+        await zrLoadConfig();
+        console.log("VNC viewer:", vncViewer, vncUrl);
+        console.log("Websocket:", wsUrl);
+        console.log("Audio Link:", audioUrl);
+        zynWSConnect();
+        if (vncViewer === "novnc") novncStart();
+        else document.getElementById('vncVisualNode').src = vncUrl;
+        if (!audioUrl) {
+            // Hidden, but keeping its space: the mockup layout must be the same with or without audio
+            document.querySelector('.audio-wrapper').style.visibility = "hidden";
+            return;
+        }
         document.getElementById('audioStreamNode').src = audioUrl;
 
         // Browsers block unmuted autoplay until the user interacts with the page. If that was the case,
@@ -451,10 +530,143 @@
         }
     });
 
-    // Open the websocket connection with zynthian UI
+    //-----------------------------------------------------------------------------
+    // noVNC viewer (real device)
+    //-----------------------------------------------------------------------------
+    // The noVNC client (served by webconf at /novnc/, from $ZYNTHIAN_SW_DIR/noVNC) is embedded in this
+    // page, over the screen area of the mockup. It connects through webconf's VNC bridge (/zynremote/vnc)
+    // to x11vnc (vncserver0) mirroring the real display. The display is only scaled.
+    // The keyboard stays with this page (focusOnClick = false): keys go to zynthian by websocket,
+    // like with KasmVNC. Pointer/touch go through VNC.
+
+    const novncBox = document.getElementById("novnc-screen");
+    const novncAuthForm = document.getElementById("novnc-auth");
+    const novncPwInput = document.getElementById("novnc-password");
+    const NOVNC_PW_KEY = "zynremote-vnc-password";   // kept for this browser session only
+    let NovncRFB = null, novncRfb = null, novncRetry = null;
+    let novncPassword = null, novncWasConnected = false, novncAuthFailed = false;
+
+    try { novncPassword = sessionStorage.getItem(NOVNC_PW_KEY); } catch (e) { }
+
+    function novncPlace() {
+        const fo = document.querySelector("#v5_mockup foreignObject");
+        if (!fo) return;
+        const r = fo.getBoundingClientRect();
+        novncBox.style.left = (r.left + window.scrollX) + "px";
+        novncBox.style.top = (r.top + window.scrollY) + "px";
+        novncBox.style.width = r.width + "px";
+        novncBox.style.height = r.height + "px";
+    }
+
+    function novncStatus(html) {
+        const s = document.getElementById("novnc-status");
+        s.innerHTML = html || "";
+        s.hidden = !html;
+    }
+
+    async function novncStart() {
+        novncBox.hidden = false;
+        document.getElementById("vncVisualNode").style.visibility = "hidden";
+        novncPlace();
+        window.addEventListener("resize", novncPlace);
+        window.addEventListener("load", novncPlace);
+        if (window.ResizeObserver)
+            new ResizeObserver(novncPlace).observe(document.getElementById("v5_mockup"));
+        novncStatus("Loading the VNC client…");
+        try {
+            NovncRFB = (await import("/novnc/core/rfb.js")).default;
+        } catch (e) {
+            console.error("noVNC client not available", e);
+            novncStatus("The noVNC client is not available in this zynthian (/novnc/).");
+            return;
+        }
+        novncConnect();
+    }
+
+    function novncConnect() {
+        clearTimeout(novncRetry);
+        novncAuthFailed = false;
+        novncAuthForm.hidden = true;
+        novncStatus(novncWasConnected ? "Display disconnected. Reconnecting…" : "Connecting to the zynthian display…");
+        let rfb;
+        try {
+            rfb = new NovncRFB(novncBox, vncUrl, { shared: true });
+        } catch (e) {
+            console.error("noVNC connection error", e);
+            novncFailed();
+            return;
+        }
+        rfb.scaleViewport = true;     // fit the remote display in the screen area
+        rfb.resizeSession = false;    // the real display can't be resized
+        rfb.focusOnClick = false;     // keep the keyboard in this page
+        rfb.background = "#000";
+        rfb.addEventListener("connect", () => {
+            novncWasConnected = true;
+            novncStatus("");
+            novncAuthForm.hidden = true;
+            if (novncPassword) try { sessionStorage.setItem(NOVNC_PW_KEY, novncPassword); } catch (e) { }
+            keyFocus();
+        });
+        rfb.addEventListener("credentialsrequired", () => {
+            if (novncPassword && !novncAuthFailed) rfb.sendCredentials({ password: novncPassword });
+            else novncAskPassword();
+        });
+        rfb.addEventListener("securityfailure", (e) => {
+            console.warn("VNC security failure:", e.detail);
+            novncAuthFailed = true;
+            novncPassword = null;
+            try { sessionStorage.removeItem(NOVNC_PW_KEY); } catch (err) { }
+        });
+        rfb.addEventListener("disconnect", () => {
+            if (novncRfb !== rfb) return;
+            novncRfb = null;
+            if (novncAuthFailed) novncAskPassword("Wrong password.");
+            else novncFailed();
+        });
+        novncRfb = rfb;
+    }
+
+    function novncFailed() {
+        if (novncWasConnected) {
+            novncStatus("Display disconnected. Reconnecting…");
+            novncRetry = setTimeout(novncConnect, 2000);
+            return;
+        }
+        const msg = "Can't connect to the zynthian display.<br>Enable VNC in webconf (UI Options → Enable VNC) and wait a bit.";
+        novncStatus(msg);
+        novncRetry = setTimeout(novncConnect, 5000);
+    }
+
+    function novncAskPassword(error) {
+        novncStatus("");   // the error, if any, is shown in the form
+        novncAuthForm.querySelector("label").textContent = error ? error + " VNC password" : "VNC password";
+        novncAuthForm.hidden = false;
+        novncPwInput.value = "";
+        novncPwInput.focus();
+    }
+
+    novncAuthForm.addEventListener("submit", (e) => {
+        e.preventDefault();
+        novncPassword = novncPwInput.value;
+        novncAuthForm.hidden = true;
+        novncPwInput.blur();
+        if (novncRfb && !novncAuthFailed) novncRfb.sendCredentials({ password: novncPassword });
+        else novncConnect();
+    });
+
+    // Websocket connection with zynthian UI (keys, MIDI, buttons/encoders => UI; LED state <= UI)
     var zynWS = null;
-    try {
-        zynWS = new WebSocket(wsUrl);
+    let zynWSRetry = null;
+
+    function zynWSConnect() {
+        clearTimeout(zynWSRetry);
+        try {
+            zynWS = new WebSocket(wsUrl);
+        } catch (error) {
+            console.error("Failed to open websocket connection at " + wsUrl, error);
+            zynWS = null;
+            return;
+        }
         zynWS.onopen = () => {
             console.log("Connected to Zynthian UI Websocket");
         };
@@ -473,11 +685,13 @@
         zynWS.onclose = () => {
             console.log("Disconnected from Zynthian UI Websocket");
             setLedStateOff();
-            if (window.zrCheckSession) window.zrCheckSession();   // demo: did the session end?
+            if (proxied) {
+                if (window.zrCheckSession) window.zrCheckSession();   // demo: did the session end?
+            } else {
+                // The UI may be restarting: reconnect
+                zynWSRetry = setTimeout(zynWSConnect, 3000);
+            }
         };
-
-    } catch (error) {
-        console.error("Failed to open websocket connection at " + wsUrl, error);
     }
 
     //-----------------------------------------------------------------------------
@@ -545,7 +759,7 @@
     //-----------------------------------------------------------------------------
 
     function zynswitchCUIA(zswi, action) {
-        if (zynWS.readyState === WebSocket.OPEN) {
+        if (zynWS && zynWS.readyState === WebSocket.OPEN) {
             const payload = {
                 cuia: "zynswitch",
                 args: [zswi, action]
@@ -557,7 +771,7 @@
     }
 
     function zynpotCUIA(zpi, delta) {
-        if (zynWS.readyState === WebSocket.OPEN) {
+        if (zynWS && zynWS.readyState === WebSocket.OPEN) {
             const payload = {
                 cuia: "zynpot",
                 args: [zpi, delta]
@@ -925,7 +1139,11 @@
         return piano_panel.classList.contains("open");
     }
 
+    // Text fields of this page (e.g. the VNC password) get their keys normally
+    const isTextField = (el) => el && el.matches && el.matches("input[type=password], input[type=text]");
+
     function onKeyDown(e) {
+        if (isTextField(e.target)) return;
         // Space bar toggles the piano
         if (e.code === "Space" && !(e.ctrlKey || e.metaKey || e.altKey)) {
             e.preventDefault();
@@ -963,6 +1181,7 @@
     }
 
     function onKeyUp(e) {
+        if (isTextField(e.target) && !keysForwarded.has(e.code)) return;
         if (e.code === "Space") { e.preventDefault(); return; }
         if (pianoNoteOffKey(e)) return;
         if (keysForwarded.delete(e.code)) sendKey("up", e.code);

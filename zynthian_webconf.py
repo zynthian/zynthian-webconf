@@ -41,6 +41,7 @@ from zyncoder.zyncore import lib_zyncore_init_minimal
 lib_zyncore_init_minimal()
 
 from lib.zynterm_handler import ZyntermHandler
+from lib.zynremote_handler import ZynremoteConfigHandler, ZynremoteUIWebSocketBridge, ZynremoteVNCBridge, ZynremoteAudioProxy
 from lib.audio_mixer_handler import AudioConfigMessageHandler, AudioMixerHandler
 from lib.repository_handler import RepositoryHandler
 from lib.midi_log_handler import MidiLogHandler
@@ -150,6 +151,14 @@ def make_app():
         (r"/$", DashboardHandler),
         (r"/mockup/capture/(.*\.log)$", CaptureLogStaticFileHandler, {'path': 'mockup/capture'}),
         (r"/mockup/(.*)$", tornado.web.StaticFileHandler, {'path': 'mockup'}),
+        # noVNC client (JS modules), used by the remote page (mockup/zynremote.html) on real devices
+        (r"/novnc/(.*)$", tornado.web.StaticFileHandler,
+            {'path': os.path.join(os.environ.get('ZYNTHIAN_SW_DIR', '/zynthian/zynthian-sw'), 'noVNC')}),
+        # Same-origin bridges for the remote page (ws/wss, see lib/zynremote_handler.py)
+        (r"/zynremote/config$", ZynremoteConfigHandler),
+        (r"/zynws$", ZynremoteUIWebSocketBridge),
+        (r"/zynremote/vnc$", ZynremoteVNCBridge),
+        (r"/zynremote/audio/(.*)$", ZynremoteAudioProxy),
         # (r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
         (r"/help$", HelpHandler),
         (r"/help/(.*)$", HelpHandler),

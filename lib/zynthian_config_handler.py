@@ -114,7 +114,9 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
         # If VNC Server is enabled, add access URI to info
         if self.is_service_active("novnc0"):
-            info['novnc0_uri'] = f"{self.request.protocol}://{self.request.host}:6080/vnc.html"
+            # Zynthian remote page (V5 mockup + noVNC viewer + piano/keys/MIDI over websocket).
+            # Its connections are bridged by webconf (lib/zynremote_handler.py): works on http & https.
+            info['novnc0_uri'] = f"{self.request.protocol}://{self.request.host}/mockup/zynremote.html"
         if self.is_service_active("novnc1"):
             info['novnc1_uri'] = f"{self.request.protocol}://{self.request.host}:6081/vnc.html"
 
