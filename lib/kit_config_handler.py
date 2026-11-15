@@ -48,7 +48,7 @@ class KitConfigHandler(ZynthianConfigHandler):
         'V1',
         'Z2',
         'Z2 PROTOTYPE',
-        'LXC@x86_64'
+        'LXC@x86_64',
         'Custom'
     ]
 
