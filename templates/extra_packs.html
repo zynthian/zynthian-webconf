@@ -223,7 +223,7 @@ function installPackage(pack_name) {
 function uninstallPackage(pack_name) {
 	if (confirm("Are you sure to remove package '" + pack_name + "'?")) {
 		showMessageBusy("Uninstalling package '" + pack_name + "'");
-		$("#COMMAND").val("UNIINSTALL")
+		$("#COMMAND").val("UNINSTALL")
 		$("#PACKAGE").val(pack_name)
 		$("#extra-packs-form").submit()
 	}
