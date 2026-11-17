@@ -669,6 +669,8 @@
         }
         zynWS.onopen = () => {
             console.log("Connected to Zynthian UI Websocket");
+            // Feedback streams are sent only when subscribed (the UI replies with the current value)
+            zynWS.send("/subscribe wsled_state");
         };
         zynWS.onmessage = (event) => {
             console.log("Incomming Data => " + event.data)
