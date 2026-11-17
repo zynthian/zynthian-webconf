@@ -27,7 +27,7 @@ import logging
 import tornado.web
 import pyliblo3 as liblo
 from time import sleep
-from subprocess import check_output
+from subprocess import check_output, run
 
 import zynconf
 # Avoid unwanted debug messages from zynconf module
@@ -177,9 +177,21 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
         except Exception as e:
             logging.error("Reboot: {}".format(e))
 
+    @staticmethod
+    def get_ui_service():
+        """UI service name. In containers (virtual zynthian) the UI runs as virtual_zynthian.service
+        (zynremote.service in older setups) and zynthian.service can't run (no display).
+        Same logic as restart_zynthian_ui() in zynthian-sys/scripts/delayed_action_flags.sh"""
+        virt = run(["systemd-detect-virt"], capture_output=True, text=True).stdout.strip()
+        if virt and virt != "none":
+            for svc in ("virtual_zynthian", "zynremote"):
+                if run(["systemctl", "-q", "is-enabled", svc], capture_output=True).returncode == 0:
+                    return svc
+        return "zynthian"
+
     def restart_ui(self):
         try:
-            check_output("systemctl restart zynthian", shell=True)
+            check_output(f"systemctl restart {self.get_ui_service()}", shell=True)
             self.restart_ui_flag = False
             if os.path.isfile(self.restart_ui_flag_fpath):
                 os.remove(self.restart_ui_flag_fpath)
