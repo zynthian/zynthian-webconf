@@ -90,39 +90,51 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             try:
                 errors = self.do_install_package(pack_name)
             except Exception as err:
-                errors = f"Can't install package {pack_name}.\n{errors}"
-                logging.error(err)
+                errors = f"Can't install package {pack_name}.\n{err}"
         elif command == "UNINSTALL":
             try:
                 errors = self.do_uninstall_package(pack_name)
             except Exception as err:
-                errors = f"Can't uninstall package {pack_name}.\n{errors}"
-                logging.error(err)
+                errors = f"Can't uninstall package {pack_name}.\n{err}"
         elif command == "UPDATE":
             try:
                 errors = self.do_uninstall_package(pack_name)
                 if not errors:
                     errors = self.do_install_package(pack_name)
             except Exception as err:
-                errors = f"Can't update package {pack_name}.\n{errors}"
-                logging.error(err)
+                errors = f"Can't update package {pack_name}.\n{err}"
+        else:
+            errors = f"Invalid command ({command})."
+
+        if errors:
+            logging.error(errors)
+
         self.get(errors)
 
     def get_pack_info(self, pack_name):
         for packs in self.pack_info.values():
-            try:
+            if pack_name in packs:
                 return packs[pack_name]
-            except:
-                pass
+        raise Exception(f"Unknown package '{pack_name}'.")
 
     def do_install_package(self, pack_name):
         errors = None
         try:
+            logging.debug(f"Installing package '{pack_name}'...")
             info = self.get_pack_info(pack_name)
+            #logging.debug(f"Package Info =>\n{info}")
             if "pack_url" in info and info["pack_url"]:
                 # Download and uncompress package data to collections directory
                 cmd = f"wget -q -O- \"{info['pack_url']}\" | tar -xJ -C \"{self.collections_dir}\""
                 res = check_output(cmd, shell=True)
+                logging.debug(f"Install Command => {cmd}")
+                # Check installation and update cache
+                if os.path.isdir(f"{self.collections_dir}/{pack_name}"):
+                    info["installed"] = True
+                    info["update"] = False
+                    #self.save_cache_packages()
+                else:
+                    raise Exception(f"Failed to download/unpack from '{info['pack_url']}'!")
                 # Overwrite package info with fresh info from packages repository
                 try:
                     pack_dpath = self.packages_dir + "/" + info['cat'] + "/" + pack_name
@@ -132,16 +144,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     res = check_output(cmd, shell=True)
                 except Exception as e:
                     logging.error(f"Can't update package info from repository => {e}")
-                # Check installation and update cache
-                if os.path.isdir(f"{self.collections_dir}/{pack_name}"):
-                    info["installed"] = True
-                    info["update"] = False
-                    #self.save_cache_packages()
-                else:
-                    raise Exception(f"Failed to download/unpack from '{info['pack_url']}'!")
             elif "pack_script" in info and info["pack_script"]:
                 pack_script = info["pack_script"]
-                res = getoutput(f"bash \"{pack_script}\" install")
+                cmd = f"bash \"{pack_script}\" install"
+                res = getoutput(cmd)
+                #logging.debug(f"Install Command => {cmd}")
                 if getoutput(f"bash \"{pack_script}\" installed").split("\n")[0] == "installed":
                     info["installed"] = True
                     info["update"] = False
@@ -150,20 +157,19 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     raise Exception(f"Install script failed!")
 
             self.save_installed_package(info)
+            self.restart_ui_flag = info['restart_ui']
 
         except Exception as e:
             errors = f"Error installing '{pack_name}' => {e}"
 
-        if errors:
-            logging.error(errors)
-        else:
-            self.restart_ui_flag = info['restart_ui']
         return errors
 
     def do_uninstall_package(self, pack_name):
         errors = None
         try:
+            logging.debug(f"Uninstalling package '{pack_name}'...")
             info = self.get_pack_info(pack_name)
+            #logging.debug(f"Package Info =>\n{info}")
             if "pack_url" in info and info["pack_url"]:
                 cmd = f"rm -rf \"{self.collections_dir}/{pack_name}\""
                 res = getoutput(cmd)
@@ -181,16 +187,12 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["installed"] = False
                     #self.save_cache_packages()
 
-            # Remove from installed packages dir
-            cmd = f"rm -rf \"{self.installed_packages_dir}/{info['cat']}/{pack_name}\""
-            res = getoutput(cmd)
+            self.remove_from_installed_packages(info['cat'], pack_name)
+            self.restart_ui_flag = info['restart_ui']
 
         except Exception as e:
             errors = f"Error uninstalling '{pack_name}' => {e}"
-        if errors:
-            logging.error(errors)
-        else:
-            self.restart_ui_flag = info['restart_ui']
+
         return errors
 
     def get_cache_packages(self):
@@ -223,29 +225,50 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                             return False
                     # Else try calling script
                     elif 'pack_script' in info:
-                        available_git_version = getoutput(f"bash \"{info['pack_script']}\" git_version").split("\n")[0]
+                        available_git_version = self.get_package_git_version(info)
                         if available_git_version:
                             if 'git_version' in installed_info and installed_info['git_version'] == available_git_version:
                                 return False
-                            info['git_version'] = available_git_version
-                            return True
+                            else:
+                                return True
                         else:
                             return False
             except Exception as e:
                 logging.error(e)
         return False
 
-    def save_installed_package(self, info):
-        # Copy to installed packages dir
-        dst = Path(f"{self.installed_packages_dir}/{info['cat']}")
-        dst.mkdir(parents=True, exist_ok=True)
-        cmd = f"cp -a \"{info['pack_dpath']}\" \"{dst}\""
-        res = getoutput(cmd)
+    def get_package_git_version(self, info):
+        if 'pack_script' in info:
+            res = getoutput(f"bash \"{info['pack_script']}\" git_version").split("\n")[0]
+            if res:
+                info['git_version'] = res
+                return res
 
-        # Save updated info.yml
-        installed_info_fpath = f"{self.installed_packages_dir}/{info['cat']}/{info['name']}/info.yml"
-        with open(installed_info_fpath, "w") as f:
-             yaml.dump(info, f)
+    def save_installed_package(self, info):
+        try:
+            # Copy to installed packages dir
+            dst = Path(f"{self.installed_packages_dir}/{info['cat']}")
+            dst.mkdir(parents=True, exist_ok=True)
+            cmd = f"cp -a \"{info['pack_dpath']}\" \"{dst}\""
+            res = getoutput(cmd)
+
+            # Add git version if needed
+            if "git_version" not in info:
+                self.get_package_git_version(info)
+
+            # Save updated info.yml
+            installed_info_fpath = f"{self.installed_packages_dir}/{info['cat']}/{info['name']}/info.yml"
+            with open(installed_info_fpath, "w") as f:
+                yaml.dump(info, f)
+        except Exception as e:
+            raise Exception(f"Can't save installed package info for '{info['cat']}/{info['name']}'! => {e}")
+
+    def remove_from_installed_packages(self, cat, pack_name):
+        try:
+            cmd = f"rm -rf \"{self.installed_packages_dir}/{cat}/{pack_name}\""
+            res = getoutput(cmd)
+        except Exception as e:
+            raise Exception(f"Can't remove '{cat}/{pack_name}' from installed packages! => {e}")
 
     def get_packages(self):
         self.pack_info = {}
