@@ -179,14 +179,12 @@ class ZynthianBasicHandler(tornado.web.RequestHandler):
 
     @staticmethod
     def get_ui_service():
-        """UI service name. In containers (virtual zynthian) the UI runs as virtual_zynthian.service
-        (zynremote.service in older setups) and zynthian.service can't run (no display).
+        """The enabled UI service: zynthian.service on real devices; virtual_zynthian.service in containers
+        (virtual zynthian, where zynthian.service is disabled). Fallback: zynthian.
         Same logic as restart_zynthian_ui() in zynthian-sys/scripts/delayed_action_flags.sh"""
-        virt = run(["systemd-detect-virt"], capture_output=True, text=True).stdout.strip()
-        if virt and virt != "none":
-            for svc in ("virtual_zynthian", "zynremote"):
-                if run(["systemctl", "-q", "is-enabled", svc], capture_output=True).returncode == 0:
-                    return svc
+        for svc in ("zynthian", "virtual_zynthian"):
+            if run(["systemctl", "-q", "is-enabled", svc], capture_output=True).returncode == 0:
+                return svc
         return "zynthian"
 
     def restart_ui(self):
