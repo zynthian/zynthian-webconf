@@ -60,7 +60,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         force_reload = (self.request.headers.get("Cache-Control") == "no-cache")
         logging.debug(f"FORCE PACKAGE INFO RELOAD => {force_reload}")
         if force_reload or not self.get_cache_packages():
-            self.get_packages(check_update=True)
+            self.get_packages()
 
     @tornado.web.authenticated
     def get(self, errors=None):
@@ -113,15 +113,9 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         self.get(errors)
 
     def get_pack_info(self, pack_name):
-        # Look in package info dictionary
         for packs in self.pack_info.values():
             if pack_name in packs:
                 return packs[pack_name]
-        # Else, try to locate and get package info
-        info = self.get_package(pack_name, check_update=True)
-        if info:
-            self.pack_info[pack_name] = info
-            return info
         raise Exception(f"Unknown package '{pack_name}'.")
 
     def do_install_package(self, pack_name):
@@ -139,7 +133,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                 if os.path.isdir(f"{self.collections_dir}/{pack_name}"):
                     info["installed"] = True
                     info["update"] = False
-                    #self.save_cache_packages()
+                    self.save_cache_packages()
                 else:
                     raise Exception(f"Failed to download/unpack from '{info['pack_url']}'!")
                 # Overwrite package info with fresh info from packages repository
@@ -214,8 +208,15 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         return False
 
     def save_cache_packages(self):
+        # Update cache when calling from the zynpack tool:
+        if len(self.pack_info) == 1:
+            one_pack_info = self.pack_info
+            self.get_cache_packages()
+            for cat in one_pack_info:
+                for pack in one_pack_info[cat]:
+                    self.pack_info[cat][pack] = one_pack_info[cat][pack]
         with open(self.package_info_cache_fpath, "w") as f:
-             yaml.dump(self.pack_info, f)
+            yaml.dump(self.pack_info, f)
 
     def check_update(self, info):
         installed_info_fpath = f"{self.installed_packages_dir}/{info['cat']}/{info['name']}/info.yml"
@@ -277,11 +278,11 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         except Exception as e:
             raise Exception(f"Can't remove '{cat}/{pack_name}' from installed packages! => {e}")
 
-    def get_packages(self, check_update=False):
+    def get_packages(self):
         self.pack_info = {}
         for item in sorted(Path(self.packages_dir).iterdir()):
             if item.is_dir() and item.name[0] != '.':
-                res = self.get_packages_from_cat(item, check_update)
+                res = self.get_packages_from_cat(item)
                 if res:
                     # Order packages by title
                     pack_list = sorted(res.values(), key=lambda p: p['title'])
@@ -290,9 +291,10 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                         pack_dict[p['name']] = p
                     self.pack_info[item.name] = pack_dict
         # Save package info cache
-        #self.save_cache_packages()
+        self.save_cache_packages()
+        return self.pack_info
 
-    def get_packages_from_cat(self, dpath, check_update=False):
+    def get_packages_from_cat(self, dpath):
         pack_info = {}
         for pack_dpath in dpath.iterdir():
             if not pack_dpath.is_dir():
@@ -302,13 +304,13 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             # Ignore duplicates
             if pack_name in self.pack_info:
                 continue
-            info = self.get_package(cat_name, pack_name, check_update)
+            info = self.get_package(cat_name, pack_name)
             if info:
                 # Add to the list
                 pack_info[pack_name] = info
         return pack_info
 
-    def get_package(self, cat_name, pack_name, check_update=False):
+    def get_package(self, cat_name, pack_name):
         pack_dpath = Path(f"{self.packages_dir}/{cat_name}/{pack_name}")
         if not pack_dpath.is_dir():
             logging.error(f"Package dir not found at'{pack_dpath}'")
