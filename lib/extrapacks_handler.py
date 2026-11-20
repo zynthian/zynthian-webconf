@@ -118,7 +118,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             if pack_name in packs:
                 return packs[pack_name]
         # Else, try to locate and get package info
-        info = get_package(pack_name, check_update=True)
+        info = self.get_package(pack_name, check_update=True)
         if info:
             self.pack_info[pack_name] = info
             return info
