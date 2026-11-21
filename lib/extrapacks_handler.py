@@ -214,7 +214,8 @@ class ExtraPacksHandler(ZynthianBasicHandler):
             self.get_cache_packages()
             for cat in one_pack_info:
                 for pack in one_pack_info[cat]:
-                    self.pack_info[cat][pack] = one_pack_info[cat][pack]
+                    # The cache may not have this category yet (e.g. written by a previous zynpack call)
+                    self.pack_info.setdefault(cat, {})[pack] = one_pack_info[cat][pack]
         with open(self.package_info_cache_fpath, "w") as f:
             yaml.dump(self.pack_info, f)
 
