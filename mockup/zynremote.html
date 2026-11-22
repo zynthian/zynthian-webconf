@@ -23,6 +23,30 @@
     .audio-wrapper {
         float: right;
     }
+    /* Own audio controls (mute, volume, state) for the stream player in the iframe, whose native
+       video controls (with a useless time line) are disabled. The iframe stays, invisible. */
+    .audio-wrapper.custom .audio-frame { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+    #audio-ctl {
+        display: none;
+        position: fixed; top: 8px; right: 8px; z-index: 60;
+        align-items: center; gap: 8px;
+        padding: 4px 12px 4px 6px;
+        border-radius: 16px;
+        background: rgba(20, 23, 29, .82);
+        color: #e8eaee;
+        font: 13px/1.4 system-ui, sans-serif;
+        user-select: none; -webkit-user-select: none;
+    }
+    .audio-wrapper.custom #audio-ctl { display: flex; }
+    #audio-mute {
+        width: 26px; height: 26px; padding: 0; border: 0; border-radius: 50%;
+        background: transparent; color: #e8eaee; cursor: pointer; font-size: 15px;
+    }
+    #audio-mute:hover { background: rgba(255, 255, 255, .12); }
+    #audio-vol { width: 90px; accent-color: #e8eaee; cursor: pointer; }
+    #audio-state { width: 8px; height: 8px; border-radius: 50%; background: #7a828f; flex: none; }
+    #audio-state.playing { background: #3fd072; }
+    #audio-state.error { background: #e5432d; }
     /* Style the audio iframe to look like a small control widget */
     .audio-frame {
         width: 340px;
@@ -91,9 +115,33 @@
         font-size: 13px;
         border-top: 1px solid #444;
     }
-    /* Shrink the mockup to make room for the keyboard */
+    /* The mockup fills the space above the piano bar (and the keyboard, when shown), always centered.
+       --piano-bar-h is the bar's real height (it wraps into several rows on small screens). */
+    /* --top-h keeps a strip free at the top for the menu and the audio controls: the mockup never goes under them */
+    :root { --top-h: 46px; }
+    svg.v5_mockup {
+        width: 100%;
+        margin-top: var(--top-h);
+        height: calc(100vh - var(--top-h) - var(--piano-bar-h, 29px));
+        height: calc(100dvh - var(--top-h) - var(--piano-bar-h, 29px));
+    }
     body.piano-open svg.v5_mockup {
-        height: calc(100vh - 28px - var(--piano-keys-h, 140px));
+        height: calc(100vh - var(--top-h) - var(--piano-bar-h, 29px) - var(--piano-keys-h, 140px));
+        height: calc(100dvh - var(--top-h) - var(--piano-bar-h, 29px) - var(--piano-keys-h, 140px));
+    }
+    /* Small screens: the bar's controls wrap into rows, the keyboard hints (computer keys) are hidden */
+    @media (max-width: 720px), (max-height: 480px) {
+        #piano-bar { height: auto; min-height: 28px; flex-wrap: wrap; row-gap: 6px; column-gap: 12px; padding: 5px 8px; }
+        #piano-bar .piano-hint { display: none !important; }
+        #piano-bar #piano-vel { width: 90px; }
+        #piano-bar .spacer { display: none; }
+        /* First row: piano toggle + End session; second row: octave and velocity */
+        #piano-bar .demo-badge { margin-left: auto; order: 1; }
+    }
+    @media (max-height: 480px) { :root { --piano-keys-h: 100px; } }
+    @media (max-width: 720px) {
+        #piano-panel.open #piano-bar .row-break { display: block; order: 2; flex-basis: 100%; height: 0; }
+        #piano-bar .piano-ctrl { order: 3; }
     }
     #piano-bar button {
         background: #333;
@@ -107,6 +155,7 @@
     #piano-bar .piano-ctrl { display: none; align-items: center; gap: 6px; }
     #piano-panel.open #piano-bar .piano-ctrl { display: flex; }
     #piano-bar .spacer { flex: 1; }
+    #piano-bar .row-break { display: none; }
     #topbar #midi-btn.on { background: #1f6b3a; }
     #topbar #midi-btn.on.flash { background: #3fd072; }
     #topbar #midi-btn:disabled { opacity: .45; cursor: default; }
@@ -193,6 +242,28 @@
         text-decoration: none;
     }
     #topbar .pill:hover, #keys-legend summary:hover { background: rgba(20, 23, 29, .95); }
+    #topbar .pill.disabled { opacity: .45; cursor: default; }
+    #topbar-items { display: flex; gap: 8px; align-items: flex-start; }
+    #topbar-toggle { display: none !important; }
+    /* Small screens (phones): the menu collapses behind a single button and opens as a column */
+    @media (max-width: 720px), (max-height: 480px) {
+        #topbar { flex-direction: column; }
+        :root { --top-h: 58px; }
+        #topbar-toggle {
+            display: flex !important; align-items: center; justify-content: center;
+            width: 42px; height: 42px; padding: 0; cursor: pointer;
+            border: 2px solid rgba(232, 234, 238, .85); border-radius: 8px;
+            background: rgba(20, 23, 29, .82);
+        }
+        #topbar-toggle svg { fill: #f4f5f7; }
+        #topbar.open #topbar-toggle { background: rgba(60, 66, 78, .95); }
+        /* Smaller audio player */
+        .audio-frame { transform: scale(.6); transform-origin: top right; }
+        #audio-vol { width: 70px; }
+        #topbar-items { display: none; flex-direction: column; }
+        #topbar.open #topbar-items { display: flex; }
+        #topbar #topbar-items #midi-menu, #topbar #topbar-items .legend-body { position: static; }
+    }
     #keys-legend, #midi-wrap { position: relative; }
     #keys-legend summary { list-style: none; width: fit-content; }
     #keys-legend summary::-webkit-details-marker { display: none; }
@@ -257,6 +328,11 @@
             id="audioStreamNode"
             allow="autoplay">
         </iframe>
+        <div id="audio-ctl">
+            <button id="audio-mute" title="Mute / unmute"><i class="fa fa-volume-up"></i></button>
+            <input type="range" id="audio-vol" min="0" max="100" value="100" title="Volume">
+            <span id="audio-state" title="Audio stream"></span>
+        </div>
     </div>
 
     <!-- noVNC viewer (real device): placed over the mockup's screen area by novncPlace() -->
@@ -395,6 +471,8 @@
 
 
     <div id="topbar">
+    <button id="topbar-toggle" title="Menu" aria-label="Menu" aria-expanded="false"><svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true"><rect x="3" y="5" width="18" height="2.4" rx="1.2"/><rect x="3" y="10.8" width="18" height="2.4" rx="1.2"/><rect x="3" y="16.6" width="18" height="2.4" rx="1.2"/></svg></button>
+    <div id="topbar-items">
     <details id="keys-legend">
         <summary>&#9000; Keyboard tips</summary>
         <div class="legend-body">
@@ -416,10 +494,13 @@
             the active chain.</p>
         </div>
     </details>
+    <a id="help-link" class="pill" href="https://help.zynthian.org" target="_blank" rel="noopener" title="Zynthian documentation (opens in a new tab)">Help</a>
     <a id="webconf-link" class="pill" href="/" target="_blank" rel="noopener" title="Open the Zynthian web configuration in a new tab">Webconf</a>
+    <a id="gui-link" class="pill disabled" href="#" target="_blank" rel="noopener">Processor GUIs</a>
     <div id="midi-wrap">
         <button id="midi-btn" class="pill" title="Use local MIDI controllers">MIDI</button>
         <div id="midi-menu"></div>
+    </div>
     </div>
     </div>
 
@@ -437,7 +518,8 @@
                 <input type="range" id="piano-vel" min="1" max="127" value="100">
             </span>
             <span class="spacer"></span>
-            <span class="piano-ctrl">Keys: Z-/ / Q-P &middot; &larr;&rarr; octave &middot; Space: hide</span>
+            <span class="row-break"></span>
+            <span class="piano-ctrl piano-hint">Keys: Z-/ / Q-P &middot; &larr;&rarr; octave &middot; Space: hide</span>
         </div>
         <div id="piano-keys" tabindex="-1"></div>
     </div>
@@ -454,6 +536,9 @@
     // Proxy mode (?proxy, virtual.zynthian.org): everything is served from the same origin as this page,
     // behind a reverse proxy that maps /zynws => websocket, /vnc/ => KasmVNC and /audio/ => audio stream.
     const proxied = pageParams.has("proxy");
+    // Demo service: the landing page shows this page in a frame ("embed"), so the user's click on
+    // "Start demo" there also allows the audio to play here without any further action.
+    const embedded = proxied && pageParams.has("embed") && window.top !== window.self;
 
     // Connection settings, from zrLoadConfig():
     //  - vncViewer "kasm": KasmVNC's own web client in an iframe (containers, virtual.zynthian.org)
@@ -494,6 +579,60 @@
         audioUrl = cfg.audio_path ? window.location.origin + cfg.audio_path : null;
     }
 
+    // Compact audio controls driving the stream player's <video> (same origin: the page's /audio/ path)
+    function audioControlsInit() {
+        const frame = document.getElementById("audioStreamNode");
+        const wrap = document.querySelector(".audio-wrapper");
+        const muteBtn = document.getElementById("audio-mute");
+        const vol = document.getElementById("audio-vol");
+        const state = document.getElementById("audio-state");
+        let video = null;
+        try { vol.value = localStorage.getItem("zynremote-audio-vol") || 100; } catch (e) {}
+        const icon = () => {
+            const off = !video || video.muted || video.volume === 0;
+            muteBtn.firstElementChild.className = "fa " + (off ? "fa-volume-mute" : "fa-volume-up");
+        };
+        const showState = () => {
+            const msg = video ? (frame.contentDocument.getElementById("message") || {}).innerText : "";
+            const playing = video && !video.paused && !msg;
+            state.className = playing ? "playing" : (msg ? "error" : "");
+            state.title = msg || (playing ? "Audio stream playing" : "Audio stream not available");
+            icon();
+        };
+        frame.addEventListener("load", () => {
+            video = null;
+            try { video = frame.contentDocument && frame.contentDocument.getElementById("video"); } catch (e) {}
+            if (!video) {
+                // Not reachable (another origin): show the player with its own controls
+                wrap.classList.remove("custom");
+                if (frame.src.includes("controls=false")) frame.src = frame.src.replace(/[?&]controls=false/, "");
+                return;
+            }
+            wrap.classList.add("custom");
+            video.volume = vol.value / 100;
+            ["playing", "pause", "waiting", "volumechange", "emptied"].forEach(ev => video.addEventListener(ev, showState));
+            // The stream is always playing: only muted or not. Never leave it paused.
+            video.addEventListener("pause", () => video.play().catch(() => {}));
+            new MutationObserver(showState).observe(frame.contentDocument.getElementById("message") || video,
+                {childList: true, characterData: true, subtree: true});
+            showState();
+        });
+        muteBtn.addEventListener("click", () => {
+            if (!video) return;
+            if (video.paused) { video.muted = false; video.play().catch(() => {}); }   // autoplay was blocked: this click allows it
+            else video.muted = !video.muted;
+            if (!video.muted && video.volume === 0) { vol.value = 50; video.volume = .5; }
+            setTimeout(() => { muteBtn.blur(); keyFocus(); }, 0);
+        });
+        vol.addEventListener("input", () => {
+            if (!video) return;
+            video.volume = vol.value / 100;
+            if (video.volume > 0) video.muted = false;
+            try { localStorage.setItem("zynremote-audio-vol", vol.value); } catch (e) {}
+        });
+        vol.addEventListener("change", () => setTimeout(() => { vol.blur(); keyFocus(); }, 0));
+    }
+
     window.addEventListener('DOMContentLoaded', async () => {
         await zrLoadConfig();
         console.log("VNC viewer:", vncViewer, vncUrl);
@@ -507,6 +646,8 @@
             document.querySelector('.audio-wrapper').style.visibility = "hidden";
             return;
         }
+        audioUrl += (audioUrl.includes("?") ? "&" : "?") + "controls=false";
+        audioControlsInit();
         document.getElementById('audioStreamNode').src = audioUrl;
 
         // Browsers block unmuted autoplay until the user interacts with the page. If that was the case,
@@ -1255,6 +1396,9 @@
         else { document.getElementById("piano-toggle").blur(); keyFocus(); }
     }
     document.getElementById("piano-toggle").addEventListener("click", pianoToggle);
+    // Real height of the piano bar (it wraps on small screens): the mockup is sized above it
+    new ResizeObserver(() => document.documentElement.style.setProperty("--piano-bar-h",
+        document.getElementById("piano-bar").offsetHeight + "px")).observe(document.getElementById("piano-bar"));
     document.getElementById("piano-oct-down").addEventListener("click", () => pianoSetOctave(pianoBaseOctave - 1));
     document.getElementById("piano-oct-up").addEventListener("click", () => pianoSetOctave(pianoBaseOctave + 1));
 
@@ -1271,6 +1415,45 @@
         // Do not keep the focus on the box: keys must keep going to the page
         setTimeout(() => { document.activeElement && document.activeElement.blur(); keyFocus(); }, 0);
     });
+
+    // Collapsed top menu (small screens)
+    const topbar = document.getElementById("topbar");
+    const topbarToggle = document.getElementById("topbar-toggle");
+    topbarToggle.addEventListener("click", () => {
+        const open = topbar.classList.toggle("open");
+        topbarToggle.setAttribute("aria-expanded", open);
+        setTimeout(() => { document.activeElement && document.activeElement.blur(); keyFocus(); }, 0);
+    });
+    document.addEventListener("pointerdown", (e) => {
+        if (!topbar.contains(e.target)) topbar.classList.remove("open");
+    });
+    topbar.querySelectorAll("#topbar-items a").forEach(a => a.addEventListener("click", () => topbar.classList.remove("open")));
+
+    // Processor GUIs (display :1): available while VNC is enabled in the zynthian UI. Checked periodically:
+    // the menu entry is greyed out while not available.
+    const guiLink = document.getElementById("gui-link");
+    const GUI_OFF_TITLE = "Processor GUIs: enable VNC in the zynthian UI (Admin menu) to use them";
+    guiLink.title = GUI_OFF_TITLE;
+    guiLink.addEventListener("click", (e) => { if (guiLink.classList.contains("disabled")) e.preventDefault(); });
+    async function guiCheck() {
+        if (document.hidden) return;
+        let url = null;
+        try {
+            if (proxied) {
+                const r = await fetch("/vnc1/", { cache: "no-store" });     // (KasmVNC answers 404 to HEAD)
+                if (r.ok) url = window.location.origin + "/vnc1/?resize=remote&path=vnc1/websockify";
+            } else {
+                const r = await fetch("/zynremote/config", { cache: "no-store" });
+                if (r.ok) url = (await r.json()).gui_url || null;
+            }
+        } catch (e) { }
+        guiLink.classList.toggle("disabled", !url);
+        guiLink.href = url || "#";
+        guiLink.title = url ? "Open the processor GUIs (native plugin windows) in a new tab" : GUI_OFF_TITLE;
+    }
+    guiCheck();
+    setInterval(guiCheck, 5000);
+    document.addEventListener("visibilitychange", guiCheck);
 
     // Local MIDI controllers (Web MIDI): their events are sent over the websocket like the virtual piano's.
     // The server ignores the MIDI channel and uses the active chain's channel.
@@ -1417,15 +1600,16 @@
         });
         let wasOn = false;
         try { wasOn = localStorage.getItem("zynremote-midi") === "1"; } catch (e) {}
-        if (wasOn) midiEnable();
+        // Demo service: MIDI controllers work right away (the browser asks for permission once)
+        if (wasOn || proxied) midiEnable();
     }
 
     // Demo service (proxy mode only): remaining time badge, activity ping, end session.
     if (proxied) {
         const badge = document.createElement("span");
+        badge.className = "demo-badge";
         badge.style.cssText = "display:flex;gap:14px;align-items:center;font-size:13px;color:#e8eaee;white-space:nowrap";
-        badge.innerHTML = '<span id="demo-left">Demo</span>' +
-            '<button id="demo-end" title="End this demo session">End session</button>';
+        badge.innerHTML = '<button id="demo-end" title="End this demo session">End session</button>';
         document.getElementById("piano-bar").appendChild(badge);   // the bar is always visible
         const homeUrl = "https://" + window.location.hostname + "/";
         let remaining = null, lastPing = 0;
@@ -1441,9 +1625,11 @@
             else remaining = st.remaining;
         }).catch(() => {});
         function breakOut(url) {
+            // Embedded: the landing page (parent) shows why the session ended
+            if (embedded) { window.parent.postMessage({zr: "ended"}, homeUrl.replace(/\/$/, "")); return; }
             try { window.top.location.href = url; } catch (e) { window.location.href = url; }
         }
-        if (window.top !== window.self) breakOut(window.location.href);   // never run nested inside another page
+        if (window.top !== window.self && !embedded) breakOut(window.location.href);   // never run nested inside another page
         setInterval(refresh, 5000);
         refresh();
         const ping = window.zrPing = () => {
@@ -1456,7 +1642,7 @@
         document.getElementById("demo-end").addEventListener("click", (e) => {
             e.preventDefault();
             if (confirm("End this demo session?"))
-                fetch("/zr/api/leave", {method: "POST"}).finally(() => { window.location.href = homeUrl; });
+                fetch("/zr/api/leave", {method: "POST"}).finally(() => breakOut(homeUrl));
         });
     }
 

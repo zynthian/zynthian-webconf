@@ -158,6 +158,7 @@ def make_app():
         (r"/zynremote/config$", ZynremoteConfigHandler),
         (r"/zynws$", ZynremoteUIWebSocketBridge),
         (r"/zynremote/vnc$", ZynremoteVNCBridge),
+        (r"/zynremote/vnc1$", ZynremoteVNCBridge, {"port": 5901}),
         (r"/zynremote/audio/(.*)$", ZynremoteAudioProxy),
         # (r'/()$', tornado.web.StaticFileHandler, {'path': 'html', "default_filename": "index.html"}),
         (r"/help$", HelpHandler),

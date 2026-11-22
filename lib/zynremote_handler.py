@@ -11,6 +11,7 @@
 #   /zynremote/config   => JSON describing what this zynthian offers (viewer, audio, ...)
 #   /zynws              => websocket of zynthian-ui (ws://localhost:8370): keys, MIDI, LEDs
 #   /zynremote/vnc      => VNC server of the display (localhost:5900, x11vnc), for noVNC
+#   /zynremote/vnc1     => VNC server of the processor GUIs (display :1, localhost:5901), for noVNC
 #   /zynremote/audio/   => MediaMTX (http://localhost:8889): audio stream (WHEP) when available
 #
 # Copyright (C) 2026 Fernando Moyano <fernando@zynthian.org>
@@ -45,6 +46,8 @@ from tornado.tcpclient import TCPClient
 UI_WS_PORT = 8370       # zynthian-ui websocket server
 VNC_PORT = 5900         # x11vnc mirroring the display (vncserver0 service)
 KASMVNC_PORT = 8443     # KasmVNC web server (containerized zynthian)
+VNC1_PORT = 5901        # VNC server of display :1, the processor GUIs (vncserver1 service, TigerVNC)
+KASMVNC1_PORT = 8444    # KasmVNC web server of display :1 (containerized zynthian)
 AUDIO_PORT = 8889       # MediaMTX WebRTC/WHEP server
 AUDIO_PATH = "zynstream"
 
@@ -72,8 +75,16 @@ class ZynremoteConfigHandler(tornado.web.RequestHandler):
             vnc = "novnc"
         else:
             vnc = None
+        # Processor GUIs (display :1): only while enabled in the UI (vncserver1 service)
+        if port_open(KASMVNC1_PORT):
+            gui_url = f"https://{self.request.host_name}:{KASMVNC1_PORT}/?resize=remote"
+        elif port_open(VNC1_PORT):
+            gui_url = "/novnc/vnc.html?path=zynremote/vnc1&autoconnect=1&resize=remote&reconnect=1"
+        else:
+            gui_url = None
         config = {
             "vnc": vnc,
+            "gui_url": gui_url,
             "kasm_url": f"https://{self.request.host_name}:{KASMVNC_PORT}/?resize=scale",
             "novnc_path": "/zynremote/vnc",
             "ws_path": "/zynws",
@@ -135,12 +146,15 @@ class ZynremoteVNCBridge(tornado.websocket.WebSocketHandler):
 
     stream = None
 
+    def initialize(self, port=VNC_PORT):
+        self.vnc_port = port
+
     def select_subprotocol(self, subprotocols):
         return "binary" if "binary" in subprotocols else None
 
     async def open(self):
         try:
-            self.stream = await TCPClient().connect("127.0.0.1", VNC_PORT)
+            self.stream = await TCPClient().connect("127.0.0.1", self.vnc_port)
             self.stream.set_nodelay(True)
         except Exception as e:
             logging.warning(f"Zynremote: can't connect to the VNC server => {e}")
