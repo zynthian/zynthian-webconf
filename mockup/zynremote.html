@@ -496,7 +496,7 @@
     </details>
     <a id="help-link" class="pill" href="https://help.zynthian.org" target="_blank" rel="noopener" title="Zynthian documentation (opens in a new tab)">Help</a>
     <a id="webconf-link" class="pill" href="/" target="_blank" rel="noopener" title="Open the Zynthian web configuration in a new tab">Webconf</a>
-    <a id="gui-link" class="pill disabled" href="#" target="_blank" rel="noopener">Processor GUIs</a>
+    <a id="gui-link" class="pill" href="#">Processor GUIs</a>
     <div id="midi-wrap">
         <button id="midi-btn" class="pill" title="Use local MIDI controllers">MIDI</button>
         <div id="midi-menu"></div>
@@ -1429,31 +1429,50 @@
     });
     topbar.querySelectorAll("#topbar-items a").forEach(a => a.addEventListener("click", () => topbar.classList.remove("open")));
 
-    // Processor GUIs (display :1): available while VNC is enabled in the zynthian UI. Checked periodically:
-    // the menu entry is greyed out while not available.
+    // Processor GUIs (display :1). Always active: if the VNC service is not running, the entry starts it
+    // (CUIA vnc_start) and opens the GUIs when they are ready. The window is opened at once, on the click
+    // (browsers block windows opened later), with a "starting" message until the GUIs answer.
     const guiLink = document.getElementById("gui-link");
-    const GUI_OFF_TITLE = "Processor GUIs: enable VNC in the zynthian UI (Admin menu) to use them";
-    guiLink.title = GUI_OFF_TITLE;
-    guiLink.addEventListener("click", (e) => { if (guiLink.classList.contains("disabled")) e.preventDefault(); });
-    async function guiCheck() {
-        if (document.hidden) return;
-        let url = null;
+    guiLink.classList.remove("disabled");
+    guiLink.title = "Open the processor GUIs (native plugin windows) in a new tab";
+    async function guiUrl() {
         try {
             if (proxied) {
                 const r = await fetch("/vnc1/", { cache: "no-store" });     // (KasmVNC answers 404 to HEAD)
-                if (r.ok) url = window.location.origin + "/vnc1/?resize=remote&path=vnc1/websockify";
-            } else {
-                const r = await fetch("/zynremote/config", { cache: "no-store" });
-                if (r.ok) url = (await r.json()).gui_url || null;
+                return r.ok ? window.location.origin + "/vnc1/?resize=remote&path=vnc1/websockify" : null;
             }
-        } catch (e) { }
-        guiLink.classList.toggle("disabled", !url);
-        guiLink.href = url || "#";
-        guiLink.title = url ? "Open the processor GUIs (native plugin windows) in a new tab" : GUI_OFF_TITLE;
+            const r = await fetch("/zynremote/config", { cache: "no-store" });
+            return r.ok ? ((await r.json()).gui_url || null) : null;
+        } catch (e) { return null; }
     }
-    guiCheck();
-    setInterval(guiCheck, 5000);
-    document.addEventListener("visibilitychange", guiCheck);
+    let guiStarting = false;
+    guiLink.addEventListener("click", async (e) => {
+        e.preventDefault();
+        if (guiStarting) return;
+        const win = window.open("", "_blank");
+        if (!win) return;
+        win.document.title = "Processor GUIs";
+        win.document.body.style.cssText = "margin:0;height:100vh;display:grid;place-items:center;background:#202020;" +
+            "color:#cfd6e2;font:16px system-ui,sans-serif";
+        win.document.body.textContent = "Starting the processor GUIs\u2026";
+        let url = await guiUrl();
+        if (!url) {
+            guiStarting = true;
+            if (zynWS && zynWS.readyState === WebSocket.OPEN)
+                zynWS.send(JSON.stringify({ cuia: "vnc_start", args: [] }));
+            for (let i = 0; i < 40 && !url && !win.closed; i++) {      // up to ~30 s
+                await new Promise(r => setTimeout(r, 750));
+                url = await guiUrl();
+            }
+            // The VNC server answers before its desktop (window manager, panel) is up: give it a moment
+            if (url) await new Promise(r => setTimeout(r, 2000));
+            guiStarting = false;
+        }
+        if (win.closed) return;
+        if (url) { win.opener = null; win.location.href = url; }
+        else win.document.body.textContent = "The processor GUIs could not be started. Try again, or enable VNC in the zynthian UI (Admin menu).";
+        setTimeout(keyFocus, 0);
+    });
 
     // Local MIDI controllers (Web MIDI): their events are sent over the websocket like the virtual piano's.
     // The server ignores the MIDI channel and uses the active chain's channel.
