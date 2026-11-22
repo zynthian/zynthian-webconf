@@ -59,8 +59,21 @@ class ExtraPacksHandler(ZynthianBasicHandler):
         super().prepare()
         force_reload = (self.request.headers.get("Cache-Control") == "no-cache")
         logging.debug(f"FORCE PACKAGE INFO RELOAD => {force_reload}")
+        if force_reload and self.request.method == "GET" and self.current_user:
+            # Forced page reload (Ctrl+F5, Ctrl+Shift+R...) by a logged-in user: get the latest package catalog first
+            self.update_packages_repo()
         if force_reload or not self.get_cache_packages():
             self.get_packages()
+
+    def update_packages_repo(self):
+        """Update the package catalog (git pull in zynthian-packages). On failure (offline...) keep the local copy."""
+        try:
+            res = check_output(["git", "-C", self.packages_dir, "pull", "--ff-only"], stderr=STDOUT,
+                               encoding="utf-8", timeout=30, env={**os.environ, "GIT_TERMINAL_PROMPT": "0"})
+            logging.info(f"Package catalog updated => {res.strip()}")
+        except Exception as e:
+            output = getattr(e, "output", None)
+            logging.warning(f"Can't update the package catalog in '{self.packages_dir}' => {output.strip() if output else e}")
 
     @tornado.web.authenticated
     def get(self, errors=None):
