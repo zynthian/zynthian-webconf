@@ -411,7 +411,6 @@ function edit_engine_save(close=false) {
             var eng_div = "div#engine_row_" + eng_info[scode]['ID']
             document.querySelector(eng_div + " div.engine-enabled input").checked = eng_enabled;
             document.querySelector(eng_div + " div.engine-title").textContent = eng_title;
-            document.querySelector(eng_div + " div.engine-type").textContent = eng_type;
             document.querySelector(eng_div + " div.engine-cat").textContent = eng_cat;
             document.querySelector(eng_div + " div.engine-quality span.ranking_star_on").textContent = '★'.repeat(eng_quality);
             document.querySelector(eng_div + " div.engine-quality span.ranking_star_off").textContent = '★'.repeat(5 - eng_quality);
