@@ -234,8 +234,8 @@ class RepositoryHandler(ZynthianConfigHandler):
                 # Remove old tag-branch
                 if branch_name in branches:
                     check_output(f"git -C {repo_dir} branch -D {branch_name}", shell=True)
-                # Checkout tag to a new branch
-                check_output(f"git -C {repo_dir} checkout tags/{branch_name} -b {branch_name}", shell=True)
+                # Checkout tag to a new or existing branch
+                check_output(f"git -C {repo_dir} checkout tags/{branch_name} -B {branch_name}", shell=True)
             # If it's a normal branch
             else:
                 check_output(f"cd {repo_dir}; git checkout .; git clean -f; git checkout {branch_name}", shell=True)
