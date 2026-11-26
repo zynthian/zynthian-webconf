@@ -24,7 +24,6 @@
 <script>
 // Update running when the page was loaded (started from the UI, webconf or ssh)
 var updateRunningOnLoad = {{ 'true' if config['UPDATE_RUNNING'] else 'false' }};
-var updating = false;
 var updateSeen = false;	// This page showed an update: reload when webconf restarts
 var reStep = /\[(\d+)\/(\d+)\]\s*(\d+)%:?\s*(.*)/;
 
@@ -63,7 +62,6 @@ function sendUpdateMessage(data) {
 }
 
 function startProgress() {
-	updating = true;
 	updateSeen = true;
 	$(':button').prop('disabled', true);
 	$("#update-log").addClass("updating").html('');
@@ -88,7 +86,6 @@ function onUpdateMessage(data) {
 	if (!data) return;
 	var logDiv = $("#update-log");
 	if (data == "EOCOMMAND") {
-		updating = false;
 		logDiv.removeClass("updating");
 		setProgress(parseInt($("#update-progress-bar").text()) || 0, false);
 		$(':button').prop('disabled', false);
