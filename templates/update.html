@@ -7,7 +7,8 @@
 		<button type="button" name="ZYNTHIAN_UPDATE_ACTION" value="{{ update_item }}" class="btn btn-lg btn-theme" onclick="executeUpdate('{{ update_item }}')">{{ update_item }}</button>
 		{% end %}
 	</div>
-	<div class="row" id="update-progress-row" style="display:none; margin-top:15px;">
+	<!-- Pinned below the navbar, so it stays visible while the log scrolls -->
+	<div class="row" id="update-progress-row" style="display:none; position:sticky; z-index:1000; background-color:#ffffff; padding:10px 0 5px 0;">
 		<div id="update-step">Starting update...</div>
 		<div class="progress" style="margin-top:5px;">
 			<div id="update-progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width:0%; min-width:2em;">0%</div>
@@ -27,7 +28,19 @@ var updateRunningOnLoad = {{ 'true' if config['UPDATE_RUNNING'] else 'false' }};
 var updateSeen = false;	// This page showed an update: reload when webconf restarts
 var reStep = /\[(\d+)\/(\d+)\]\s*(\d+)%:?\s*(.*)/;
 
+// Pin the progress below the fixed navbar (its height depends on the window width)
+function pinProgress() {
+	$("#update-progress-row").css("top", ($(".navbar-fixed-top").outerHeight() || 0) + "px");
+}
+
 $(document).ready(function (){
+	// Sticky doesn't work inside an "overflow: hidden" ancestor (style.css sets it on
+	// .container). The section is a clearfix, so its floats don't need it.
+	$("#update-progress-row").parents().not("html, body").filter(function() {
+		return $(this).css("overflow") != "visible";
+	}).css("overflow", "visible");
+	pinProgress();
+	$(window).on("resize", pinProgress);
 	$(':button').prop('disabled', true);
 	var deferred = $.Deferred();
 	deferred.done(function(value) {
