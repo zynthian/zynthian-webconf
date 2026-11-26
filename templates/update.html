@@ -7,6 +7,13 @@
 		<button type="button" name="ZYNTHIAN_UPDATE_ACTION" value="{{ update_item }}" class="btn btn-lg btn-theme" onclick="executeUpdate('{{ update_item }}')">{{ update_item }}</button>
 		{% end %}
 	</div>
+	<div class="row" id="update-progress-row" style="display:none; margin-top:15px;">
+		<div id="update-step">Starting update...</div>
+		<div class="progress" style="margin-top:5px;">
+			<div id="update-progress-bar" class="progress-bar progress-bar-striped active" role="progressbar" style="width:0%; min-width:2em;">0%</div>
+		</div>
+		<div id="update-status"></div>
+	</div>
 	<div class="row">
 		<div id="update-log" class="log_panel"></div>
 	</div>
@@ -15,36 +22,94 @@
 </form>
 
 <script>
+// Update running when the page was loaded (started from the UI, webconf or ssh)
+var updateRunningOnLoad = {{ 'true' if config['UPDATE_RUNNING'] else 'false' }};
+var updating = false;
+var updateSeen = false;	// This page showed an update: reload when webconf restarts
+var reStep = /\[(\d+)\/(\d+)\]\s*(\d+)%:?\s*(.*)/;
+
 $(document).ready(function (){
-    $(':button').prop('disabled', true);
-		var deferred = $.Deferred();
-		deferred.done(function(value) {
-			$(':button').prop('disabled', false);
+	$(':button').prop('disabled', true);
+	var deferred = $.Deferred();
+	deferred.done(function(value) {
+		window.zynthianSocket.registerHandler('SoftwareUpdateMessageHandler', onUpdateMessage);
+		// Webconf is restarted at the end of the update: reload to reconnect
+		window.zynthianSocket.addEventListener('close', function() {
+			if (updateSeen) {
+				$(':button').prop('disabled', true);
+				$("#update-status").text("Connection lost (webconf restarting?). Reloading...");
+				sessionStorage.setItem("zynthianUpdateReload", "1");
+				setTimeout(function() { window.location.reload(); }, 10000);
+			}
 		});
-		connectZynthianWebSocket(deferred);
+		if (updateRunningOnLoad) {
+			startProgress();
+			sendUpdateMessage("__FOLLOW__");
+		} else if (sessionStorage.getItem("zynthianUpdateReload")) {
+			// Reloaded after webconf restarted at the end of the update: show its log
+			startProgress();
+			updateSeen = false;
+			sendUpdateMessage("__LAST_LOG__");
+		} else {
+			$(':button').prop('disabled', false);
+		}
+		sessionStorage.removeItem("zynthianUpdateReload");
+	});
+	connectZynthianWebSocket(deferred);
 });
 
+function sendUpdateMessage(data) {
+	window.zynthianSocket.send(JSON.stringify({"handler_name": "SoftwareUpdateMessageHandler", "data": data}));
+}
+
+function startProgress() {
+	updating = true;
+	updateSeen = true;
+	$(':button').prop('disabled', true);
+	$("#update-log").addClass("updating").html('');
+	$("#update-step").text("Starting update...");
+	$("#update-status").text("");
+	setProgress(0, true);
+	$("#update-progress-row").show();
+}
+
+function setProgress(percent, active) {
+	var bar = $("#update-progress-bar");
+	bar.css("width", percent + "%").text(percent + "%");
+	bar.toggleClass("active", active).toggleClass("progress-bar-striped", active);
+}
+
 function executeUpdate(update_action){
+	startProgress();
+	sendUpdateMessage(update_action);
+}
+
+function onUpdateMessage(data) {
+	if (!data) return;
 	var logDiv = $("#update-log");
-	logDiv.addClass("updating");
-	logDiv.html('');
-	var socketMessage = {"handler_name": "SoftwareUpdateMessageHandler",
-		"data": update_action};
-	//zynthiansocket = connectWebsocket();
-	window.zynthianSocket.registerHandler('SoftwareUpdateMessageHandler', function(data) {
-		if (data){
-			var logDiv = $("#update-log");
-			if (data == "EOCOMMAND"){
-				logDiv.removeClass("updating");
-			} else {
-				console.log("socket:onmessage:",data);
-				var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset;
-				logDiv.append(escapeHTML(data) + "<br>");
-				if (shouldScroll) window.scrollTo(0,document.body.scrollHeight);
-			}
+	if (data == "EOCOMMAND") {
+		updating = false;
+		logDiv.removeClass("updating");
+		setProgress(parseInt($("#update-progress-bar").text()) || 0, false);
+		$(':button').prop('disabled', false);
+		return;
+	}
+	if (data.startsWith(">>>")) {
+		var text = data.substring(3).trim();
+		var m = reStep.exec(text);
+		if (m) {
+			setProgress(parseInt(m[3]), true);
+			$("#update-step").text("Step " + m[1] + " of " + m[2] + ": " + m[4]);
+		} else {
+			$("#update-step").text(text);
 		}
-	});
-	window.zynthianSocket.send(JSON.stringify(socketMessage));
+	} else if (data.startsWith("Update Complete")) {
+		setProgress(100, false);
+		$("#update-step").text(data);
+	}
+	var shouldScroll = document.body.scrollHeight - window.innerHeight <= window.pageYOffset + 5;
+	logDiv.append(escapeHTML(data) + "<br>");
+	if (shouldScroll) window.scrollTo(0, document.body.scrollHeight);
 }
 
 var entityMap = {
