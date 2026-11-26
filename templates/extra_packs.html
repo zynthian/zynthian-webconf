@@ -115,7 +115,12 @@ div.package div.description p {
 					<b>Author:</b> {{ info['author'] }}{% if info['source_url'] %} (<a href="{{ info['source_url'] }}">source</a>){% end %}<br/>
 					<b>License:</b> {{ info['license'] }}<br/>
 					<b>Content:</b> {{ info['content'] }}<br/>
-					<b>Size:</b> {{ info['size'] }}<br/>
+					<b>Size:</b> {{ info['size'] }}
+					{% if 'version' in info %}
+					&nbsp;&nbsp;&nbsp;&nbsp;
+					<b>Version:</b> {{ info['version'] }}
+					{% end %}
+					<br/>
 				</div>
 				<div class="description">
 					<p>{% raw info['description'] %}
