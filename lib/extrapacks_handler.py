@@ -154,7 +154,7 @@ class ExtraPacksHandler(ZynthianBasicHandler):
                     info["update"] = False
                     #self.save_cache_packages()
                 else:
-                    raise Exception(f"Install script failed!")
+                    raise Exception(f"Install script failed:\n{res}")
 
             self.save_installed_package(info)
             self.restart_ui_flag = info['restart_ui']
